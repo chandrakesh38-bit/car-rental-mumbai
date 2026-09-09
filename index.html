@@ -1383,7 +1383,7 @@ window.addEventListener('DOMContentLoaded', () => {
             return regex.test(pin.trim());
         }
 
-        // WITH DRIVER FLEET
+// WITH DRIVER FLEET (Vendor Rate Card + 25% Markup Applied)
         const wdFleet = [
             {
                 name: 'Sedan (Dzire / Aura)',
@@ -1391,10 +1391,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 seats: '4+1',
                 bags: '2 Bags',
                 rates: {
-                    local: { '8hr_80km': 2300, '10hr_100km': 2700, '12hr_120km': 3100, extraKm: 13 },
-                    outstationPerKm: 13,
-                    driverAllowance: 400,
-                    airport: { t1: 1400, t2: 1500, nmia: 1800 }
+                    local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 },
+                    outstationPerKm: 17,
+                    driverAllowance: 500,
+                    airport: { t1: 1500, t2: 1600, nmia: 2000 }
                 }
             },
             {
@@ -1403,10 +1403,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 seats: '4+1',
                 bags: '2 Large Bags',
                 rates: {
-                    local: { '8hr_80km': 2600, '10hr_100km': 3000, '12hr_120km': 3500, extraKm: 14 },
-                    outstationPerKm: 14,
-                    driverAllowance: 400,
-                    airport: { t1: 1600, t2: 1700, nmia: 2000 }
+                    local: { '8hr_80km': 3200, '10hr_100km': 3700, '12hr_120km': 4200, extraKm: 18 },
+                    outstationPerKm: 18,
+                    driverAllowance: 500,
+                    airport: { t1: 1700, t2: 1800, nmia: 2200 }
                 }
             },
             {
@@ -1415,22 +1415,46 @@ window.addEventListener('DOMContentLoaded', () => {
                 seats: '6+1',
                 bags: '3 Bags',
                 rates: {
-                    local: { '8hr_80km': 3200, '10hr_100km': 3700, '12hr_120km': 4300, extraKm: 17 },
-                    outstationPerKm: 17,
+                    local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 },
+                    outstationPerKm: 19,
                     driverAllowance: 500,
-                    airport: { t1: 2000, t2: 2200, nmia: 2500 }
+                    airport: { t1: 2200, t2: 2400, nmia: 2800 }
+                }
+            },
+            {
+                name: 'Kia Carens',
+                category: 'Premium Family MUV',
+                seats: '6+1',
+                bags: '3 Bags',
+                rates: {
+                    local: { '8hr_80km': 4000, '10hr_100km': 4700, '12hr_120km': 5400, extraKm: 20 },
+                    outstationPerKm: 20,
+                    driverAllowance: 500,
+                    airport: { t1: 2400, t2: 2600, nmia: 3000 }
+                }
+            },
+            {
+                name: 'Toyota Innova',
+                category: 'Executive MUV',
+                seats: '6+1 / 7+1',
+                bags: '4 Bags',
+                rates: {
+                    local: { '8hr_80km': 4400, '10hr_100km': 5200, '12hr_120km': 6000, extraKm: 22 },
+                    outstationPerKm: 22,
+                    driverAllowance: 500,
+                    airport: { t1: 2700, t2: 2900, nmia: 3400 }
                 }
             },
             {
                 name: 'Innova Crysta',
-                category: 'Premium MUV',
+                category: 'Luxury MUV',
                 seats: '6+1 / 7+1',
                 bags: '4 Bags',
                 rates: {
-                    local: { '8hr_80km': 4600, '10hr_100km': 5300, '12hr_120km': 6000, extraKm: 22 },
-                    outstationPerKm: 22,
-                    driverAllowance: 600,
-                    airport: { t1: 2800, t2: 3000, nmia: 3500 }
+                    local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 },
+                    outstationPerKm: 25,
+                    driverAllowance: 500,
+                    airport: { t1: 3000, t2: 3200, nmia: 3800 }
                 }
             }
         ];

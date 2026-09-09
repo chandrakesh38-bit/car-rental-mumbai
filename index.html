@@ -61,9 +61,12 @@
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
             <a href="#" class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-xl shadow-inner">
+<div id="site-logo-container" class="flex items-center">
+                <div id="default-brand-icon" class="w-10 h-10 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-xl shadow-inner">
                     <i class="fa-solid fa-car"></i>
                 </div>
+                <img id="dynamic-brand-logo" src="" alt="Car with Driver India" class="hidden h-9 sm:h-11 w-auto max-w-[180px] object-contain">
+            </div>
                 <div>
                     <span class="text-xl font-black text-indigo-950 tracking-tight block leading-none">Car with Driver India</span>
                     <span class="text-[10px] text-slate-400 font-semibold tracking-wider block mt-1">Car with Driver LLP</span>
@@ -1156,6 +1159,15 @@ async function syncLiveBackendData() {
                     const el = document.querySelector('header p');
                     if (el) el.innerText = s.value;
                 }
+                if (s.key === 'site_logo_url' && s.value) {
+                const logoImg = document.getElementById('dynamic-brand-logo');
+                const defaultIcon = document.getElementById('default-brand-icon');
+                if (logoImg) {
+                    logoImg.src = s.value;
+                    logoImg.classList.remove('hidden');
+                    if (defaultIcon) defaultIcon.classList.add('hidden');
+                }
+            }
             });
         }
     } catch (e) {

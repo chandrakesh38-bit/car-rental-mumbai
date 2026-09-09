@@ -37,7 +37,6 @@
                     <i class="fa-brands fa-whatsapp text-sm"></i> Talk to Us
                 </a>
 
-                <!-- 3 Horizontal Lines (Hamburger Menu Button) -->
                 <button type="button" onclick="openNavDrawer()" class="p-2.5 rounded-xl text-slate-700 hover:text-indigo-950 hover:bg-slate-100 transition focus:outline-none flex items-center justify-center border border-slate-200">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
@@ -62,7 +61,7 @@
                 </button>
             </div>
 
-            <!-- Drawer Links (Requested 7 Sections) -->
+            <!-- Drawer Links (7 Sections) -->
             <div class="space-y-1.5 pt-5 text-sm font-bold text-slate-700">
                 <a href="#booking-widget" onclick="navigateAndSetMode('withdriver')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
                     <i class="fa-solid fa-user-tie text-indigo-600 w-5"></i>
@@ -351,7 +350,7 @@
                             </div>
                         </div>
 
-                        <!-- Row 2: 5 Specific Dropdown Filters -->
+                        <!-- Row 2: 5 Dropdown Filters -->
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 pt-2 border-t border-slate-100">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fuel Type</label>
@@ -422,10 +421,21 @@
                         </div>
                     </div>
 
-                    <!-- Dynamic 32-Car Grid Container -->
+                    <!-- Dynamic 8-Car Per Page Grid Container -->
                     <div id="selfdrive-cars-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                         <!-- Rendered by JS -->
                     </div>
+
+                    <!-- Clean Pagination Controls (8 Cars Per Page) -->
+                    <div id="sd-pagination-container" class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <span class="text-xs text-slate-500 font-medium" id="sd-pagination-info">
+                            Showing 1 to 8 of 32 cars
+                        </span>
+                        <div class="flex items-center space-x-1.5" id="sd-pagination-btns">
+                            <!-- Injected by JS: Prev, 1, 2, 3, 4, Next -->
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
@@ -572,7 +582,7 @@
                         <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
                     </div>
                     <p class="text-xs text-slate-600 leading-relaxed">
-                        "Booked Innova Crysta for Shirdi Darshan. Immaculate interior, chilled dual AC, and driver knew the Samruddhi Mahamarg route perfectly. 10/10 service."
+                        "Booked Innova Crysta for Shirdi Darshan. Clean interior, chilled dual AC, and driver knew the Samruddhi Mahamarg route perfectly. 10/10 service."
                     </p>
                 </div>
                 <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium">
@@ -1057,38 +1067,6 @@
     </datalist>
 
     <script>
-        // ==========================================
-        // DRAWER NAVIGATION HANDLERS (7 SECTIONS)
-        // ==========================================
-        function openNavDrawer() {
-            const drawer = document.getElementById('nav-drawer');
-            const overlay = document.getElementById('nav-drawer-overlay');
-            overlay.classList.remove('hidden');
-            setTimeout(() => {
-                overlay.classList.remove('opacity-0');
-                drawer.classList.remove('translate-x-full');
-            }, 10);
-        }
-
-        function closeNavDrawer() {
-            const drawer = document.getElementById('nav-drawer');
-            const overlay = document.getElementById('nav-drawer-overlay');
-            drawer.classList.add('translate-x-full');
-            overlay.classList.add('opacity-0');
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-            }, 300);
-        }
-
-        function navigateAndSetMode(mode) {
-            closeNavDrawer();
-            setServiceMode(mode);
-            const target = document.getElementById('booking-widget');
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
         // WITH DRIVER FLEET DATA
         const wdFleet = [
             {
@@ -1185,7 +1163,7 @@
         let chosenCarName = '';
         let chosenFareAmount = 0;
 
-        // Self Drive State
+        // Self Drive State & 8-Cars Pagination
         let selectedCarObj = null;
         let currentDeliveryMode = 'home';
         let currentDeliveryRoundTripKm = 16;
@@ -1193,6 +1171,10 @@
         let calculatedRentalHours = 24;
         let calculatedRentalAmount = 0;
         let calculatedTotalFare = 0;
+
+        let currentSDPage = 1;
+        const carsPerPage = 8;
+        let filteredSDCarsList = [...excelCarsData];
 
         function setServiceMode(mode) {
             currentMainMode = mode;
@@ -1367,7 +1349,9 @@
             });
         }
 
-        // SELF DRIVE FILTERING, SORTING & CARDS
+        // ==========================================
+        // SELF DRIVE 8-CARS PAGINATION & FILTERS
+        // ==========================================
         function applyAllSDFilters() {
             const query = document.getElementById('sd-search-box').value.toLowerCase().trim();
             const brandVal = document.getElementById('sd-filter-brand').value;
@@ -1414,7 +1398,9 @@
                 list.sort((a, b) => b.rateVal - a.rateVal);
             }
 
-            renderSelfDriveFleetCards(list);
+            filteredSDCarsList = list;
+            currentSDPage = 1; // reset to page 1 upon filter changes
+            renderSDPage();
         }
 
         function setBrandPill(brand) {
@@ -1443,23 +1429,36 @@
             setBrandPill('All');
         }
 
-        function renderSelfDriveFleetCards(cars) {
+        function renderSDPage() {
             const container = document.getElementById('selfdrive-cars-grid');
+            const infoSpan = document.getElementById('sd-pagination-info');
+            const btnsContainer = document.getElementById('sd-pagination-btns');
             if (!container) return;
-            container.innerHTML = '';
 
-            if (cars.length === 0) {
+            container.innerHTML = '';
+            btnsContainer.innerHTML = '';
+
+            const totalCars = filteredSDCarsList.length;
+            if (totalCars === 0) {
                 container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-medium">No cars found matching your filter criteria.</div>`;
+                infoSpan.innerText = "Showing 0 of 0 cars";
                 return;
             }
 
-            cars.forEach(car => {
+            const totalPages = Math.ceil(totalCars / carsPerPage);
+            if (currentSDPage > totalPages) currentSDPage = totalPages;
+
+            const startIndex = (currentSDPage - 1) * carsPerPage;
+            const endIndex = Math.min(startIndex + carsPerPage, totalCars);
+            const pageCars = filteredSDCarsList.slice(startIndex, endIndex);
+
+            // Render cars in current 8-pack
+            pageCars.forEach(car => {
                 const card = document.createElement('div');
                 card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col justify-between";
 
                 card.innerHTML = `
                     <div>
-                        <!-- Vehicle Image Container -->
                         <div class="h-44 w-full bg-slate-100 overflow-hidden relative group">
                             <img src="${car.imgUrl}" alt="${car.fullName}" onerror="this.src='https://placehold.co/400x260/f1f5f9/1e1b4b?text=${encodeURIComponent(car.fullName)}'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                             <span class="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider bg-indigo-950/80 backdrop-blur-sm text-amber-300 px-2.5 py-0.5 rounded-md">
@@ -1504,6 +1503,48 @@
                 `;
                 container.appendChild(card);
             });
+
+            // Update Info
+            infoSpan.innerText = `Showing ${startIndex + 1} to ${endIndex} of ${totalCars} cars`;
+
+            // Render Pagination Buttons (Prev, 1, 2, 3, 4, Next)
+            if (totalPages > 1) {
+                // Prev Button
+                const prevBtn = document.createElement('button');
+                prevBtn.innerHTML = `<i class="fa-solid fa-chevron-left text-[10px]"></i> Prev`;
+                prevBtn.className = `px-3 py-1.5 rounded-lg text-xs font-bold border transition ${currentSDPage === 1 ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-700 hover:bg-slate-100'}`;
+                prevBtn.disabled = (currentSDPage === 1);
+                prevBtn.onclick = () => { changeSDPage(currentSDPage - 1); };
+                btnsContainer.appendChild(prevBtn);
+
+                // Numbered Buttons
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.innerText = i;
+                    pageBtn.className = `w-8 h-8 rounded-lg text-xs font-bold transition ${i === currentSDPage ? 'bg-indigo-950 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`;
+                    pageBtn.onclick = () => { changeSDPage(i); };
+                    btnsContainer.appendChild(pageBtn);
+                }
+
+                // Next Button
+                const nextBtn = document.createElement('button');
+                nextBtn.innerHTML = `Next <i class="fa-solid fa-chevron-right text-[10px]"></i>`;
+                nextBtn.className = `px-3 py-1.5 rounded-lg text-xs font-bold border transition ${currentSDPage === totalPages ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-700 hover:bg-slate-100'}`;
+                nextBtn.disabled = (currentSDPage === totalPages);
+                nextBtn.onclick = () => { changeSDPage(currentSDPage + 1); };
+                btnsContainer.appendChild(nextBtn);
+            }
+        }
+
+        function changeSDPage(page) {
+            currentSDPage = page;
+            renderSDPage();
+            
+            // Smoothly scroll back to the top of the cars grid
+            const target = document.getElementById('selfdrive-cars-grid');
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
 
         // SELF DRIVE DELIVERY & FARE CALCULATION
@@ -1592,7 +1633,6 @@
 
             currentDeliveryRoundTripKm = roundTripKm;
 
-            // Calculation backend logic: <=25km -> ₹500, >25km -> ₹500 + (km-25)*25
             if (roundTripKm > 25) {
                 let extraKm = roundTripKm - 25;
                 currentDeliveryFee = 500 + (extraKm * 25);
@@ -1710,7 +1750,7 @@
             closeModal();
         }
 
-        // Initialize Defaults
+        // Initialize Defaults on Load
         window.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toISOString().split('T')[0];
             const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];

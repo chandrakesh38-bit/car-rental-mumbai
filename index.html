@@ -18,7 +18,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
 
-    <!-- NAVBAR (CLEAN HEADER) -->
+    <!-- NAVBAR (WITH 3-LINE HAMBURGER MENU ON TOP RIGHT) -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
             <a href="#" class="flex items-center space-x-3">
@@ -30,20 +30,80 @@
                     <span class="text-[10px] text-slate-400 font-semibold tracking-wider block mt-1">Car with Driver LLP</span>
                 </div>
             </a>
-            <div class="hidden md:flex items-center space-x-6 text-sm font-semibold text-slate-600">
-                <a href="#services" class="hover:text-indigo-900 transition">Services</a>
-                <a href="#fleet" class="hover:text-indigo-900 transition">Our Fleet</a>
-                <button type="button" onclick="openPartnerModal()" class="text-indigo-950 font-bold hover:text-indigo-700 transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-handshake text-amber-500"></i> List Your Car
-                </button>
-                <a href="#faq" class="hover:text-indigo-900 transition">FAQ</a>
-                <a href="#reach-us" class="hover:text-indigo-900 transition">Reach Us</a>
-                <a href="https://wa.me/919702988465" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+
+            <!-- Right Controls: WhatsApp Button & 3-Line Hamburger Menu -->
+            <div class="flex items-center space-x-3">
+                <a href="https://wa.me/919702988465" target="_blank" class="hidden sm:flex bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition items-center gap-1.5 shadow-sm">
                     <i class="fa-brands fa-whatsapp text-sm"></i> Talk to Us
                 </a>
+
+                <!-- 3 Horizontal Lines (Hamburger Menu Button) -->
+                <button type="button" onclick="openNavDrawer()" class="p-2.5 rounded-xl text-slate-700 hover:text-indigo-950 hover:bg-slate-100 transition focus:outline-none flex items-center justify-center border border-slate-200">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
             </div>
         </div>
     </nav>
+
+    <!-- RIGHT SLIDE-IN DRAWER MENU -->
+    <div id="nav-drawer-overlay" onclick="closeNavDrawer()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 hidden transition-opacity duration-300 opacity-0"></div>
+    <div id="nav-drawer" class="fixed top-0 right-0 h-full w-72 sm:w-80 bg-white z-50 shadow-2xl border-l border-slate-200 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between p-6">
+        <div>
+            <!-- Drawer Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-sm">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <span class="font-extrabold text-sm text-indigo-950">Car with Driver India</span>
+                </div>
+                <button type="button" onclick="closeNavDrawer()" class="p-2 text-slate-400 hover:text-slate-700 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Drawer Links (Requested 7 Sections) -->
+            <div class="space-y-1.5 pt-5 text-sm font-bold text-slate-700">
+                <a href="#booking-widget" onclick="navigateAndSetMode('withdriver')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                    <i class="fa-solid fa-user-tie text-indigo-600 w-5"></i>
+                    <span>With Driver</span>
+                </a>
+                <a href="#booking-widget" onclick="navigateAndSetMode('selfdrive')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                    <i class="fa-solid fa-key text-indigo-600 w-5"></i>
+                    <span>Self Drive</span>
+                </a>
+                <a href="#fleet" onclick="closeNavDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                    <i class="fa-solid fa-car-rear text-indigo-600 w-5"></i>
+                    <span>Our Fleet</span>
+                </a>
+                <button type="button" onclick="closeNavDrawer(); openPartnerModal();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition text-left font-bold text-slate-700">
+                    <i class="fa-solid fa-handshake text-amber-500 w-5"></i>
+                    <span>Become a Partner</span>
+                </button>
+                <a href="#reach-us" onclick="closeNavDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                    <i class="fa-solid fa-phone text-indigo-600 w-5"></i>
+                    <span>Contact Us</span>
+                </a>
+                <a href="#faq" onclick="closeNavDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                    <i class="fa-solid fa-circle-question text-indigo-600 w-5"></i>
+                    <span>FAQs</span>
+                </a>
+                <a href="#reach-us" onclick="closeNavDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                    <i class="fa-solid fa-location-dot text-indigo-600 w-5"></i>
+                    <span>Reach Us</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="pt-4 border-t border-slate-100 space-y-2">
+            <a href="https://wa.me/919702988465" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+                <span>WhatsApp: +91 9702988465</span>
+            </a>
+            <p class="text-[10px] text-slate-400 text-center">Car with Driver LLP • Mumbai, Maharashtra</p>
+        </div>
+    </div>
 
     <!-- HERO SECTION -->
     <header class="bg-gradient-to-b from-indigo-950 via-indigo-900 to-slate-900 text-white pt-10 pb-16 px-4">
@@ -59,7 +119,7 @@
             </p>
 
             <!-- BOOKING WIDGET CARD -->
-            <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden text-left text-slate-800">
+            <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden text-left text-slate-800" id="booking-widget">
                 
                 <!-- MAIN MODE TABS -->
                 <div class="grid grid-cols-2 bg-slate-100 p-1.5 border-b border-slate-200 gap-1">
@@ -245,8 +305,8 @@
                                         <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
                                     <select id="sd-pampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
-                                        <option value="AM" selected>AM</option>
-                                        <option value="PM">PM</option>
+                                        <option value="AM">AM</option>
+                                        <option value="PM" selected>PM</option>
                                     </select>
                                 </div>
                             </div>
@@ -293,7 +353,6 @@
 
                         <!-- Row 2: 5 Specific Dropdown Filters -->
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 pt-2 border-t border-slate-100">
-                            <!-- Fuel Type -->
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fuel Type</label>
                                 <select id="sd-filter-fuel" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
@@ -303,7 +362,6 @@
                                     <option value="Petrol + CNG">Petrol + CNG</option>
                                 </select>
                             </div>
-                            <!-- Transmission -->
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Transmission</label>
                                 <select id="sd-filter-transmission" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
@@ -312,7 +370,6 @@
                                     <option value="Automatic">Automatic</option>
                                 </select>
                             </div>
-                            <!-- Seating Capacity -->
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Seats</label>
                                 <select id="sd-filter-seats" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
@@ -323,7 +380,6 @@
                                     <option value="7">7 Seats</option>
                                 </select>
                             </div>
-                            <!-- Segment -->
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Segment</label>
                                 <select id="sd-filter-segment" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
@@ -336,7 +392,6 @@
                                     <option value="Luxury Sedan">Luxury Sedan</option>
                                 </select>
                             </div>
-                            <!-- Brand -->
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Brand</label>
                                 <select id="sd-filter-brand" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
@@ -391,6 +446,143 @@
         </div>
     </section>
 
+    <!-- GOOGLE BUSINESS PROFILE RATING & BEST REVIEWS SECTION -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-12" id="reviews">
+        
+        <!-- Google Reviews Header Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center space-x-4">
+                <div class="w-14 h-14 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center text-3xl">
+                    <i class="fa-brands fa-google text-[#4285F4]"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl font-black text-slate-900">4.9</span>
+                        <div class="flex text-amber-400 text-sm">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400">(500+ Verified Reviews)</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-700 mt-0.5">Car with Driver India - Google Business Profile</h3>
+                </div>
+            </div>
+
+            <!-- Direct Link to Google Business Profile / Maps -->
+            <a href="https://maps.google.com/?q=Car+With+Driver+India+Vikhroli+Mumbai" target="_blank" class="bg-slate-900 hover:bg-indigo-950 text-white font-bold px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition shadow-sm whitespace-nowrap">
+                <i class="fa-brands fa-google text-amber-400"></i>
+                <span>View on Google Maps</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400 ml-1"></i>
+            </a>
+        </div>
+
+        <!-- Best Verified Customer Reviews Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Review 1 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-900 font-bold flex items-center justify-center text-xs">RS</div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-900 leading-none">Rajesh Sharma</h4>
+                                <span class="text-[10px] text-slate-400 block mt-0.5">Powai, Mumbai</span>
+                            </div>
+                        </div>
+                        <i class="fa-brands fa-google text-[#4285F4] text-xs"></i>
+                    </div>
+                    <div class="flex text-amber-400 text-xs mb-2.5">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        "Booked an Ertiga with driver for our family holiday to Mahabaleshwar. Driver was punctual, calm, and drove very safely. Highly recommended for family outstation trips!"
+                    </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                    <span>Verified Trip</span>
+                    <span>Outstation Cab</span>
+                </div>
+            </div>
+
+            <!-- Review 2 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-900 font-bold flex items-center justify-center text-xs">SK</div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-900 leading-none">Sneha Kulkarni</h4>
+                                <span class="text-[10px] text-slate-400 block mt-0.5">Thane West</span>
+                            </div>
+                        </div>
+                        <i class="fa-brands fa-google text-[#4285F4] text-xs"></i>
+                    </div>
+                    <div class="flex text-amber-400 text-xs mb-2.5">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        "Took a Tata Punch for self-drive weekend. Doorstep delivery at Mulund was super smooth and car was brand new and clean. Security deposit was refunded on time."
+                    </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                    <span>Verified Trip</span>
+                    <span>Self Drive Rental</span>
+                </div>
+            </div>
+
+            <!-- Review 3 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-900 font-bold flex items-center justify-center text-xs">AV</div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-900 leading-none">Amit Verma</h4>
+                                <span class="text-[10px] text-slate-400 block mt-0.5">Vashi, Navi Mumbai</span>
+                            </div>
+                        </div>
+                        <i class="fa-brands fa-google text-[#4285F4] text-xs"></i>
+                    </div>
+                    <div class="flex text-amber-400 text-xs mb-2.5">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        "Best thing is no hidden pricing. Clear 300 km/day calculation upfront. Airport T2 pickup at 2:30 AM was right on time with driver waiting at arrival exit."
+                    </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                    <span>Verified Trip</span>
+                    <span>Airport Transfer</span>
+                </div>
+            </div>
+
+            <!-- Review 4 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-900 font-bold flex items-center justify-center text-xs">VP</div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-900 leading-none">Vikram Patel</h4>
+                                <span class="text-[10px] text-slate-400 block mt-0.5">Andheri East</span>
+                            </div>
+                        </div>
+                        <i class="fa-brands fa-google text-[#4285F4] text-xs"></i>
+                    </div>
+                    <div class="flex text-amber-400 text-xs mb-2.5">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        "Booked Innova Crysta for Shirdi Darshan. Immaculate interior, chilled dual AC, and driver knew the Samruddhi Mahamarg route perfectly. 10/10 service."
+                    </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                    <span>Verified Trip</span>
+                    <span>Outstation Cab</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- PARTNER WITH US SECTION (LIST YOUR CAR) -->
     <section class="bg-gradient-to-r from-indigo-900 to-indigo-950 text-white py-14 px-4 my-8" id="partner-section">
         <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
@@ -436,7 +628,7 @@
         </div>
     </section>
 
-    <!-- FAQS SECTION (ALL USER FAQS INCORPORATED) -->
+    <!-- FAQS SECTION -->
     <section class="max-w-4xl mx-auto px-4 sm:px-6 py-12" id="faq">
         <div class="text-center mb-8">
             <span class="bg-indigo-50 border border-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2">FAQ</span>
@@ -445,7 +637,6 @@
         </div>
 
         <div class="space-y-3" id="faq-accordion">
-            <!-- FAQ 1 -->
             <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> Who can rent a car from us?
@@ -455,7 +646,6 @@
                 </p>
             </div>
 
-            <!-- FAQ 2 -->
             <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> Can international tourists, foreigners, or NRIs rent a car?
@@ -465,7 +655,6 @@
                 </p>
             </div>
 
-            <!-- FAQ 3 -->
             <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> How does the car booking process work?
@@ -475,7 +664,6 @@
                 </p>
             </div>
 
-            <!-- FAQ 4 -->
             <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> How early should I book my rental car?
@@ -485,7 +673,6 @@
                 </p>
             </div>
 
-            <!-- FAQ 5 -->
             <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> What is the minimum and maximum rental duration?
@@ -496,7 +683,6 @@
                 </p>
             </div>
 
-            <!-- FAQ 6 -->
             <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> Can I book more than one car?
@@ -506,7 +692,6 @@
                 </p>
             </div>
 
-            <!-- FAQ 7 -->
             <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> Can I add a second driver?
@@ -516,7 +701,6 @@
                 </p>
             </div>
 
-            <!-- FAQ 8 -->
             <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-rose-600"></i> Are pets allowed in the rental car?
@@ -579,7 +763,6 @@
             <div class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
                 <div class="text-xs text-slate-600">Selected Vehicle: <strong id="modal-car-name" class="text-indigo-950 font-bold"></strong></div>
                 <div class="text-xs text-slate-600">Estimated Fare: <strong id="modal-fare" class="text-emerald-700 font-bold text-base"></strong></div>
-                <!-- Subtle small grey price information -->
                 <div class="pt-1.5 border-t border-slate-200 text-[11px] text-slate-500 leading-snug">
                     <div>• Price includes car rental, fuel & driver allowance</div>
                     <div>• Extra: Toll and parking as per actual</div>
@@ -606,7 +789,7 @@
         </div>
     </div>
 
-    <!-- SELF DRIVE BOOKING MODAL (CLEANED UP SCHEDULE, TOTAL FARE BREAKDOWN & MANDATORY TERMS) -->
+    <!-- SELF DRIVE BOOKING MODAL -->
     <div id="sd-booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
             <button type="button" onclick="closeSDModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
@@ -614,7 +797,7 @@
             </button>
             <h3 class="text-lg font-bold text-slate-900">Book Self-Drive Car</h3>
             
-            <!-- Vehicle & Schedule Summary Card (Neatly Arranged) -->
+            <!-- Vehicle & Schedule Summary Card -->
             <div class="mt-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2">
                 <div class="flex justify-between items-start">
                     <div>
@@ -627,7 +810,6 @@
                     </div>
                 </div>
 
-                <!-- Neatly Arranged Schedule Pills -->
                 <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 text-[11px]">
                     <div class="bg-white p-2 rounded-lg border border-slate-200">
                         <span class="text-slate-400 block text-[10px] font-bold uppercase">Pick-up</span>
@@ -656,7 +838,7 @@
                     </div>
                 </div>
 
-                <!-- Home Delivery Location Input (Clean: Backend Calculates, No Distance Clutter Shown) -->
+                <!-- Clean Home Delivery Location Input -->
                 <div id="sd-home-delivery-box" class="space-y-2 p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl">
                     <label class="block text-xs font-bold text-indigo-950 mb-1">Select Delivery Location</label>
                     <input list="delivery-locations-clean-list" id="sd-delivery-location-input" oninput="calculateDeliveryCharges()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Type or select delivery area (e.g. Dahisar, Mulund, Bandra)..." value="Mulund">
@@ -669,7 +851,7 @@
                     <div class="text-[11px] text-slate-500">Pick up and return the car directly at our Vikhroli hub.</div>
                 </div>
 
-                <!-- TOTAL FARE BREAKDOWN (CLEAR RENTAL + DELIVERY CHARGES) -->
+                <!-- TOTAL FARE BREAKDOWN -->
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1.5">
                     <div class="flex justify-between text-slate-600">
                         <span>Rental Charges (<span id="disp-calc-hours">24</span> hrs × <span id="disp-calc-rate">₹0</span>):</span>
@@ -689,7 +871,7 @@
                     </div>
                 </div>
 
-                <!-- MANDATORY TERMS & CONDITIONS CARD (AS REQUESTED) -->
+                <!-- MANDATORY TERMS -->
                 <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-950 space-y-1">
                     <div class="font-bold flex items-center gap-1.5 text-amber-900">
                         <i class="fa-solid fa-triangle-exclamation"></i> Mandatory Self-Drive Terms:
@@ -733,7 +915,7 @@
         </div>
     </div>
 
-    <!-- BECOME A PARTNER MODAL (LIST YOUR CAR FORM) -->
+    <!-- BECOME A PARTNER MODAL -->
     <div id="partner-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
             <button type="button" onclick="closePartnerModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
@@ -780,7 +962,7 @@
                     </div>
                 </div>
 
-                <!-- Document Upload Checklist -->
+                <!-- Document Checklist -->
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-2">
                     <span class="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">Required Document Copies (Send on WhatsApp)</span>
                     <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
@@ -848,7 +1030,6 @@
         <option value="Yavatmal" data-km="1350"></option>
     </datalist>
 
-    <!-- CLEAN DELIVERY LOCATIONS DATALIST (NO ROUND TRIP DISTANCE TEXT VISIBLE TO CUSTOMER) -->
     <datalist id="delivery-locations-clean-list">
         <option value="Vikhroli" data-rt="4"></option>
         <option value="Kanjurmarg" data-rt="8"></option>
@@ -876,6 +1057,38 @@
     </datalist>
 
     <script>
+        // ==========================================
+        // DRAWER NAVIGATION HANDLERS (7 SECTIONS)
+        // ==========================================
+        function openNavDrawer() {
+            const drawer = document.getElementById('nav-drawer');
+            const overlay = document.getElementById('nav-drawer-overlay');
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0');
+                drawer.classList.remove('translate-x-full');
+            }, 10);
+        }
+
+        function closeNavDrawer() {
+            const drawer = document.getElementById('nav-drawer');
+            const overlay = document.getElementById('nav-drawer-overlay');
+            drawer.classList.add('translate-x-full');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 300);
+        }
+
+        function navigateAndSetMode(mode) {
+            closeNavDrawer();
+            setServiceMode(mode);
+            const target = document.getElementById('booking-widget');
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
         // WITH DRIVER FLEET DATA
         const wdFleet = [
             {
@@ -928,7 +1141,7 @@
             }
         ];
 
-        // 32 EXCEL CARS DATA (ALL SEGMENTS MAPPED)
+        // 32 EXCEL CARS DATA
         const excelCarsData = [
           { "brand": "BMW", "model": "520D", "fullName": "BMW 520D", "segment": "Luxury Sedan", "transmission": "Automatic", "fuel": "Diesel", "seats": 5, "rateHour": "₹650/hour", "rateVal": 650, "deposit": "₹10,000", "imgUrl": "https://lh3.googleusercontent.com/d/1Mjy4A4BhkWhIgHz1E9Ofy6aCUk53IZkP" },
           { "brand": "Hyundai", "model": "Creta", "fullName": "Hyundai Creta", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1In3muCV_Mk72zELKjAIlhs-OWgR7RKof" },
@@ -974,7 +1187,7 @@
 
         // Self Drive State
         let selectedCarObj = null;
-        let currentDeliveryMode = 'home'; // 'home' or 'self'
+        let currentDeliveryMode = 'home';
         let currentDeliveryRoundTripKm = 16;
         let currentDeliveryFee = 500;
         let calculatedRentalHours = 24;
@@ -1154,9 +1367,7 @@
             });
         }
 
-        // ==========================================
         // SELF DRIVE FILTERING, SORTING & CARDS
-        // ==========================================
         function applyAllSDFilters() {
             const query = document.getElementById('sd-search-box').value.toLowerCase().trim();
             const brandVal = document.getElementById('sd-filter-brand').value;
@@ -1295,9 +1506,7 @@
             });
         }
 
-        // ==========================================
         // SELF DRIVE DELIVERY & FARE CALCULATION
-        // ==========================================
         function openSDModal(car) {
             selectedCarObj = car;
             document.getElementById('sd-modal-car-brand').innerText = car.brand;
@@ -1305,7 +1514,6 @@
             document.getElementById('sd-modal-car-rate').innerText = car.rateHour;
             document.getElementById('disp-deposit-amount').innerText = car.deposit;
 
-            // Clean, neat arrangement for schedule
             const pDate = document.getElementById('sd-pdate').value;
             const pHour = document.getElementById('sd-phour').value;
             const pAmpm = document.getElementById('sd-pampm').value;
@@ -1316,7 +1524,6 @@
             document.getElementById('sd-modal-pdate-display').innerText = `${pDate} at ${pHour}:00 ${pAmpm}`;
             document.getElementById('sd-modal-rdate-display').innerText = `${rDate} at ${rHour}:00 ${rAmpm}`;
 
-            // Calculate duration in hours
             let p24 = parseInt(pHour) % 12;
             if (pAmpm === 'PM') p24 += 12;
             let r24 = parseInt(rHour) % 12;
@@ -1326,7 +1533,6 @@
             const rDT = new Date(`${rDate}T${String(r24).padStart(2, '0')}:00:00`);
             const diffHours = (rDT - pDT) / (1000 * 60 * 60);
 
-            // Minimum 8 hours standard
             calculatedRentalHours = Math.max(8, isNaN(diffHours) ? 24 : Math.ceil(diffHours));
             
             calculateDeliveryCharges();
@@ -1362,7 +1568,6 @@
             }
         }
 
-        // Calculation stays in backend, NO distance/round-trip clutter shown to customer
         function calculateDeliveryCharges() {
             if (currentDeliveryMode !== 'home') {
                 currentDeliveryFee = 0;
@@ -1375,23 +1580,19 @@
             let roundTripKm = null;
 
             for (let opt of datalist.options) {
-                if (opt.value.toLowerCase() === inputVal.toLowerCase()) {
+                if (opt.value.toLowerCase().includes(inputVal.toLowerCase())) {
                     roundTripKm = parseInt(opt.getAttribute('data-rt'));
                     break;
                 }
             }
 
-            // Default 16 km within 25 km threshold if custom/unknown area typed
             if (!roundTripKm) {
                 roundTripKm = 16;
             }
 
             currentDeliveryRoundTripKm = roundTripKm;
 
-            // Backend Calculation Logic:
-            // Base charge = ₹500
-            // If Round-trip <= 25 km -> ₹500
-            // If Round-trip > 25 km -> ₹500 + (Round-trip - 25) * ₹25
+            // Calculation backend logic: <=25km -> ₹500, >25km -> ₹500 + (km-25)*25
             if (roundTripKm > 25) {
                 let extraKm = roundTripKm - 25;
                 currentDeliveryFee = 500 + (extraKm * 25);
@@ -1438,9 +1639,7 @@
             closeSDModal();
         }
 
-        // ==========================================
-        // PARTNER WITH US (LIST YOUR CAR) HANDLER
-        // ==========================================
+        // PARTNER WITH US HANDLERS
         function openPartnerModal() {
             document.getElementById('partner-modal').classList.remove('hidden');
         }
@@ -1464,9 +1663,7 @@
             closePartnerModal();
         }
 
-        // ==========================================
         // WITH DRIVER MODAL & SUBMISSION
-        // ==========================================
         function openModal(name, fare) {
             chosenCarName = name;
             chosenFareAmount = fare;
@@ -1513,18 +1710,16 @@
             closeModal();
         }
 
-        // Initialize Defaults on Load
+        // Initialize Defaults
         window.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toISOString().split('T')[0];
             const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
-            // With Driver defaults
             if (document.getElementById('wd-local-date')) document.getElementById('wd-local-date').value = today;
             if (document.getElementById('wd-airport-date')) document.getElementById('wd-airport-date').value = today;
             if (document.getElementById('wd-out-pdate')) document.getElementById('wd-out-pdate').value = today;
             if (document.getElementById('wd-out-rdate')) document.getElementById('wd-out-rdate').value = tomorrow;
 
-            // Self Drive defaults
             if (document.getElementById('sd-pdate')) document.getElementById('sd-pdate').value = today;
             if (document.getElementById('sd-rdate')) document.getElementById('sd-rdate').value = tomorrow;
 

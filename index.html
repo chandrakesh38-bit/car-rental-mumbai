@@ -1929,6 +1929,17 @@ function setWDSubTab(tab) {
             const pDT = new Date(`${pDate}T${String(p24).padStart(2, '0')}:00:00`);
             const rDT = new Date(`${rDate}T${String(r24).padStart(2, '0')}:00:00`);
             const diffHours = (rDT - pDT) / (1000 * 60 * 60);
+            if (isNaN(diffHours) || rDT <= pDT) {
+            alert('Return date & time cannot be earlier than or equal to Pick-up date & time.');
+            return;
+        }
+
+        if (diffHours < 8) {
+            alert('Minimum booking duration for Self-Drive is 8 hours.');
+            return;
+        }
+
+        calculatedRentalHours = Math.ceil(diffHours);
 
             calculatedRentalHours = Math.max(8, isNaN(diffHours) ? 24 : Math.ceil(diffHours));
             

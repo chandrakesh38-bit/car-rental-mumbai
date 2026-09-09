@@ -166,10 +166,10 @@
                     
                     <!-- Trip Subtabs -->
                     <div class="grid grid-cols-3 bg-slate-100 rounded-xl p-1 mb-6 border border-slate-200 text-xs sm:text-sm font-semibold">
-                        <button type="button" id="subtab-local" onclick="setWDSubTab('local')" class="py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5">
+                        <button type="button" id="subtab-local" onclick="setWDSubTab('local')" class="py-2.5 rounded-lg transition subtab-active flex items-center justify-center gap-1.5">
                             <i class="fa-solid fa-city"></i> <span>Local City</span>
                         </button>
-                        <button type="button" id="subtab-outstation" onclick="setWDSubTab('outstation')" class="py-2.5 rounded-lg transition subtab-active flex items-center justify-center gap-1.5">
+                        <button type="button" id="subtab-outstation" onclick="setWDSubTab('local')" class="py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5">
                             <i class="fa-solid fa-route"></i> <span>Outstation</span>
                         </button>
                         <button type="button" id="subtab-airport" onclick="setWDSubTab('airport')" class="py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5">
@@ -178,7 +178,7 @@
                     </div>
 
                     <!-- LOCAL CITY FIELDS -->
-                    <div id="wd-local-fields" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div id="wd-local-fields" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="relative">
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address</label>
                             <input type="text" id="wd-local-pickup" autocomplete="off" oninput="showSuggestions('wd-local-pickup', 'mumbai-places', 'wd-local-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Type area (e.g. Bhandup, Dadar, Thane)">
@@ -1546,21 +1546,33 @@ window.addEventListener('DOMContentLoaded', () => {
             calculateDriverFare();
         }
 
-        function setWDSubTab(tab) {
-            currentWDSubTab = tab;
-            ['local', 'outstation', 'airport'].forEach(t => {
-                const btn = document.getElementById(`subtab-${t}`);
-                const fields = document.getElementById(`wd-${t}-fields`);
-                if (t === tab) {
-                    btn.className = "py-2.5 rounded-lg transition subtab-active flex items-center justify-center gap-1.5";
-                    fields.classList.remove('hidden');
-                } else {
-                    btn.className = "py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5";
-                    fields.classList.add('hidden');
-                }
-            });
+function setWDSubTab(tab) {
+        currentWDSubTab = tab;
+        ['local', 'outstation', 'airport'].forEach(t => {
+            const btn = document.getElementById(`subtab-${t}`);
+            const fields = document.getElementById(`wd-${t}-fields`);
+            if (t === tab) {
+                if(btn) btn.className = "py-2.5 rounded-lg transition subtab-active flex items-center justify-center gap-1.5";
+                if(fields) fields.classList.remove('hidden');
+            } else {
+                if(btn) btn.className = "py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5";
+                if(fields) fields.classList.add('hidden');
+            }
+        });
+
+        // Agar user Outstation par click kare toh default 1 din (same day return) set ho
+        if (tab === 'outstation') {
+            const pDate = document.getElementById('wd-out-pickup-date') || document.getElementById('wd-pickup-date');
+            const rDate = document.getElementById('wd-out-return-date') || document.getElementById('wd-return-date');
+            if (pDate && rDate && pDate.value) {
+                rDate.value = pDate.value; // Same day = 1 Day calculation (300 KM min)
+            }
+        }
+
+        if (typeof calculateDriverFare === 'function') {
             calculateDriverFare();
         }
+    }
 
         function onWDDestinationInput() {
             const inputVal = document.getElementById('wd-out-destination').value.trim().toLowerCase();
@@ -2286,21 +2298,35 @@ if (typeof supabasePublic !== 'undefined' && supabasePublic) {
         }
 
         // Initialize Defaults
-        window.addEventListener('DOMContentLoaded', () => {
-            const today = new Date().toISOString().split('T')[0];
-            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    window.addEventListener('DOMContentLoaded', () => {
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+        
+        // Next hour round-off calculation
+        const nextHour = (now.getHours() + 1) % 24;
+        const period = nextHour >= 12 ? 'PM' : 'AM';
+        const hour12 = String(nextHour % 12 || 12).padStart(2, '0') + ':00';
 
-            if (document.getElementById('wd-local-date')) document.getElementById('wd-local-date').value = today;
-            if (document.getElementById('wd-airport-date')) document.getElementById('wd-airport-date').value = today;
-            if (document.getElementById('wd-out-pdate')) document.getElementById('wd-out-pdate').value = today;
-            if (document.getElementById('wd-out-rdate')) document.getElementById('wd-out-rdate').value = tomorrow;
+        // Dates assignment
+        if (document.getElementById('wd-local-date')) document.getElementById('wd-local-date').value = today;
+        if (document.getElementById('wd-airport-date')) document.getElementById('wd-airport-date').value = today;
+        if (document.getElementById('wd-out-pdate')) document.getElementById('wd-out-pdate').value = today;
+        if (document.getElementById('wd-out-rdate')) document.getElementById('wd-out-rdate').value = today; // 1 Day calculation default
 
-            if (document.getElementById('sd-pdate')) document.getElementById('sd-pdate').value = today;
-            if (document.getElementById('sd-rdate')) document.getElementById('sd-rdate').value = tomorrow;
+        // Self Drive current date & next hour
+        if (document.getElementById('sd-pdate')) document.getElementById('sd-pdate').value = today;
+        if (document.getElementById('sd-rdate')) document.getElementById('sd-rdate').value = today;
+        if (document.getElementById('sd-ptime')) document.getElementById('sd-ptime').value = hour12;
+        if (document.getElementById('sd-pampm')) document.getElementById('sd-pampm').value = period;
 
-            calculateDriverFare();
-            applyAllSDFilters();
-        });
+        // Open Local Tab by default
+        if (typeof setWDSubTab === 'function') {
+            setWDSubTab('local');
+        }
+
+        if (typeof calculateDriverFare === 'function') calculateDriverFare();
+        if (typeof applyAllSDFilters === 'function') applyAllSDFilters();
+    });
     </script>
 </body>
 </html>

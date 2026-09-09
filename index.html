@@ -18,7 +18,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
 
-    <!-- NAVBAR (CLEANED UP HEADER) -->
+    <!-- NAVBAR (CLEAN HEADER) -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
             <a href="#" class="flex items-center space-x-3">
@@ -33,10 +33,13 @@
             <div class="hidden md:flex items-center space-x-6 text-sm font-semibold text-slate-600">
                 <a href="#services" class="hover:text-indigo-900 transition">Services</a>
                 <a href="#fleet" class="hover:text-indigo-900 transition">Our Fleet</a>
-                <a href="#reviews" class="hover:text-indigo-900 transition">Reviews</a>
+                <button type="button" onclick="openPartnerModal()" class="text-indigo-950 font-bold hover:text-indigo-700 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-handshake text-amber-500"></i> List Your Car
+                </button>
                 <a href="#faq" class="hover:text-indigo-900 transition">FAQ</a>
+                <a href="#reach-us" class="hover:text-indigo-900 transition">Reach Us</a>
                 <a href="https://wa.me/919702988465" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp Us
+                    <i class="fa-brands fa-whatsapp text-sm"></i> Talk to Us
                 </a>
             </div>
         </div>
@@ -242,8 +245,8 @@
                                         <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
                                     <select id="sd-pampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
-                                        <option value="AM">AM</option>
-                                        <option value="PM" selected>PM</option>
+                                        <option value="AM" selected>AM</option>
+                                        <option value="PM">PM</option>
                                     </select>
                                 </div>
                             </div>
@@ -350,7 +353,7 @@
                             </div>
                         </div>
 
-                        <!-- Brand Quick Pills (Cleaned: "All Cars" without (32)) -->
+                        <!-- Brand Quick Pills -->
                         <div class="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-slate-100 scrollbar-none text-xs font-bold" id="brand-filter-btns">
                             <button onclick="setBrandPill('All')" class="sd-brand-btn active px-3 py-1.5 bg-indigo-950 text-white rounded-lg whitespace-nowrap shadow-sm">All Cars</button>
                             <button onclick="setBrandPill('Maruti Suzuki')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Maruti Suzuki</button>
@@ -388,6 +391,30 @@
         </div>
     </section>
 
+    <!-- PARTNER WITH US SECTION (LIST YOUR CAR) -->
+    <section class="bg-gradient-to-r from-indigo-900 to-indigo-950 text-white py-14 px-4 my-8" id="partner-section">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+            <div class="space-y-3">
+                <span class="bg-amber-400 text-indigo-950 font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wider">Partner With Us</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">List Your Car. Grow With Us.</h2>
+                <p class="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+                    Partner with <strong>Car with Driver India</strong> and put your car to work with a growing rental network in Mumbai. Submit your car details, complete quick verification, and start earning.
+                </p>
+                <div class="flex items-center gap-4 text-xs font-semibold text-amber-300 pt-1">
+                    <span><i class="fa-solid fa-circle-check mr-1"></i> Simple Dashboard</span>
+                    <span><i class="fa-solid fa-circle-check mr-1"></i> Timely Payouts</span>
+                    <span><i class="fa-solid fa-circle-check mr-1"></i> Verified Bookings</span>
+                </div>
+            </div>
+            <div>
+                <button type="button" onclick="openPartnerModal()" class="bg-amber-400 hover:bg-amber-300 text-indigo-950 font-extrabold px-6 py-3.5 rounded-xl shadow-lg transition text-sm whitespace-nowrap flex items-center gap-2">
+                    <i class="fa-solid fa-car-side text-lg"></i>
+                    <span>Become a Partner</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
     <!-- WHY CHOOSE US -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-8" id="services">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -403,8 +430,134 @@
             </div>
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3"><i class="fa-solid fa-house-chimney"></i></div>
-                <h3 class="font-bold text-slate-900 mb-1">Home Delivery Available</h3>
+                <h3 class="font-bold text-slate-900 mb-1">Doorstep Car Delivery</h3>
                 <p class="text-xs text-slate-500 leading-relaxed">Doorstep car delivery and pickup available across Mumbai, Thane, and Navi Mumbai.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQS SECTION (ALL USER FAQS INCORPORATED) -->
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 py-12" id="faq">
+        <div class="text-center mb-8">
+            <span class="bg-indigo-50 border border-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2">FAQ</span>
+            <h2 class="text-2xl font-black text-slate-900">Frequently Asked Questions</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Everything you need to know about our self-drive and with-driver car rentals.</p>
+        </div>
+
+        <div class="space-y-3" id="faq-accordion">
+            <!-- FAQ 1 -->
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Who can rent a car from us?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    Anyone who is 21 years or older can rent a car. You must have a valid Indian LMV (Light Motor Vehicle) driving licence that is at least 6 months old. You must show the original driving licence or a valid DigiLocker version at the start of the trip. Printed copies on paper, screenshots, M-Parivahan app licences, and commercial driving licences are not accepted. In some cases, we may also ask for an additional local ID or travel proof for verification.
+                </p>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Can international tourists, foreigners, or NRIs rent a car?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    Yes. International travellers and NRIs can book a self-drive rental car in India. You need: (1) A valid International Driving Licence, (2) Your Passport, and (3) An International Driving Permit (IDP) that is valid in India.
+                </p>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> How does the car booking process work?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    Booking a self-drive rental car is simple: Open the website &rarr; choose your city &rarr; select pickup date and time &rarr; choose your car model &rarr; send request on WhatsApp &rarr; Our team will verify and confirm. You will receive booking details and instructions before your trip.
+                </p>
+            </div>
+
+            <!-- FAQ 4 -->
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> How early should I book my rental car?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    You can book as late as 3 hours before your trip start time. However, for better car availability and lower prices, we recommend booking 1–2 days in advance, especially on weekends and holidays.
+                </p>
+            </div>
+
+            <!-- FAQ 5 -->
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> What is the minimum and maximum rental duration?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    <strong>Rental Plans:</strong> Minimum 8 hours, maximum 60 days.<br>
+                    <strong>Subscription Plans:</strong> Minimum 7 days, up to 24 months.
+                </p>
+            </div>
+
+            <!-- FAQ 6 -->
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Can I book more than one car?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    Yes. You can book multiple cars on the same account for different dates. If you need multiple cars at the same time, each booking must be made with a different driver account and valid documents. Alternatively you can reach out on our support channel to help with this.
+                </p>
+            </div>
+
+            <!-- FAQ 7 -->
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Can I add a second driver?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    Yes, you can add a co-driver. Their ID must be shown during delivery. The booking must still be under the primary driver's name.
+                </p>
+            </div>
+
+            <!-- FAQ 8 -->
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-rose-600"></i> Are pets allowed in the rental car?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    <strong>No.</strong> Pets are strictly not allowed because some customers may have allergies. If found, a penalty will be charged.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- REACH US & TALK TO US SECTION -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-10" id="reach-us">
+        <div class="bg-indigo-950 text-white rounded-3xl p-6 sm:p-10 shadow-xl border border-indigo-900">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="space-y-3">
+                    <span class="text-amber-400 font-bold uppercase tracking-wider text-xs">Reach Us</span>
+                    <h3 class="text-2xl font-extrabold tracking-tight">Visit Our Mumbai Operating Hub</h3>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed flex items-start gap-2.5 pt-1">
+                        <i class="fa-solid fa-location-dot text-amber-400 text-base mt-0.5"></i>
+                        <span>Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai, Maharashtra 400079</span>
+                    </p>
+                    <p class="text-xs text-slate-400">Serving Mumbai, Thane, Navi Mumbai, and Outstation Travelers across Maharashtra.</p>
+                </div>
+                <div class="bg-indigo-900/80 p-6 rounded-2xl border border-indigo-800 text-center sm:text-left space-y-4">
+                    <div>
+                        <span class="text-amber-300 text-xs font-bold uppercase block mb-1">Talk to Us Directly</span>
+                        <a href="tel:+919702988465" class="text-2xl sm:text-3xl font-black text-white hover:text-amber-400 transition block">
+                            +91 9702988465
+                        </a>
+                        <span class="text-xs text-slate-400 block mt-1">Available 24x7 on Call & WhatsApp Support</span>
+                    </div>
+                    <div class="pt-2 flex flex-wrap gap-2 justify-center sm:justify-start">
+                        <a href="https://wa.me/919702988465" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition">
+                            <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp Now
+                        </a>
+                        <a href="tel:+919702988465" class="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-phone text-xs"></i> Call Us
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -412,8 +565,8 @@
     <!-- FOOTER -->
     <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-center text-xs">
         <p class="font-semibold text-slate-300">Car with Driver India • Car with Driver LLP</p>
-        <p class="mt-1 text-slate-400">Premium Vehicle Rental & Mobility Services in Mumbai, Thane & Navi Mumbai.</p>
-        <p class="mt-2 text-slate-500">WhatsApp: +91 9702988465 • © 2026 Car with Driver India. All rights reserved.</p>
+        <p class="mt-1 text-slate-400">Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai 400079</p>
+        <p class="mt-2 text-slate-500">Phone / WhatsApp: +91 9702988465 • &copy; 2026 Car with Driver India. All rights reserved.</p>
     </footer>
 
     <!-- WITH DRIVER BOOKING CONFIRMATION MODAL -->
@@ -426,7 +579,7 @@
             <div class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
                 <div class="text-xs text-slate-600">Selected Vehicle: <strong id="modal-car-name" class="text-indigo-950 font-bold"></strong></div>
                 <div class="text-xs text-slate-600">Estimated Fare: <strong id="modal-fare" class="text-emerald-700 font-bold text-base"></strong></div>
-                <!-- Subtle small grey price information required -->
+                <!-- Subtle small grey price information -->
                 <div class="pt-1.5 border-t border-slate-200 text-[11px] text-slate-500 leading-snug">
                     <div>• Price includes car rental, fuel & driver allowance</div>
                     <div>• Extra: Toll and parking as per actual</div>
@@ -453,20 +606,37 @@
         </div>
     </div>
 
-    <!-- SELF DRIVE BOOKING MODAL (HOME DELIVERY / SELF PICK-UP WITH VIKHROLI DISTANCE LOGIC) -->
+    <!-- SELF DRIVE BOOKING MODAL (CLEANED UP SCHEDULE, TOTAL FARE BREAKDOWN & MANDATORY TERMS) -->
     <div id="sd-booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
             <button type="button" onclick="closeSDModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <h3 class="text-lg font-bold text-slate-900">Book Self-Drive Car</h3>
             
-            <!-- Vehicle Summary -->
-            <div class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1">
-                <div>Vehicle: <strong id="sd-modal-car-name" class="text-indigo-950 font-bold"></strong></div>
-                <div>Rate: <strong id="sd-modal-car-rate" class="text-slate-900 font-bold"></strong> | Security Deposit: <strong id="sd-modal-car-deposit" class="text-slate-900 font-bold"></strong></div>
-                <div class="text-slate-500 pt-1 border-t border-slate-200">
-                    Schedule: <span id="sd-modal-schedule" class="font-medium text-slate-700"></span>
+            <!-- Vehicle & Schedule Summary Card (Neatly Arranged) -->
+            <div class="mt-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded" id="sd-modal-car-brand">Brand</span>
+                        <h4 class="text-sm font-extrabold text-indigo-950 mt-1" id="sd-modal-car-name">Car Name</h4>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-slate-400 text-[10px] block">Rental Rate</span>
+                        <strong class="text-indigo-950 font-black text-sm" id="sd-modal-car-rate">₹0/hour</strong>
+                    </div>
+                </div>
+
+                <!-- Neatly Arranged Schedule Pills -->
+                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 text-[11px]">
+                    <div class="bg-white p-2 rounded-lg border border-slate-200">
+                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Pick-up</span>
+                        <strong class="text-slate-800" id="sd-modal-pdate-display">Date Time</strong>
+                    </div>
+                    <div class="bg-white p-2 rounded-lg border border-slate-200">
+                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Return</span>
+                        <strong class="text-slate-800" id="sd-modal-rdate-display">Date Time</strong>
+                    </div>
                 </div>
             </div>
 
@@ -486,58 +656,144 @@
                     </div>
                 </div>
 
-                <!-- Home Delivery Location & Distance Calculation Section -->
-                <div id="sd-home-delivery-box" class="space-y-2.5 p-3.5 bg-indigo-50/70 border border-indigo-100 rounded-xl">
-                    <div>
-                        <label class="block text-xs font-bold text-indigo-950 mb-1">Select Delivery Location (Mumbai / Thane / Navi Mumbai)</label>
-                        <input list="delivery-locations-list" id="sd-delivery-location-input" oninput="calculateDeliveryCharges()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Type or select area (e.g. Dahisar, Mulund, Bandra)..." value="Mulund">
-                    </div>
-
-                    <!-- Clear Transparent Delivery Charge Calculation Breakdown -->
-                    <div class="bg-white p-3 rounded-lg border border-indigo-100 text-xs text-slate-700 space-y-1">
-                        <div class="flex justify-between">
-                            <span>Vikhroli Round-trip Distance:</span>
-                            <strong id="disp-sd-rt-distance" class="text-indigo-950">16 km</strong>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Base Charge (up to 25 km):</span>
-                            <span>₹500</span>
-                        </div>
-                        <div class="flex justify-between text-slate-500" id="row-sd-extra-charge">
-                            <span>Extra Distance Charge (&gt;25 km @ ₹25/km):</span>
-                            <span id="disp-sd-extra-charge">₹0</span>
-                        </div>
-                        <div class="pt-1.5 border-t border-slate-100 flex justify-between font-bold text-indigo-950">
-                            <span>Total Delivery & Pick-up Charge:</span>
-                            <span id="disp-sd-total-charge" class="text-emerald-700 text-sm">₹500</span>
-                        </div>
-                    </div>
+                <!-- Home Delivery Location Input (Clean: Backend Calculates, No Distance Clutter Shown) -->
+                <div id="sd-home-delivery-box" class="space-y-2 p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl">
+                    <label class="block text-xs font-bold text-indigo-950 mb-1">Select Delivery Location</label>
+                    <input list="delivery-locations-clean-list" id="sd-delivery-location-input" oninput="calculateDeliveryCharges()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Type or select delivery area (e.g. Dahisar, Mulund, Bandra)..." value="Mulund">
                 </div>
 
-                <!-- Self Pick-up Info Box -->
+                <!-- Self Pick-up Hub Info Box -->
                 <div id="sd-self-pickup-box" class="hidden p-3 bg-slate-100 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
                     <div class="font-bold text-slate-800"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pick-up Hub Location:</div>
-                    <div>Vikhroli / Mumbai Hub (₹0 Delivery Charge)</div>
-                    <div class="text-[11px] text-slate-500">Pick up car directly from our hub at scheduled time.</div>
+                    <div>LBS Marg, Vikhroli West, Mumbai Hub (₹0 Delivery Fee)</div>
+                    <div class="text-[11px] text-slate-500">Pick up and return the car directly at our Vikhroli hub.</div>
                 </div>
 
-                <!-- Customer Details -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Your Full Name</label>
-                    <input type="text" id="sd-cust-name" required placeholder="Full Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                <!-- TOTAL FARE BREAKDOWN (CLEAR RENTAL + DELIVERY CHARGES) -->
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1.5">
+                    <div class="flex justify-between text-slate-600">
+                        <span>Rental Charges (<span id="disp-calc-hours">24</span> hrs × <span id="disp-calc-rate">₹0</span>):</span>
+                        <strong class="text-slate-800" id="disp-rental-amount">₹0</strong>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>Doorstep Delivery &amp; Pick-up Fee:</span>
+                        <strong class="text-slate-800" id="disp-delivery-amount">₹500</strong>
+                    </div>
+                    <div class="flex justify-between text-slate-500 text-[11px]">
+                        <span>Refundable Security Deposit:</span>
+                        <span id="disp-deposit-amount">₹3,000</span>
+                    </div>
+                    <div class="pt-2 border-t border-slate-200 flex justify-between items-center text-indigo-950 font-bold">
+                        <span class="text-xs sm:text-sm">Total Estimated Fare:</span>
+                        <span class="text-emerald-700 text-base sm:text-lg font-black" id="disp-total-final-fare">₹0</span>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">WhatsApp Number</label>
-                    <input type="tel" id="sd-cust-phone" required placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+
+                <!-- MANDATORY TERMS & CONDITIONS CARD (AS REQUESTED) -->
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-950 space-y-1">
+                    <div class="font-bold flex items-center gap-1.5 text-amber-900">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Mandatory Self-Drive Terms:
+                    </div>
+                    <ul class="list-disc pl-4 space-y-0.5 text-amber-900/90 leading-tight">
+                        <li>Security deposit refunded within 48 hrs after car inspection.</li>
+                        <li>Original Driving Licence &amp; Aadhaar Card mandatory at the time of delivery.</li>
+                        <li>Alternate mobile number required for verification.</li>
+                        <li>Car photo before and after trip will be verified.</li>
+                        <li>Need to return the car in same condition and same fuel level.</li>
+                    </ul>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Complete Delivery / Communication Address</label>
-                    <textarea id="sd-cust-address" rows="2" required placeholder="Flat / Building, Landmark, City" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
+
+                <!-- Customer Details Form -->
+                <div class="space-y-2.5 pt-1">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Your Full Name</label>
+                        <input type="text" id="sd-cust-name" required placeholder="Full Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">WhatsApp Number</label>
+                            <input type="tel" id="sd-cust-phone" required placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Alternate Number (Required)</label>
+                            <input type="tel" id="sd-cust-alt-phone" required placeholder="Emergency/Alt Number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Delivery / Communication Address</label>
+                        <textarea id="sd-cust-address" rows="2" required placeholder="Flat / Building, Landmark, City" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
+                    </div>
                 </div>
 
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs tracking-wide">
                     <i class="fa-brands fa-whatsapp text-base"></i>
                     <span>Confirm Self-Drive Booking</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- BECOME A PARTNER MODAL (LIST YOUR CAR FORM) -->
+    <div id="partner-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+            <button type="button" onclick="closePartnerModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div class="mb-4">
+                <span class="text-amber-600 font-bold uppercase text-[10px] tracking-wider bg-amber-50 px-2 py-0.5 rounded">Partner With Us</span>
+                <h3 class="text-xl font-extrabold text-slate-900 mt-1">List Your Car. Grow With Us.</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Submit your details. Our team will verify and contact you personally for listing.</p>
+            </div>
+
+            <form onsubmit="handlePartnerFormSubmit(event)" class="space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                        <input type="text" id="part-name" required placeholder="Owner Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mobile Number</label>
+                        <input type="tel" id="part-phone" required placeholder="Primary Number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Alternate Number</label>
+                        <input type="tel" id="part-alt-phone" required placeholder="Alternate Contact" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Car Brand</label>
+                        <input type="text" id="part-car-brand" required placeholder="e.g. Maruti, Tata, Mahindra" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Car Model</label>
+                        <input type="text" id="part-car-model" required placeholder="e.g. Ertiga, Nexon, Thar" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Car Manufacturing Year</label>
+                        <input type="number" id="part-car-year" min="2016" max="2026" required placeholder="e.g. 2022" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                </div>
+
+                <!-- Document Upload Checklist -->
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-2">
+                    <span class="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">Required Document Copies (Send on WhatsApp)</span>
+                    <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
+                        <label class="flex items-center gap-1.5"><input type="checkbox" checked required class="text-indigo-600 rounded"> Car RC Copy</label>
+                        <label class="flex items-center gap-1.5"><input type="checkbox" checked required class="text-indigo-600 rounded"> Valid Insurance</label>
+                        <label class="flex items-center gap-1.5"><input type="checkbox" checked required class="text-indigo-600 rounded"> Aadhaar Card</label>
+                        <label class="flex items-center gap-1.5"><input type="checkbox" checked required class="text-indigo-600 rounded"> PAN Card</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs tracking-wide">
+                    <i class="fa-brands fa-whatsapp text-emerald-400 text-base"></i>
+                    <span>Submit Partner Application via WhatsApp</span>
                 </button>
             </form>
         </div>
@@ -592,31 +848,31 @@
         <option value="Yavatmal" data-km="1350"></option>
     </datalist>
 
-    <!-- Delivery Locations List with Pre-mapped Vikhroli Round-trip Distance (in KM) -->
-    <datalist id="delivery-locations-list">
-        <option value="Vikhroli (Round Trip: 4 km)" data-rt="4"></option>
-        <option value="Kanjurmarg (Round Trip: 8 km)" data-rt="8"></option>
-        <option value="Ghatkopar (Round Trip: 10 km)" data-rt="10"></option>
-        <option value="Bhandup (Round Trip: 12 km)" data-rt="12"></option>
-        <option value="Powai (Round Trip: 14 km)" data-rt="14"></option>
-        <option value="Mulund (Round Trip: 16 km)" data-rt="16"></option>
-        <option value="Chembur (Round Trip: 18 km)" data-rt="18"></option>
-        <option value="Kurla (Round Trip: 20 km)" data-rt="20"></option>
-        <option value="Thane (Round Trip: 24 km)" data-rt="24"></option>
-        <option value="Sion (Round Trip: 22 km)" data-rt="22"></option>
-        <option value="Dadar (Round Trip: 30 km)" data-rt="30"></option>
-        <option value="Andheri (Round Trip: 32 km)" data-rt="32"></option>
-        <option value="Bandra (Round Trip: 34 km)" data-rt="34"></option>
-        <option value="Goregaon (Round Trip: 38 km)" data-rt="38"></option>
-        <option value="Vashi (Navi Mumbai) (Round Trip: 36 km)" data-rt="36"></option>
-        <option value="Kandivali (Round Trip: 50 km)" data-rt="50"></option>
-        <option value="Borivali (Round Trip: 54 km)" data-rt="54"></option>
-        <option value="Dahisar (Round Trip: 60 km)" data-rt="60"></option>
-        <option value="Mira Road (Round Trip: 66 km)" data-rt="66"></option>
-        <option value="Nerul (Navi Mumbai) (Round Trip: 46 km)" data-rt="46"></option>
-        <option value="Kharghar (Navi Mumbai) (Round Trip: 56 km)" data-rt="56"></option>
-        <option value="Panvel (Round Trip: 70 km)" data-rt="70"></option>
-        <option value="Colaba / Churchgate (Round Trip: 52 km)" data-rt="52"></option>
+    <!-- CLEAN DELIVERY LOCATIONS DATALIST (NO ROUND TRIP DISTANCE TEXT VISIBLE TO CUSTOMER) -->
+    <datalist id="delivery-locations-clean-list">
+        <option value="Vikhroli" data-rt="4"></option>
+        <option value="Kanjurmarg" data-rt="8"></option>
+        <option value="Ghatkopar" data-rt="10"></option>
+        <option value="Bhandup" data-rt="12"></option>
+        <option value="Powai" data-rt="14"></option>
+        <option value="Mulund" data-rt="16"></option>
+        <option value="Chembur" data-rt="18"></option>
+        <option value="Kurla" data-rt="20"></option>
+        <option value="Sion" data-rt="22"></option>
+        <option value="Thane" data-rt="24"></option>
+        <option value="Dadar" data-rt="30"></option>
+        <option value="Andheri" data-rt="32"></option>
+        <option value="Bandra" data-rt="34"></option>
+        <option value="Vashi (Navi Mumbai)" data-rt="36"></option>
+        <option value="Goregaon" data-rt="38"></option>
+        <option value="Nerul (Navi Mumbai)" data-rt="46"></option>
+        <option value="Kandivali" data-rt="50"></option>
+        <option value="Colaba / Churchgate" data-rt="52"></option>
+        <option value="Borivali" data-rt="54"></option>
+        <option value="Kharghar (Navi Mumbai)" data-rt="56"></option>
+        <option value="Dahisar" data-rt="60"></option>
+        <option value="Mira Road" data-rt="66"></option>
+        <option value="Panvel" data-rt="70"></option>
     </datalist>
 
     <script>
@@ -672,7 +928,7 @@
             }
         ];
 
-        // 32 EXCEL CARS DATA (ALL FIELDS & SEGMENT MAPPED)
+        // 32 EXCEL CARS DATA (ALL SEGMENTS MAPPED)
         const excelCarsData = [
           { "brand": "BMW", "model": "520D", "fullName": "BMW 520D", "segment": "Luxury Sedan", "transmission": "Automatic", "fuel": "Diesel", "seats": 5, "rateHour": "₹650/hour", "rateVal": 650, "deposit": "₹10,000", "imgUrl": "https://lh3.googleusercontent.com/d/1Mjy4A4BhkWhIgHz1E9Ofy6aCUk53IZkP" },
           { "brand": "Hyundai", "model": "Creta", "fullName": "Hyundai Creta", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1In3muCV_Mk72zELKjAIlhs-OWgR7RKof" },
@@ -721,6 +977,9 @@
         let currentDeliveryMode = 'home'; // 'home' or 'self'
         let currentDeliveryRoundTripKm = 16;
         let currentDeliveryFee = 500;
+        let calculatedRentalHours = 24;
+        let calculatedRentalAmount = 0;
+        let calculatedTotalFare = 0;
 
         function setServiceMode(mode) {
             currentMainMode = mode;
@@ -909,7 +1168,6 @@
 
             let list = [...excelCarsData];
 
-            // 1. Search Query Filter
             if (query) {
                 list = list.filter(c => 
                     c.fullName.toLowerCase().includes(query) ||
@@ -919,32 +1177,26 @@
                 );
             }
 
-            // 2. Brand Filter
             if (brandVal !== 'All') {
                 list = list.filter(c => c.brand.toLowerCase() === brandVal.toLowerCase());
             }
 
-            // 3. Fuel Filter
             if (fuelVal !== 'All') {
                 list = list.filter(c => c.fuel.toLowerCase().includes(fuelVal.toLowerCase()));
             }
 
-            // 4. Transmission Filter
             if (transVal !== 'All') {
                 list = list.filter(c => c.transmission.toLowerCase() === transVal.toLowerCase());
             }
 
-            // 5. Seats Filter
             if (seatsVal !== 'All') {
                 list = list.filter(c => c.seats === parseInt(seatsVal));
             }
 
-            // 6. Segment Filter
             if (segVal !== 'All') {
                 list = list.filter(c => c.segment.toLowerCase() === segVal.toLowerCase());
             }
 
-            // 7. Sorting
             if (sortVal === 'price-asc') {
                 list.sort((a, b) => a.rateVal - b.rateVal);
             } else if (sortVal === 'price-desc') {
@@ -1044,15 +1296,16 @@
         }
 
         // ==========================================
-        // SELF DRIVE DELIVERY CALCULATION LOGIC
+        // SELF DRIVE DELIVERY & FARE CALCULATION
         // ==========================================
         function openSDModal(car) {
             selectedCarObj = car;
+            document.getElementById('sd-modal-car-brand').innerText = car.brand;
             document.getElementById('sd-modal-car-name').innerText = car.fullName;
             document.getElementById('sd-modal-car-rate').innerText = car.rateHour;
-            document.getElementById('sd-modal-car-deposit').innerText = car.deposit;
+            document.getElementById('disp-deposit-amount').innerText = car.deposit;
 
-            // Dates & Times from Self Drive Inputs
+            // Clean, neat arrangement for schedule
             const pDate = document.getElementById('sd-pdate').value;
             const pHour = document.getElementById('sd-phour').value;
             const pAmpm = document.getElementById('sd-pampm').value;
@@ -1060,9 +1313,22 @@
             const rHour = document.getElementById('sd-rhour').value;
             const rAmpm = document.getElementById('sd-rampm').value;
 
-            document.getElementById('sd-modal-schedule').innerText = 
-                `${pDate} ${pHour}:00 ${pAmpm} to ${rDate} ${rHour}:00 ${rAmpm}`;
+            document.getElementById('sd-modal-pdate-display').innerText = `${pDate} at ${pHour}:00 ${pAmpm}`;
+            document.getElementById('sd-modal-rdate-display').innerText = `${rDate} at ${rHour}:00 ${rAmpm}`;
 
+            // Calculate duration in hours
+            let p24 = parseInt(pHour) % 12;
+            if (pAmpm === 'PM') p24 += 12;
+            let r24 = parseInt(rHour) % 12;
+            if (rAmpm === 'PM') r24 += 12;
+
+            const pDT = new Date(`${pDate}T${String(p24).padStart(2, '0')}:00:00`);
+            const rDT = new Date(`${rDate}T${String(r24).padStart(2, '0')}:00:00`);
+            const diffHours = (rDT - pDT) / (1000 * 60 * 60);
+
+            // Minimum 8 hours standard
+            calculatedRentalHours = Math.max(8, isNaN(diffHours) ? 24 : Math.ceil(diffHours));
+            
             calculateDeliveryCharges();
             document.getElementById('sd-booking-modal').classList.remove('hidden');
         }
@@ -1092,72 +1358,110 @@
                 labelSelf.className = "border-2 border-indigo-600 bg-indigo-50/50 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition text-xs font-bold text-indigo-950";
                 labelHome.className = "border-2 border-slate-200 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition text-xs font-bold text-slate-700";
                 currentDeliveryFee = 0;
+                updateTotalFareBreakdown();
             }
         }
 
+        // Calculation stays in backend, NO distance/round-trip clutter shown to customer
         function calculateDeliveryCharges() {
             if (currentDeliveryMode !== 'home') {
                 currentDeliveryFee = 0;
+                updateTotalFareBreakdown();
                 return;
             }
 
             const inputVal = document.getElementById('sd-delivery-location-input').value.trim();
-            const datalist = document.getElementById('delivery-locations-list');
+            const datalist = document.getElementById('delivery-locations-clean-list');
             let roundTripKm = null;
 
             for (let opt of datalist.options) {
-                if (opt.value.toLowerCase().includes(inputVal.toLowerCase())) {
+                if (opt.value.toLowerCase() === inputVal.toLowerCase()) {
                     roundTripKm = parseInt(opt.getAttribute('data-rt'));
                     break;
                 }
             }
 
-            // Fallback default if custom location is typed
+            // Default 16 km within 25 km threshold if custom/unknown area typed
             if (!roundTripKm) {
-                roundTripKm = 16; // default 16 km within 25 km threshold
+                roundTripKm = 16;
             }
 
             currentDeliveryRoundTripKm = roundTripKm;
 
-            // Delivery Logic:
+            // Backend Calculation Logic:
             // Base charge = ₹500
             // If Round-trip <= 25 km -> ₹500
             // If Round-trip > 25 km -> ₹500 + (Round-trip - 25) * ₹25
-            let extraDistance = 0;
-            let extraCharge = 0;
-
             if (roundTripKm > 25) {
-                extraDistance = roundTripKm - 25;
-                extraCharge = extraDistance * 25;
-                currentDeliveryFee = 500 + extraCharge;
+                let extraKm = roundTripKm - 25;
+                currentDeliveryFee = 500 + (extraKm * 25);
             } else {
                 currentDeliveryFee = 500;
             }
 
-            document.getElementById('disp-sd-rt-distance').innerText = `${roundTripKm} km`;
-            document.getElementById('disp-sd-extra-charge').innerText = `₹${extraCharge} (${extraDistance} km @ ₹25)`;
-            document.getElementById('disp-sd-total-charge').innerText = `₹${currentDeliveryFee.toLocaleString('en-IN')}`;
+            updateTotalFareBreakdown();
+        }
+
+        function updateTotalFareBreakdown() {
+            if (!selectedCarObj) return;
+
+            calculatedRentalAmount = calculatedRentalHours * selectedCarObj.rateVal;
+            calculatedTotalFare = calculatedRentalAmount + currentDeliveryFee;
+
+            document.getElementById('disp-calc-hours').innerText = calculatedRentalHours;
+            document.getElementById('disp-calc-rate').innerText = `₹${selectedCarObj.rateVal}/hr`;
+            document.getElementById('disp-rental-amount').innerText = `₹${calculatedRentalAmount.toLocaleString('en-IN')}`;
+            document.getElementById('disp-delivery-amount').innerText = (currentDeliveryFee === 0) ? '₹0 (Self Pick-up)' : `₹${currentDeliveryFee.toLocaleString('en-IN')}`;
+            document.getElementById('disp-total-final-fare').innerText = `₹${calculatedTotalFare.toLocaleString('en-IN')}`;
         }
 
         function handleSDBookingSubmit(e) {
             e.preventDefault();
             const name = document.getElementById('sd-cust-name').value;
             const phone = document.getElementById('sd-cust-phone').value;
+            const altPhone = document.getElementById('sd-cust-alt-phone').value;
             const addr = document.getElementById('sd-cust-address').value;
-            const schedule = document.getElementById('sd-modal-schedule').innerText;
+            const pTime = document.getElementById('sd-modal-pdate-display').innerText;
+            const rTime = document.getElementById('sd-modal-rdate-display').innerText;
             const delivLoc = document.getElementById('sd-delivery-location-input').value;
 
-            let delivDetails = '';
+            let delivMsg = '';
             if (currentDeliveryMode === 'home') {
-                delivDetails = `*Delivery Option:* Home Delivery%0A*Delivery Location:* ${delivLoc}%0A*Round-trip to Vikhroli:* ${currentDeliveryRoundTripKm} km%0A*Delivery/Pickup Fee:* ₹${currentDeliveryFee}`;
+                delivMsg = `*Delivery Option:* Home Delivery (${delivLoc})%0A*Delivery & Pick-up Fee:* ₹${currentDeliveryFee}`;
             } else {
-                delivDetails = `*Delivery Option:* Self Pick-up (Vikhroli Hub - ₹0 Delivery Fee)`;
+                delivMsg = `*Delivery Option:* Self Pick-up at Vikhroli Hub (₹0)`;
             }
 
-            const msg = `*New Self-Drive Booking Request - Car with Driver India*%0A%0A*Customer:* ${name}%0A*Phone:* ${phone}%0A*Vehicle:* ${selectedCarObj.fullName}%0A*Rate:* ${selectedCarObj.rateHour}%0A*Security Deposit:* ${selectedCarObj.deposit}%0A*Trip Schedule:* ${schedule}%0A${delivDetails}%0A*Complete Address:* ${addr}`;
+            const msg = `*New Self-Drive Booking Request - Car with Driver India*%0A%0A*Customer:* ${name}%0A*Primary Phone:* ${phone}%0A*Alternate Phone:* ${altPhone}%0A*Vehicle:* ${selectedCarObj.fullName}%0A*Schedule:* ${pTime} to ${rTime}%0A*Duration:* ${calculatedRentalHours} Hours%0A*Rental Charges:* ₹${calculatedRentalAmount}%0A${delivMsg}%0A*Total Estimated Fare:* ₹${calculatedTotalFare}%0A*Security Deposit:* ${selectedCarObj.deposit}%0A*Delivery Address:* ${addr}%0A%0A_Customer has agreed to mandatory ID & inspection terms._`;
 
             window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
             closeSDModal();
+        }
+
+        // ==========================================
+        // PARTNER WITH US (LIST YOUR CAR) HANDLER
+        // ==========================================
+        function openPartnerModal() {
+            document.getElementById('partner-modal').classList.remove('hidden');
+        }
+
+        function closePartnerModal() {
+            document.getElementById('partner-modal').classList.add('hidden');
+        }
+
+        function handlePartnerFormSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('part-name').value;
+            const phone = document.getElementById('part-phone').value;
+            const altPhone = document.getElementById('part-alt-phone').value;
+            const brand = document.getElementById('part-car-brand').value;
+            const model = document.getElementById('part-car-model').value;
+            const year = document.getElementById('part-car-year').value;
+
+            const msg = `*New Partner Inquiry - List Your Car (Car with Driver India)*%0A%0A*Owner Name:* ${name}%0A*Phone:* ${phone}%0A*Alternate Phone:* ${altPhone}%0A*Car Brand:* ${brand}%0A*Car Model:* ${model}%0A*Manufacturing Year:* ${year}%0A*Documents Ready:* RC Copy, Valid Insurance, Aadhaar Card, PAN Card.%0A%0APlease contact me with partnership terms and listing process.`;
+
+            window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
+            closePartnerModal();
         }
 
         // ==========================================
@@ -1181,7 +1485,7 @@
             const phone = document.getElementById('cust-phone').value;
             const addr = document.getElementById('cust-address').value;
 
-            let msg = `*New Cab Booking (With Driver) - Car with Driver India*%0A%0A*Customer:* ${name}%0A*Phone:* ${phone}%0A*Trip Type:* ${currentWDSubTab.toUpperCase()}%0A*Vehicle:* ${chosenCarName}%0A*Est. Fare:* ₹${chosenFareAmount}%0A*Pickup Address:* ${addr}`;
+            let msg = `*New Cab Booking (With Driver) - Car with Driver India*%0A%0A*Customer:* ${name}%0A*Phone:* ${phone}%0A*Trip Type:* ${currentWDSubTab.toUpperCase()}%0A*Vehicle:* ${chosenCarName}%0A*Est. Fare:* ₹${chosenFareAmount}%0A*Pickup Address:* ${addr}%0A*(Fare includes car rental, fuel & driver allowance. Tolls & parking extra as actuals)*`;
 
             if (currentWDSubTab === 'local') {
                 const pkg = document.getElementById('wd-local-package').value;
@@ -1196,7 +1500,7 @@
                 const pd = document.getElementById('wd-out-pdate').value;
                 const ph = document.getElementById('wd-out-phour').value;
                 const pm = document.getElementById('wd-out-pampm').value;
-                msg += `%0A*From Station/Area:* ${stn}%0A*Destination:* ${dest}%0A*Departure:* ${pd} at ${ph}:00 ${pm}%0A*Days:* ${wdOutstationDays}%0A*Est. Distance:* ${wdOutstationKm} KM%0A*Night Allowance:* ${isNightAllowanceApplicable ? 'Yes (+₹700)' : 'No'}`;
+                msg += `%0A*Pickup Station/Area:* ${stn}%0A*Destination:* ${dest}%0A*Departure:* ${pd} at ${ph}:00 ${pm}%0A*Days:* ${wdOutstationDays}%0A*Est. Distance:* ${wdOutstationKm} KM%0A*Night Allowance:* ${isNightAllowanceApplicable ? 'Yes (+₹700)' : 'No'}`;
             } else if (currentWDSubTab === 'airport') {
                 const term = document.getElementById('wd-airport-terminal').value;
                 const d = document.getElementById('wd-airport-date').value;

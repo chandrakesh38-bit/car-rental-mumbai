@@ -37,6 +37,7 @@
                     <i class="fa-brands fa-whatsapp text-sm"></i> Talk to Us
                 </a>
 
+                <!-- 3 Horizontal Lines (Hamburger Menu Button) -->
                 <button type="button" onclick="openNavDrawer()" class="p-2.5 rounded-xl text-slate-700 hover:text-indigo-950 hover:bg-slate-100 transition focus:outline-none flex items-center justify-center border border-slate-200">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
@@ -61,7 +62,7 @@
                 </button>
             </div>
 
-            <!-- Drawer Links (7 Sections) -->
+            <!-- Drawer Links -->
             <div class="space-y-1.5 pt-5 text-sm font-bold text-slate-700">
                 <a href="#booking-widget" onclick="navigateAndSetMode('withdriver')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
                     <i class="fa-solid fa-user-tie text-indigo-600 w-5"></i>
@@ -426,7 +427,7 @@
                         <!-- Rendered by JS -->
                     </div>
 
-                    <!-- Clean Pagination Controls (8 Cars Per Page) -->
+                    <!-- Pagination Controls -->
                     <div id="sd-pagination-container" class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <span class="text-xs text-slate-500 font-medium" id="sd-pagination-info">
                             Showing 1 to 8 of 32 cars
@@ -450,7 +451,6 @@
             <p class="text-xs sm:text-sm text-slate-500 mt-1">Comfortable, well-maintained cars with clean sanitization and Fastag.</p>
         </div>
 
-        <!-- DYNAMIC WITH DRIVER FLEET CARDS GRID -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="fleet-container">
             <!-- Rendered by JS -->
         </div>
@@ -458,8 +458,6 @@
 
     <!-- GOOGLE BUSINESS PROFILE RATING & BEST REVIEWS SECTION -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-12" id="reviews">
-        
-        <!-- Google Reviews Header Card -->
         <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
             <div class="flex items-center space-x-4">
                 <div class="w-14 h-14 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center text-3xl">
@@ -477,7 +475,6 @@
                 </div>
             </div>
 
-            <!-- Direct Link to Google Business Profile / Maps -->
             <a href="https://maps.google.com/?q=Car+With+Driver+India+Vikhroli+Mumbai" target="_blank" class="bg-slate-900 hover:bg-indigo-950 text-white font-bold px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition shadow-sm whitespace-nowrap">
                 <i class="fa-brands fa-google text-amber-400"></i>
                 <span>View on Google Maps</span>
@@ -485,7 +482,6 @@
             </a>
         </div>
 
-        <!-- Best Verified Customer Reviews Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             <!-- Review 1 -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
@@ -593,7 +589,7 @@
         </div>
     </section>
 
-    <!-- PARTNER WITH US SECTION (LIST YOUR CAR) -->
+    <!-- PARTNER WITH US SECTION -->
     <section class="bg-gradient-to-r from-indigo-900 to-indigo-950 text-white py-14 px-4 my-8" id="partner-section">
         <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
             <div class="space-y-3">
@@ -782,10 +778,12 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Your Full Name</label>
                     <input type="text" id="cust-name" required placeholder="Enter full name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
+                    <p id="err-wd-name" class="text-[11px] text-rose-600 mt-1 hidden"></p>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">WhatsApp Mobile Number</label>
-                    <input type="tel" id="cust-phone" required placeholder="10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
+                    <input type="tel" id="cust-phone" maxlength="10" required placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
+                    <p id="err-wd-phone" class="text-[11px] text-rose-600 mt-1 hidden"></p>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Exact Pickup Address / Landmark</label>
@@ -799,7 +797,7 @@
         </div>
     </div>
 
-    <!-- SELF DRIVE BOOKING MODAL -->
+    <!-- SELF DRIVE BOOKING MODAL (COMPLETE FARE INCLUDES RENTAL + DELIVERY + DEPOSIT WITH INPUT VALIDATION) -->
     <div id="sd-booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
             <button type="button" onclick="closeSDModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
@@ -861,23 +859,28 @@
                     <div class="text-[11px] text-slate-500">Pick up and return the car directly at our Vikhroli hub.</div>
                 </div>
 
-                <!-- TOTAL FARE BREAKDOWN -->
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1.5">
+                <!-- TOTAL ESTIMATED FARE BREAKDOWN (CLEAR RENTAL + DELIVERY + SECURITY DEPOSIT) -->
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs space-y-2">
                     <div class="flex justify-between text-slate-600">
                         <span>Rental Charges (<span id="disp-calc-hours">24</span> hrs × <span id="disp-calc-rate">₹0</span>):</span>
-                        <strong class="text-slate-800" id="disp-rental-amount">₹0</strong>
+                        <strong class="text-slate-800 font-bold" id="disp-rental-amount">₹0</strong>
                     </div>
                     <div class="flex justify-between text-slate-600">
                         <span>Doorstep Delivery &amp; Pick-up Fee:</span>
-                        <strong class="text-slate-800" id="disp-delivery-amount">₹500</strong>
+                        <strong class="text-slate-800 font-bold" id="disp-delivery-amount">₹500</strong>
                     </div>
-                    <div class="flex justify-between text-slate-500 text-[11px]">
-                        <span>Refundable Security Deposit:</span>
-                        <span id="disp-deposit-amount">₹3,000</span>
+                    <!-- Clear Refundable Security Deposit Separate Line Item -->
+                    <div class="flex justify-between text-indigo-950 bg-indigo-50/80 p-2 rounded-lg border border-indigo-100">
+                        <span><i class="fa-solid fa-shield-halved text-indigo-600 mr-1"></i> Refundable Security Deposit:</span>
+                        <strong class="text-indigo-950 font-bold" id="disp-deposit-amount">₹3,000</strong>
                     </div>
+                    <!-- Total Estimated Fare Including All 3 Charges -->
                     <div class="pt-2 border-t border-slate-200 flex justify-between items-center text-indigo-950 font-bold">
-                        <span class="text-xs sm:text-sm">Total Estimated Fare:</span>
-                        <span class="text-emerald-700 text-base sm:text-lg font-black" id="disp-total-final-fare">₹0</span>
+                        <div>
+                            <span class="text-xs sm:text-sm block">Total Estimated Fare:</span>
+                            <span class="text-[10px] text-slate-500 font-normal block">(Rental + Delivery + Refundable Deposit)</span>
+                        </div>
+                        <span class="text-emerald-700 text-lg sm:text-xl font-black" id="disp-total-final-fare">₹0</span>
                     </div>
                 </div>
 
@@ -895,20 +898,23 @@
                     </ul>
                 </div>
 
-                <!-- Customer Details Form -->
+                <!-- Customer Details Form with Validations -->
                 <div class="space-y-2.5 pt-1">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Your Full Name</label>
-                        <input type="text" id="sd-cust-name" required placeholder="Full Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <input type="text" id="sd-cust-name" required placeholder="Full Name (Alphabets only)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <p id="err-sd-name" class="text-[11px] text-rose-600 mt-1 hidden"></p>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">WhatsApp Number</label>
-                            <input type="tel" id="sd-cust-phone" required placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                            <input type="tel" id="sd-cust-phone" maxlength="10" required placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                            <p id="err-sd-phone" class="text-[11px] text-rose-600 mt-1 hidden"></p>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Alternate Number (Required)</label>
-                            <input type="tel" id="sd-cust-alt-phone" required placeholder="Emergency/Alt Number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                            <input type="tel" id="sd-cust-alt-phone" maxlength="10" required placeholder="10-digit alternate number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                            <p id="err-sd-alt-phone" class="text-[11px] text-rose-600 mt-1 hidden"></p>
                         </div>
                     </div>
                     <div>
@@ -943,17 +949,20 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
                         <input type="text" id="part-name" required placeholder="Owner Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <p id="err-part-name" class="text-[11px] text-rose-600 mt-1 hidden"></p>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Mobile Number</label>
-                        <input type="tel" id="part-phone" required placeholder="Primary Number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <input type="tel" id="part-phone" maxlength="10" required placeholder="Primary 10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <p id="err-part-phone" class="text-[11px] text-rose-600 mt-1 hidden"></p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Alternate Number</label>
-                        <input type="tel" id="part-alt-phone" required placeholder="Alternate Contact" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <input type="tel" id="part-alt-phone" maxlength="10" required placeholder="Alternate 10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <p id="err-part-alt-phone" class="text-[11px] text-rose-600 mt-1 hidden"></p>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Car Brand</label>
@@ -1067,6 +1076,51 @@
     </datalist>
 
     <script>
+        // ==========================================
+        // DRAWER NAVIGATION HANDLERS
+        // ==========================================
+        function openNavDrawer() {
+            const drawer = document.getElementById('nav-drawer');
+            const overlay = document.getElementById('nav-drawer-overlay');
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0');
+                drawer.classList.remove('translate-x-full');
+            }, 10);
+        }
+
+        function closeNavDrawer() {
+            const drawer = document.getElementById('nav-drawer');
+            const overlay = document.getElementById('nav-drawer-overlay');
+            drawer.classList.add('translate-x-full');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 300);
+        }
+
+        function navigateAndSetMode(mode) {
+            closeNavDrawer();
+            setServiceMode(mode);
+            const target = document.getElementById('booking-widget');
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // ==========================================
+        // VALIDATION HELPERS
+        // ==========================================
+        function validateName(name) {
+            const regex = /^[A-Za-z\s]{2,50}$/;
+            return regex.test(name.trim());
+        }
+
+        function validatePhone(phone) {
+            const regex = /^[6-9]\d{9}$/;
+            return regex.test(phone.trim());
+        }
+
         // WITH DRIVER FLEET DATA
         const wdFleet = [
             {
@@ -1121,38 +1175,38 @@
 
         // 32 EXCEL CARS DATA
         const excelCarsData = [
-          { "brand": "BMW", "model": "520D", "fullName": "BMW 520D", "segment": "Luxury Sedan", "transmission": "Automatic", "fuel": "Diesel", "seats": 5, "rateHour": "₹650/hour", "rateVal": 650, "deposit": "₹10,000", "imgUrl": "https://lh3.googleusercontent.com/d/1Mjy4A4BhkWhIgHz1E9Ofy6aCUk53IZkP" },
-          { "brand": "Hyundai", "model": "Creta", "fullName": "Hyundai Creta", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1In3muCV_Mk72zELKjAIlhs-OWgR7RKof" },
-          { "brand": "Hyundai", "model": "Exter (Automatic)", "fullName": "Hyundai Exter (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹125/hour", "rateVal": 125, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv" },
-          { "brand": "Hyundai", "model": "Exter (Manual)", "fullName": "Hyundai Exter (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv" },
-          { "brand": "Hyundai", "model": "i20", "fullName": "Hyundai i20", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1ZDZwcXPDBFiUCMNzwWQfDaeHZuiW2Vha" },
-          { "brand": "Jeep", "model": "Compass", "fullName": "Jeep Compass", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹5,000", "imgUrl": "https://lh3.googleusercontent.com/d/1baBIvOkCMRSM9KUTn6AvTWPPBBC5kxa9" },
-          { "brand": "Kia", "model": "Carens", "fullName": "Kia Carens", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 6, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1LKPHrDzRtHODi2kiWgAC-DCFhneNBxfd" },
-          { "brand": "Mahindra", "model": "7XO", "fullName": "Mahindra 7XO", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 7, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/164EyWUGQ24XIZPit5_rVZ7kTbmNU1Pim" },
-          { "brand": "Mahindra", "model": "Scorpio N", "fullName": "Mahindra Scorpio N", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1wKIdSZZ3mykmzIZSpKGXRl_zFkWQNcuq" },
-          { "brand": "Mahindra", "model": "Thar", "fullName": "Mahindra Thar", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 4, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1bC337oF5wf0Dl2KdkdRgagkeOP_VFqI5" },
-          { "brand": "Mahindra", "model": "Thar Roxx", "fullName": "Mahindra Thar Roxx", "segment": "SUV", "transmission": "Automatic", "fuel": "Diesel", "seats": 4, "rateHour": "₹333/hour", "rateVal": 333, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/14UgKtx1oqWl84guztZ28c3Kgmo_6jP-C" },
-          { "brand": "Mahindra", "model": "XUV 500", "fullName": "Mahindra XUV 500", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹4,000", "imgUrl": "https://lh3.googleusercontent.com/d/14nWzEeYcUlawsmTNanoS7Fw6QsAWOW98" },
-          { "brand": "Mahindra", "model": "XUV 700", "fullName": "Mahindra XUV 700", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹313/hour", "rateVal": 313, "deposit": "₹4,000", "imgUrl": "https://lh3.googleusercontent.com/d/1JZrrF7FqV8DUrTfV-_fXCpzOEa7Zii33" },
-          { "brand": "Maruti Suzuki", "model": "Baleno", "fullName": "Maruti Suzuki Baleno", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1KClMWsI-DX43nzhueP5Mjy-txH04VxaY" },
-          { "brand": "Maruti Suzuki", "model": "Brezza", "fullName": "Maruti Suzuki Brezza", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1ZQThm_H_eCLv4kBFYixmyjlBFLimsqw5" },
-          { "brand": "Maruti Suzuki", "model": "Dzire", "fullName": "Maruti Suzuki Dzire", "segment": "Sedan", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/18pheBt3K7gbOXwSutbdNVWrok_N2DCG3" },
-          { "brand": "Maruti Suzuki", "model": "Ertiga", "fullName": "Maruti Suzuki Ertiga", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/15o35vVV6iXixrjwMIXiIhLxAFeHj5Uel" },
-          { "brand": "Maruti Suzuki", "model": "Fronx (Automatic)", "fullName": "Maruti Suzuki Fronx (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ" },
-          { "brand": "Maruti Suzuki", "model": "Fronx (Manual)", "fullName": "Maruti Suzuki Fronx (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ" },
-          { "brand": "Maruti Suzuki", "model": "Grand Vitara", "fullName": "Maruti Suzuki Grand Vitara", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹4,000", "imgUrl": "https://lh3.googleusercontent.com/d/1PpB-DhjK0H71vEG0-RQk31IYia6wE0h8" },
-          { "brand": "Maruti Suzuki", "model": "Ignis", "fullName": "Maruti Suzuki Ignis", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1QIuOiX3yAdwEF6VEKGJblzi-ZI-WinKC" },
-          { "brand": "Maruti Suzuki", "model": "Swift", "fullName": "Maruti Suzuki Swift", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1kdLktKSk6yMlPJDY5BVdeNyC70rfM6eZ" },
-          { "brand": "Maruti Suzuki", "model": "WagonR", "fullName": "Maruti Suzuki WagonR", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹96/hour", "rateVal": 96, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1kz6JIn_-R6A--3K7tj569gV6Vpku3SQF" },
-          { "brand": "Maruti Suzuki", "model": "XL6", "fullName": "Maruti Suzuki XL6", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 6, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1LU-uNsvgWo6RXN3Xq7y8c4PTMSgLs930" },
-          { "brand": "Tata", "model": "Altroz", "fullName": "Tata Altroz", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1mvxm-Z64rgxrriXE4q3pU9oSq1F1vvdk" },
-          { "brand": "Tata", "model": "Nexon", "fullName": "Tata Nexon", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹117/hour", "rateVal": 117, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1Or6F03FkxBCjzM3MC9l7A4X6EbtTueZ5" },
-          { "brand": "Tata", "model": "Punch", "fullName": "Tata Punch", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1UeNkkagK6T0LUjt2ncB6HZaW_K5iFgE5" },
-          { "brand": "Tata", "model": "Safari", "fullName": "Tata Safari", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 6, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1cE2ZSnX39ApvlXQOJWnARn54_ma5TQSA" },
-          { "brand": "Toyota", "model": "Glanza", "fullName": "Toyota Glanza", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1kb38eCjAtEm4hv6-YR9voZaHJLtu7YbI" },
-          { "brand": "Toyota", "model": "Innova Crysta", "fullName": "Toyota Innova Crysta", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹4,000", "imgUrl": "https://lh3.googleusercontent.com/d/1sK2Fjmg7xKcltpCAS_SIV4MbXLLd90fl" },
-          { "brand": "Toyota", "model": "Rumion", "fullName": "Toyota Rumion", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/1IaOGRC0_ijk7Ud5FDv4PK2tk6IFQ8HHu" },
-          { "brand": "Toyota", "model": "Urban Cruiser Taisor", "fullName": "Toyota Urban Cruiser Taisor", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "imgUrl": "https://lh3.googleusercontent.com/d/12KEugN2uW4Z5_AyEg_8ns3Rn2LHVOv8M" }
+          { "brand": "BMW", "model": "520D", "fullName": "BMW 520D", "segment": "Luxury Sedan", "transmission": "Automatic", "fuel": "Diesel", "seats": 5, "rateHour": "₹650/hour", "rateVal": 650, "deposit": "₹10,000", "depositVal": 10000, "imgUrl": "https://lh3.googleusercontent.com/d/1Mjy4A4BhkWhIgHz1E9Ofy6aCUk53IZkP" },
+          { "brand": "Hyundai", "model": "Creta", "fullName": "Hyundai Creta", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1In3muCV_Mk72zELKjAIlhs-OWgR7RKof" },
+          { "brand": "Hyundai", "model": "Exter (Automatic)", "fullName": "Hyundai Exter (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹125/hour", "rateVal": 125, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv" },
+          { "brand": "Hyundai", "model": "Exter (Manual)", "fullName": "Hyundai Exter (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv" },
+          { "brand": "Hyundai", "model": "i20", "fullName": "Hyundai i20", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZDZwcXPDBFiUCMNzwWQfDaeHZuiW2Vha" },
+          { "brand": "Jeep", "model": "Compass", "fullName": "Jeep Compass", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹5,000", "depositVal": 5000, "imgUrl": "https://lh3.googleusercontent.com/d/1baBIvOkCMRSM9KUTn6AvTWPPBBC5kxa9" },
+          { "brand": "Kia", "model": "Carens", "fullName": "Kia Carens", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 6, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1LKPHrDzRtHODi2kiWgAC-DCFhneNBxfd" },
+          { "brand": "Mahindra", "model": "7XO", "fullName": "Mahindra 7XO", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 7, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/164EyWUGQ24XIZPit5_rVZ7kTbmNU1Pim" },
+          { "brand": "Mahindra", "model": "Scorpio N", "fullName": "Mahindra Scorpio N", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1wKIdSZZ3mykmzIZSpKGXRl_zFkWQNcuq" },
+          { "brand": "Mahindra", "model": "Thar", "fullName": "Mahindra Thar", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 4, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1bC337oF5wf0Dl2KdkdRgagkeOP_VFqI5" },
+          { "brand": "Mahindra", "model": "Thar Roxx", "fullName": "Mahindra Thar Roxx", "segment": "SUV", "transmission": "Automatic", "fuel": "Diesel", "seats": 4, "rateHour": "₹333/hour", "rateVal": 333, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/14UgKtx1oqWl84guztZ28c3Kgmo_6jP-C" },
+          { "brand": "Mahindra", "model": "XUV 500", "fullName": "Mahindra XUV 500", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/14nWzEeYcUlawsmTNanoS7Fw6QsAWOW98" },
+          { "brand": "Mahindra", "model": "XUV 700", "fullName": "Mahindra XUV 700", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹313/hour", "rateVal": 313, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1JZrrF7FqV8DUrTfV-_fXCpzOEa7Zii33" },
+          { "brand": "Maruti Suzuki", "model": "Baleno", "fullName": "Maruti Suzuki Baleno", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1KClMWsI-DX43nzhueP5Mjy-txH04VxaY" },
+          { "brand": "Maruti Suzuki", "model": "Brezza", "fullName": "Maruti Suzuki Brezza", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZQThm_H_eCLv4kBFYixmyjlBFLimsqw5" },
+          { "brand": "Maruti Suzuki", "model": "Dzire", "fullName": "Maruti Suzuki Dzire", "segment": "Sedan", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/18pheBt3K7gbOXwSutbdNVWrok_N2DCG3" },
+          { "brand": "Maruti Suzuki", "model": "Ertiga", "fullName": "Maruti Suzuki Ertiga", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/15o35vVV6iXixrjwMIXiIhLxAFeHj5Uel" },
+          { "brand": "Maruti Suzuki", "model": "Fronx (Automatic)", "fullName": "Maruti Suzuki Fronx (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ" },
+          { "brand": "Maruti Suzuki", "model": "Fronx (Manual)", "fullName": "Maruti Suzuki Fronx (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ" },
+          { "brand": "Maruti Suzuki", "model": "Grand Vitara", "fullName": "Maruti Suzuki Grand Vitara", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1PpB-DhjK0H71vEG0-RQk31IYia6wE0h8" },
+          { "brand": "Maruti Suzuki", "model": "Ignis", "fullName": "Maruti Suzuki Ignis", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1QIuOiX3yAdwEF6VEKGJblzi-ZI-WinKC" },
+          { "brand": "Maruti Suzuki", "model": "Swift", "fullName": "Maruti Suzuki Swift", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kdLktKSk6yMlPJDY5BVdeNyC70rfM6eZ" },
+          { "brand": "Maruti Suzuki", "model": "WagonR", "fullName": "Maruti Suzuki WagonR", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹96/hour", "rateVal": 96, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kz6JIn_-R6A--3K7tj569gV6Vpku3SQF" },
+          { "brand": "Maruti Suzuki", "model": "XL6", "fullName": "Maruti Suzuki XL6", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 6, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1LU-uNsvgWo6RXN3Xq7y8c4PTMSgLs930" },
+          { "brand": "Tata", "model": "Altroz", "fullName": "Tata Altroz", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1mvxm-Z64rgxrriXE4q3pU9oSq1F1vvdk" },
+          { "brand": "Tata", "model": "Nexon", "fullName": "Tata Nexon", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹117/hour", "rateVal": 117, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Or6F03FkxBCjzM3MC9l7A4X6EbtTueZ5" },
+          { "brand": "Tata", "model": "Punch", "fullName": "Tata Punch", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1UeNkkagK6T0LUjt2ncB6HZaW_K5iFgE5" },
+          { "brand": "Tata", "model": "Safari", "fullName": "Tata Safari", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 6, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1cE2ZSnX39ApvlXQOJWnARn54_ma5TQSA" },
+          { "brand": "Toyota", "model": "Glanza", "fullName": "Toyota Glanza", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kb38eCjAtEm4hv6-YR9voZaHJLtu7YbI" },
+          { "brand": "Toyota", "model": "Innova Crysta", "fullName": "Toyota Innova Crysta", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1sK2Fjmg7xKcltpCAS_SIV4MbXLLd90fl" },
+          { "brand": "Toyota", "model": "Rumion", "fullName": "Toyota Rumion", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1IaOGRC0_ijk7Ud5FDv4PK2tk6IFQ8HHu" },
+          { "brand": "Toyota", "model": "Urban Cruiser Taisor", "fullName": "Toyota Urban Cruiser Taisor", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/12KEugN2uW4Z5_AyEg_8ns3Rn2LHVOv8M" }
         ];
 
         let currentMainMode = 'withdriver';
@@ -1170,6 +1224,7 @@
         let currentDeliveryFee = 500;
         let calculatedRentalHours = 24;
         let calculatedRentalAmount = 0;
+        let calculatedSecurityDeposit = 3000;
         let calculatedTotalFare = 0;
 
         let currentSDPage = 1;
@@ -1399,7 +1454,7 @@
             }
 
             filteredSDCarsList = list;
-            currentSDPage = 1; // reset to page 1 upon filter changes
+            currentSDPage = 1;
             renderSDPage();
         }
 
@@ -1452,7 +1507,6 @@
             const endIndex = Math.min(startIndex + carsPerPage, totalCars);
             const pageCars = filteredSDCarsList.slice(startIndex, endIndex);
 
-            // Render cars in current 8-pack
             pageCars.forEach(car => {
                 const card = document.createElement('div');
                 card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col justify-between";
@@ -1504,12 +1558,9 @@
                 container.appendChild(card);
             });
 
-            // Update Info
             infoSpan.innerText = `Showing ${startIndex + 1} to ${endIndex} of ${totalCars} cars`;
 
-            // Render Pagination Buttons (Prev, 1, 2, 3, 4, Next)
             if (totalPages > 1) {
-                // Prev Button
                 const prevBtn = document.createElement('button');
                 prevBtn.innerHTML = `<i class="fa-solid fa-chevron-left text-[10px]"></i> Prev`;
                 prevBtn.className = `px-3 py-1.5 rounded-lg text-xs font-bold border transition ${currentSDPage === 1 ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-700 hover:bg-slate-100'}`;
@@ -1517,7 +1568,6 @@
                 prevBtn.onclick = () => { changeSDPage(currentSDPage - 1); };
                 btnsContainer.appendChild(prevBtn);
 
-                // Numbered Buttons
                 for (let i = 1; i <= totalPages; i++) {
                     const pageBtn = document.createElement('button');
                     pageBtn.innerText = i;
@@ -1526,7 +1576,6 @@
                     btnsContainer.appendChild(pageBtn);
                 }
 
-                // Next Button
                 const nextBtn = document.createElement('button');
                 nextBtn.innerHTML = `Next <i class="fa-solid fa-chevron-right text-[10px]"></i>`;
                 nextBtn.className = `px-3 py-1.5 rounded-lg text-xs font-bold border transition ${currentSDPage === totalPages ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-700 hover:bg-slate-100'}`;
@@ -1539,21 +1588,23 @@
         function changeSDPage(page) {
             currentSDPage = page;
             renderSDPage();
-            
-            // Smoothly scroll back to the top of the cars grid
             const target = document.getElementById('selfdrive-cars-grid');
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
 
-        // SELF DRIVE DELIVERY & FARE CALCULATION
+        // ==========================================
+        // SELF DRIVE DELIVERY & TOTAL FARE CALCULATION
+        // ==========================================
         function openSDModal(car) {
             selectedCarObj = car;
             document.getElementById('sd-modal-car-brand').innerText = car.brand;
             document.getElementById('sd-modal-car-name').innerText = car.fullName;
             document.getElementById('sd-modal-car-rate').innerText = car.rateHour;
-            document.getElementById('disp-deposit-amount').innerText = car.deposit;
+            
+            calculatedSecurityDeposit = car.depositVal || 3000;
+            document.getElementById('disp-deposit-amount').innerText = `₹${calculatedSecurityDeposit.toLocaleString('en-IN')} (Refundable)`;
 
             const pDate = document.getElementById('sd-pdate').value;
             const pHour = document.getElementById('sd-phour').value;
@@ -1576,6 +1627,11 @@
 
             calculatedRentalHours = Math.max(8, isNaN(diffHours) ? 24 : Math.ceil(diffHours));
             
+            // Clear error messages
+            document.getElementById('err-sd-name').classList.add('hidden');
+            document.getElementById('err-sd-phone').classList.add('hidden');
+            document.getElementById('err-sd-alt-phone').classList.add('hidden');
+
             calculateDeliveryCharges();
             document.getElementById('sd-booking-modal').classList.remove('hidden');
         }
@@ -1643,25 +1699,72 @@
             updateTotalFareBreakdown();
         }
 
+        // Total Estimated Fare includes: Rental Charges + Delivery Charges + Refundable Security Deposit
         function updateTotalFareBreakdown() {
             if (!selectedCarObj) return;
 
             calculatedRentalAmount = calculatedRentalHours * selectedCarObj.rateVal;
-            calculatedTotalFare = calculatedRentalAmount + currentDeliveryFee;
+            calculatedTotalFare = calculatedRentalAmount + currentDeliveryFee + calculatedSecurityDeposit;
 
             document.getElementById('disp-calc-hours').innerText = calculatedRentalHours;
             document.getElementById('disp-calc-rate').innerText = `₹${selectedCarObj.rateVal}/hr`;
             document.getElementById('disp-rental-amount').innerText = `₹${calculatedRentalAmount.toLocaleString('en-IN')}`;
             document.getElementById('disp-delivery-amount').innerText = (currentDeliveryFee === 0) ? '₹0 (Self Pick-up)' : `₹${currentDeliveryFee.toLocaleString('en-IN')}`;
+            document.getElementById('disp-deposit-amount').innerText = `₹${calculatedSecurityDeposit.toLocaleString('en-IN')} (Refundable)`;
             document.getElementById('disp-total-final-fare').innerText = `₹${calculatedTotalFare.toLocaleString('en-IN')}`;
         }
 
         function handleSDBookingSubmit(e) {
             e.preventDefault();
-            const name = document.getElementById('sd-cust-name').value;
-            const phone = document.getElementById('sd-cust-phone').value;
-            const altPhone = document.getElementById('sd-cust-alt-phone').value;
+            const nameInput = document.getElementById('sd-cust-name');
+            const phoneInput = document.getElementById('sd-cust-phone');
+            const altPhoneInput = document.getElementById('sd-cust-alt-phone');
             const addr = document.getElementById('sd-cust-address').value;
+
+            const errName = document.getElementById('err-sd-name');
+            const errPhone = document.getElementById('err-sd-phone');
+            const errAltPhone = document.getElementById('err-sd-alt-phone');
+
+            let isValid = true;
+
+            // 1. Name Validation (Only alphabets & spaces)
+            if (!validateName(nameInput.value)) {
+                errName.innerText = "Please enter a valid name. Numbers and special characters are not allowed.";
+                errName.classList.remove('hidden');
+                nameInput.classList.add('border-rose-500');
+                isValid = false;
+            } else {
+                errName.classList.add('hidden');
+                nameInput.classList.remove('border-rose-500');
+            }
+
+            // 2. Primary Phone Validation (Exactly 10 digits, no 0000000000)
+            if (!validatePhone(phoneInput.value)) {
+                errPhone.innerText = "Please enter a valid 10-digit mobile number.";
+                errPhone.classList.remove('hidden');
+                phoneInput.classList.add('border-rose-500');
+                isValid = false;
+            } else {
+                errPhone.classList.add('hidden');
+                phoneInput.classList.remove('border-rose-500');
+            }
+
+            // 3. Alternate Phone Validation (Exactly 10 digits, no 0000000000)
+            if (!validatePhone(altPhoneInput.value)) {
+                errAltPhone.innerText = "Please enter a valid 10-digit alternate mobile number.";
+                errAltPhone.classList.remove('hidden');
+                altPhoneInput.classList.add('border-rose-500');
+                isValid = false;
+            } else {
+                errAltPhone.classList.add('hidden');
+                altPhoneInput.classList.remove('border-rose-500');
+            }
+
+            if (!isValid) return;
+
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const altPhone = altPhoneInput.value.trim();
             const pTime = document.getElementById('sd-modal-pdate-display').innerText;
             const rTime = document.getElementById('sd-modal-rdate-display').innerText;
             const delivLoc = document.getElementById('sd-delivery-location-input').value;
@@ -1673,14 +1776,34 @@
                 delivMsg = `*Delivery Option:* Self Pick-up at Vikhroli Hub (₹0)`;
             }
 
-            const msg = `*New Self-Drive Booking Request - Car with Driver India*%0A%0A*Customer:* ${name}%0A*Primary Phone:* ${phone}%0A*Alternate Phone:* ${altPhone}%0A*Vehicle:* ${selectedCarObj.fullName}%0A*Schedule:* ${pTime} to ${rTime}%0A*Duration:* ${calculatedRentalHours} Hours%0A*Rental Charges:* ₹${calculatedRentalAmount}%0A${delivMsg}%0A*Total Estimated Fare:* ₹${calculatedTotalFare}%0A*Security Deposit:* ${selectedCarObj.deposit}%0A*Delivery Address:* ${addr}%0A%0A_Customer has agreed to mandatory ID & inspection terms._`;
+            // Complete, accurate and matching details on WhatsApp
+            const msg = `*New Self-Drive Booking Request - Car with Driver India*%0A%0A` +
+                        `*Customer Name:* ${name}%0A` +
+                        `*Primary Phone:* ${phone}%0A` +
+                        `*Alternate Phone:* ${altPhone}%0A` +
+                        `*Vehicle:* ${selectedCarObj.fullName}%0A` +
+                        `*Trip Schedule:* ${pTime} to ${rTime}%0A` +
+                        `*Duration:* ${calculatedRentalHours} Hours%0A%0A` +
+                        `*--- FARE BREAKUP ---*%0A` +
+                        `*1. Rental Charges:* ₹${calculatedRentalAmount} (${calculatedRentalHours} hrs @ ₹${selectedCarObj.rateVal}/hr)%0A` +
+                        `*2. Delivery Fee:* ₹${currentDeliveryFee}%0A` +
+                        `*3. Refundable Security Deposit:* ₹${calculatedSecurityDeposit} (Refundable after inspection)%0A` +
+                        `*Total Estimated Fare:* ₹${calculatedTotalFare}%0A%0A` +
+                        `${delivMsg}%0A` +
+                        `*Delivery Address:* ${addr}%0A%0A` +
+                        `_Customer has confirmed and agreed to mandatory ID & inspection terms._`;
 
             window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
             closeSDModal();
         }
 
+        // ==========================================
         // PARTNER WITH US HANDLERS
+        // ==========================================
         function openPartnerModal() {
+            document.getElementById('err-part-name').classList.add('hidden');
+            document.getElementById('err-part-phone').classList.add('hidden');
+            document.getElementById('err-part-alt-phone').classList.add('hidden');
             document.getElementById('partner-modal').classList.remove('hidden');
         }
 
@@ -1690,12 +1813,48 @@
 
         function handlePartnerFormSubmit(e) {
             e.preventDefault();
-            const name = document.getElementById('part-name').value;
-            const phone = document.getElementById('part-phone').value;
-            const altPhone = document.getElementById('part-alt-phone').value;
+            const nameInput = document.getElementById('part-name');
+            const phoneInput = document.getElementById('part-phone');
+            const altPhoneInput = document.getElementById('part-alt-phone');
             const brand = document.getElementById('part-car-brand').value;
             const model = document.getElementById('part-car-model').value;
             const year = document.getElementById('part-car-year').value;
+
+            const errName = document.getElementById('err-part-name');
+            const errPhone = document.getElementById('err-part-phone');
+            const errAltPhone = document.getElementById('err-part-alt-phone');
+
+            let isValid = true;
+
+            if (!validateName(nameInput.value)) {
+                errName.innerText = "Please enter a valid name. Numbers and special characters are not allowed.";
+                errName.classList.remove('hidden');
+                isValid = false;
+            } else {
+                errName.classList.add('hidden');
+            }
+
+            if (!validatePhone(phoneInput.value)) {
+                errPhone.innerText = "Please enter a valid 10-digit mobile number.";
+                errPhone.classList.remove('hidden');
+                isValid = false;
+            } else {
+                errPhone.classList.add('hidden');
+            }
+
+            if (!validatePhone(altPhoneInput.value)) {
+                errAltPhone.innerText = "Please enter a valid 10-digit alternate mobile number.";
+                errAltPhone.classList.remove('hidden');
+                isValid = false;
+            } else {
+                errAltPhone.classList.add('hidden');
+            }
+
+            if (!isValid) return;
+
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const altPhone = altPhoneInput.value.trim();
 
             const msg = `*New Partner Inquiry - List Your Car (Car with Driver India)*%0A%0A*Owner Name:* ${name}%0A*Phone:* ${phone}%0A*Alternate Phone:* ${altPhone}%0A*Car Brand:* ${brand}%0A*Car Model:* ${model}%0A*Manufacturing Year:* ${year}%0A*Documents Ready:* RC Copy, Valid Insurance, Aadhaar Card, PAN Card.%0A%0APlease contact me with partnership terms and listing process.`;
 
@@ -1703,12 +1862,16 @@
             closePartnerModal();
         }
 
+        // ==========================================
         // WITH DRIVER MODAL & SUBMISSION
+        // ==========================================
         function openModal(name, fare) {
             chosenCarName = name;
             chosenFareAmount = fare;
             document.getElementById('modal-car-name').innerText = name;
             document.getElementById('modal-fare').innerText = '₹' + fare.toLocaleString('en-IN');
+            document.getElementById('err-wd-name').classList.add('hidden');
+            document.getElementById('err-wd-phone').classList.add('hidden');
             document.getElementById('booking-modal').classList.remove('hidden');
         }
 
@@ -1718,9 +1881,35 @@
 
         function handleBookingSubmit(e) {
             e.preventDefault();
-            const name = document.getElementById('cust-name').value;
-            const phone = document.getElementById('cust-phone').value;
+            const nameInput = document.getElementById('cust-name');
+            const phoneInput = document.getElementById('cust-phone');
             const addr = document.getElementById('cust-address').value;
+
+            const errName = document.getElementById('err-wd-name');
+            const errPhone = document.getElementById('err-wd-phone');
+
+            let isValid = true;
+
+            if (!validateName(nameInput.value)) {
+                errName.innerText = "Please enter a valid name. Numbers and special characters are not allowed.";
+                errName.classList.remove('hidden');
+                isValid = false;
+            } else {
+                errName.classList.add('hidden');
+            }
+
+            if (!validatePhone(phoneInput.value)) {
+                errPhone.innerText = "Please enter a valid 10-digit mobile number.";
+                errPhone.classList.remove('hidden');
+                isValid = false;
+            } else {
+                errPhone.classList.add('hidden');
+            }
+
+            if (!isValid) return;
+
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
 
             let msg = `*New Cab Booking (With Driver) - Car with Driver India*%0A%0A*Customer:* ${name}%0A*Phone:* ${phone}%0A*Trip Type:* ${currentWDSubTab.toUpperCase()}%0A*Vehicle:* ${chosenCarName}%0A*Est. Fare:* ₹${chosenFareAmount}%0A*Pickup Address:* ${addr}%0A*(Fare includes car rental, fuel & driver allowance. Tolls & parking extra as actuals)*`;
 
@@ -1750,7 +1939,7 @@
             closeModal();
         }
 
-        // Initialize Defaults on Load
+        // Initialize Defaults
         window.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toISOString().split('T')[0];
             const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];

@@ -2308,29 +2308,70 @@ if (typeof supabasePublic !== 'undefined' && supabasePublic) {
             showSuccessModal();
         }
 
-        // Initialize Defaults
+// Initialize Defaults
     window.addEventListener('DOMContentLoaded', () => {
+        // --- Helper: Format YYYY-MM-DD in Local Time ---
+        const formatLocalDate = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
         const now = new Date();
-        const today = now.toISOString().split('T')[0];
-        
-        // Next hour round-off calculation
-        const nextHour = (now.getHours() + 1) % 24;
-        const period = nextHour >= 12 ? 'PM' : 'AM';
-        const hour12 = String(nextHour % 12 || 12).padStart(2, '0') + ':00';
+        const todayStr = formatLocalDate(now);
 
-        // Dates assignment
-        if (document.getElementById('wd-local-date')) document.getElementById('wd-local-date').value = today;
-        if (document.getElementById('wd-airport-date')) document.getElementById('wd-airport-date').value = today;
-        if (document.getElementById('wd-out-pdate')) document.getElementById('wd-out-pdate').value = today;
-        if (document.getElementById('wd-out-rdate')) document.getElementById('wd-out-rdate').value = today; // 1 Day calculation default
+        // With-Driver Defaults (Local City)
+        if (document.getElementById('wd-local-date')) document.getElementById('wd-local-date').value = todayStr;
+        if (document.getElementById('wd-airport-date')) document.getElementById('wd-airport-date').value = todayStr;
+        if (document.getElementById('wd-out-pdate')) document.getElementById('wd-out-pdate').value = todayStr;
+        if (document.getElementById('wd-out-rdate')) document.getElementById('wd-out-rdate').value = todayStr;
 
-        // Self Drive current date & next hour
-        if (document.getElementById('sd-pdate')) document.getElementById('sd-pdate').value = today;
-        if (document.getElementById('sd-rdate')) document.getElementById('sd-rdate').value = today;
-        if (document.getElementById('sd-ptime')) document.getElementById('sd-ptime').value = hour12;
-        if (document.getElementById('sd-pampm')) document.getElementById('sd-pampm').value = period;
+        // --- Self-Drive Times (Pickup = Now + 3 Hours, Return = Pickup + 8 Hours) ---
+        const pickupDateObj = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+        const returnDateObj = new Date(pickupDateObj.getTime() + (8 * 60 * 60 * 1000));
 
-        // Open Local Tab by default
+        const getHourAndAmpm = (d) => {
+            let h = d.getHours();
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            return {
+                hourStr: String(h).padStart(2, '0') + ':00',
+                rawHourStr: String(h).padStart(2, '0'),
+                ampm: ampm
+            };
+        };
+
+        const pTimeData = getHourAndAmpm(pickupDateObj);
+        const rTimeData = getHourAndAmpm(returnDateObj);
+
+        // Set Pickup Date & Time
+        const sdPDate = document.getElementById('sd-pdate');
+        if (sdPDate) sdPDate.value = formatLocalDate(pickupDateObj);
+
+        const sdPHour = document.getElementById('sd-phour') || document.getElementById('sd-ptime');
+        if (sdPHour) {
+            sdPHour.value = pTimeData.hourStr;
+            if (!sdPHour.value) sdPHour.value = pTimeData.rawHourStr;
+        }
+
+        const sdPAmpm = document.getElementById('sd-pampm');
+        if (sdPAmpm) sdPAmpm.value = pTimeData.ampm;
+
+        // Set Return Date & Time
+        const sdRDate = document.getElementById('sd-rdate');
+        if (sdRDate) sdRDate.value = formatLocalDate(returnDateObj);
+
+        const sdRHour = document.getElementById('sd-rhour') || document.getElementById('sd-rtime');
+        if (sdRHour) {
+            sdRHour.value = rTimeData.hourStr;
+            if (!sdRHour.value) sdRHour.value = rTimeData.rawHourStr;
+        }
+
+        const sdRAmpm = document.getElementById('sd-rampm');
+        if (sdRAmpm) sdRAmpm.value = rTimeData.ampm;
+
+        // Default open Local Tab
         if (typeof setWDSubTab === 'function') {
             setWDSubTab('local');
         }

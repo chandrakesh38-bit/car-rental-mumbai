@@ -2085,7 +2085,18 @@ window.addEventListener('DOMContentLoaded', () => {
                         `${delivMsg}%0A` +
                         `*Complete Address:* ${fullAddress}%0A%0A` +
                         `_Customer has confirmed and agreed to mandatory ID & inspection terms._`;
-
+// Supabase Lead Insert - Self Drive
+if (window.supabasePublic) {
+    window.supabasePublic.from('inquiries').insert([{
+        customer_name: (document.getElementById('sd-name') ? document.getElementById('sd-name').value.trim() : 'Self-Drive Customer'),
+        customer_phone: (document.getElementById('sd-phone') ? document.getElementById('sd-phone').value.trim() : ''),
+        service_type: 'Self-Drive',
+        vehicle_name: (selectedCarObj ? selectedCarObj.fullName : 'Car Booking'),
+        total_fare: calculatedTotalFare || 0,
+        status: 'new'
+    }]).then(res => console.log('Self-Drive lead saved:', res));
+}
+            
             window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
             closeSDModal();
             showSuccessModal();
@@ -2230,6 +2241,20 @@ window.addEventListener('DOMContentLoaded', () => {
                 msg += `%0A*Airport:* ${term.toUpperCase()}%0A*Flight Time:* ${d} at ${h}:00 ${m}`;
             }
 
+            // Supabase Lead Insert - With Driver
+if (window.supabasePublic) {
+    const wdName = document.getElementById('wd-name') ? document.getElementById('wd-name').value.trim() : '';
+    const wdPhone = document.getElementById('wd-phone') ? document.getElementById('wd-phone').value.trim() : '';
+    window.supabasePublic.from('inquiries').insert([{
+        customer_name: wdName || 'With-Driver Customer',
+        customer_phone: wdPhone || '',
+        service_type: 'With-Driver',
+        vehicle_name: (typeof chosenCarName !== 'undefined' ? chosenCarName : 'With-Driver Car'),
+        total_fare: (typeof chosenFareAmount !== 'undefined' ? chosenFareAmount : 0),
+        status: 'new'
+    }]).then(res => console.log('With-Driver lead saved:', res));
+}
+            
             window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
             closeModal();
             showSuccessModal();

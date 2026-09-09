@@ -14,6 +14,35 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .tab-active { background-color: #f59e0b !important; color: #0f172a !important; font-weight: 700; }
         .subtab-active { background-color: #ffffff !important; color: #1e1b4b !important; border-bottom: 2px solid #312e81; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 220px;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15);
+            z-index: 60;
+            margin-top: 4px;
+        }
+        .autocomplete-item {
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #1e293b;
+            transition: all 0.15s;
+        }
+        .autocomplete-item:hover {
+            background-color: #f1f5f9;
+            color: #1e1b4b;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
@@ -37,7 +66,6 @@
                     <i class="fa-brands fa-whatsapp text-sm"></i> Talk to Us
                 </a>
 
-                <!-- 3 Horizontal Lines (Hamburger Menu Button) -->
                 <button type="button" onclick="openNavDrawer()" class="p-2.5 rounded-xl text-slate-700 hover:text-indigo-950 hover:bg-slate-100 transition focus:outline-none flex items-center justify-center border border-slate-200">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
@@ -95,7 +123,6 @@
             </div>
         </div>
 
-        <!-- Drawer Footer -->
         <div class="pt-4 border-t border-slate-100 space-y-2">
             <a href="https://wa.me/919702988465" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm">
                 <i class="fa-brands fa-whatsapp text-sm"></i>
@@ -149,9 +176,10 @@
 
                     <!-- LOCAL CITY FIELDS -->
                     <div id="wd-local-fields" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
+                        <div class="relative">
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address</label>
-                            <input type="text" list="mumbai-stations-list" id="wd-local-pickup" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="e.g. Bhandup, Dadar, Thane, Vashi">
+                            <input type="text" id="wd-local-pickup" autocomplete="off" oninput="showSuggestions('wd-local-pickup', 'mumbai-places', 'wd-local-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Type area (e.g. Bhandup, Dadar, Thane)">
+                            <div id="wd-local-dropdown" class="autocomplete-dropdown hidden"></div>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> Rental Package</label>
@@ -181,13 +209,15 @@
                     <!-- OUTSTATION FIELDS -->
                     <div id="wd-outstation-fields" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
+                            <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-train text-indigo-600 mr-1"></i> Pickup Area / Railway Station</label>
-                                <input list="mumbai-stations-list" id="wd-out-pickup" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Select or type area/station..." value="Bhandup">
+                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search area (e.g. Bhandup, Dadar, Panvel)" value="Bhandup">
+                                <div id="wd-out-pickup-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
-                            <div>
+                            <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> Destination City (Maharashtra & Beyond)</label>
-                                <input list="maharashtra-districts-list" id="wd-out-destination" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Select or type city..." value="Pune" oninput="onWDDestinationInput()">
+                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'destination-cities', 'wd-out-dest-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search destination (e.g. Pune, Nashik, Mahabaleshwar)" value="Pune">
+                                <div id="wd-out-dest-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                         </div>
 
@@ -253,9 +283,10 @@
                                     <option>Pickup from Airport</option>
                                 </select>
                             </div>
-                            <div>
+                            <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> City Address / Area</label>
-                                <input type="text" list="mumbai-stations-list" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="e.g. Thane, Bhandup, Navi Mumbai">
+                                <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search area (e.g. Thane, Bhandup)">
+                                <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                         </div>
 
@@ -294,7 +325,6 @@
                     <!-- Self Drive Booking Date & Time Form -->
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Pick-up Date & Time -->
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Pick-up Date & Time</label>
                                 <div class="grid grid-cols-3 gap-2">
@@ -306,11 +336,10 @@
                                     </select>
                                     <select id="sd-pampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
                                         <option value="AM">AM</option>
-                                        <option value="PM" selected>PM</option>
+                                        <option value="PM">PM</option>
                                     </select>
                                 </div>
                             </div>
-                            <!-- Return Date & Time -->
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Return Date & Time</label>
                                 <div class="grid grid-cols-3 gap-2">
@@ -331,17 +360,15 @@
 
                     <!-- Comprehensive Filters & Sorting Toolbar -->
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                        
-                        <!-- Row 1: Search & Sorting -->
                         <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
                             <div class="relative flex-1">
                                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
-                                <input type="text" id="sd-search-box" oninput="applyAllSDFilters()" placeholder="Search car (e.g. Thar, Creta, Brezza, 7XO)..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-600 outline-none">
+                                <input type="text" id="sd-search-box" oninput="applyAllSDFilters()" placeholder="Search car (e.g. Nexon, Punch, Thar, Creta)..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-600 outline-none">
                             </div>
                             <div class="flex items-center gap-2">
                                 <label class="text-xs font-bold text-slate-600 whitespace-nowrap"><i class="fa-solid fa-arrow-down-short-wide text-indigo-600 mr-1"></i>Sort:</label>
                                 <select id="sd-sort-by" onchange="applyAllSDFilters()" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-600">
-                                    <option value="default">Featured / Default</option>
+                                    <option value="default">Featured / Priority</option>
                                     <option value="price-asc">Price: Low to High</option>
                                     <option value="price-desc">Price: High to Low</option>
                                 </select>
@@ -351,7 +378,7 @@
                             </div>
                         </div>
 
-                        <!-- Row 2: 5 Dropdown Filters -->
+                        <!-- 5 Dropdown Filters -->
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 pt-2 border-t border-slate-100">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fuel Type</label>
@@ -396,9 +423,9 @@
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Brand</label>
                                 <select id="sd-filter-brand" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
                                     <option value="All">All Brands</option>
+                                    <option value="Tata">Tata</option>
                                     <option value="Maruti Suzuki">Maruti Suzuki</option>
                                     <option value="Mahindra">Mahindra</option>
-                                    <option value="Tata">Tata</option>
                                     <option value="Toyota">Toyota</option>
                                     <option value="Hyundai">Hyundai</option>
                                     <option value="Kia">Kia</option>
@@ -410,10 +437,10 @@
 
                         <!-- Brand Quick Pills -->
                         <div class="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-slate-100 scrollbar-none text-xs font-bold" id="brand-filter-btns">
-                            <button onclick="setBrandPill('All')" class="sd-brand-btn active px-3 py-1.5 bg-indigo-950 text-white rounded-lg whitespace-nowrap shadow-sm font-bold">All Cars</button>
+                            <button onclick="setBrandPill('All')" class="sd-brand-btn active px-3 py-1.5 bg-indigo-950 text-white rounded-lg whitespace-nowrap shadow-sm">All Cars</button>
+                            <button onclick="setBrandPill('Tata')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Tata</button>
                             <button onclick="setBrandPill('Maruti Suzuki')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Maruti Suzuki</button>
                             <button onclick="setBrandPill('Mahindra')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Mahindra</button>
-                            <button onclick="setBrandPill('Tata')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Tata</button>
                             <button onclick="setBrandPill('Toyota')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Toyota</button>
                             <button onclick="setBrandPill('Hyundai')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Hyundai</button>
                             <button onclick="setBrandPill('Kia')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Kia</button>
@@ -422,18 +449,18 @@
                         </div>
                     </div>
 
-                    <!-- Dynamic 8-Car Per Page Grid Container -->
-                    <div id="selfdrive-cars-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                    <!-- Dynamic 6-Car Per Page Grid Container -->
+                    <div id="selfdrive-cars-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                         <!-- Rendered by JS -->
                     </div>
 
-                    <!-- Pagination Controls -->
+                    <!-- Pagination Controls (6 Cars Per Page) -->
                     <div id="sd-pagination-container" class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <span class="text-xs text-slate-500 font-medium" id="sd-pagination-info">
-                            Showing 1 to 8 of 32 cars
+                            Showing 1 to 6 of 32 cars
                         </span>
                         <div class="flex items-center space-x-1.5" id="sd-pagination-btns">
-                            <!-- Injected by JS: Prev, 1, 2, 3, 4, Next -->
+                            <!-- Injected by JS: Prev, 1, 2, 3, 4, 5, 6, Next -->
                         </div>
                     </div>
 
@@ -797,7 +824,7 @@
         </div>
     </div>
 
-    <!-- SELF DRIVE BOOKING MODAL -->
+    <!-- SELF DRIVE BOOKING MODAL (STRUCTURED ADDRESS + AUTO PRE-FILL + AUTOCOMPLETE) -->
     <div id="sd-booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
             <button type="button" onclick="closeSDModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
@@ -846,10 +873,11 @@
                     </div>
                 </div>
 
-                <!-- Clean Home Delivery Location Input -->
-                <div id="sd-home-delivery-box" class="space-y-2 p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl">
+                <!-- Clean Home Delivery Location Input with Autocomplete -->
+                <div id="sd-home-delivery-box" class="space-y-2 p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl relative">
                     <label class="block text-xs font-bold text-indigo-950 mb-1">Select Delivery Location</label>
-                    <input list="delivery-locations-clean-list" id="sd-delivery-location-input" oninput="calculateDeliveryCharges()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Type or select delivery area (e.g. Dahisar, Mulund, Bandra)..." value="Mulund">
+                    <input type="text" id="sd-delivery-location-input" autocomplete="off" oninput="showSuggestions('sd-delivery-location-input', 'delivery-locations', 'sd-delivery-dropdown')" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Type area (e.g. Mulund, Dahisar, Bandra, Kurla)" value="Mulund">
+                    <div id="sd-delivery-dropdown" class="autocomplete-dropdown hidden"></div>
                 </div>
 
                 <!-- Self Pick-up Hub Info Box -->
@@ -898,7 +926,7 @@
                     </ul>
                 </div>
 
-                <!-- Customer Details Form with Validations -->
+                <!-- Customer Details Form with Validations & Structured Address Fields -->
                 <div class="space-y-2.5 pt-1">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Your Full Name</label>
@@ -917,9 +945,28 @@
                             <p id="err-sd-alt-phone" class="text-[11px] text-rose-600 mt-1 hidden"></p>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Delivery / Communication Address</label>
-                        <textarea id="sd-cust-address" rows="2" required placeholder="Flat / Building, Landmark, City" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
+
+                    <!-- STRUCTURED ADDRESS (ADDRESS, CITY, STATE, PINCODE WITH PRE-FILL) -->
+                    <div class="space-y-2 pt-1 border-t border-slate-100">
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Delivery &amp; Communication Address</label>
+                        <div>
+                            <input type="text" id="sd-addr-street" required placeholder="Flat / Building / Lane / Landmark" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">City</label>
+                                <input type="text" id="sd-addr-city" required placeholder="City" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-2 focus:ring-indigo-600 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">State</label>
+                                <input type="text" id="sd-addr-state" value="Maharashtra" required readonly class="w-full bg-slate-100 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-not-allowed">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Pincode</label>
+                                <input type="tel" id="sd-addr-pincode" maxlength="6" required placeholder="6-digit PIN" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-2 focus:ring-indigo-600 outline-none">
+                            </div>
+                        </div>
+                        <p id="err-sd-pincode" class="text-[11px] text-rose-600 mt-0.5 hidden"></p>
                     </div>
                 </div>
 
@@ -981,7 +1028,6 @@
                     </div>
                 </div>
 
-                <!-- Document Checklist -->
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-2">
                     <span class="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">Required Document Copies (Send on WhatsApp)</span>
                     <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
@@ -1000,32 +1046,25 @@
         </div>
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- NEW: SUCCESS CONFIRMATION MODAL POPUP (AFTER SUCCESSFUL REQUEST SUBMIT)   -->
-    <!-- ========================================================================= -->
+    <!-- SUCCESS CONFIRMATION MODAL POPUP -->
     <div id="success-confirmation-modal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all duration-300">
         <div class="bg-white w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl relative text-center transform scale-100 transition-transform">
-            <!-- Close icon button -->
             <button type="button" onclick="closeSuccessModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
-            <!-- Animated Green Verified Checkmark Badge -->
             <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner">
                 <i class="fa-solid fa-circle-check"></i>
             </div>
 
-            <!-- Professional & Friendly Heading -->
             <h3 class="text-xl font-black text-slate-900 tracking-tight mb-2">
                 Thank You for Sharing Your Details!
             </h3>
 
-            <!-- Confirmation Message Body -->
             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm mx-auto mb-6">
                 Your request has been successfully submitted. Our team will verify the details and get back to you shortly.
             </p>
 
-            <!-- Support info & OK button -->
             <div class="space-y-2.5">
                 <button type="button" onclick="closeSuccessModal()" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-extrabold py-3.5 rounded-xl shadow-lg transition text-xs tracking-wide">
                     OK, Got It
@@ -1037,100 +1076,186 @@
         </div>
     </div>
 
-    <!-- DATALISTS -->
-    <datalist id="mumbai-stations-list">
-        <option value="Masjid"></option><option value="Sandhurst Road"></option><option value="Byculla"></option>
-        <option value="Chinchpokli"></option><option value="Curry Road"></option><option value="Parel"></option>
-        <option value="Dadar"></option><option value="Matunga"></option><option value="Sion"></option>
-        <option value="Kurla"></option><option value="Vidyavihar"></option><option value="Ghatkopar"></option>
-        <option value="Vikhroli"></option><option value="Kanjurmarg"></option><option value="Bhandup"></option>
-        <option value="Nahur"></option><option value="Mulund"></option><option value="Thane"></option>
-        <option value="Mahim"></option><option value="Bandra"></option><option value="Khar Road"></option>
-        <option value="Santacruz"></option><option value="Vile Parle"></option><option value="Andheri"></option>
-        <option value="Jogeshwari"></option><option value="Ram Mandir"></option><option value="Goregaon"></option>
-        <option value="Mira Road"></option><option value="Bhayandar"></option><option value="Naigaon"></option>
-        <option value="Vasai Road"></option><option value="Nallasopara"></option><option value="Virar"></option>
-        <option value="Dockyard Road"></option><option value="Reay Road"></option><option value="Cotton Green"></option>
-        <option value="Sewri"></option><option value="Wadala Road"></option><option value="GTB Nagar"></option>
-        <option value="Chunabhatti"></option><option value="Tilak Nagar"></option><option value="Chembur"></option>
-        <option value="Govandi"></option><option value="Mankhurd"></option><option value="Vashi"></option>
-        <option value="Sanpada"></option><option value="Juinagar"></option><option value="Nerul"></option>
-        <option value="Seawoods–Darave"></option><option value="CBD Belapur"></option><option value="Kharghar"></option>
-        <option value="Mansarovar"></option><option value="Khandeshwar"></option><option value="Panvel"></option>
-        <option value="Digha Gaon"></option><option value="Airoli"></option><option value="Rabale"></option>
-        <option value="Ghansoli"></option><option value="Kopar Khairane"></option><option value="Turbhe"></option>
-        <option value="Sagar Sangam"></option><option value="Targhar"></option><option value="Bamandongri"></option>
-        <option value="Kharkopar"></option><option value="Gavhan"></option><option value="Ranjanpada"></option>
-        <option value="Nhava Sheva"></option><option value="Dronagiri"></option><option value="Uran"></option>
-    </datalist>
-
-    <datalist id="maharashtra-districts-list">
-        <option value="Ahilyanagar" data-km="520"></option><option value="Akola" data-km="1150"></option>
-        <option value="Amravati" data-km="1320"></option><option value="Beed" data-km="780"></option>
-        <option value="Bhandara" data-km="1700"></option><option value="Buldhana" data-km="980"></option>
-        <option value="Chandrapur" data-km="1650"></option><option value="Chhatrapati Sambhajinagar" data-km="680"></option>
-        <option value="Dharashiv (formerly Osmanabad)" data-km="850"></option><option value="Dhule" data-km="660"></option>
-        <option value="Gadchiroli" data-km="1800"></option><option value="Gondia" data-km="1850"></option>
-        <option value="Hingoli" data-km="1080"></option><option value="Jalgaon" data-km="820"></option>
-        <option value="Jalna" data-km="780"></option><option value="Kolhapur" data-km="760"></option>
-        <option value="Latur" data-km="960"></option><option value="Mumbai City" data-km="100"></option>
-        <option value="Mumbai Suburban (Bandra/Andheri/Borivali)" data-km="100"></option>
-        <option value="Nagpur" data-km="1650"></option><option value="Nanded" data-km="1180"></option>
-        <option value="Nandurbar" data-km="780"></option><option value="Nashik" data-km="340"></option>
-        <option value="Palghar" data-km="220"></option><option value="Parbhani" data-km="980"></option>
-        <option value="Pune" data-km="300"></option><option value="Raigad (Alibag)" data-km="220"></option>
-        <option value="Ratnagiri" data-km="660"></option><option value="Sangli" data-km="760"></option>
-        <option value="Satara" data-km="520"></option><option value="Sindhudurg (Oros)" data-km="980"></option>
-        <option value="Solapur" data-km="800"></option><option value="Thane" data-km="100"></option>
-        <option value="Wardha" data-km="1450"></option><option value="Washim" data-km="1050"></option>
-        <option value="Yavatmal" data-km="1350"></option>
-    </datalist>
-
-    <datalist id="delivery-locations-clean-list">
-        <option value="Vikhroli" data-rt="4"></option>
-        <option value="Kanjurmarg" data-rt="8"></option>
-        <option value="Ghatkopar" data-rt="10"></option>
-        <option value="Bhandup" data-rt="12"></option>
-        <option value="Powai" data-rt="14"></option>
-        <option value="Mulund" data-rt="16"></option>
-        <option value="Chembur" data-rt="18"></option>
-        <option value="Kurla" data-rt="20"></option>
-        <option value="Sion" data-rt="22"></option>
-        <option value="Thane" data-rt="24"></option>
-        <option value="Dadar" data-rt="30"></option>
-        <option value="Andheri" data-rt="32"></option>
-        <option value="Bandra" data-rt="34"></option>
-        <option value="Vashi (Navi Mumbai)" data-rt="36"></option>
-        <option value="Goregaon" data-rt="38"></option>
-        <option value="Nerul (Navi Mumbai)" data-rt="46"></option>
-        <option value="Kandivali" data-rt="50"></option>
-        <option value="Colaba / Churchgate" data-rt="52"></option>
-        <option value="Borivali" data-rt="54"></option>
-        <option value="Kharghar (Navi Mumbai)" data-rt="56"></option>
-        <option value="Dahisar" data-rt="60"></option>
-        <option value="Mira Road" data-rt="66"></option>
-        <option value="Panvel" data-rt="70"></option>
-    </datalist>
-
     <script>
         // ==========================================
-        // SUCCESS POPUP MODAL HANDLERS
+        // AUTOCOMPLETE DATA (OLA/UBER STYLE)
         // ==========================================
+        const mumbaiPlaces = [
+            "Masjid", "Sandhurst Road", "Byculla", "Chinchpokli", "Curry Road", "Parel", "Dadar", "Matunga",
+            "Sion", "Kurla", "Vidyavihar", "Ghatkopar", "Vikhroli", "Kanjurmarg", "Bhandup", "Nahur", "Mulund",
+            "Thane", "Mahim", "Bandra", "Khar Road", "Santacruz", "Vile Parle", "Andheri", "Jogeshwari",
+            "Ram Mandir", "Goregaon", "Malad", "Kandivali", "Borivali", "Dahisar", "Mira Road", "Bhayandar",
+            "Naigaon", "Vasai Road", "Nallasopara", "Virar", "Dockyard Road", "Reay Road", "Cotton Green",
+            "Sewri", "Wadala Road", "GTB Nagar", "Chunabhatti", "Tilak Nagar", "Chembur", "Govandi", "Mankhurd",
+            "Vashi", "Sanpada", "Juinagar", "Nerul", "Seawoods–Darave", "CBD Belapur", "Kharghar", "Mansarovar",
+            "Khandeshwar", "Panvel", "Digha Gaon", "Airoli", "Rabale", "Ghansoli", "Kopar Khairane", "Turbhe",
+            "Sagar Sangam", "Targhar", "Bamandongri", "Kharkopar", "Gavhan", "Ranjanpada", "Nhava Sheva",
+            "Dronagiri", "Uran", "Colaba", "Churchgate", "Marine Lines", "Chhatrapati Shivaji Maharaj Terminus (CSMT)",
+            "Mumbai Central", "Powai", "Hiranandani Powai", "Lokhandwala Andheri", "BKC (Bandra Kurla Complex)"
+        ];
+
+        const destinationCities = [
+            { name: "Pune", km: 300 },
+            { name: "Nashik", km: 340 },
+            { name: "Lonavala", km: 170 },
+            { name: "Khandala", km: 165 },
+            { name: "Mahabaleshwar", km: 520 },
+            { name: "Shirdi", km: 480 },
+            { name: "Alibag", km: 220 },
+            { name: "Lavasa", km: 380 },
+            { name: "Chhatrapati Sambhajinagar", km: 680 },
+            { name: "Ahilyanagar", km: 520 },
+            { name: "Kolhapur", km: 760 },
+            { name: "Solapur", km: 800 },
+            { name: "Satara", km: 520 },
+            { name: "Sangli", km: 760 },
+            { name: "Ratnagiri", km: 660 },
+            { name: "Sindhudurg (Oros)", km: 980 },
+            { name: "Dhule", km: 660 },
+            { name: "Jalgaon", km: 820 },
+            { name: "Nagpur", km: 1650 },
+            { name: "Amravati", km: 1320 },
+            { name: "Akola", km: 1150 },
+            { name: "Nanded", km: 1180 },
+            { name: "Latur", km: 960 },
+            { name: "Dharashiv (Osmanabad)", km: 850 },
+            { name: "Beed", km: 780 },
+            { name: "Jalna", km: 780 },
+            { name: "Buldhana", km: 980 },
+            { name: "Parbhani", km: 980 },
+            { name: "Hingoli", km: 1080 },
+            { name: "Washim", km: 1050 },
+            { name: "Yavatmal", km: 1350 },
+            { name: "Wardha", km: 1450 },
+            { name: "Chandrapur", km: 1650 },
+            { name: "Bhandara", km: 1700 },
+            { name: "Gondia", km: 1850 },
+            { name: "Gadchiroli", km: 1800 },
+            { name: "Nandurbar", km: 780 },
+            { name: "Palghar", km: 220 },
+            { name: "Surat", km: 580 },
+            { name: "Vapi", km: 340 },
+            { name: "Daman / Silvassa", km: 360 },
+            { name: "Vadodara / Baroda", km: 840 },
+            { name: "Statue of Unity (Kevadia)", km: 850 },
+            { name: "Ahmedabad", km: 1060 },
+            { name: "Goa (North / South)", km: 1200 }
+        ];
+
+        const deliveryLocations = [
+            { name: "Vikhroli", rt: 4, city: "Mumbai" },
+            { name: "Kanjurmarg", rt: 8, city: "Mumbai" },
+            { name: "Ghatkopar", rt: 10, city: "Mumbai" },
+            { name: "Bhandup", rt: 12, city: "Mumbai" },
+            { name: "Powai", rt: 14, city: "Mumbai" },
+            { name: "Mulund", rt: 16, city: "Mumbai" },
+            { name: "Chembur", rt: 18, city: "Mumbai" },
+            { name: "Kurla", rt: 20, city: "Mumbai" },
+            { name: "Sion", rt: 22, city: "Mumbai" },
+            { name: "Thane", rt: 24, city: "Thane" },
+            { name: "Dadar", rt: 30, city: "Mumbai" },
+            { name: "Andheri", rt: 32, city: "Mumbai" },
+            { name: "Bandra", rt: 34, city: "Mumbai" },
+            { name: "Vashi", rt: 36, city: "Navi Mumbai" },
+            { name: "Goregaon", rt: 38, city: "Mumbai" },
+            { name: "Nerul", rt: 46, city: "Navi Mumbai" },
+            { name: "Malad", rt: 44, city: "Mumbai" },
+            { name: "Kandivali", rt: 50, city: "Mumbai" },
+            { name: "Colaba / Churchgate", rt: 52, city: "Mumbai" },
+            { name: "Borivali", rt: 54, city: "Mumbai" },
+            { name: "Kharghar", rt: 56, city: "Navi Mumbai" },
+            { name: "Dahisar", rt: 60, city: "Mumbai" },
+            { name: "Mira Road", rt: 66, city: "Thane" },
+            { name: "Bhayandar", rt: 72, city: "Thane" },
+            { name: "Panvel", rt: 70, city: "Navi Mumbai" }
+        ];
+
+        // Autocomplete suggestion generator
+        function showSuggestions(inputId, datasetType, dropdownId) {
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+            const query = input.value.trim().toLowerCase();
+
+            if (!query) {
+                dropdown.innerHTML = '';
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            let matches = [];
+            if (datasetType === 'mumbai-places') {
+                matches = mumbaiPlaces.filter(p => p.toLowerCase().includes(query)).slice(0, 8);
+            } else if (datasetType === 'destination-cities') {
+                matches = destinationCities.filter(c => c.name.toLowerCase().includes(query)).slice(0, 8);
+            } else if (datasetType === 'delivery-locations') {
+                matches = deliveryLocations.filter(l => l.name.toLowerCase().includes(query)).slice(0, 8);
+            }
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = '';
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            dropdown.innerHTML = '';
+            matches.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+
+                const itemName = (typeof item === 'string') ? item : item.name;
+                
+                // Highlight matched substring
+                const regex = new RegExp(`(${query})`, 'gi');
+                const highlighted = itemName.replace(regex, '<span class="text-indigo-600 font-extrabold">$1</span>');
+
+                div.innerHTML = `<i class="fa-solid fa-location-dot text-slate-400 text-xs"></i><span>${highlighted}</span>`;
+                div.onmousedown = (e) => {
+                    e.preventDefault();
+                    input.value = itemName;
+                    dropdown.classList.add('hidden');
+
+                    if (datasetType === 'destination-cities') {
+                        onWDDestinationInput();
+                    } else if (datasetType === 'delivery-locations') {
+                        calculateDeliveryCharges();
+                        autoFillAddressCity(item);
+                    }
+                };
+                dropdown.appendChild(div);
+            });
+
+            dropdown.classList.remove('hidden');
+        }
+
+        // Auto-fill City & Pincode based on delivery selection
+        function autoFillAddressCity(locObj) {
+            const cityInput = document.getElementById('sd-addr-city');
+            if (cityInput && locObj && locObj.city) {
+                cityInput.value = locObj.city;
+            }
+        }
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', (e) => {
+            document.querySelectorAll('.autocomplete-dropdown').forEach(dd => {
+                if (!dd.contains(e.target) && !e.target.matches('input')) {
+                    dd.classList.add('hidden');
+                }
+            });
+        });
+
+        // SUCCESS POPUP MODAL
         function showSuccessModal() {
             const modal = document.getElementById('success-confirmation-modal');
-            if (modal) {
-                modal.classList.remove('hidden');
-            }
+            if (modal) modal.classList.remove('hidden');
         }
 
         function closeSuccessModal() {
             const modal = document.getElementById('success-confirmation-modal');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
+            if (modal) modal.classList.add('hidden');
         }
 
-        // DRAWER NAVIGATION HANDLERS
+        // DRAWER NAVIGATION
         function openNavDrawer() {
             const drawer = document.getElementById('nav-drawer');
             const overlay = document.getElementById('nav-drawer-overlay');
@@ -1171,7 +1296,12 @@
             return regex.test(phone.trim());
         }
 
-        // WITH DRIVER FLEET DATA
+        function validatePincode(pin) {
+            const regex = /^[1-9]\d{5}$/;
+            return regex.test(pin.trim());
+        }
+
+        // WITH DRIVER FLEET
         const wdFleet = [
             {
                 name: 'Sedan (Dzire / Aura)',
@@ -1223,40 +1353,44 @@
             }
         ];
 
-        // 32 EXCEL CARS DATA
+        // 32 EXCEL CARS (PRIORITY REORDERED: 1st Tata Nexon, 2nd Tata Punch)
         const excelCarsData = [
-          { "brand": "BMW", "model": "520D", "fullName": "BMW 520D", "segment": "Luxury Sedan", "transmission": "Automatic", "fuel": "Diesel", "seats": 5, "rateHour": "₹650/hour", "rateVal": 650, "deposit": "₹10,000", "depositVal": 10000, "imgUrl": "https://lh3.googleusercontent.com/d/1Mjy4A4BhkWhIgHz1E9Ofy6aCUk53IZkP" },
-          { "brand": "Hyundai", "model": "Creta", "fullName": "Hyundai Creta", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1In3muCV_Mk72zELKjAIlhs-OWgR7RKof" },
-          { "brand": "Hyundai", "model": "Exter (Automatic)", "fullName": "Hyundai Exter (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹125/hour", "rateVal": 125, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv" },
-          { "brand": "Hyundai", "model": "Exter (Manual)", "fullName": "Hyundai Exter (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv" },
-          { "brand": "Hyundai", "model": "i20", "fullName": "Hyundai i20", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZDZwcXPDBFiUCMNzwWQfDaeHZuiW2Vha" },
-          { "brand": "Jeep", "model": "Compass", "fullName": "Jeep Compass", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹5,000", "depositVal": 5000, "imgUrl": "https://lh3.googleusercontent.com/d/1baBIvOkCMRSM9KUTn6AvTWPPBBC5kxa9" },
-          { "brand": "Kia", "model": "Carens", "fullName": "Kia Carens", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 6, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1LKPHrDzRtHODi2kiWgAC-DCFhneNBxfd" },
-          { "brand": "Mahindra", "model": "7XO", "fullName": "Mahindra 7XO", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 7, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/164EyWUGQ24XIZPit5_rVZ7kTbmNU1Pim" },
-          { "brand": "Mahindra", "model": "Scorpio N", "fullName": "Mahindra Scorpio N", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1wKIdSZZ3mykmzIZSpKGXRl_zFkWQNcuq" },
-          { "brand": "Mahindra", "model": "Thar", "fullName": "Mahindra Thar", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 4, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1bC337oF5wf0Dl2KdkdRgagkeOP_VFqI5" },
-          { "brand": "Mahindra", "model": "Thar Roxx", "fullName": "Mahindra Thar Roxx", "segment": "SUV", "transmission": "Automatic", "fuel": "Diesel", "seats": 4, "rateHour": "₹333/hour", "rateVal": 333, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/14UgKtx1oqWl84guztZ28c3Kgmo_6jP-C" },
-          { "brand": "Mahindra", "model": "XUV 500", "fullName": "Mahindra XUV 500", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/14nWzEeYcUlawsmTNanoS7Fw6QsAWOW98" },
-          { "brand": "Mahindra", "model": "XUV 700", "fullName": "Mahindra XUV 700", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹313/hour", "rateVal": 313, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1JZrrF7FqV8DUrTfV-_fXCpzOEa7Zii33" },
-          { "brand": "Maruti Suzuki", "model": "Baleno", "fullName": "Maruti Suzuki Baleno", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1KClMWsI-DX43nzhueP5Mjy-txH04VxaY" },
-          { "brand": "Maruti Suzuki", "model": "Brezza", "fullName": "Maruti Suzuki Brezza", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZQThm_H_eCLv4kBFYixmyjlBFLimsqw5" },
-          { "brand": "Maruti Suzuki", "model": "Dzire", "fullName": "Maruti Suzuki Dzire", "segment": "Sedan", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/18pheBt3K7gbOXwSutbdNVWrok_N2DCG3" },
-          { "brand": "Maruti Suzuki", "model": "Ertiga", "fullName": "Maruti Suzuki Ertiga", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/15o35vVV6iXixrjwMIXiIhLxAFeHj5Uel" },
-          { "brand": "Maruti Suzuki", "model": "Fronx (Automatic)", "fullName": "Maruti Suzuki Fronx (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ" },
-          { "brand": "Maruti Suzuki", "model": "Fronx (Manual)", "fullName": "Maruti Suzuki Fronx (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ" },
-          { "brand": "Maruti Suzuki", "model": "Grand Vitara", "fullName": "Maruti Suzuki Grand Vitara", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1PpB-DhjK0H71vEG0-RQk31IYia6wE0h8" },
-          { "brand": "Maruti Suzuki", "model": "Ignis", "fullName": "Maruti Suzuki Ignis", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1QIuOiX3yAdwEF6VEKGJblzi-ZI-WinKC" },
-          { "brand": "Maruti Suzuki", "model": "Swift", "fullName": "Maruti Suzuki Swift", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kdLktKSk6yMlPJDY5BVdeNyC70rfM6eZ" },
-          { "brand": "Maruti Suzuki", "model": "WagonR", "fullName": "Maruti Suzuki WagonR", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹96/hour", "rateVal": 96, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kz6JIn_-R6A--3K7tj569gV6Vpku3SQF" },
-          { "brand": "Maruti Suzuki", "model": "XL6", "fullName": "Maruti Suzuki XL6", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 6, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1LU-uNsvgWo6RXN3Xq7y8c4PTMSgLs930" },
-          { "brand": "Tata", "model": "Altroz", "fullName": "Tata Altroz", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1mvxm-Z64rgxrriXE4q3pU9oSq1F1vvdk" },
-          { "brand": "Tata", "model": "Nexon", "fullName": "Tata Nexon", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹117/hour", "rateVal": 117, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Or6F03FkxBCjzM3MC9l7A4X6EbtTueZ5" },
-          { "brand": "Tata", "model": "Punch", "fullName": "Tata Punch", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1UeNkkagK6T0LUjt2ncB6HZaW_K5iFgE5" },
-          { "brand": "Tata", "model": "Safari", "fullName": "Tata Safari", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 6, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1cE2ZSnX39ApvlXQOJWnARn54_ma5TQSA" },
-          { "brand": "Toyota", "model": "Glanza", "fullName": "Toyota Glanza", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kb38eCjAtEm4hv6-YR9voZaHJLtu7YbI" },
-          { "brand": "Toyota", "model": "Innova Crysta", "fullName": "Toyota Innova Crysta", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1sK2Fjmg7xKcltpCAS_SIV4MbXLLd90fl" },
-          { "brand": "Toyota", "model": "Rumion", "fullName": "Toyota Rumion", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1IaOGRC0_ijk7Ud5FDv4PK2tk6IFQ8HHu" },
-          { "brand": "Toyota", "model": "Urban Cruiser Taisor", "fullName": "Toyota Urban Cruiser Taisor", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/12KEugN2uW4Z5_AyEg_8ns3Rn2LHVOv8M" }
+          // 1st PRIORITY - TATA NEXON
+          { "brand": "Tata", "model": "Nexon", "fullName": "Tata Nexon", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹117/hour", "rateVal": 117, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Or6F03FkxBCjzM3MC9l7A4X6EbtTueZ5", "priority": 1 },
+          // 2nd PRIORITY - TATA PUNCH
+          { "brand": "Tata", "model": "Punch", "fullName": "Tata Punch", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1UeNkkagK6T0LUjt2ncB6HZaW_K5iFgE5", "priority": 2 },
+          
+          // OTHER CARS
+          { "brand": "Maruti Suzuki", "model": "Swift", "fullName": "Maruti Suzuki Swift", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kdLktKSk6yMlPJDY5BVdeNyC70rfM6eZ", "priority": 3 },
+          { "brand": "Maruti Suzuki", "model": "Baleno", "fullName": "Maruti Suzuki Baleno", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1KClMWsI-DX43nzhueP5Mjy-txH04VxaY", "priority": 4 },
+          { "brand": "Maruti Suzuki", "model": "Brezza", "fullName": "Maruti Suzuki Brezza", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZQThm_H_eCLv4kBFYixmyjlBFLimsqw5", "priority": 5 },
+          { "brand": "Maruti Suzuki", "model": "Dzire", "fullName": "Maruti Suzuki Dzire", "segment": "Sedan", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/18pheBt3K7gbOXwSutbdNVWrok_N2DCG3", "priority": 6 },
+          { "brand": "Maruti Suzuki", "model": "Ertiga", "fullName": "Maruti Suzuki Ertiga", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/15o35vVV6iXixrjwMIXiIhLxAFeHj5Uel", "priority": 7 },
+          { "brand": "Hyundai", "model": "Creta", "fullName": "Hyundai Creta", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1In3muCV_Mk72zELKjAIlhs-OWgR7RKof", "priority": 8 },
+          { "brand": "Mahindra", "model": "Thar", "fullName": "Mahindra Thar", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 4, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1bC337oF5wf0Dl2KdkdRgagkeOP_VFqI5", "priority": 9 },
+          { "brand": "Mahindra", "model": "Scorpio N", "fullName": "Mahindra Scorpio N", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1wKIdSZZ3mykmzIZSpKGXRl_zFkWQNcuq", "priority": 10 },
+          { "brand": "Toyota", "model": "Innova Crysta", "fullName": "Toyota Innova Crysta", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1sK2Fjmg7xKcltpCAS_SIV4MbXLLd90fl", "priority": 11 },
+          { "brand": "Mahindra", "model": "Thar Roxx", "fullName": "Mahindra Thar Roxx", "segment": "SUV", "transmission": "Automatic", "fuel": "Diesel", "seats": 4, "rateHour": "₹333/hour", "rateVal": 333, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/14UgKtx1oqWl84guztZ28c3Kgmo_6jP-C", "priority": 12 },
+          { "brand": "Mahindra", "model": "7XO", "fullName": "Mahindra 7XO", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 7, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/164EyWUGQ24XIZPit5_rVZ7kTbmNU1Pim", "priority": 13 },
+          { "brand": "Mahindra", "model": "XUV 700", "fullName": "Mahindra XUV 700", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹313/hour", "rateVal": 313, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1JZrrF7FqV8DUrTfV-_fXCpzOEa7Zii33", "priority": 14 },
+          { "brand": "BMW", "model": "520D", "fullName": "BMW 520D", "segment": "Luxury Sedan", "transmission": "Automatic", "fuel": "Diesel", "seats": 5, "rateHour": "₹650/hour", "rateVal": 650, "deposit": "₹10,000", "depositVal": 10000, "imgUrl": "https://lh3.googleusercontent.com/d/1Mjy4A4BhkWhIgHz1E9Ofy6aCUk53IZkP", "priority": 15 },
+          { "brand": "Jeep", "model": "Compass", "fullName": "Jeep Compass", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹5,000", "depositVal": 5000, "imgUrl": "https://lh3.googleusercontent.com/d/1baBIvOkCMRSM9KUTn6AvTWPPBBC5kxa9", "priority": 16 },
+          { "brand": "Kia", "model": "Carens", "fullName": "Kia Carens", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 6, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1LKPHrDzRtHODi2kiWgAC-DCFhneNBxfd", "priority": 17 },
+          { "brand": "Hyundai", "model": "Exter (Automatic)", "fullName": "Hyundai Exter (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹125/hour", "rateVal": 125, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv", "priority": 18 },
+          { "brand": "Hyundai", "model": "Exter (Manual)", "fullName": "Hyundai Exter (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv", "priority": 19 },
+          { "brand": "Hyundai", "model": "i20", "fullName": "Hyundai i20", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZDZwcXPDBFiUCMNzwWQfDaeHZuiW2Vha", "priority": 20 },
+          { "brand": "Tata", "model": "Altroz", "fullName": "Tata Altroz", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1mvxm-Z64rgxrriXE4q3pU9oSq1F1vvdk", "priority": 21 },
+          { "brand": "Tata", "model": "Safari", "fullName": "Tata Safari", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 6, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1cE2ZSnX39ApvlXQOJWnARn54_ma5TQSA", "priority": 22 },
+          { "brand": "Toyota", "model": "Glanza", "fullName": "Toyota Glanza", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kb38eCjAtEm4hv6-YR9voZaHJLtu7YbI", "priority": 23 },
+          { "brand": "Toyota", "model": "Rumion", "fullName": "Toyota Rumion", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1IaOGRC0_ijk7Ud5FDv4PK2tk6IFQ8HHu", "priority": 24 },
+          { "brand": "Toyota", "model": "Urban Cruiser Taisor", "fullName": "Toyota Urban Cruiser Taisor", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/12KEugN2uW4Z5_AyEg_8ns3Rn2LHVOv8M", "priority": 25 },
+          { "brand": "Maruti Suzuki", "model": "Fronx (Automatic)", "fullName": "Maruti Suzuki Fronx (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ", "priority": 26 },
+          { "brand": "Maruti Suzuki", "model": "Fronx (Manual)", "fullName": "Maruti Suzuki Fronx (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ", "priority": 27 },
+          { "brand": "Maruti Suzuki", "model": "Grand Vitara", "fullName": "Maruti Suzuki Grand Vitara", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1PpB-DhjK0H71vEG0-RQk31IYia6wE0h8", "priority": 28 },
+          { "brand": "Maruti Suzuki", "model": "Ignis", "fullName": "Maruti Suzuki Ignis", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1QIuOiX3yAdwEF6VEKGJblzi-ZI-WinKC", "priority": 29 },
+          { "brand": "Maruti Suzuki", "model": "WagonR", "fullName": "Maruti Suzuki WagonR", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹96/hour", "rateVal": 96, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kz6JIn_-R6A--3K7tj569gV6Vpku3SQF", "priority": 30 },
+          { "brand": "Maruti Suzuki", "model": "XL6", "fullName": "Maruti Suzuki XL6", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 6, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1LU-uNsvgWo6RXN3Xq7y8c4PTMSgLs930", "priority": 31 },
+          { "brand": "Mahindra", "model": "XUV 500", "fullName": "Mahindra XUV 500", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/14nWzEeYcUlawsmTNanoS7Fw6QsAWOW98", "priority": 32 }
         ];
 
         let currentMainMode = 'withdriver';
@@ -1267,7 +1401,7 @@
         let chosenCarName = '';
         let chosenFareAmount = 0;
 
-        // Self Drive State & 8-Cars Pagination
+        // Self Drive State & 6-Cars Pagination
         let selectedCarObj = null;
         let currentDeliveryMode = 'home';
         let currentDeliveryRoundTripKm = 16;
@@ -1278,7 +1412,7 @@
         let calculatedTotalFare = 0;
 
         let currentSDPage = 1;
-        const carsPerPage = 8;
+        const carsPerPage = 6; // Set to 6 cars per page as requested
         let filteredSDCarsList = [...excelCarsData];
 
         function setServiceMode(mode) {
@@ -1322,13 +1456,12 @@
         }
 
         function onWDDestinationInput() {
-            const inputVal = document.getElementById('wd-out-destination').value.trim();
-            const datalist = document.getElementById('maharashtra-districts-list');
+            const inputVal = document.getElementById('wd-out-destination').value.trim().toLowerCase();
             let foundKm = null;
 
-            for (let opt of datalist.options) {
-                if (opt.value.toLowerCase() === inputVal.toLowerCase()) {
-                    foundKm = parseInt(opt.getAttribute('data-km'));
+            for (let c of destinationCities) {
+                if (c.name.toLowerCase() === inputVal) {
+                    foundKm = c.km;
                     break;
                 }
             }
@@ -1455,7 +1588,7 @@
         }
 
         // ==========================================
-        // SELF DRIVE 8-CARS PAGINATION & FILTERS
+        // SELF DRIVE 6-CARS PAGINATION & FILTERS
         // ==========================================
         function applyAllSDFilters() {
             const query = document.getElementById('sd-search-box').value.toLowerCase().trim();
@@ -1497,10 +1630,13 @@
                 list = list.filter(c => c.segment.toLowerCase() === segVal.toLowerCase());
             }
 
+            // Priority sorting preservation (Nexon & Punch top when default)
             if (sortVal === 'price-asc') {
                 list.sort((a, b) => a.rateVal - b.rateVal);
             } else if (sortVal === 'price-desc') {
                 list.sort((a, b) => b.rateVal - a.rateVal);
+            } else {
+                list.sort((a, b) => a.priority - b.priority);
             }
 
             filteredSDCarsList = list;
@@ -1677,9 +1813,11 @@
 
             calculatedRentalHours = Math.max(8, isNaN(diffHours) ? 24 : Math.ceil(diffHours));
             
+            // Clear errors
             document.getElementById('err-sd-name').classList.add('hidden');
             document.getElementById('err-sd-phone').classList.add('hidden');
             document.getElementById('err-sd-alt-phone').classList.add('hidden');
+            document.getElementById('err-sd-pincode').classList.add('hidden');
 
             calculateDeliveryCharges();
             document.getElementById('sd-booking-modal').classList.remove('hidden');
@@ -1721,13 +1859,14 @@
                 return;
             }
 
-            const inputVal = document.getElementById('sd-delivery-location-input').value.trim();
-            const datalist = document.getElementById('delivery-locations-clean-list');
+            const inputVal = document.getElementById('sd-delivery-location-input').value.trim().toLowerCase();
             let roundTripKm = null;
+            let matchedCity = "Mumbai";
 
-            for (let opt of datalist.options) {
-                if (opt.value.toLowerCase().includes(inputVal.toLowerCase())) {
-                    roundTripKm = parseInt(opt.getAttribute('data-rt'));
+            for (let l of deliveryLocations) {
+                if (l.name.toLowerCase() === inputVal) {
+                    roundTripKm = l.rt;
+                    matchedCity = l.city;
                     break;
                 }
             }
@@ -1737,6 +1876,12 @@
             }
 
             currentDeliveryRoundTripKm = roundTripKm;
+
+            // Auto pre-fill City if empty or matched
+            const cityInput = document.getElementById('sd-addr-city');
+            if (cityInput && (!cityInput.value || cityInput.value === "Mumbai" || cityInput.value === "Thane" || cityInput.value === "Navi Mumbai")) {
+                cityInput.value = matchedCity;
+            }
 
             if (roundTripKm > 25) {
                 let extraKm = roundTripKm - 25;
@@ -1748,6 +1893,7 @@
             updateTotalFareBreakdown();
         }
 
+        // Total Estimated Fare includes: Rental Charges + Delivery Charges + Refundable Security Deposit
         function updateTotalFareBreakdown() {
             if (!selectedCarObj) return;
 
@@ -1767,14 +1913,21 @@
             const nameInput = document.getElementById('sd-cust-name');
             const phoneInput = document.getElementById('sd-cust-phone');
             const altPhoneInput = document.getElementById('sd-cust-alt-phone');
-            const addr = document.getElementById('sd-cust-address').value;
+            
+            // Structured Address Fields
+            const streetInput = document.getElementById('sd-addr-street');
+            const cityInput = document.getElementById('sd-addr-city');
+            const stateInput = document.getElementById('sd-addr-state');
+            const pinInput = document.getElementById('sd-addr-pincode');
 
             const errName = document.getElementById('err-sd-name');
             const errPhone = document.getElementById('err-sd-phone');
             const errAltPhone = document.getElementById('err-sd-alt-phone');
+            const errPin = document.getElementById('err-sd-pincode');
 
             let isValid = true;
 
+            // 1. Name Validation
             if (!validateName(nameInput.value)) {
                 errName.innerText = "Please enter a valid name. Numbers and special characters are not allowed.";
                 errName.classList.remove('hidden');
@@ -1785,6 +1938,7 @@
                 nameInput.classList.remove('border-rose-500');
             }
 
+            // 2. Primary Phone Validation
             if (!validatePhone(phoneInput.value)) {
                 errPhone.innerText = "Please enter a valid 10-digit mobile number.";
                 errPhone.classList.remove('hidden');
@@ -1795,6 +1949,7 @@
                 phoneInput.classList.remove('border-rose-500');
             }
 
+            // 3. Alternate Phone Validation
             if (!validatePhone(altPhoneInput.value)) {
                 errAltPhone.innerText = "Please enter a valid 10-digit alternate mobile number.";
                 errAltPhone.classList.remove('hidden');
@@ -1805,11 +1960,23 @@
                 altPhoneInput.classList.remove('border-rose-500');
             }
 
+            // 4. Pincode Validation
+            if (!validatePincode(pinInput.value)) {
+                errPin.innerText = "Please enter a valid 6-digit postal pincode.";
+                errPin.classList.remove('hidden');
+                pinInput.classList.add('border-rose-500');
+                isValid = false;
+            } else {
+                errPin.classList.add('hidden');
+                pinInput.classList.remove('border-rose-500');
+            }
+
             if (!isValid) return;
 
             const name = nameInput.value.trim();
             const phone = phoneInput.value.trim();
             const altPhone = altPhoneInput.value.trim();
+            const fullAddress = `${streetInput.value.trim()}, ${cityInput.value.trim()}, ${stateInput.value.trim()} - ${pinInput.value.trim()}`;
             const pTime = document.getElementById('sd-modal-pdate-display').innerText;
             const rTime = document.getElementById('sd-modal-rdate-display').innerText;
             const delivLoc = document.getElementById('sd-delivery-location-input').value;
@@ -1834,12 +2001,11 @@
                         `*3. Refundable Security Deposit:* ₹${calculatedSecurityDeposit} (Refundable after inspection)%0A` +
                         `*Total Estimated Fare:* ₹${calculatedTotalFare}%0A%0A` +
                         `${delivMsg}%0A` +
-                        `*Delivery Address:* ${addr}%0A%0A` +
+                        `*Complete Address:* ${fullAddress}%0A%0A` +
                         `_Customer has confirmed and agreed to mandatory ID & inspection terms._`;
 
             window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
             closeSDModal();
-            // Show Success Confirmation Modal
             showSuccessModal();
         }
 
@@ -1906,7 +2072,6 @@
 
             window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
             closePartnerModal();
-            // Show Success Confirmation Modal
             showSuccessModal();
         }
 
@@ -1985,7 +2150,6 @@
 
             window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
             closeModal();
-            // Show Success Confirmation Modal
             showSuccessModal();
         }
 

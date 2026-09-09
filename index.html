@@ -7,6 +7,8 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
+    <!-- Supabase JS Client v2 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1077,6 +1079,86 @@
     </div>
 
     <script>
+
+// ==========================================
+// SUPABASE LIVE DATA CLIENT CONFIG
+// ==========================================
+const SUPABASE_URL = "https://pwciaihqkfnlenxxiown.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz";
+const supabasePublic = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+// Dynamic fetcher that updates excelCarsData and deliveryLocations from DB
+async function syncLiveBackendData() {
+    if (!supabasePublic) return;
+
+    try {
+        // 1. Fetch live active fleet from Supabase
+        const { data: dbCars, error: carErr } = await supabasePublic
+            .from('vehicles')
+            .select('*')
+            .eq('is_active', true)
+            .order('display_order', { ascending: true });
+
+        if (dbCars && dbCars.length > 0) {
+            // Replace static fleet with live database fleet
+            excelCarsData = dbCars.map(c => ({
+                id: c.id,
+                brand: c.brand,
+                model: c.model,
+                fullName: c.full_name,
+                segment: c.segment,
+                transmission: c.transmission,
+                fuel: c.fuel_type,
+                seats: c.seating_capacity,
+                rateHour: `₹${c.rate_per_hour}/hour`,
+                rateVal: parseFloat(c.rate_per_hour),
+                deposit: `₹${parseFloat(c.refundable_deposit).toLocaleString('en-IN')}`,
+                depositVal: parseFloat(c.refundable_deposit),
+                imgUrl: c.image_url,
+                priority: c.display_order
+            }));
+            applyAllSDFilters();
+        }
+
+        // 2. Fetch live delivery locations from Supabase
+        const { data: dbLocs } = await supabasePublic
+            .from('service_locations')
+            .select('*')
+            .eq('is_active', true)
+            .order('round_trip_km', { ascending: true });
+
+        if (dbLocs && dbLocs.length > 0) {
+            deliveryLocations = dbLocs.map(l => ({
+                name: l.location_name,
+                rt: l.round_trip_km,
+                city: l.city
+            }));
+        }
+
+        // 3. Fetch CMS Hero & Contact details
+        const { data: dbCms } = await supabasePublic.from('site_settings').select('*');
+        if (dbCms) {
+            dbCms.forEach(s => {
+                if (s.key === 'hero_heading') {
+                    const el = document.querySelector('header h1');
+                    if (el) el.innerText = s.value;
+                }
+                if (s.key === 'hero_subheading') {
+                    const el = document.querySelector('header p');
+                    if (el) el.innerText = s.value;
+                }
+            });
+        }
+    } catch (e) {
+        console.warn("Using offline cached fleet data:", e);
+    }
+}
+
+// Call on load
+window.addEventListener('DOMContentLoaded', () => {
+    syncLiveBackendData();
+});
+        
         // ==========================================
         // AUTOCOMPLETE DATA (OLA/UBER STYLE)
         // ==========================================

@@ -62,10 +62,10 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
             <a href="#" class="flex items-center space-x-3">
 <div id="site-logo-container" class="flex items-center">
-                <div id="default-brand-icon" class="w-10 h-10 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-xl shadow-inner">
+                <div id="default-brand-icon" class="hidden w-10 h-10 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-xl shadow-inner">
                     <i class="fa-solid fa-car"></i>
                 </div>
-                <img id="dynamic-brand-logo" src="" alt="Car with Driver India" class="hidden h-9 sm:h-11 w-auto max-w-[180px] object-contain">
+                <img id="dynamic-brand-logo" src="/logo.png" alt="Car with Driver India" class="h-9 sm:h-11 w-auto max-w-[180px] object-contain" onerror="this.classList.add('hidden'); document.getElementById('default-brand-icon').classList.remove('hidden');">
             </div>
                 <div>
                     <span class="text-xl font-black text-indigo-950 tracking-tight block leading-none">Car with Driver India</span>

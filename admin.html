@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CWD Admin Portal - Car with Driver India</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Supabase JS Client v2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
+
+    <!-- ========================================== -->
+    <!-- 1. SECURE LOGIN SCREEN (WHEN LOGGED OUT)   -->
+    <!-- ========================================== -->
+    <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900">
+        <div class="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl border border-slate-200">
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-indigo-950 text-amber-400 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3 shadow-md">
+                    <i class="fa-solid fa-car-tunnel"></i>
+                </div>
+                <h1 class="text-2xl font-black text-indigo-950 tracking-tight">Admin Console</h1>
+                <p class="text-xs text-slate-500 font-semibold mt-1">Car with Driver India • Operations Portal</p>
+            </div>
+
+            <!-- Credentials Input Form -->
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Admin Email</label>
+                    <input type="email" id="login-email" required class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-600 outline-none" placeholder="admin@carswithdriverindia.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Secure Password</label>
+                    <input type="password" id="login-password" required class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-600 outline-none" placeholder="••••••••••••">
+                </div>
+                
+                <p id="auth-error-msg" class="text-xs text-rose-600 font-semibold hidden"></p>
+
+                <button type="submit" id="btn-login-submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3.5 rounded-xl shadow-lg transition text-xs tracking-wider uppercase">
+                    Authenticate &amp; Access Dashboard
+                </button>
+            </form>
+
+            <div class="mt-6 pt-5 border-t border-slate-100 text-center">
+                <a href="/" class="text-xs text-slate-500 hover:text-indigo-950 font-semibold flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left text-[10px]"></i> Return to Live Website
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. FULL ADMIN DASHBOARD (WHEN AUTHENTICATED) -->
+    <!-- ========================================== -->
+    <div id="dashboard-screen" class="hidden min-h-screen flex flex-col md:flex-row">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-full md:w-64 bg-indigo-950 text-white flex flex-col justify-between p-5 border-r border-indigo-900 shrink-0">
+            <div>
+                <!-- Brand Title -->
+                <div class="flex items-center space-x-3 pb-6 border-b border-indigo-900/80">
+                    <div class="w-10 h-10 rounded-xl bg-amber-400 text-indigo-950 flex items-center justify-center font-black text-lg">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <div>
+                        <span class="font-black text-sm block leading-none text-white">CWD Admin</span>
+                        <span class="text-[10px] text-amber-300 font-semibold tracking-wider">Live Management</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="space-y-1 mt-6 text-xs font-bold" id="admin-nav-tabs">
+                    <button onclick="switchTab('vehicles')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white/10 text-white transition text-left" id="tab-btn-vehicles">
+                        <i class="fa-solid fa-car-side w-4 text-amber-400"></i> Fleet Vehicles
+                    </button>
+                    <button onclick="switchTab('pricing')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-pricing">
+                        <i class="fa-solid fa-calculator w-4 text-emerald-400"></i> Global Pricing Rules
+                    </button>
+                    <button onclick="switchTab('locations')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-locations">
+                        <i class="fa-solid fa-map-location-dot w-4 text-blue-400"></i> Delivery Locations
+                    </button>
+                    <button onclick="switchTab('cms')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-cms">
+                        <i class="fa-solid fa-pen-to-square w-4 text-purple-400"></i> Website CMS &amp; Hero
+                    </button>
+                    <button onclick="switchTab('whatsapp')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-whatsapp">
+                        <i class="fa-brands fa-whatsapp w-4 text-emerald-400"></i> WhatsApp Template
+                    </button>
+                    <button onclick="switchTab('faqs')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-faqs">
+                        <i class="fa-solid fa-circle-question w-4 text-amber-300"></i> FAQs
+                    </button>
+                    <button onclick="switchTab('inquiries')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-inquiries">
+                        <i class="fa-solid fa-inbox w-4 text-rose-400"></i> Lead Inquiries
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Footer: User & Logout -->
+            <div class="pt-6 border-t border-indigo-900/80 space-y-3">
+                <div class="text-[11px] text-slate-400 truncate" id="admin-user-display">Logged in</div>
+                <div class="flex items-center justify-between">
+                    <a href="/" target="_blank" class="text-xs text-amber-300 hover:text-white font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-eye"></i> View Live Site
+                    </a>
+                    <button onclick="handleAdminLogout()" class="text-xs text-rose-400 hover:text-rose-300 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 p-6 md:p-8 overflow-y-auto max-h-screen">
+            
+            <!-- SECTION 1: VEHICLES MANAGEMENT -->
+            <div id="section-vehicles" class="space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Fleet Vehicles Management</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Manage Self-Drive and With-Driver fleet details, prices, and display rank.</p>
+                    </div>
+                    <button onclick="openVehicleModal()" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-sm whitespace-nowrap">
+                        <i class="fa-solid fa-plus text-amber-400"></i> Add New Vehicle
+                    </button>
+                </div>
+
+                <!-- Vehicles Table Card -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-extrabold tracking-wider">
+                                <tr>
+                                    <th class="py-3.5 px-4">Rank</th>
+                                    <th class="py-3.5 px-4">Vehicle</th>
+                                    <th class="py-3.5 px-4">Category &amp; Fuel</th>
+                                    <th class="py-3.5 px-4">Rate/Hour</th>
+                                    <th class="py-3.5 px-4">Deposit</th>
+                                    <th class="py-3.5 px-4">Status</th>
+                                    <th class="py-3.5 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-vehicles-table-body" class="divide-y divide-slate-100">
+                                <tr>
+                                    <td colspan="7" class="py-8 text-center text-slate-400">Loading vehicles from database...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: GLOBAL PRICING RULES -->
+            <div id="section-pricing" class="hidden space-y-6">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Global Pricing &amp; Allowances</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Update doorstep delivery formulas, night allowance, and outstation limits.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm max-w-2xl space-y-4" id="pricing-rules-container">
+                    <!-- Loaded dynamically from DB -->
+                </div>
+            </div>
+
+            <!-- SECTION 3: DELIVERY LOCATIONS -->
+            <div id="section-locations" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Service &amp; Delivery Locations</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Manage Vikhroli round-trip distance in kilometers for auto doorstep delivery fees.</p>
+                    </div>
+                    <button onclick="openLocationModal()" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-sm whitespace-nowrap">
+                        <i class="fa-solid fa-plus text-amber-400"></i> Add Location
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-extrabold tracking-wider">
+                                <tr>
+                                    <th class="py-3.5 px-4">Location Name</th>
+                                    <th class="py-3.5 px-4">City</th>
+                                    <th class="py-3.5 px-4">Vikhroli Round-Trip (KM)</th>
+                                    <th class="py-3.5 px-4">Calculated Fee</th>
+                                    <th class="py-3.5 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-locations-table-body" class="divide-y divide-slate-100">
+                                <!-- Loaded dynamically from DB -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: CMS HERO & CONTACT CONTENT -->
+            <div id="section-cms" class="hidden space-y-6">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Website Content Management</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Edit hero banners, company branding strings, and office reach-out details.</p>
+                </div>
+
+                <form onsubmit="saveCmsSettings(event)" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm max-w-3xl space-y-4">
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Hero Main Heading</label>
+                            <input type="text" id="cms-hero-heading" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Hero Subheading</label>
+                            <textarea id="cms-hero-subheading" rows="2" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Primary Display Phone</label>
+                                <input type="text" id="cms-contact-phone" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-indigo-600 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">WhatsApp Forwarding Number (Digits only)</label>
+                                <input type="text" id="cms-contact-wa" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-indigo-600 outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Office Operating Address</label>
+                            <textarea id="cms-contact-address" rows="2" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow-sm transition">
+                        Save CMS Settings
+                    </button>
+                </form>
+            </div>
+
+            <!-- SECTION 5: WHATSAPP TEMPLATE -->
+            <div id="section-whatsapp" class="hidden space-y-6">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">WhatsApp Booking Template</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Customize the automated WhatsApp message received on booking submissions.</p>
+                </div>
+
+                <form onsubmit="saveWhatsAppTemplate(event)" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm max-w-3xl space-y-4">
+                    <div class="bg-indigo-50/70 p-3 rounded-xl border border-indigo-100 text-[11px] text-indigo-950 space-y-1">
+                        <strong>Available Dynamic Tags:</strong>
+                        <div class="flex flex-wrap gap-1.5 pt-1 text-[10px] font-mono">
+                            <span class="bg-white px-2 py-0.5 rounded border border-indigo-200">{customer_name}</span>
+                            <span class="bg-white px-2 py-0.5 rounded border border-indigo-200">{customer_phone}</span>
+                            <span class="bg-white px-2 py-0.5 rounded border border-indigo-200">{customer_alt_phone}</span>
+                            <span class="bg-white px-2 py-0.5 rounded border border-indigo-200">{car_name}</span>
+                            <span class="bg-white px-2 py-0.5 rounded border border-indigo-200">{trip_schedule}</span>
+                            <span class="bg-white px-2 py-0.5 rounded border border-indigo-200">{rental_hours}</span>
+                            <span class="bg-white px-2 py-0.5 rounded border border-indigo-200">{rental_amount}</span>
+                            <span class="bg-white px-2 py-0.5 rounded border border-indigo-200">{delivery_fee}</span>
+                            <span class="bg-white px-2 py-0.5 rounded border border-indigo-200">{security_deposit}</span>
+                            <span class="bg-white px-2 py-0.5 rounded border border-indigo-200">{total_fare}</span>
+                            <span class="bg-white px-2 py-0.5 rounded border border-indigo-200">{delivery_details}</span>
+                            <span class="bg-white px-2 py-0.5 rounded border border-indigo-200">{customer_address}</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <textarea id="wa-template-editor" rows="12" class="w-full font-mono text-xs border border-slate-300 rounded-xl p-3.5 focus:ring-2 focus:ring-indigo-600 outline-none leading-relaxed"></textarea>
+                    </div>
+
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5">
+                        <i class="fa-brands fa-whatsapp text-sm"></i> Save Template
+                    </button>
+                </form>
+            </div>
+
+            <!-- SECTION 6: FAQS -->
+            <div id="section-faqs" class="hidden space-y-6">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">FAQ Manager</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Control questions and answers showcased in the website FAQ accordion.</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm max-w-3xl space-y-3" id="faqs-admin-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- SECTION 7: INQUIRIES ARCHIVE -->
+            <div id="section-inquiries" class="hidden space-y-6">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Booking Leads &amp; Inquiries</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Archive of incoming customer rental requests.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-extrabold tracking-wider">
+                                <tr>
+                                    <th class="py-3.5 px-4">Date</th>
+                                    <th class="py-3.5 px-4">Customer</th>
+                                    <th class="py-3.5 px-4">Service</th>
+                                    <th class="py-3.5 px-4">Vehicle</th>
+                                    <th class="py-3.5 px-4">Fare</th>
+                                    <th class="py-3.5 px-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-inquiries-table-body" class="divide-y divide-slate-100">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- VEHICLE CREATE / EDIT MODAL -->
+    <div id="vehicle-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-3xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+            <button onclick="closeVehicleModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-900" id="vehicle-modal-title">Add New Fleet Vehicle</h3>
+
+            <form onsubmit="handleSaveVehicle(event)" class="mt-4 space-y-3.5">
+                <input type="hidden" id="v-id">
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Brand</label>
+                        <input type="text" id="v-brand" required placeholder="e.g. Tata, Maruti, Mahindra" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Model Name</label>
+                        <input type="text" id="v-model" required placeholder="e.g. Nexon, Ertiga, Thar" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Segment</label>
+                        <select id="v-segment" class="w-full border border-slate-300 rounded-lg px-2.5 py-2 text-xs outline-none">
+                            <option value="Hatchback">Hatchback</option>
+                            <option value="Sedan">Sedan</option>
+                            <option value="Compact SUV">Compact SUV</option>
+                            <option value="SUV">SUV</option>
+                            <option value="MUV / 7-Seater">MUV / 7-Seater</option>
+                            <option value="Luxury Sedan">Luxury Sedan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Service Type</label>
+                        <select id="v-service" class="w-full border border-slate-300 rounded-lg px-2.5 py-2 text-xs outline-none">
+                            <option value="Both">Both (Self Drive + With Driver)</option>
+                            <option value="Self Drive">Self Drive Only</option>
+                            <option value="With Driver">With Driver Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Transmission</label>
+                        <select id="v-transmission" class="w-full border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none">
+                            <option value="Manual">Manual</option>
+                            <option value="Automatic">Automatic</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Fuel Type</label>
+                        <select id="v-fuel" class="w-full border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none">
+                            <option value="Petrol + CNG">Petrol + CNG</option>
+                            <option value="Petrol">Petrol</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Electric">Electric</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Seats</label>
+                        <input type="number" id="v-seats" min="2" max="10" value="5" required class="w-full border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Rate/Hour (₹)</label>
+                        <input type="number" id="v-rate-hour" step="1" required placeholder="117" class="w-full border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Security Deposit (₹)</label>
+                        <input type="number" id="v-deposit" step="100" required placeholder="3000" class="w-full border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Priority Rank</label>
+                        <input type="number" id="v-order" value="10" required class="w-full border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none">
+                    </div>
+                </div>
+
+                <!-- Image URL or Direct File Upload to Supabase Storage -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Vehicle Image</label>
+                    <input type="text" id="v-img-url" placeholder="Paste image URL directly or upload below" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none mb-1.5">
+                    <input type="file" id="v-img-file" accept="image/*" onchange="handleImageFileUpload(event)" class="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    <span id="upload-status" class="text-[10px] text-indigo-600 block mt-1"></span>
+                </div>
+
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" id="v-active" checked class="rounded text-indigo-600">
+                    <label for="v-active" class="text-xs font-bold text-slate-700">Active (Visible on Website)</label>
+                </div>
+
+                <button type="submit" id="btn-save-vehicle" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 rounded-xl text-xs shadow-md transition">
+                    Save Vehicle
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOCATION CREATE / EDIT MODAL -->
+    <div id="location-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative">
+            <button onclick="closeLocationModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-900">Add Service Location</h3>
+
+            <form onsubmit="handleSaveLocation(event)" class="mt-4 space-y-3">
+                <input type="hidden" id="loc-id">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Location / Area Name</label>
+                    <input type="text" id="loc-name" required placeholder="e.g. Borivali" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">City</label>
+                    <input type="text" id="loc-city" required placeholder="Mumbai / Thane / Navi Mumbai" value="Mumbai" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Vikhroli Round-Trip (KM)</label>
+                    <input type="number" id="loc-km" required placeholder="e.g. 54" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                </div>
+                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition">
+                    Save Location
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // SUPABASE CLIENT CONFIGURATION
+        // Replace with your actual Project URL & anon publishable key from Supabase
+        // =========================================================================
+        const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_ID.supabase.co";
+        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+        const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+        // AUTHENTICATION LOGIC
+        async function checkAuthState() {
+            if (!supabaseClient) return;
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('dashboard-screen').classList.remove('hidden');
+                document.getElementById('admin-user-display').innerText = session.user.email;
+                loadVehicles();
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('dashboard-screen').classList.add('hidden');
+            }
+        }
+
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errEl = document.getElementById('auth-error-msg');
+            const submitBtn = document.getElementById('btn-login-submit');
+
+            errEl.classList.add('hidden');
+            submitBtn.innerText = 'Verifying...';
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+                errEl.innerText = error.message;
+                errEl.classList.remove('hidden');
+                submitBtn.innerText = 'Authenticate & Access Dashboard';
+            } else {
+                checkAuthState();
+            }
+        }
+
+        async function handleAdminLogout() {
+            if (confirm("Are you sure you want to log out of the admin panel?")) {
+                await supabaseClient.auth.signOut();
+                checkAuthState();
+            }
+        }
+
+        // TABS SWITCHER
+        function switchTab(tab) {
+            ['vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries'].forEach(t => {
+                const sec = document.getElementById(`section-${t}`);
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (t === tab) {
+                    sec.classList.remove('hidden');
+                    btn.className = "w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white/10 text-white transition text-left font-bold";
+                } else {
+                    sec.classList.add('hidden');
+                    btn.className = "w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left font-bold";
+                }
+            });
+
+            if (tab === 'vehicles') loadVehicles();
+            if (tab === 'pricing') loadPricingRules();
+            if (tab === 'locations') loadLocations();
+            if (tab === 'cms') loadCmsSettings();
+            if (tab === 'whatsapp') loadWhatsAppTemplate();
+            if (tab === 'faqs') loadFaqs();
+            if (tab === 'inquiries') loadInquiries();
+        }
+
+        // 1. VEHICLES CRUD
+        async function loadVehicles() {
+            const tbody = document.getElementById('admin-vehicles-table-body');
+            tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">Loading fleet...</td></tr>`;
+
+            const { data: cars, error } = await supabaseClient
+                .from('vehicles')
+                .select('*')
+                .order('display_order', { ascending: true });
+
+            if (error || !cars) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-center text-rose-500">Failed to load cars.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            cars.forEach(car => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-500">#${car.display_order}</td>
+                    <td class="py-3 px-4 flex items-center gap-2.5">
+                        <img src="${car.image_url}" class="w-10 h-7 object-cover rounded bg-slate-100" onerror="this.src='https://placehold.co/80x50?text=Car'">
+                        <strong class="text-slate-900">${car.full_name}</strong>
+                    </td>
+                    <td class="py-3 px-4 text-slate-600">${car.segment} • ${car.fuel_type} (${car.transmission})</td>
+                    <td class="py-3 px-4 font-bold text-indigo-950">₹${car.rate_per_hour}/hr</td>
+                    <td class="py-3 px-4 text-slate-600">₹${car.refundable_deposit}</td>
+                    <td class="py-3 px-4">
+                        <button onclick="toggleVehicleStatus('${car.id}', ${car.is_active})" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${car.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">
+                            ${car.is_active ? 'Active' : 'Inactive'}
+                        </button>
+                    </td>
+                    <td class="py-3 px-4 text-right space-x-2">
+                        <button onclick='editVehicle(${JSON.stringify(car).replace(/'/g, "&apos;")})' class="text-indigo-600 hover:text-indigo-900 font-bold">Edit</button>
+                        <button onclick="deleteVehicle('${car.id}', '${car.full_name}')" class="text-rose-600 hover:text-rose-900 font-bold">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openVehicleModal() {
+            document.getElementById('vehicle-modal-title').innerText = "Add New Fleet Vehicle";
+            document.getElementById('v-id').value = '';
+            document.getElementById('v-brand').value = '';
+            document.getElementById('v-model').value = '';
+            document.getElementById('v-segment').value = 'Compact SUV';
+            document.getElementById('v-service').value = 'Both';
+            document.getElementById('v-transmission').value = 'Manual';
+            document.getElementById('v-fuel').value = 'Petrol + CNG';
+            document.getElementById('v-seats').value = '5';
+            document.getElementById('v-rate-hour').value = '115';
+            document.getElementById('v-deposit').value = '3000';
+            document.getElementById('v-order').value = '10';
+            document.getElementById('v-img-url').value = '';
+            document.getElementById('v-active').checked = true;
+            document.getElementById('upload-status').innerText = '';
+            document.getElementById('vehicle-modal').classList.remove('hidden');
+        }
+
+        function closeVehicleModal() {
+            document.getElementById('vehicle-modal').classList.add('hidden');
+        }
+
+        function editVehicle(car) {
+            document.getElementById('vehicle-modal-title').innerText = "Edit Vehicle: " + car.full_name;
+            document.getElementById('v-id').value = car.id;
+            document.getElementById('v-brand').value = car.brand;
+            document.getElementById('v-model').value = car.model;
+            document.getElementById('v-segment').value = car.segment;
+            document.getElementById('v-service').value = car.service_type || 'Both';
+            document.getElementById('v-transmission').value = car.transmission;
+            document.getElementById('v-fuel').value = car.fuel_type;
+            document.getElementById('v-seats').value = car.seating_capacity;
+            document.getElementById('v-rate-hour').value = car.rate_per_hour;
+            document.getElementById('v-deposit').value = car.refundable_deposit;
+            document.getElementById('v-order').value = car.display_order;
+            document.getElementById('v-img-url').value = car.image_url;
+            document.getElementById('v-active').checked = car.is_active;
+            document.getElementById('upload-status').innerText = '';
+            document.getElementById('vehicle-modal').classList.remove('hidden');
+        }
+
+        async function handleImageFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const status = document.getElementById('upload-status');
+            status.innerText = "Uploading image to Supabase Storage...";
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `cars/${fileName}`;
+
+            const { data, error } = await supabaseClient.storage
+                .from('vehicle-images')
+                .upload(filePath, file);
+
+            if (error) {
+                status.innerText = "Upload failed: " + error.message;
+                return;
+            }
+
+            const { data: publicUrlData } = supabaseClient.storage
+                .from('vehicle-images')
+                .getPublicUrl(filePath);
+
+            document.getElementById('v-img-url').value = publicUrlData.publicUrl;
+            status.innerText = "Image uploaded and URL linked!";
+        }
+
+        async function handleSaveVehicle(e) {
+            e.preventDefault();
+            const id = document.getElementById('v-id').value;
+            const brand = document.getElementById('v-brand').value.trim();
+            const model = document.getElementById('v-model').value.trim();
+            const payload = {
+                brand: brand,
+                model: model,
+                full_name: `${brand} ${model}`,
+                segment: document.getElementById('v-segment').value,
+                service_type: document.getElementById('v-service').value,
+                transmission: document.getElementById('v-transmission').value,
+                fuel_type: document.getElementById('v-fuel').value,
+                seating_capacity: parseInt(document.getElementById('v-seats').value),
+                rate_per_hour: parseFloat(document.getElementById('v-rate-hour').value),
+                refundable_deposit: parseFloat(document.getElementById('v-deposit').value),
+                display_order: parseInt(document.getElementById('v-order').value),
+                image_url: document.getElementById('v-img-url').value.trim(),
+                is_active: document.getElementById('v-active').checked
+            };
+
+            let res;
+            if (id) {
+                res = await supabaseClient.from('vehicles').update(payload).eq('id', id);
+            } else {
+                res = await supabaseClient.from('vehicles').insert([payload]);
+            }
+
+            if (res.error) {
+                alert("Error saving vehicle: " + res.error.message);
+            } else {
+                closeVehicleModal();
+                loadVehicles();
+            }
+        }
+
+        async function toggleVehicleStatus(id, currentStatus) {
+            await supabaseClient.from('vehicles').update({ is_active: !currentStatus }).eq('id', id);
+            loadVehicles();
+        }
+
+        async function deleteVehicle(id, name) {
+            if (confirm(`Are you sure you want to permanently delete "${name}" from your fleet?`)) {
+                await supabaseClient.from('vehicles').delete().eq('id', id);
+                loadVehicles();
+            }
+        }
+
+        // 2. PRICING RULES
+        async function loadPricingRules() {
+            const container = document.getElementById('pricing-rules-container');
+            container.innerHTML = '<p class="text-xs text-slate-400">Loading rules...</p>';
+
+            const { data: rules } = await supabaseClient.from('pricing_rules').select('*');
+            if (!rules) return;
+
+            container.innerHTML = '';
+            rules.forEach(rule => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between py-2 border-b border-slate-100 text-xs";
+                div.innerHTML = `
+                    <div>
+                        <strong class="text-slate-800 block">${rule.rule_name}</strong>
+                        <span class="text-slate-400 text-[10px]">${rule.description || ''}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="number" id="rule-${rule.id}" value="${rule.rule_value}" class="w-24 text-right border border-slate-300 rounded px-2 py-1 font-bold text-indigo-950">
+                        <button onclick="updateRule('${rule.id}')" class="bg-indigo-950 hover:bg-indigo-900 text-white px-2.5 py-1 rounded text-[11px] font-bold">Save</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function updateRule(id) {
+            const val = parseFloat(document.getElementById(`rule-${id}`).value);
+            await supabaseClient.from('pricing_rules').update({ rule_value: val }).eq('id', id);
+            alert("Pricing rule updated successfully!");
+        }
+
+        // 3. LOCATIONS
+        async function loadLocations() {
+            const tbody = document.getElementById('admin-locations-table-body');
+            tbody.innerHTML = '';
+            const { data: locs } = await supabaseClient.from('service_locations').select('*').order('round_trip_km', { ascending: true });
+            if (!locs) return;
+
+            locs.forEach(l => {
+                const tr = document.createElement('tr');
+                const fee = l.round_trip_km <= 25 ? 500 : 500 + ((l.round_trip_km - 25) * 25);
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-900">${l.location_name}</td>
+                    <td class="py-3 px-4 text-slate-600">${l.city}</td>
+                    <td class="py-3 px-4 text-slate-600">${l.round_trip_km} km</td>
+                    <td class="py-3 px-4 font-bold text-emerald-700">₹${fee}</td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="deleteLocation('${l.id}')" class="text-rose-600 font-bold hover:underline">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openLocationModal() {
+            document.getElementById('location-modal').classList.remove('hidden');
+        }
+
+        function closeLocationModal() {
+            document.getElementById('location-modal').classList.add('hidden');
+        }
+
+        async function handleSaveLocation(e) {
+            e.preventDefault();
+            const name = document.getElementById('loc-name').value.trim();
+            const city = document.getElementById('loc-city').value.trim();
+            const km = parseInt(document.getElementById('loc-km').value);
+
+            await supabaseClient.from('service_locations').insert([{
+                location_name: name,
+                city: city,
+                round_trip_km: km
+            }]);
+            closeLocationModal();
+            loadLocations();
+        }
+
+        async function deleteLocation(id) {
+            if (confirm("Delete this delivery location?")) {
+                await supabaseClient.from('service_locations').delete().eq('id', id);
+                loadLocations();
+            }
+        }
+
+        // 4. CMS & SETTINGS
+        async function loadCmsSettings() {
+            const { data: settings } = await supabaseClient.from('site_settings').select('*');
+            if (!settings) return;
+            const map = {};
+            settings.forEach(s => map[s.key] = s.value);
+
+            if (map.hero_heading) document.getElementById('cms-hero-heading').value = map.hero_heading;
+            if (map.hero_subheading) document.getElementById('cms-hero-subheading').value = map.hero_subheading;
+            if (map.contact_primary_phone) document.getElementById('cms-contact-phone').value = map.contact_primary_phone;
+            if (map.contact_whatsapp_phone) document.getElementById('cms-contact-wa').value = map.contact_whatsapp_phone;
+            if (map.contact_address) document.getElementById('cms-contact-address').value = map.contact_address;
+        }
+
+        async function saveCmsSettings(e) {
+            e.preventDefault();
+            const updates = [
+                { key: 'hero_heading', value: document.getElementById('cms-hero-heading').value },
+                { key: 'hero_subheading', value: document.getElementById('cms-hero-subheading').value },
+                { key: 'contact_primary_phone', value: document.getElementById('cms-contact-phone').value },
+                { key: 'contact_whatsapp_phone', value: document.getElementById('cms-contact-wa').value },
+                { key: 'contact_address', value: document.getElementById('cms-contact-address').value }
+            ];
+
+            for (let u of updates) {
+                await supabaseClient.from('site_settings').upsert(u);
+            }
+            alert("CMS Settings saved successfully! Website will show updated content immediately.");
+        }
+
+        // 5. WHATSAPP TEMPLATE
+        async function loadWhatsAppTemplate() {
+            const { data } = await supabaseClient.from('site_settings').select('value').eq('key', 'wa_selfdrive_template').single();
+            if (data) {
+                document.getElementById('wa-template-editor').value = decodeURIComponent(data.value);
+            }
+        }
+
+        async function saveWhatsAppTemplate(e) {
+            e.preventDefault();
+            const val = encodeURIComponent(document.getElementById('wa-template-editor').value);
+            await supabaseClient.from('site_settings').upsert({ key: 'wa_selfdrive_template', value: val });
+            alert("WhatsApp message template updated!");
+        }
+
+        // 6. FAQS & INQUIRIES
+        async function loadFaqs() {
+            const list = document.getElementById('faqs-admin-list');
+            list.innerHTML = '';
+            const { data: faqs } = await supabaseClient.from('faqs').select('*').order('display_order', { ascending: true });
+            if (!faqs) return;
+            faqs.forEach(f => {
+                const div = document.createElement('div');
+                div.className = "p-3 rounded-xl border border-slate-200 text-xs";
+                div.innerHTML = `<strong>${f.question}</strong><p class="text-slate-600 mt-1">${f.answer}</p>`;
+                list.appendChild(div);
+            });
+        }
+
+        async function loadInquiries() {
+            const tbody = document.getElementById('admin-inquiries-table-body');
+            tbody.innerHTML = '';
+            const { data: inqs } = await supabaseClient.from('inquiries').select('*').order('created_at', { ascending: false }).limit(25);
+            if (!inqs || inqs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">No leads recorded yet.</td></tr>';
+                return;
+            }
+            inqs.forEach(i => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-slate-500">${new Date(i.created_at).toLocaleDateString()}</td>
+                    <td class="py-3 px-4 font-bold text-slate-800">${i.customer_name}<br><span class="font-normal text-slate-400">${i.customer_phone}</span></td>
+                    <td class="py-3 px-4">${i.service_type}</td>
+                    <td class="py-3 px-4 font-semibold text-indigo-950">${i.car_name}</td>
+                    <td class="py-3 px-4 font-bold text-emerald-700">₹${i.fare_amount}</td>
+                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900">${i.inquiry_status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Initialize state on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAuthState();
+        });
+    </script>
+</body>
+</html>

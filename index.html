@@ -410,7 +410,7 @@
 
                         <!-- Brand Quick Pills -->
                         <div class="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-slate-100 scrollbar-none text-xs font-bold" id="brand-filter-btns">
-                            <button onclick="setBrandPill('All')" class="sd-brand-btn active px-3 py-1.5 bg-indigo-950 text-white rounded-lg whitespace-nowrap shadow-sm">All Cars</button>
+                            <button onclick="setBrandPill('All')" class="sd-brand-btn active px-3 py-1.5 bg-indigo-950 text-white rounded-lg whitespace-nowrap shadow-sm font-bold">All Cars</button>
                             <button onclick="setBrandPill('Maruti Suzuki')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Maruti Suzuki</button>
                             <button onclick="setBrandPill('Mahindra')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Mahindra</button>
                             <button onclick="setBrandPill('Tata')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Tata</button>
@@ -797,7 +797,7 @@
         </div>
     </div>
 
-    <!-- SELF DRIVE BOOKING MODAL (COMPLETE FARE INCLUDES RENTAL + DELIVERY + DEPOSIT WITH INPUT VALIDATION) -->
+    <!-- SELF DRIVE BOOKING MODAL -->
     <div id="sd-booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
             <button type="button" onclick="closeSDModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
@@ -859,7 +859,7 @@
                     <div class="text-[11px] text-slate-500">Pick up and return the car directly at our Vikhroli hub.</div>
                 </div>
 
-                <!-- TOTAL ESTIMATED FARE BREAKDOWN (CLEAR RENTAL + DELIVERY + SECURITY DEPOSIT) -->
+                <!-- TOTAL ESTIMATED FARE BREAKDOWN -->
                 <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs space-y-2">
                     <div class="flex justify-between text-slate-600">
                         <span>Rental Charges (<span id="disp-calc-hours">24</span> hrs × <span id="disp-calc-rate">₹0</span>):</span>
@@ -869,12 +869,12 @@
                         <span>Doorstep Delivery &amp; Pick-up Fee:</span>
                         <strong class="text-slate-800 font-bold" id="disp-delivery-amount">₹500</strong>
                     </div>
-                    <!-- Clear Refundable Security Deposit Separate Line Item -->
+                    <!-- Refundable Security Deposit Separate Line Item -->
                     <div class="flex justify-between text-indigo-950 bg-indigo-50/80 p-2 rounded-lg border border-indigo-100">
                         <span><i class="fa-solid fa-shield-halved text-indigo-600 mr-1"></i> Refundable Security Deposit:</span>
                         <strong class="text-indigo-950 font-bold" id="disp-deposit-amount">₹3,000</strong>
                     </div>
-                    <!-- Total Estimated Fare Including All 3 Charges -->
+                    <!-- Total Estimated Fare -->
                     <div class="pt-2 border-t border-slate-200 flex justify-between items-center text-indigo-950 font-bold">
                         <div>
                             <span class="text-xs sm:text-sm block">Total Estimated Fare:</span>
@@ -1000,6 +1000,43 @@
         </div>
     </div>
 
+    <!-- ========================================================================= -->
+    <!-- NEW: SUCCESS CONFIRMATION MODAL POPUP (AFTER SUCCESSFUL REQUEST SUBMIT)   -->
+    <!-- ========================================================================= -->
+    <div id="success-confirmation-modal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all duration-300">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl relative text-center transform scale-100 transition-transform">
+            <!-- Close icon button -->
+            <button type="button" onclick="closeSuccessModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Animated Green Verified Checkmark Badge -->
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <!-- Professional & Friendly Heading -->
+            <h3 class="text-xl font-black text-slate-900 tracking-tight mb-2">
+                Thank You for Sharing Your Details!
+            </h3>
+
+            <!-- Confirmation Message Body -->
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm mx-auto mb-6">
+                Your request has been successfully submitted. Our team will verify the details and get back to you shortly.
+            </p>
+
+            <!-- Support info & OK button -->
+            <div class="space-y-2.5">
+                <button type="button" onclick="closeSuccessModal()" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-extrabold py-3.5 rounded-xl shadow-lg transition text-xs tracking-wide">
+                    OK, Got It
+                </button>
+                <a href="https://wa.me/919702988465" target="_blank" class="text-[11px] font-bold text-slate-500 hover:text-emerald-700 flex items-center justify-center gap-1.5 pt-1">
+                    <i class="fa-brands fa-whatsapp text-emerald-500 text-sm"></i> Need immediate assistance? WhatsApp us
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- DATALISTS -->
     <datalist id="mumbai-stations-list">
         <option value="Masjid"></option><option value="Sandhurst Road"></option><option value="Byculla"></option>
@@ -1077,8 +1114,23 @@
 
     <script>
         // ==========================================
-        // DRAWER NAVIGATION HANDLERS
+        // SUCCESS POPUP MODAL HANDLERS
         // ==========================================
+        function showSuccessModal() {
+            const modal = document.getElementById('success-confirmation-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        }
+
+        function closeSuccessModal() {
+            const modal = document.getElementById('success-confirmation-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // DRAWER NAVIGATION HANDLERS
         function openNavDrawer() {
             const drawer = document.getElementById('nav-drawer');
             const overlay = document.getElementById('nav-drawer-overlay');
@@ -1108,9 +1160,7 @@
             }
         }
 
-        // ==========================================
         // VALIDATION HELPERS
-        // ==========================================
         function validateName(name) {
             const regex = /^[A-Za-z\s]{2,50}$/;
             return regex.test(name.trim());
@@ -1627,7 +1677,6 @@
 
             calculatedRentalHours = Math.max(8, isNaN(diffHours) ? 24 : Math.ceil(diffHours));
             
-            // Clear error messages
             document.getElementById('err-sd-name').classList.add('hidden');
             document.getElementById('err-sd-phone').classList.add('hidden');
             document.getElementById('err-sd-alt-phone').classList.add('hidden');
@@ -1699,7 +1748,6 @@
             updateTotalFareBreakdown();
         }
 
-        // Total Estimated Fare includes: Rental Charges + Delivery Charges + Refundable Security Deposit
         function updateTotalFareBreakdown() {
             if (!selectedCarObj) return;
 
@@ -1727,7 +1775,6 @@
 
             let isValid = true;
 
-            // 1. Name Validation (Only alphabets & spaces)
             if (!validateName(nameInput.value)) {
                 errName.innerText = "Please enter a valid name. Numbers and special characters are not allowed.";
                 errName.classList.remove('hidden');
@@ -1738,7 +1785,6 @@
                 nameInput.classList.remove('border-rose-500');
             }
 
-            // 2. Primary Phone Validation (Exactly 10 digits, no 0000000000)
             if (!validatePhone(phoneInput.value)) {
                 errPhone.innerText = "Please enter a valid 10-digit mobile number.";
                 errPhone.classList.remove('hidden');
@@ -1749,7 +1795,6 @@
                 phoneInput.classList.remove('border-rose-500');
             }
 
-            // 3. Alternate Phone Validation (Exactly 10 digits, no 0000000000)
             if (!validatePhone(altPhoneInput.value)) {
                 errAltPhone.innerText = "Please enter a valid 10-digit alternate mobile number.";
                 errAltPhone.classList.remove('hidden');
@@ -1776,7 +1821,6 @@
                 delivMsg = `*Delivery Option:* Self Pick-up at Vikhroli Hub (₹0)`;
             }
 
-            // Complete, accurate and matching details on WhatsApp
             const msg = `*New Self-Drive Booking Request - Car with Driver India*%0A%0A` +
                         `*Customer Name:* ${name}%0A` +
                         `*Primary Phone:* ${phone}%0A` +
@@ -1795,6 +1839,8 @@
 
             window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
             closeSDModal();
+            // Show Success Confirmation Modal
+            showSuccessModal();
         }
 
         // ==========================================
@@ -1860,6 +1906,8 @@
 
             window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
             closePartnerModal();
+            // Show Success Confirmation Modal
+            showSuccessModal();
         }
 
         // ==========================================
@@ -1937,6 +1985,8 @@
 
             window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
             closeModal();
+            // Show Success Confirmation Modal
+            showSuccessModal();
         }
 
         // Initialize Defaults

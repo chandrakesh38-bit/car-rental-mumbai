@@ -166,6 +166,34 @@
                 <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm max-w-2xl space-y-4" id="pricing-rules-container">
                     <!-- Loaded dynamically from DB -->
                 </div>
+                <!-- With-Driver Rates Management Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mt-6">
+            <div class="flex items-center justify-between mb-4 border-b pb-3">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">With-Driver Fleet Rates</h3>
+                    <p class="text-xs text-slate-500">Live vendor rates + 25% markup for Outstation, Local & Driver Allowance.</p>
+                </div>
+                <button type="button" onclick="loadWithDriverRates()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg">⟳ Refresh</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-600">
+                    <thead class="bg-slate-50 text-slate-700 uppercase font-bold border-b">
+                        <tr>
+                            <th class="py-2.5 px-3">Vehicle</th>
+                            <th class="py-2.5 px-3">Outstation (/KM)</th>
+                            <th class="py-2.5 px-3">Local 8H/80KM</th>
+                            <th class="py-2.5 px-3">Extra Hr</th>
+                            <th class="py-2.5 px-3">Extra KM</th>
+                            <th class="py-2.5 px-3">Allowance</th>
+                            <th class="py-2.5 px-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="with-driver-rates-body">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
             </div>
 
             <!-- SECTION 3: DELIVERY LOCATIONS -->
@@ -889,7 +917,57 @@ switchTab = function(tab) {
     origSwitchTab(tab);
     if (tab === 'inquiries') loadInquiries();
 };
-        
+
+ // Load With-Driver Rates
+async function loadWithDriverRates() {
+    const tbody = document.getElementById('with-driver-rates-body');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-slate-400">Loading rates...</td></tr>';
+    
+    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
+    const { data, error } = await client.from('with_driver_rates').select('*').order('outstation_rate_per_km', { ascending: true });
+    
+    if (error || !data) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">Failed to load rates</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = data.map(car => `
+        <tr class="border-b hover:bg-slate-50">
+            <td class="py-2 px-3 font-semibold text-slate-800">${car.full_name}<span class="text-[10px] text-slate-400 block">${car.segment}</span></td>
+            <td class="py-2 px-3">₹<input type="number" id="wd_outstation_${car.id}" value="${car.outstation_rate_per_km}" class="w-16 border rounded px-1 py-0.5 font-bold text-slate-900"></td>
+            <td class="py-2 px-3">₹<input type="number" id="wd_local_${car.id}" value="${car.local_pkg_8hr_80km}" class="w-20 border rounded px-1 py-0.5 font-bold text-slate-900"></td>
+            <td class="py-2 px-3">₹<input type="number" id="wd_ehr_${car.id}" value="${car.local_extra_hour_rate}" class="w-16 border rounded px-1 py-0.5 font-bold text-slate-900"></td>
+            <td class="py-2 px-3">₹<input type="number" id="wd_ekm_${car.id}" value="${car.local_extra_km_rate}" class="w-16 border rounded px-1 py-0.5 font-bold text-slate-900"></td>
+            <td class="py-2 px-3">₹<input type="number" id="wd_allowance_${car.id}" value="${car.driver_allowance_per_day}" class="w-16 border rounded px-1 py-0.5 font-bold text-slate-900"></td>
+            <td class="py-2 px-3 text-right">
+                <button type="button" onclick="saveWithDriverRate('${car.id}')" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded text-xs">Save</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Save Single Car Rate
+async function saveWithDriverRate(id) {
+    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
+    const payload = {
+        outstation_rate_per_km: Number(document.getElementById(`wd_outstation_${id}`).value),
+        local_pkg_8hr_80km: Number(document.getElementById(`wd_local_${id}`).value),
+        local_extra_hour_rate: Number(document.getElementById(`wd_ehr_${id}`).value),
+        local_extra_km_rate: Number(document.getElementById(`wd_ekm_${id}`).value),
+        driver_allowance_per_day: Number(document.getElementById(`wd_allowance_${id}`).value)
+    };
+    
+    const { error } = await client.from('with_driver_rates').update(payload).eq('id', id);
+    if (error) {
+        alert('Update failed: ' + error.message);
+    } else {
+        alert('Rates updated successfully!');
+    }
+}      
+   window.addEventListener('DOMContentLoaded', () => {
+    loadWithDriverRates();
+});
     </script>
 </body>
 </html>

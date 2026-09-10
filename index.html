@@ -2196,7 +2196,7 @@ function setWDSubTab(tab) {
             document.getElementById('disp-total-final-fare').innerText = `₹${calculatedTotalFare.toLocaleString('en-IN')}`;
         }
 
-        function handleSDBookingSubmit(e) {
+async function handleSDBookingSubmit(e) {
             e.preventDefault();
             const nameInput = document.getElementById('sd-cust-name');
             const phoneInput = document.getElementById('sd-cust-phone');
@@ -2291,17 +2291,23 @@ function setWDSubTab(tab) {
                         `${delivMsg}%0A` +
                         `*Complete Address:* ${fullAddress}%0A%0A` +
                         `_Customer has confirmed and agreed to mandatory ID & inspection terms._`;
-// Supabase Lead Insert - Self Drive
-if (typeof supabasePublic !== 'undefined' && supabasePublic) {
-    supabasePublic.from('inquiries').insert([{
-        customer_name: (document.getElementById('sd-name') ? document.getElementById('sd-name').value.trim() : 'Self-Drive Customer'),
-        customer_phone: (document.getElementById('sd-phone') ? document.getElementById('sd-phone').value.trim() : ''),
-        service_type: 'Self-Drive',
-        car_name: (typeof selectedCarObj !== 'undefined' && selectedCarObj ? selectedCarObj.fullName : 'Tata Punch'),
-        total_fare: (typeof calculatedTotalFare !== 'undefined' ? calculatedTotalFare : 0),
-        status: 'new'
-    }]).then(res => console.log('Self-Drive lead saved:', res)).catch(err => console.error(err));
-}
+
+            // GUARANTEED SAVE: Pehle Supabase me insert hoga, fir WhatsApp khulega
+            if (typeof supabasePublic !== 'undefined' && supabasePublic) {
+                try {
+                    await supabasePublic.from('inquiries').insert([{
+                        customer_name: name,
+                        customer_phone: phone,
+                        service_type: 'Self-Drive',
+                        car_name: (typeof selectedCarObj !== 'undefined' && selectedCarObj ? selectedCarObj.fullName : 'Self-Drive Car'),
+                        total_fare: (typeof calculatedTotalFare !== 'undefined' ? calculatedTotalFare : 0),
+                        status: 'new'
+                    }]);
+                    console.log('Self-Drive lead saved successfully to Supabase!');
+                } catch (err) {
+                    console.error('Supabase write error:', err);
+                }
+            }
             
             window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
             closeSDModal();
@@ -2391,61 +2397,103 @@ if (typeof supabasePublic !== 'undefined' && supabasePublic) {
             document.getElementById('booking-modal').classList.add('hidden');
         }
 
-        function handleBookingSubmit(e) {
-            e.preventDefault();
-            const nameInput = document.getElementById('cust-name');
-            const phoneInput = document.getElementById('cust-phone');
-            const addr = document.getElementById('cust-address').value;
+async function handleBookingSubmit(e) {
+        e.preventDefault();
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.innerText = "Confirming...";
+            submitBtn.disabled = true;
+        }
 
-            const errName = document.getElementById('err-wd-name');
-            const errPhone = document.getElementById('err-wd-phone');
+        const nameInput = document.getElementById('cust-name');
+        const phoneInput = document.getElementById('cust-phone');
+        const addrInput = document.getElementById('cust-address');
+        const addr = addrInput ? addrInput.value : '';
 
-            let isValid = true;
+        const errName = document.getElementById('err-wd-name');
+        const errPhone = document.getElementById('err-wd-phone');
 
-            if (!validateName(nameInput.value)) {
-                errName.innerText = "Please enter a valid name. Numbers and special characters are not allowed.";
-                errName.classList.remove('hidden');
-                isValid = false;
-            } else {
-                errName.classList.add('hidden');
+        let isValid = true;
+
+        if (!validateName(nameInput.value)) {
+            errName.innerText = "Please enter a valid name. Numbers and special characters are not allowed.";
+            errName.classList.remove('hidden');
+            isValid = false;
+        } else {
+            errName.classList.add('hidden');
+        }
+
+        if (!validatePhone(phoneInput.value)) {
+            errPhone.innerText = "Please enter a valid 10-digit mobile number.";
+            errPhone.classList.remove('hidden');
+            isValid = false;
+        } else {
+            errPhone.classList.add('hidden');
+        }
+
+        if (!isValid) {
+            if (submitBtn) {
+                submitBtn.innerText = "Confirm Booking via WhatsApp";
+                submitBtn.disabled = false;
             }
+            return;
+        }
 
-            if (!validatePhone(phoneInput.value)) {
-                errPhone.innerText = "Please enter a valid 10-digit mobile number.";
-                errPhone.classList.remove('hidden');
-                isValid = false;
-            } else {
-                errPhone.classList.add('hidden');
+        const name = nameInput.value.trim();
+        const phone = phoneInput.value.trim();
+
+        // 1. GUARANTEED DATABASE SAVE FIRST (Wait for Supabase before redirecting)
+        if (typeof supabasePublic !== 'undefined' && supabasePublic) {
+            try {
+                await supabasePublic.from('inquiries').insert([{
+                    customer_name: name,
+                    customer_phone: phone,
+                    service_type: 'With-Driver (' + (currentWDSubTab ? currentWDSubTab.toUpperCase() : 'CAB') + ')',
+                    car_name: chosenCarName || 'With-Driver Cab',
+                    total_fare: chosenFareAmount || 0,
+                    status: 'new'
+                }]);
+                console.log('Lead successfully saved to Supabase!');
+            } catch (err) {
+                console.error('Database write error:', err);
             }
+        }
 
-            if (!isValid) return;
+        // 2. PREPARE WHATSAPP MESSAGE
+        let msg = `*New Cab Booking (With Driver) - Car with Driver India*%0A%0A*Customer:* ${name}%0A*Phone:* ${phone}%0A*Trip Type:* ${currentWDSubTab.toUpperCase()}%0A*Vehicle:* ${chosenCarName}%0A*Est. Fare:* ₹${chosenFareAmount}%0A*Pickup Address:* ${addr}%0A*(Fare includes car rental, fuel & driver allowance. Tolls & parking extra as actuals)*`;
 
-            const name = nameInput.value.trim();
-            const phone = phoneInput.value.trim();
+        if (currentWDSubTab === 'local') {
+            const pkg = document.getElementById('wd-local-package')?.value || '';
+            const area = document.getElementById('wd-local-pickup')?.value || '';
+            const d = document.getElementById('wd-local-date')?.value || '';
+            const h = document.getElementById('wd-local-hour')?.value || '';
+            const m = document.getElementById('wd-local-ampm')?.value || '';
+            msg += `%0A*Package:* ${pkg}%0A*Area:* ${area}%0A*Pickup Time:* ${d} at ${h}:00 ${m}`;
+        } else if (currentWDSubTab === 'outstation') {
+            const stn = document.getElementById('wd-out-pickup')?.value || '';
+            const dest = document.getElementById('wd-out-destination')?.value || '';
+            const pd = document.getElementById('wd-out-pdate')?.value || '';
+            const ph = document.getElementById('wd-out-phour')?.value || '';
+            const pm = document.getElementById('wd-out-pampm')?.value || '';
+            msg += `%0A*Pickup Station/Area:* ${stn}%0A*Destination:* ${dest}%0A*Departure:* ${pd} at ${ph}:00 ${pm}%0A*Days:* ${wdOutstationDays}%0A*Est. Distance:* ${wdOutstationKm} KM%0A*Night Allowance:* ${isNightAllowanceApplicable ? 'Yes (+₹700)' : 'No'}`;
+        } else if (currentWDSubTab === 'airport') {
+            const term = document.getElementById('wd-airport-terminal')?.value || '';
+            const d = document.getElementById('wd-airport-date')?.value || '';
+            const h = document.getElementById('wd-airport-hour')?.value || '';
+            const m = document.getElementById('wd-airport-ampm')?.value || '';
+            msg += `%0A*Airport:* ${term.toUpperCase()}%0A*Flight Time:* ${d} at ${h}:00 ${m}`;
+        }
 
-            let msg = `*New Cab Booking (With Driver) - Car with Driver India*%0A%0A*Customer:* ${name}%0A*Phone:* ${phone}%0A*Trip Type:* ${currentWDSubTab.toUpperCase()}%0A*Vehicle:* ${chosenCarName}%0A*Est. Fare:* ₹${chosenFareAmount}%0A*Pickup Address:* ${addr}%0A*(Fare includes car rental, fuel & driver allowance. Tolls & parking extra as actuals)*`;
-
-            if (currentWDSubTab === 'local') {
-                const pkg = document.getElementById('wd-local-package').value;
-                const area = document.getElementById('wd-local-pickup').value;
-                const d = document.getElementById('wd-local-date').value;
-                const h = document.getElementById('wd-local-hour').value;
-                const m = document.getElementById('wd-local-ampm').value;
-                msg += `%0A*Package:* ${pkg}%0A*Area:* ${area}%0A*Pickup Time:* ${d} at ${h}:00 ${m}`;
-            } else if (currentWDSubTab === 'outstation') {
-                const stn = document.getElementById('wd-out-pickup').value;
-                const dest = document.getElementById('wd-out-destination').value;
-                const pd = document.getElementById('wd-out-pdate').value;
-                const ph = document.getElementById('wd-out-phour').value;
-                const pm = document.getElementById('wd-out-pampm').value;
-                msg += `%0A*Pickup Station/Area:* ${stn}%0A*Destination:* ${dest}%0A*Departure:* ${pd} at ${ph}:00 ${pm}%0A*Days:* ${wdOutstationDays}%0A*Est. Distance:* ${wdOutstationKm} KM%0A*Night Allowance:* ${isNightAllowanceApplicable ? 'Yes (+₹700)' : 'No'}`;
-            } else if (currentWDSubTab === 'airport') {
-                const term = document.getElementById('wd-airport-terminal').value;
-                const d = document.getElementById('wd-airport-date').value;
-                const h = document.getElementById('wd-airport-hour').value;
-                const m = document.getElementById('wd-airport-ampm').value;
-                msg += `%0A*Airport:* ${term.toUpperCase()}%0A*Flight Time:* ${d} at ${h}:00 ${m}`;
-            }
+        // 3. LAUNCH WHATSAPP & SHOW POPUP
+        window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
+        closeModal();
+        if (typeof showSuccessModal === 'function') showSuccessModal();
+        
+        if (submitBtn) {
+            submitBtn.innerText = "Confirm Booking via WhatsApp";
+            submitBtn.disabled = false;
+        }
+    }
 
 // Supabase Lead Insert - With Driver
         if (typeof supabasePublic !== 'undefined' && supabasePublic) {

@@ -512,6 +512,44 @@
         </div>
     </header>
 
+    <!-- POPULAR OUTSTATION ROUTES (FEATURE 10) -->
+<div class="max-w-5xl mx-auto px-4 -mt-6 mb-10 relative z-20">
+    <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-lg border border-slate-200">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-compass text-indigo-600"></i> Quick Plan: Popular Maharashtra Routes
+            </span>
+            <span class="text-[11px] text-slate-400">Click to autofill route</span>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
+            <!-- Shirdi -->
+            <button type="button" onclick="selectQuickRoute('Shirdi')" class="text-left p-3 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group">
+                <div class="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-indigo-950">Mumbai ➔ Shirdi</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">~480 KM • Ertiga Best Fit</div>
+                <div class="text-xs font-bold text-emerald-700 mt-1">Starts ₹8,660</div>
+            </button>
+            <!-- Lonavala -->
+            <button type="button" onclick="selectQuickRoute('Lonavala')" class="text-left p-3 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group">
+                <div class="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-indigo-950">Mumbai ➔ Lonavala</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">~170 KM • Sedan / Ertiga</div>
+                <div class="text-xs font-bold text-emerald-700 mt-1">Starts ₹5,600</div>
+            </button>
+            <!-- Mahabaleshwar -->
+            <button type="button" onclick="selectQuickRoute('Mahabaleshwar')" class="text-left p-3 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group">
+                <div class="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-indigo-950">Mumbai ➔ Mahabaleshwar</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">~520 KM • Innova / Ertiga</div>
+                <div class="text-xs font-bold text-emerald-700 mt-1">Starts ₹9,500</div>
+            </button>
+            <!-- Trimbakeshwar -->
+            <button type="button" onclick="selectQuickRoute('Trimbakeshwar')" class="text-left p-3 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group">
+                <div class="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-indigo-950">Mumbai ➔ Trimbakeshwar</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">~360 KM • Dzire / Ertiga</div>
+                <div class="text-xs font-bold text-emerald-700 mt-1">Starts ₹6,620</div>
+            </button>
+        </div>
+    </div>
+</div>
+
     <!-- WITH DRIVER FLEET SECTION -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-12" id="fleet">
         <div class="text-center mb-8">
@@ -1456,79 +1494,61 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // WITH DRIVER FLEET (Vendor Rate Card + 25% Markup Applied)
         const wdFleet = [
-            {
-                name: 'Sedan (Dzire / Aura)',
-                category: 'Comfort Sedan',
-                seats: '4+1',
-                bags: '2 Bags',
-                rates: {
-                    local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 },
-                    outstationPerKm: 17,
-                    driverAllowance: 500,
-                    airport: { t1: 1500, t2: 1600, nmia: 2000 }
-                }
-            },
-            {
-                name: 'Compact SUV (Punch / Brezza)',
-                category: 'Compact SUV',
-                seats: '4+1',
-                bags: '2 Large Bags',
-                rates: {
-                    local: { '8hr_80km': 3200, '10hr_100km': 3700, '12hr_120km': 4200, extraKm: 18 },
-                    outstationPerKm: 18,
-                    driverAllowance: 500,
-                    airport: { t1: 1700, t2: 1800, nmia: 2200 }
-                }
-            },
-            {
-                name: 'Maruti Ertiga',
-                category: 'Family MUV',
-                seats: '6+1',
-                bags: '3 Bags',
-                rates: {
-                    local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 },
-                    outstationPerKm: 19,
-                    driverAllowance: 500,
-                    airport: { t1: 2200, t2: 2400, nmia: 2800 }
-                }
-            },
-            {
-                name: 'Kia Carens',
-                category: 'Premium Family MUV',
-                seats: '6+1',
-                bags: '3 Bags',
-                rates: {
-                    local: { '8hr_80km': 4000, '10hr_100km': 4700, '12hr_120km': 5400, extraKm: 20 },
-                    outstationPerKm: 20,
-                    driverAllowance: 500,
-                    airport: { t1: 2400, t2: 2600, nmia: 3000 }
-                }
-            },
-            {
-                name: 'Toyota Innova',
-                category: 'Executive MUV',
-                seats: '6+1 / 7+1',
-                bags: '4 Bags',
-                rates: {
-                    local: { '8hr_80km': 4400, '10hr_100km': 5200, '12hr_120km': 6000, extraKm: 22 },
-                    outstationPerKm: 22,
-                    driverAllowance: 500,
-                    airport: { t1: 2700, t2: 2900, nmia: 3400 }
-                }
-            },
-            {
-                name: 'Innova Crysta',
-                category: 'Luxury MUV',
-                seats: '6+1 / 7+1',
-                bags: '4 Bags',
-                rates: {
-                    local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 },
-                    outstationPerKm: 25,
-                    driverAllowance: 500,
-                    airport: { t1: 3000, t2: 3200, nmia: 3800 }
-                }
-            }
-        ];
+    { 
+        name: 'Sedan (Dzire / Aura)', 
+        category: 'Comfort Sedan', 
+        tag: 'Best for Couples & Small Families', 
+        tagColor: 'bg-blue-100 text-blue-800 border-blue-200',
+        seats: '4+1', 
+        bags: '2 Bags', 
+        rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, airport: { t1: 1500, t2: 1600, nmia: 2000 } } 
+    },
+    { 
+        name: 'Compact SUV (Punch / Brezza)', 
+        category: 'Compact SUV', 
+        tag: 'Best for Rough Roads & Luggage', 
+        tagColor: 'bg-slate-100 text-slate-800 border-slate-200',
+        seats: '4+1', 
+        bags: '2 Large Bags', 
+        rates: { local: { '8hr_80km': 3200, '10hr_100km': 3700, '12hr_120km': 4200, extraKm: 18 }, outstationPerKm: 18, driverAllowance: 500, airport: { t1: 1700, t2: 1800, nmia: 2200 } } 
+    },
+    { 
+        name: 'Maruti Ertiga', 
+        category: 'Family MUV', 
+        tag: '⭐ Best Value for Families (6+1)', 
+        tagColor: 'bg-amber-100 text-amber-900 border-amber-300 font-bold',
+        seats: '6+1', 
+        bags: '3 Bags', 
+        rates: { local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 }, outstationPerKm: 19, driverAllowance: 500, airport: { t1: 2200, t2: 2400, nmia: 2800 } } 
+    },
+    { 
+        name: 'Kia Carens', 
+        category: 'Premium Family MUV', 
+        tag: 'Executive Family Comfort', 
+        tagColor: 'bg-purple-100 text-purple-800 border-purple-200',
+        seats: '6+1', 
+        bags: '3 Bags', 
+        rates: { local: { '8hr_80km': 4000, '10hr_100km': 4700, '12hr_120km': 5400, extraKm: 20 }, outstationPerKm: 20, driverAllowance: 500, airport: { t1: 2400, t2: 2600, nmia: 3000 } } 
+    },
+    { 
+        name: 'Toyota Innova', 
+        category: 'Executive MUV', 
+        tag: 'Spacious Long Highway Trips', 
+        tagColor: 'bg-slate-100 text-slate-800 border-slate-200',
+        seats: '6+1 / 7+1', 
+        bags: '4 Bags', 
+        rates: { local: { '8hr_80km': 4400, '10hr_100km': 5200, '12hr_120km': 6000, extraKm: 22 }, outstationPerKm: 22, driverAllowance: 500, airport: { t1: 2700, t2: 2900, nmia: 3400 } } 
+    },
+    { 
+        name: 'Innova Crysta', 
+        category: 'Luxury MUV', 
+        tag: '👑 Maximum Highway Luxury', 
+        tagColor: 'bg-indigo-100 text-indigo-900 border-indigo-300 font-bold',
+        seats: '6+1 / 7+1', 
+        bags: '4 Bags', 
+        rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, airport: { t1: 3000, t2: 3200, nmia: 3800 } } 
+    }
+];
 
         // 32 EXCEL CARS (PRIORITY REORDERED: 1st Tata Nexon, 2nd Tata Punch)
         let excelCarsData = [
@@ -2520,6 +2540,49 @@ if (typeof supabasePublic !== 'undefined' && supabasePublic) {
     </script>
     <script>
 (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="31SOvQiI472RC_RrfnlIr";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+// FEATURE 10: 1-Click Quick Route Selection
+function selectQuickRoute(destName) {
+    if (typeof setServiceMode === 'function') setServiceMode('withdriver');
+    if (typeof setWDSubTab === 'function') setWDSubTab('outstation');
+    
+    const destInput = document.getElementById('wd-out-destination');
+    if (destInput) {
+        destInput.value = destName;
+    }
+    if (typeof calculateDriverFare === 'function') {
+        calculateDriverFare();
+    }
+    
+    // Smooth scroll back to widget to see fare
+    const widget = document.getElementById('booking-widget');
+    if (widget) {
+        widget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// FEATURE 11: Seamless "Book This Car" Handling
+// Agar form details khali hain toh error mat do, user ko smoothly dates lene widget par le jao
+function handleDirectCarBooking(carName, estimatedFare) {
+    const outDest = document.getElementById('wd-out-destination');
+    
+    // Agar outstation tab par destination khali hai:
+    if (currentWDSubTab === 'outstation' && (!outDest || !outDest.value.trim())) {
+        const widget = document.getElementById('booking-widget');
+        if (widget) {
+            widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (outDest) {
+                outDest.focus();
+                outDest.classList.add('ring-2', 'ring-amber-500');
+                setTimeout(() => outDest.classList.remove('ring-2', 'ring-amber-500'), 2500);
+            }
+        }
+        return;
+    }
+    
+    // Agar sab bhara hai toh direct modal open ho jaye
+    openModal(carName, estimatedFare);
+}
+       
 </script>
 </body>
 </html>

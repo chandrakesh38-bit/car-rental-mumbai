@@ -918,7 +918,7 @@
                 <!-- Clean Home Delivery Location Input with Autocomplete -->
                 <div id="sd-home-delivery-box" class="space-y-2 p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl relative">
                     <label class="block text-xs font-bold text-indigo-950 mb-1">Select Delivery Location</label>
-                    <input type="text" id="sd-delivery-location-input" autocomplete="off" oninput="showSuggestions('sd-delivery-location-input', 'delivery-locations', 'sd-delivery-dropdown')" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Type area (e.g. Mulund, Dahisar, Bandra, Kurla)" value="Mulund">
+                    <input type="text" id="sd-delivery-location-input" autocomplete="off" oninput="showSuggestions('sd-delivery-location-input', 'delivery-locations', 'sd-delivery-dropdown')" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:ring-2 focus:ring-indigo-600 focus:outline-none" placeholder="Enter your delivery location" value="">
                     <div id="sd-delivery-dropdown" class="autocomplete-dropdown hidden"></div>
                 </div>
 
@@ -965,6 +965,7 @@
                         <li>Alternate mobile number required for verification.</li>
                         <li>Car photo before and after trip will be verified.</li>
                         <li>Need to return the car in same condition and same fuel level.</li>
+                        <li class="font-bold text-amber-950">Fuel not included.</li>
                     </ul>
                 </div>
 

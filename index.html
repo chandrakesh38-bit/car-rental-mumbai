@@ -345,7 +345,13 @@
                             <span><strong>Pricing Includes:</strong> Car rental, Fuel & Driver Allowance. Extra: Tolls, State Tax & Parking as actual receipts.</span>
                         </div>
                     </div>
-
+                    <!-- Search & Refresh Rates Button -->
+            <div class="mt-6 flex justify-center">
+                <button type="button" onclick="triggerFareSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
+                    <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="search-btn-icon"></i>
+                    <span id="search-btn-text">Check Updated Rates & Cars</span>
+                </button>
+            </div>
                 </div>
 
                 <!-- 2. SELF DRIVE BLOCK -->
@@ -1661,6 +1667,41 @@ function setWDSubTab(tab) {
             }
             renderWDFleet();
         }
+
+        function triggerFareSearch() {
+        const btnIcon = document.getElementById('search-btn-icon');
+        const btnText = document.getElementById('search-btn-text');
+        const fleetGrid = document.getElementById('fleet-container') || document.getElementById('fleet');
+
+        if (btnIcon && btnText) {
+            btnIcon.className = "fa-solid fa-spinner fa-spin text-indigo-950 text-base";
+            btnText.innerText = "Calculating Best Rates...";
+        }
+
+        if (fleetGrid) {
+            fleetGrid.classList.add('opacity-30', 'scale-[0.98]', 'transition-all', 'duration-300');
+        }
+
+        setTimeout(() => {
+            if (typeof calculateDriverFare === 'function') calculateDriverFare();
+            if (typeof applyAllSDFilters === 'function') applyAllSDFilters();
+
+            if (fleetGrid) {
+                fleetGrid.classList.remove('opacity-30', 'scale-[0.98]');
+                fleetGrid.classList.add('opacity-100', 'scale-100');
+                fleetGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            if (btnIcon && btnText) {
+                btnIcon.className = "fa-solid fa-check text-emerald-950 text-base";
+                btnText.innerText = "Rates Updated!";
+                setTimeout(() => {
+                    btnIcon.className = "fa-solid fa-magnifying-glass text-indigo-950 text-base";
+                    btnText.innerText = "Check Updated Rates & Cars";
+                }, 1500);
+            }
+        }, 400);
+    }
 
         function getCarCost(car) {
             if (currentWDSubTab === 'local') {

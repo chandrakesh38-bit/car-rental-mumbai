@@ -392,6 +392,13 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Self-Drive Search & Refresh Rates Button -->
+            <div class="mt-4 mb-2 flex justify-center">
+                <button type="button" onclick="triggerSDParseSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
+                    <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="sd-search-btn-icon"></i>
+                    <span id="sd-search-btn-text">Check Updated Self-Drive Rates</span>
+                </button>
+            </div>
 
                     <!-- Comprehensive Filters & Sorting Toolbar -->
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
@@ -1698,6 +1705,39 @@ function setWDSubTab(tab) {
                 setTimeout(() => {
                     btnIcon.className = "fa-solid fa-magnifying-glass text-indigo-950 text-base";
                     btnText.innerText = "Check Updated Rates & Cars";
+                }, 1500);
+            }
+        }, 400);
+    }
+        function triggerSDParseSearch() {
+        const btnIcon = document.getElementById('sd-search-btn-icon');
+        const btnText = document.getElementById('sd-search-btn-text');
+        const fleetGrid = document.getElementById('selfdrive-cars-grid');
+
+        if (btnIcon && btnText) {
+            btnIcon.className = "fa-solid fa-spinner fa-spin text-indigo-950 text-base";
+            btnText.innerText = "Finding Available Cars...";
+        }
+
+        if (fleetGrid) {
+            fleetGrid.classList.add('opacity-30', 'scale-[0.98]', 'transition-all', 'duration-300');
+        }
+
+        setTimeout(() => {
+            if (typeof applyAllSDFilters === 'function') applyAllSDFilters();
+
+            if (fleetGrid) {
+                fleetGrid.classList.remove('opacity-30', 'scale-[0.98]');
+                fleetGrid.classList.add('opacity-100', 'scale-100');
+                fleetGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            if (btnIcon && btnText) {
+                btnIcon.className = "fa-solid fa-check text-emerald-950 text-base";
+                btnText.innerText = "Rates Refreshed!";
+                setTimeout(() => {
+                    btnIcon.className = "fa-solid fa-magnifying-glass text-indigo-950 text-base";
+                    btnText.innerText = "Check Updated Self-Drive Rates";
                 }, 1500);
             }
         }, 400);

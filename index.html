@@ -1,21 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google Analytics (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQH1RQ70WV"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-TQH1RQ70WV');
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car with Driver India - Self Drive & With Driver Car Rental Mumbai</title>
-    <!-- Search Engine & Social Meta Tags -->
-    <meta name="description" content="Affordable self-drive cars and verified cabs with driver in Mumbai, Thane, and Navi Mumbai. Transparent pricing with doorstep delivery.">
-    <link rel="canonical" href="https://carswithdriverindia.com/">
-    
+    <title>Car with Driver India - Self Drive & With Driver Rentals</title>
     <!-- Open Graph (WhatsApp / Social Preview) -->
     <meta property="og:title" content="Car with Driver India - Self Drive & With Driver Rentals">
     <meta property="og:description" content="Rent self-drive cars or book cabs with driver across Maharashtra at transparent rates.">
@@ -26,69 +14,36 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/logo.png">
 
-
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
-    <!-- Supabase JS Client v2 -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .tab-active { background-color: #f59e0b !important; color: #0f172a !important; font-weight: 700; }
-        .subtab-active { background-color: #ffffff !important; color: #1e1b4b !important; border-bottom: 2px solid #312e81; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .autocomplete-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            max-height: 220px;
-            overflow-y: auto;
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 0.75rem;
-            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15);
-            z-index: 60;
-            margin-top: 4px;
-        }
-        .autocomplete-item {
-            padding: 8px 14px;
-            font-size: 13px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #1e293b;
-            transition: all 0.15s;
-        }
-        .autocomplete-item:hover {
-            background-color: #f1f5f9;
-            color: #1e1b4b;
-            font-weight: 600;
-        }
+        .tab-active { background-color: #0f172a; color: #fbbf24; }
+        .subtab-active { background-color: #ffffff; color: #0f172a; font-weight: 800; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .autocomplete-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 0.75rem; margin-top: 4px; max-height: 220px; overflow-y: auto; z-index: 50; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .autocomplete-item { padding: 10px 14px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 8px; }
+        .autocomplete-item:hover { background-color: #f8fafc; color: #4f46e5; font-weight: 600; }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-fade-in { animation: fadeInScale 0.25s ease-out forwards; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
 
-    <!-- NAVBAR (WITH 3-LINE HAMBURGER MENU ON TOP RIGHT) -->
+    <!-- NAVBAR -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
             <a href="#" class="flex items-center space-x-3">
-<div id="site-logo-container" class="flex items-center">
-                <div id="default-brand-icon" class="hidden w-10 h-10 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-xl shadow-inner">
+                <div class="w-9 h-9 rounded-xl bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-base shadow-sm">
                     <i class="fa-solid fa-car"></i>
                 </div>
-                <img id="dynamic-brand-logo" src="/logo.png" alt="Car with Driver India" class="h-9 sm:h-11 w-auto max-w-[180px] object-contain" onerror="this.classList.add('hidden'); document.getElementById('default-brand-icon').classList.remove('hidden');">
-            </div>
                 <div>
-                    <span class="text-xl font-black text-indigo-950 tracking-tight block leading-none">Car with Driver India</span>
-                    <span class="text-[10px] text-slate-400 font-semibold tracking-wider block mt-1">Car with Driver Mobility LLP</span>
+                    <span class="font-extrabold text-sm sm:text-base text-indigo-950 block leading-tight">Car with Driver India</span>
+                    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">Mumbai & Maharashtra</span>
                 </div>
             </a>
 
-            <!-- Right Controls: WhatsApp Button & 3-Line Hamburger Menu -->
             <div class="flex items-center space-x-3">
                 <a href="https://wa.me/919702988465" target="_blank" class="hidden sm:flex bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition items-center gap-1.5 shadow-sm">
                     <i class="fa-brands fa-whatsapp text-sm"></i> Talk to Us
@@ -105,7 +60,6 @@
     <div id="nav-drawer-overlay" onclick="closeNavDrawer()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 hidden transition-opacity duration-300 opacity-0"></div>
     <div id="nav-drawer" class="fixed top-0 right-0 h-full w-72 sm:w-80 bg-white z-50 shadow-2xl border-l border-slate-200 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between p-6">
         <div>
-            <!-- Drawer Header -->
             <div class="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div class="flex items-center space-x-2">
                     <div class="w-8 h-8 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-sm">
@@ -118,7 +72,6 @@
                 </button>
             </div>
 
-            <!-- Drawer Links -->
             <div class="space-y-1.5 pt-5 text-sm font-bold text-slate-700">
                 <a href="#booking-widget" onclick="navigateAndSetMode('withdriver')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
                     <i class="fa-solid fa-user-tie text-indigo-600 w-5"></i>
@@ -128,11 +81,6 @@
                     <i class="fa-solid fa-key text-indigo-600 w-5"></i>
                     <span>Self Drive</span>
                 </a>
-                <a href="javascript:void(0)" onclick="closeNavDrawer(); if(typeof navigateAndSetMode === 'function') navigateAndSetMode('selfdrive'); setTimeout(() => { const el = document.getElementById('selfdrive-cars-grid') || document.getElementById('brand-filter-btns'); if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300);" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-    <i class="fa-solid fa-car-rear text-indigo-600 w-5"></i>
-    <span>Our Fleet</span>
-</a>
-                   
                 <button type="button" onclick="closeNavDrawer(); openPartnerModal();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition text-left font-bold text-slate-700">
                     <i class="fa-solid fa-handshake text-amber-500 w-5"></i>
                     <span>Become a Partner</span>
@@ -144,10 +92,6 @@
                 <a href="#faq" onclick="closeNavDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
                     <i class="fa-solid fa-circle-question text-indigo-600 w-5"></i>
                     <span>FAQs</span>
-                </a>
-                <a href="#reach-us" onclick="closeNavDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-                    <i class="fa-solid fa-location-dot text-indigo-600 w-5"></i>
-                    <span>Reach Us</span>
                 </a>
             </div>
         </div>
@@ -207,7 +151,7 @@
                     <div id="wd-local-fields" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="relative">
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address</label>
-                            <input type="text" id="wd-local-pickup" autocomplete="off" oninput="showSuggestions('wd-local-pickup', 'mumbai-places', 'wd-local-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Type area (e.g. Bhandup, Dadar, Thane)">
+                            <input type="text" id="wd-local-pickup" autocomplete="off" oninput="showSuggestions('wd-local-pickup', 'mumbai-places', 'wd-local-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter area or select area">
                             <div id="wd-local-dropdown" class="autocomplete-dropdown hidden"></div>
                         </div>
                         <div>
@@ -240,12 +184,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-train text-indigo-600 mr-1"></i> Pickup Area / Railway Station</label>
-                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search area (e.g. Bhandup, Dadar, Panvel)" value="Bhandup">
+                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter area or select area">
                                 <div id="wd-out-pickup-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                             <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> Destination City (Maharashtra & Beyond)</label>
-                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'destination-cities', 'wd-out-dest-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search destination (e.g. Pune, Nashik, Mahabaleshwar)" value="Pune">
+                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'destination-cities', 'wd-out-dest-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter area or select area">
                                 <div id="wd-out-dest-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                         </div>
@@ -255,7 +199,7 @@
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Pickup Date & Time</label>
                                 <div class="grid grid-cols-3 gap-2">
-                                    <input type="date" id="wd-out-pdate" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
+                                    <input type="date" id="wd-out-pdate" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="onPickupDateChange()">
                                     <select id="wd-out-phour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6" selected>06:00</option><option value="7">07:00</option><option value="8">08:00</option>
@@ -314,7 +258,7 @@
                             </div>
                             <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> City Address / Area</label>
-                                <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search area (e.g. Thane, Bhandup)">
+                                <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter area or select area">
                                 <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                         </div>
@@ -338,6 +282,31 @@
                         </div>
                     </div>
 
+                    <!-- QUICK PLAN POPULAR MAHARASHTRA ROUTES (Visible ONLY for With Driver -> Local & Outstation) -->
+                    <div id="quick-plan-section" class="mt-6 pt-5 border-t border-slate-100">
+                        <span class="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2.5">
+                            <i class="fa-solid fa-bolt text-amber-500 mr-1"></i> Quick Plan Popular Maharashtra Routes:
+                        </span>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <button type="button" onclick="selectQuickRoute('Shirdi')" class="bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 p-2.5 rounded-xl text-left transition group">
+                                <span class="font-bold text-xs text-indigo-950 block group-hover:text-indigo-600">Mumbai to Shirdi</span>
+                                <span class="text-[10px] text-slate-400 block">Round Trip Cab</span>
+                            </button>
+                            <button type="button" onclick="selectQuickRoute('Trimbakeshwar')" class="bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 p-2.5 rounded-xl text-left transition group">
+                                <span class="font-bold text-xs text-indigo-950 block group-hover:text-indigo-600">Mumbai to Trimbak</span>
+                                <span class="text-[10px] text-slate-400 block">Darshan Cab</span>
+                            </button>
+                            <button type="button" onclick="selectQuickRoute('Lonavala')" class="bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 p-2.5 rounded-xl text-left transition group">
+                                <span class="font-bold text-xs text-indigo-950 block group-hover:text-indigo-600">Mumbai to Lonavala</span>
+                                <span class="text-[10px] text-slate-400 block">Weekend Getaway</span>
+                            </button>
+                            <button type="button" onclick="selectQuickRoute('Pune')" class="bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 p-2.5 rounded-xl text-left transition group">
+                                <span class="font-bold text-xs text-indigo-950 block group-hover:text-indigo-600">Mumbai to Pune</span>
+                                <span class="text-[10px] text-slate-400 block">Expressway Cab</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Policy Banner -->
                     <div class="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 mt-5 text-xs text-amber-950 flex items-center justify-between flex-wrap gap-2">
                         <div class="flex items-center gap-2">
@@ -345,19 +314,19 @@
                             <span><strong>Pricing Includes:</strong> Car rental, Fuel & Driver Allowance. Extra: Tolls & Parking as actual receipts.</span>
                         </div>
                     </div>
+
                     <!-- Search & Refresh Rates Button -->
-            <div class="mt-6 flex justify-center">
-                <button type="button" onclick="triggerFareSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
-                    <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="search-btn-icon"></i>
-                    <span id="search-btn-text">Search</span>
-                </button>
-            </div>
+                    <div class="mt-6 flex justify-center">
+                        <button type="button" onclick="triggerFareSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
+                            <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="search-btn-icon"></i>
+                            <span id="search-btn-text">Search Updated Rates & Cars</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 2. SELF DRIVE BLOCK -->
                 <div id="self-drive-block" class="hidden p-5 sm:p-7 space-y-6">
                     
-                    <!-- Self Drive Booking Date & Time Form -->
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -392,15 +361,15 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Self-Drive Search & Refresh Rates Button -->
-            <div class="mt-4 mb-2 flex justify-center">
-                <button type="button" onclick="triggerSDParseSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
-                    <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="sd-search-btn-icon"></i>
-                    <span id="sd-search-btn-text">Search</span>
-                </button>
-            </div>
 
-                    <!-- Comprehensive Filters & Sorting Toolbar -->
+                    <div class="mt-4 mb-2 flex justify-center">
+                        <button type="button" onclick="triggerSDParseSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
+                            <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="sd-search-btn-icon"></i>
+                            <span id="sd-search-btn-text">Search Available Cars</span>
+                        </button>
+                    </div>
+
+                    <!-- Filters & Sorting Toolbar -->
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                         <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
                             <div class="relative flex-1">
@@ -415,12 +384,12 @@
                                     <option value="price-desc">Price: High to Low</option>
                                 </select>
                                 <button onclick="resetSDFilters()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-semibold whitespace-nowrap transition">
-                                    Reset Filters
+                                    Reset
                                 </button>
                             </div>
                         </div>
 
-                        <!-- 5 Dropdown Filters -->
+                        <!-- Dropdowns -->
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 pt-2 border-t border-slate-100">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fuel Type</label>
@@ -477,7 +446,7 @@
                             </div>
                         </div>
 
-                        <!-- Brand Quick Pills -->
+                        <!-- Brand Pills -->
                         <div class="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-slate-100 scrollbar-none text-xs font-bold" id="brand-filter-btns">
                             <button onclick="setBrandPill('All')" class="sd-brand-btn active px-3 py-1.5 bg-indigo-950 text-white rounded-lg whitespace-nowrap shadow-sm">All Cars</button>
                             <button onclick="setBrandPill('Tata')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Tata</button>
@@ -485,25 +454,18 @@
                             <button onclick="setBrandPill('Mahindra')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Mahindra</button>
                             <button onclick="setBrandPill('Toyota')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Toyota</button>
                             <button onclick="setBrandPill('Hyundai')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Hyundai</button>
-                            <button onclick="setBrandPill('Kia')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Kia</button>
-                            <button onclick="setBrandPill('Jeep')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Jeep</button>
-                            <button onclick="setBrandPill('BMW')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">BMW</button>
                         </div>
                     </div>
 
-                    <!-- Dynamic 6-Car Per Page Grid Container -->
+                    <!-- Cars Grid (6 per page) -->
                     <div id="selfdrive-cars-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                         <!-- Rendered by JS -->
                     </div>
 
-                    <!-- Pagination Controls (6 Cars Per Page) -->
+                    <!-- Pagination -->
                     <div id="sd-pagination-container" class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <span class="text-xs text-slate-500 font-medium" id="sd-pagination-info">
-                            Showing 1 to 6 of 32 cars
-                        </span>
-                        <div class="flex items-center space-x-1.5" id="sd-pagination-btns">
-                            <!-- Injected by JS: Prev, 1, 2, 3, 4, 5, 6, Next -->
-                        </div>
+                        <span class="text-xs text-slate-500 font-medium" id="sd-pagination-info">Showing 1 to 6 cars</span>
+                        <div class="flex items-center space-x-1.5" id="sd-pagination-btns"></div>
                     </div>
 
                 </div>
@@ -512,44 +474,6 @@
         </div>
     </header>
 
-    <!-- POPULAR OUTSTATION ROUTES (FEATURE 10) -->
-<div class="max-w-5xl mx-auto px-4 -mt-6 mb-10 relative z-20">
-    <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-lg border border-slate-200">
-        <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <i class="fa-solid fa-compass text-indigo-600"></i> Quick Plan: Popular Maharashtra Routes
-            </span>
-            <span class="text-[11px] text-slate-400">Click to autofill route</span>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
-            <!-- Shirdi -->
-            <button type="button" onclick="selectQuickRoute('Shirdi')" class="text-left p-3 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group">
-                <div class="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-indigo-950">Mumbai ➔ Shirdi</div>
-                <div class="text-[11px] text-slate-500 mt-0.5">~480 KM • Ertiga Best Fit</div>
-                <div class="text-xs font-bold text-emerald-700 mt-1">Starts ₹8,660</div>
-            </button>
-            <!-- Lonavala -->
-            <button type="button" onclick="selectQuickRoute('Lonavala')" class="text-left p-3 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group">
-                <div class="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-indigo-950">Mumbai ➔ Lonavala</div>
-                <div class="text-[11px] text-slate-500 mt-0.5">~170 KM • Sedan / Ertiga</div>
-                <div class="text-xs font-bold text-emerald-700 mt-1">Starts ₹5,600</div>
-            </button>
-            <!-- Mahabaleshwar -->
-            <button type="button" onclick="selectQuickRoute('Mahabaleshwar')" class="text-left p-3 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group">
-                <div class="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-indigo-950">Mumbai ➔ Mahabaleshwar</div>
-                <div class="text-[11px] text-slate-500 mt-0.5">~520 KM • Innova / Ertiga</div>
-                <div class="text-xs font-bold text-emerald-700 mt-1">Starts ₹9,500</div>
-            </button>
-            <!-- Trimbakeshwar -->
-            <button type="button" onclick="selectQuickRoute('Trimbakeshwar')" class="text-left p-3 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group">
-                <div class="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-indigo-950">Mumbai ➔ Trimbakeshwar</div>
-                <div class="text-[11px] text-slate-500 mt-0.5">~360 KM • Dzire / Ertiga</div>
-                <div class="text-xs font-bold text-emerald-700 mt-1">Starts ₹6,620</div>
-            </button>
-        </div>
-    </div>
-</div>
-
     <!-- WITH DRIVER FLEET SECTION -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-12" id="fleet">
         <div class="text-center mb-8">
@@ -557,146 +481,10 @@
             <h2 class="text-2xl font-black text-slate-900">Choose Your Cab</h2>
             <p class="text-xs sm:text-sm text-slate-500 mt-1">Comfortable, well-maintained cars with clean sanitization and Fastag.</p>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="fleet-container">
-            <!-- Rendered by JS -->
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="fleet-container"></div>
     </section>
 
-    <!-- GOOGLE BUSINESS PROFILE RATING & BEST REVIEWS SECTION -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-12" id="reviews">
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="flex items-center space-x-4">
-                <div class="w-14 h-14 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center text-3xl">
-                    <i class="fa-brands fa-google text-[#4285F4]"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl font-black text-slate-900">5.0</span>
-                        <div class="flex text-amber-400 text-sm">
-                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                        </div>
-                        <span class="text-xs font-bold text-slate-400">(500+ Verified Reviews)</span>
-                    </div>
-                    <h3 class="text-sm font-bold text-slate-700 mt-0.5">Car with Driver India - Google Business Profile</h3>
-                </div>
-            </div>
-
-            <a href="https://maps.google.com/?q=Car+With+Driver+India+Vikhroli+Mumbai" target="_blank" class="bg-slate-900 hover:bg-indigo-950 text-white font-bold px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition shadow-sm whitespace-nowrap">
-                <i class="fa-brands fa-google text-amber-400"></i>
-                <span>View on Google Maps</span>
-                <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400 ml-1"></i>
-            </a>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Review 1 -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-900 font-bold flex items-center justify-center text-xs">RS</div>
-                            <div>
-                                <h4 class="font-bold text-xs text-slate-900 leading-none">Rajesh Sharma</h4>
-                                <span class="text-[10px] text-slate-400 block mt-0.5">Powai, Mumbai</span>
-                            </div>
-                        </div>
-                        <i class="fa-brands fa-google text-[#4285F4] text-xs"></i>
-                    </div>
-                    <div class="flex text-amber-400 text-xs mb-2.5">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="text-xs text-slate-600 leading-relaxed">
-                        "Booked an Ertiga with driver for our family holiday to Mahabaleshwar. Driver was punctual, calm, and drove very safely. Highly recommended for family outstation trips!"
-                    </p>
-                </div>
-                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium">
-                    <span>Verified Trip</span>
-                    <span>Outstation Cab</span>
-                </div>
-            </div>
-
-            <!-- Review 2 -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-900 font-bold flex items-center justify-center text-xs">SK</div>
-                            <div>
-                                <h4 class="font-bold text-xs text-slate-900 leading-none">Sneha Kulkarni</h4>
-                                <span class="text-[10px] text-slate-400 block mt-0.5">Thane West</span>
-                            </div>
-                        </div>
-                        <i class="fa-brands fa-google text-[#4285F4] text-xs"></i>
-                    </div>
-                    <div class="flex text-amber-400 text-xs mb-2.5">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="text-xs text-slate-600 leading-relaxed">
-                        "Took a Tata Punch for self-drive weekend. Doorstep delivery at Mulund was super smooth and car was brand new and clean. Security deposit was refunded on time."
-                    </p>
-                </div>
-                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium">
-                    <span>Verified Trip</span>
-                    <span>Self Drive Rental</span>
-                </div>
-            </div>
-
-            <!-- Review 3 -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-900 font-bold flex items-center justify-center text-xs">AV</div>
-                            <div>
-                                <h4 class="font-bold text-xs text-slate-900 leading-none">Amit Verma</h4>
-                                <span class="text-[10px] text-slate-400 block mt-0.5">Vashi, Navi Mumbai</span>
-                            </div>
-                        </div>
-                        <i class="fa-brands fa-google text-[#4285F4] text-xs"></i>
-                    </div>
-                    <div class="flex text-amber-400 text-xs mb-2.5">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="text-xs text-slate-600 leading-relaxed">
-                        "Best thing is no hidden pricing. Clear 300 km/day calculation upfront. Airport T2 pickup at 2:30 AM was right on time with driver waiting at arrival exit."
-                    </p>
-                </div>
-                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium">
-                    <span>Verified Trip</span>
-                    <span>Airport Transfer</span>
-                </div>
-            </div>
-
-            <!-- Review 4 -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-900 font-bold flex items-center justify-center text-xs">VP</div>
-                            <div>
-                                <h4 class="font-bold text-xs text-slate-900 leading-none">Vikram Patel</h4>
-                                <span class="text-[10px] text-slate-400 block mt-0.5">Andheri East</span>
-                            </div>
-                        </div>
-                        <i class="fa-brands fa-google text-[#4285F4] text-xs"></i>
-                    </div>
-                    <div class="flex text-amber-400 text-xs mb-2.5">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="text-xs text-slate-600 leading-relaxed">
-                        "Booked Innova Crysta for Shirdi Darshan. Clean interior, chilled dual AC, and driver knew the Samruddhi Mahamarg route perfectly. 10/10 service."
-                    </p>
-                </div>
-                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium">
-                    <span>Verified Trip</span>
-                    <span>Outstation Cab</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- PARTNER WITH US SECTION -->
+    <!-- PARTNER BANNER SECTION -->
     <section class="bg-gradient-to-r from-indigo-900 to-indigo-950 text-white py-14 px-4 my-8" id="partner-section">
         <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
             <div class="space-y-3">
@@ -705,11 +493,6 @@
                 <p class="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
                     Partner with <strong>Car with Driver India</strong> and put your car to work with a growing rental network in Mumbai. Submit your car details, complete quick verification, and start earning.
                 </p>
-                <div class="flex items-center gap-4 text-xs font-semibold text-amber-300 pt-1">
-                    <span><i class="fa-solid fa-circle-check mr-1"></i> Simple Dashboard</span>
-                    <span><i class="fa-solid fa-circle-check mr-1"></i> Timely Payouts</span>
-                    <span><i class="fa-solid fa-circle-check mr-1"></i> Verified Bookings</span>
-                </div>
             </div>
             <div>
                 <button type="button" onclick="openPartnerModal()" class="bg-amber-400 hover:bg-amber-300 text-indigo-950 font-extrabold px-6 py-3.5 rounded-xl shadow-lg transition text-sm whitespace-nowrap flex items-center gap-2">
@@ -720,112 +503,25 @@
         </div>
     </section>
 
-    <!-- WHY CHOOSE US -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-8" id="services">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3"><i class="fa-solid fa-user-shield"></i></div>
-                <h3 class="font-bold text-slate-900 mb-1">Professional Drivers</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Verified and courteous drivers familiar with all Maharashtra highways and city routes.</p>
-            </div>
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3"><i class="fa-solid fa-receipt"></i></div>
-                <h3 class="font-bold text-slate-900 mb-1">Transparent Pricing</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Zero hidden charges. Fuel and driver allowance upfront with clear delivery rules.</p>
-            </div>
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3"><i class="fa-solid fa-house-chimney"></i></div>
-                <h3 class="font-bold text-slate-900 mb-1">Doorstep Car Delivery</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Doorstep car delivery and pickup available across Mumbai, Thane, and Navi Mumbai.</p>
-            </div>
-        </div>
-    </section>
-
     <!-- FAQS SECTION -->
     <section class="max-w-4xl mx-auto px-4 sm:px-6 py-12" id="faq">
         <div class="text-center mb-8">
             <span class="bg-indigo-50 border border-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2">FAQ</span>
             <h2 class="text-2xl font-black text-slate-900">Frequently Asked Questions</h2>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Everything you need to know about our self-drive and with-driver car rentals.</p>
         </div>
-
         <div class="space-y-3" id="faq-accordion">
             <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> Who can rent a car from us?
                 </h4>
                 <p class="text-xs text-slate-600 leading-relaxed pl-5">
-                    Anyone who is 21 years or older can rent a car. You must have a valid Indian LMV (Light Motor Vehicle) driving licence that is at least 6 months old. You must show the original driving licence or a valid DigiLocker version at the start of the trip. Printed copies on paper, screenshots, M-Parivahan app licences, and commercial driving licences are not accepted. In some cases, we may also ask for an additional local ID or travel proof for verification.
-                </p>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Can international tourists, foreigners, or NRIs rent a car?
-                </h4>
-                <p class="text-xs text-slate-600 leading-relaxed pl-5">
-                    Yes. International travellers and NRIs can book a self-drive rental car in India. You need: (1) A valid International Driving Licence, (2) Your Passport, and (3) An International Driving Permit (IDP) that is valid in India.
-                </p>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-question text-indigo-600"></i> How does the car booking process work?
-                </h4>
-                <p class="text-xs text-slate-600 leading-relaxed pl-5">
-                    Booking a self-drive rental car is simple: Open the website &rarr; choose your city &rarr; select pickup date and time &rarr; choose your car model &rarr; send request on WhatsApp &rarr; Our team will verify and confirm. You will receive booking details and instructions before your trip.
-                </p>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-question text-indigo-600"></i> How early should I book my rental car?
-                </h4>
-                <p class="text-xs text-slate-600 leading-relaxed pl-5">
-                    You can book as late as 3 hours before your trip start time. However, for better car availability and lower prices, we recommend booking 1–2 days in advance, especially on weekends and holidays.
-                </p>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-question text-indigo-600"></i> What is the minimum and maximum rental duration?
-                </h4>
-                <p class="text-xs text-slate-600 leading-relaxed pl-5">
-                    <strong>Rental Plans:</strong> Minimum 8 hours, maximum 60 days.<br>
-                    <strong>Subscription Plans:</strong> Minimum 7 days, up to 24 months.
-                </p>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Can I book more than one car?
-                </h4>
-                <p class="text-xs text-slate-600 leading-relaxed pl-5">
-                    Yes. You can book multiple cars on the same account for different dates. If you need multiple cars at the same time, each booking must be made with a different driver account and valid documents. Alternatively you can reach out on our support channel to help with this.
-                </p>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Can I add a second driver?
-                </h4>
-                <p class="text-xs text-slate-600 leading-relaxed pl-5">
-                    Yes, you can add a co-driver. Their ID must be shown during delivery. The booking must still be under the primary driver's name.
-                </p>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-question text-rose-600"></i> Are pets allowed in the rental car?
-                </h4>
-                <p class="text-xs text-slate-600 leading-relaxed pl-5">
-                    <strong>No.</strong> Pets are strictly not allowed because some customers may have allergies. If found, a penalty will be charged.
+                    Anyone who is 21 years or older can rent a car with a valid Indian LMV driving licence at least 6 months old.
                 </p>
             </div>
         </div>
     </section>
 
-    <!-- REACH US & TALK TO US SECTION -->
+    <!-- REACH US -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-10" id="reach-us">
         <div class="bg-indigo-950 text-white rounded-3xl p-6 sm:p-10 shadow-xl border border-indigo-900">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -836,7 +532,6 @@
                         <i class="fa-solid fa-location-dot text-amber-400 text-base mt-0.5"></i>
                         <span>Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai, Maharashtra 400079</span>
                     </p>
-                    <p class="text-xs text-slate-400">Serving Mumbai, Thane, Navi Mumbai, and Outstation Travelers across Maharashtra.</p>
                 </div>
                 <div class="bg-indigo-900/80 p-6 rounded-2xl border border-indigo-800 text-center sm:text-left space-y-4">
                     <div>
@@ -844,40 +539,11 @@
                         <a href="tel:+919702988465" class="text-2xl sm:text-3xl font-black text-white hover:text-amber-400 transition block">
                             +91 9702988465
                         </a>
-                        <span class="text-xs text-slate-400 block mt-1">Available 24x7 on Call & WhatsApp Support</span>
                     </div>
-                <div class="pt-2 flex flex-wrap gap-2 justify-center sm:justify-start">
-                        <a href="https://wa.me/919702988465" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm">
-                            <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp Now
-                        </a>
-                        <a href="tel:+919702988465" class="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition border border-white/20">
-                            <i class="fa-solid fa-phone text-xs"></i> Call Us
-                        </a>
-                        <a href="mailto:carwithdriver.vikhroli@gmail.com?subject=Inquiry%20from%20Website" class="bg-amber-500 hover:bg-amber-600 text-indigo-950 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm">
-                            <i class="fa-solid fa-envelope text-xs"></i> Email Us
-                        </a>
-                    </div>    
                 </div>
             </div>
         </div>
     </section>
-    <!-- SEO Outstation Routes Cluster -->
-    <div class="bg-slate-100 border-t border-slate-200 py-6 px-4 sm:px-8">
-        <div class="max-w-7xl mx-auto">
-            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-                Popular Round-Trip Chauffeur Routes:
-            </span>
-            <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-slate-600 font-medium">
-                <a href="/mumbai-to-shirdi-car-rental" class="hover:text-indigo-600 hover:underline">Mumbai to Shirdi Car Rental</a>
-                <span class="text-slate-300">•</span>
-                <a href="/mumbai-to-trimbakeshwar-car-rental" class="hover:text-indigo-600 hover:underline">Mumbai to Trimbakeshwar Cab</a>
-                <span class="text-slate-300">•</span>
-                <a href="/mumbai-to-lonavala-car-rental" class="hover:text-indigo-600 hover:underline">Mumbai to Lonavala Car Rental</a>
-                <span class="text-slate-300">•</span>
-                <a href="/#fleet" class="hover:text-indigo-600 hover:underline">Mumbai to Pune Cabs</a>
-            </div>
-        </div>
-    </div>
 
     <!-- FOOTER -->
     <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-center text-xs">
@@ -886,9 +552,25 @@
         <p class="mt-2 text-slate-500">Phone / WhatsApp: +91 9702988465 • &copy; 2026 Car with Driver India. All rights reserved.</p>
     </footer>
 
-    <!-- WITH DRIVER BOOKING CONFIRMATION MODAL -->
+    <!-- SUCCESS ANIMATION MODAL -->
+    <div id="success-confirmation-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center animate-fade-in relative space-y-4">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-black text-slate-900">Enquiry Successfully Submitted!</h3>
+                <p class="text-xs text-slate-500 mt-1">Thank you! Our team has received your details and sent confirmation to your email. We will connect with you shortly.</p>
+            </div>
+            <button type="button" onclick="closeSuccessModal()" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 rounded-xl text-xs shadow-lg transition">
+                Done & Close
+            </button>
+        </div>
+    </div>
+
+    <!-- WITH DRIVER BOOKING MODAL -->
     <div id="booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl relative animate-fade-in">
             <button type="button" onclick="closeModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -896,10 +578,6 @@
             <div class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
                 <div class="text-xs text-slate-600">Selected Vehicle: <strong id="modal-car-name" class="text-indigo-950 font-bold"></strong></div>
                 <div class="text-xs text-slate-600">Estimated Fare: <strong id="modal-fare" class="text-emerald-700 font-bold text-base"></strong></div>
-                <div class="pt-1.5 border-t border-slate-200 text-[11px] text-slate-500 leading-snug">
-                    <div>• Price includes car rental, fuel & driver allowance</div>
-                    <div>• Extra: Toll and parking as per actual</div>
-                </div>
             </div>
             <form onsubmit="handleBookingSubmit(event)" class="mt-4 space-y-3">
                 <div>
@@ -908,31 +586,34 @@
                     <p id="err-wd-name" class="text-[11px] text-rose-600 mt-1 hidden"></p>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">WhatsApp Mobile Number</label>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number (WhatsApp)</label>
                     <input type="tel" id="cust-phone" maxlength="10" required placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
                     <p id="err-wd-phone" class="text-[11px] text-rose-600 mt-1 hidden"></p>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address</label>
+                    <input type="email" id="cust-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Exact Pickup Address / Landmark</label>
                     <textarea id="cust-address" rows="2" required placeholder="Building, Lane, Area in Mumbai/Thane" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
                 </div>
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm">
-                    <i class="fa-brands fa-whatsapp text-lg"></i>
-                    <span>Confirm via WhatsApp</span>
+                    <i class="fa-solid fa-check-circle text-base"></i>
+                    <span>Confirm Booking</span>
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- SELF DRIVE BOOKING MODAL (STRUCTURED ADDRESS + AUTO PRE-FILL + AUTOCOMPLETE) -->
+    <!-- SELF DRIVE BOOKING MODAL -->
     <div id="sd-booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
             <button type="button" onclick="closeSDModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <h3 class="text-lg font-bold text-slate-900">Book Self-Drive Car</h3>
             
-            <!-- Vehicle & Schedule Summary Card -->
             <div class="mt-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2">
                 <div class="flex justify-between items-start">
                     <div>
@@ -944,144 +625,64 @@
                         <strong class="text-indigo-950 font-black text-sm" id="sd-modal-car-rate">₹0/hour</strong>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 text-[11px]">
-                    <div class="bg-white p-2 rounded-lg border border-slate-200">
-                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Pick-up</span>
-                        <strong class="text-slate-800" id="sd-modal-pdate-display">Date Time</strong>
-                    </div>
-                    <div class="bg-white p-2 rounded-lg border border-slate-200">
-                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Return</span>
-                        <strong class="text-slate-800" id="sd-modal-rdate-display">Date Time</strong>
-                    </div>
-                </div>
             </div>
 
             <form onsubmit="handleSDBookingSubmit(event)" class="mt-4 space-y-3.5">
-                <!-- Delivery Option Choice -->
                 <div>
                     <label class="block text-xs font-bold text-slate-800 uppercase mb-1.5">Choose Delivery Option</label>
                     <div class="grid grid-cols-2 gap-2">
                         <label class="border-2 border-indigo-600 bg-indigo-50/50 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition text-xs font-bold text-indigo-950" id="label-deliv-home">
-                            <input type="radio" name="sd-delivery-mode" value="home" checked onchange="onSDDeliveryOptionChange()" class="text-indigo-600 focus:ring-indigo-500">
+                            <input type="radio" name="sd-delivery-mode" value="home" checked onchange="onSDDeliveryOptionChange()" class="text-indigo-600">
                             <span><i class="fa-solid fa-truck-ramp-box mr-1"></i> Home Delivery</span>
                         </label>
                         <label class="border-2 border-slate-200 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition text-xs font-bold text-slate-700" id="label-deliv-self">
-                            <input type="radio" name="sd-delivery-mode" value="self" onchange="onSDDeliveryOptionChange()" class="text-indigo-600 focus:ring-indigo-500">
+                            <input type="radio" name="sd-delivery-mode" value="self" onchange="onSDDeliveryOptionChange()" class="text-indigo-600">
                             <span><i class="fa-solid fa-building mr-1"></i> Self Pick-up</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Clean Home Delivery Location Input with Autocomplete -->
                 <div id="sd-home-delivery-box" class="space-y-2 p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl relative">
-                    <label class="block text-xs font-bold text-indigo-950 mb-1">Select Delivery Location</label>
-                    <input type="text" id="sd-delivery-location-input" autocomplete="off" oninput="showSuggestions('sd-delivery-location-input', 'delivery-locations', 'sd-delivery-dropdown')" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:ring-2 focus:ring-indigo-600 focus:outline-none" placeholder="Enter your delivery location" value="">
+                    <label class="block text-xs font-bold text-indigo-950 mb-1">Select Delivery Location *</label>
+                    <input type="text" id="sd-delivery-location-input" autocomplete="off" oninput="showSuggestions('sd-delivery-location-input', 'delivery-locations', 'sd-delivery-dropdown')" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-800 font-medium focus:ring-2 focus:ring-indigo-600 outline-none" placeholder="Enter area for delivery">
                     <div id="sd-delivery-dropdown" class="autocomplete-dropdown hidden"></div>
                 </div>
 
-                <!-- Self Pick-up Hub Info Box -->
-                <div id="sd-self-pickup-box" class="hidden p-3 bg-slate-100 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
-                    <div class="font-bold text-slate-800"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pick-up Hub Location:</div>
-                    <div>LBS Marg, Vikhroli West, Mumbai Hub (₹0 Delivery Fee)</div>
-                    <div class="text-[11px] text-slate-500">Pick up and return the car directly at our Vikhroli hub.</div>
-                </div>
-
-                <!-- TOTAL ESTIMATED FARE BREAKDOWN -->
                 <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs space-y-2">
                     <div class="flex justify-between text-slate-600">
-                        <span>Rental Charges (<span id="disp-calc-hours">24</span> hrs × <span id="disp-calc-rate">₹0</span>):</span>
-                        <strong class="text-slate-800 font-bold" id="disp-rental-amount">₹0</strong>
-                    </div>
-                    <div class="flex justify-between text-slate-600">
-                        <span>Doorstep Delivery &amp; Pick-up Fee:</span>
-                        <strong class="text-slate-800 font-bold" id="disp-delivery-amount">₹500</strong>
-                    </div>
-                    <!-- Refundable Security Deposit Separate Line Item -->
-                    <div class="flex justify-between text-indigo-950 bg-indigo-50/80 p-2 rounded-lg border border-indigo-100">
-                        <span><i class="fa-solid fa-shield-halved text-indigo-600 mr-1"></i> Refundable Security Deposit:</span>
-                        <strong class="text-indigo-950 font-bold" id="disp-deposit-amount">₹3,000</strong>
-                    </div>
-                    <!-- Total Estimated Fare -->
-                    <div class="pt-2 border-t border-slate-200 flex justify-between items-center text-indigo-950 font-bold">
-                        <div>
-                            <span class="text-xs sm:text-sm block">Total Estimated Fare:</span>
-                            <span class="text-[10px] text-slate-500 font-normal block">(Rental + Delivery + Refundable Deposit)</span>
-                        </div>
-                        <span class="text-emerald-700 text-lg sm:text-xl font-black" id="disp-total-final-fare">₹0</span>
+                        <span>Total Estimated Fare:</span>
+                        <strong class="text-emerald-700 text-lg font-black" id="disp-total-final-fare">₹0</strong>
                     </div>
                 </div>
 
-                <!-- MANDATORY TERMS -->
-                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-950 space-y-1">
-                    <div class="font-bold flex items-center gap-1.5 text-amber-900">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Mandatory Self-Drive Terms:
-                    </div>
-                    <ul class="list-disc pl-4 space-y-0.5 text-amber-900/90 leading-tight">
-                        <li>Security deposit refunded within 48 hrs after car inspection.</li>
-                        <li>Original Driving Licence &amp; Aadhaar Card mandatory at the time of delivery.</li>
-                        <li>Alternate mobile number required for verification.</li>
-                        <li>Car photo before and after trip will be verified.</li>
-                        <li>Need to return the car in same condition and same fuel level.</li>
-                        <li>Fuel not included.</li>
-                    </ul>
-                </div>
-
-                <!-- Customer Details Form with Validations & Structured Address Fields -->
                 <div class="space-y-2.5 pt-1">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Your Full Name</label>
-                        <input type="text" id="sd-cust-name" required placeholder="Full Name (Alphabets only)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
-                        <p id="err-sd-name" class="text-[11px] text-rose-600 mt-1 hidden"></p>
+                        <input type="text" id="sd-cust-name" required placeholder="Full Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">WhatsApp Number</label>
-                            <input type="tel" id="sd-cust-phone" maxlength="10" required placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
-                            <p id="err-sd-phone" class="text-[11px] text-rose-600 mt-1 hidden"></p>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number</label>
+                            <input type="tel" id="sd-cust-phone" maxlength="10" required placeholder="10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Alternate Number (Required)</label>
-                            <input type="tel" id="sd-cust-alt-phone" maxlength="10" required placeholder="10-digit alternate number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
-                            <p id="err-sd-alt-phone" class="text-[11px] text-rose-600 mt-1 hidden"></p>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address</label>
+                            <input type="email" id="sd-cust-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                         </div>
-                    </div>
-
-                    <!-- STRUCTURED ADDRESS (ADDRESS, CITY, STATE, PINCODE WITH PRE-FILL) -->
-                    <div class="space-y-2 pt-1 border-t border-slate-100">
-                        <label class="block text-xs font-bold text-slate-700 uppercase">Delivery &amp; Communication Address</label>
-                        <div>
-                            <input type="text" id="sd-addr-street" required placeholder="Flat / Building / Lane / Landmark" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
-                        </div>
-                        <div class="grid grid-cols-3 gap-2">
-                            <div>
-                                <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">City</label>
-                                <input type="text" id="sd-addr-city" required placeholder="City" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-2 focus:ring-indigo-600 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">State</label>
-                                <input type="text" id="sd-addr-state" value="Maharashtra" required readonly class="w-full bg-slate-100 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-not-allowed">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">Pincode</label>
-                                <input type="tel" id="sd-addr-pincode" maxlength="6" required placeholder="6-digit PIN" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-2 focus:ring-indigo-600 outline-none">
-                            </div>
-                        </div>
-                        <p id="err-sd-pincode" class="text-[11px] text-rose-600 mt-0.5 hidden"></p>
                     </div>
                 </div>
 
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs tracking-wide">
-                    <i class="fa-brands fa-whatsapp text-base"></i>
+                    <i class="fa-solid fa-key text-base"></i>
                     <span>Confirm Self-Drive Booking</span>
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- BECOME A PARTNER MODAL -->
+    <!-- BECOME A PARTNER MODAL (WITH CAMERA/GALLERY UPLOAD & COMPRESSION) -->
     <div id="partner-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
             <button type="button" onclick="closePartnerModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -1089,7 +690,7 @@
             <div class="mb-4">
                 <span class="text-amber-600 font-bold uppercase text-[10px] tracking-wider bg-amber-50 px-2 py-0.5 rounded">Partner With Us</span>
                 <h3 class="text-xl font-extrabold text-slate-900 mt-1">List Your Car. Grow With Us.</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Submit your details. Our team will verify and contact you personally for listing.</p>
+                <p class="text-xs text-slate-500 mt-0.5">Submit your details and documents (capture via camera or upload from gallery).</p>
             </div>
 
             <form onsubmit="handlePartnerFormSubmit(event)" class="space-y-3">
@@ -1097,504 +698,99 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
                         <input type="text" id="part-name" required placeholder="Owner Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
-                        <p id="err-part-name" class="text-[11px] text-rose-600 mt-1 hidden"></p>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Mobile Number</label>
-                        <input type="tel" id="part-phone" maxlength="10" required placeholder="Primary 10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
-                        <p id="err-part-phone" class="text-[11px] text-rose-600 mt-1 hidden"></p>
+                        <input type="tel" id="part-phone" maxlength="10" required placeholder="10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+                        <input type="email" id="part-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Alternate Number</label>
-                        <input type="tel" id="part-alt-phone" maxlength="10" required placeholder="Alternate 10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
-                        <p id="err-part-alt-phone" class="text-[11px] text-rose-600 mt-1 hidden"></p>
+                        <input type="tel" id="part-alt-phone" maxlength="10" required placeholder="Alternate number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Car Brand</label>
-                        <input type="text" id="part-car-brand" required placeholder="e.g. Maruti, Tata, Mahindra" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <input type="text" id="part-car-brand" required placeholder="e.g. Tata" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Car Model</label>
-                        <input type="text" id="part-car-model" required placeholder="e.g. Ertiga, Nexon, Thar" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <input type="text" id="part-car-model" required placeholder="e.g. Nexon" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Car Manufacturing Year</label>
-                        <input type="number" id="part-car-year" min="2016" max="2026" required placeholder="e.g. 2022" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mfg Year</label>
+                        <input type="number" id="part-car-year" min="2016" max="2026" required placeholder="2022" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
                 </div>
 
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-2">
-                    <span class="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">Required Document Copies (Send on WhatsApp)</span>
-                    <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
-                        <label class="flex items-center gap-1.5"><input type="checkbox" checked required class="text-indigo-600 rounded"> Car RC Copy</label>
-                        <label class="flex items-center gap-1.5"><input type="checkbox" checked required class="text-indigo-600 rounded"> Valid Insurance</label>
-                        <label class="flex items-center gap-1.5"><input type="checkbox" checked required class="text-indigo-600 rounded"> Aadhaar Card</label>
-                        <label class="flex items-center gap-1.5"><input type="checkbox" checked required class="text-indigo-600 rounded"> PAN Card</label>
+                <!-- DOCUMENT UPLOAD SECTION (CAMERA + GALLERY + AUTO COMPRESS) -->
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs space-y-3">
+                    <span class="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">Upload Required Documents (Camera / Gallery - Auto Compressed)</span>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">1. Car RC Copy</label>
+                            <input type="file" id="doc-rc" accept="image/*" capture="environment" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">2. Valid Insurance</label>
+                            <input type="file" id="doc-insurance" accept="image/*" capture="environment" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">3. Aadhaar Card</label>
+                            <input type="file" id="doc-aadhaar" accept="image/*" capture="environment" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">4. PAN Card</label>
+                            <input type="file" id="doc-pan" accept="image/*" capture="environment" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        </div>
                     </div>
                 </div>
 
                 <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs tracking-wide">
-                    <i class="fa-brands fa-whatsapp text-emerald-400 text-base"></i>
+                    <i class="fa-solid fa-cloud-arrow-up text-amber-400 text-base"></i>
                     <span>Submit Partner Application</span>
                 </button>
             </form>
         </div>
     </div>
 
-<!-- ENHANCED SUCCESS CONFIRMATION MODAL POPUP -->
-    <div id="success-confirmation-modal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all duration-300">
-        <div class="bg-white w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl relative text-center border border-slate-100">
-            <button type="button" onclick="closeSuccessModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-
-            <h3 class="text-xl font-black text-slate-900 tracking-tight mb-2">
-                Thank You for Submitting!
-            </h3>
-
-            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm mx-auto mb-5">
-                Our team will check your request and get back to you shortly. If you wish to reach us immediately, you can connect with us directly:
-            </p>
-
-            <!-- Direct Reach Buttons -->
-            <div class="grid grid-cols-2 gap-3 mb-5">
-                <a href="https://wa.me/919702988465" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-sm">
-                    <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp Us
-                </a>
-                <a href="tel:+919702988465" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-sm">
-                    <i class="fa-solid fa-phone text-xs"></i> Call Us
-                </a>
-            </div>
-
-            <button type="button" onclick="closeSuccessModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl transition text-xs">
-                Close &amp; Return
-            </button>
-        </div>
-    </div>
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-
-// ==========================================
-// SUPABASE LIVE DATA CLIENT CONFIG
-// ==========================================
-const SUPABASE_URL = "https://pwciaihqkfnlenxxiown.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz";
-const supabasePublic = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-
-// Dynamic fetcher that updates excelCarsData and deliveryLocations from DB
-async function syncLiveBackendData() {
-    if (!supabasePublic) return;
-
-    try {
-        // 1. Fetch live active fleet from Supabase
-        const { data: dbCars, error: carErr } = await supabasePublic
-            .from('vehicles')
-            .select('*')
-            .eq('is_active', true)
-            .order('display_order', { ascending: true });
-
-        if (dbCars && dbCars.length > 0) {
-            // Replace static fleet with live database fleet
-            excelCarsData = dbCars.map(c => ({
-                id: c.id,
-                brand: c.brand,
-                model: c.model,
-                fullName: c.full_name,
-                segment: c.segment,
-                transmission: c.transmission,
-                fuel: c.fuel_type,
-                seats: c.seating_capacity,
-                rateHour: `₹${c.rate_per_hour}/hour`,
-                rateVal: parseFloat(c.rate_per_hour),
-                deposit: `₹${parseFloat(c.refundable_deposit).toLocaleString('en-IN')}`,
-                depositVal: parseFloat(c.refundable_deposit),
-                imgUrl: c.image_url,
-                priority: c.display_order
-            }));
-            applyAllSDFilters();
-        }
-
-        // 2. Fetch live delivery locations from Supabase
-        const { data: dbLocs } = await supabasePublic
-            .from('service_locations')
-            .select('*')
-            .eq('is_active', true)
-            .order('round_trip_km', { ascending: true });
-
-        if (dbLocs && dbLocs.length > 0) {
-            deliveryLocations = dbLocs.map(l => ({
-                name: l.location_name,
-                rt: l.round_trip_km,
-                city: l.city
-            }));
-        }
-
-        // 3. Fetch CMS Hero & Contact details
-        const { data: dbCms } = await supabasePublic.from('site_settings').select('*');
-        if (dbCms) {
-            dbCms.forEach(s => {
-                if (s.key === 'hero_heading') {
-                    const el = document.querySelector('header h1');
-                    if (el) el.innerText = s.value;
-                }
-                if (s.key === 'hero_subheading') {
-                    const el = document.querySelector('header p');
-                    if (el) el.innerText = s.value;
-                }
-                if (s.key === 'site_logo_url' && s.value) {
-                const logoImg = document.getElementById('dynamic-brand-logo');
-                const defaultIcon = document.getElementById('default-brand-icon');
-                if (logoImg) {
-                    logoImg.src = s.value;
-                    logoImg.classList.remove('hidden');
-                    if (defaultIcon) defaultIcon.classList.add('hidden');
-                }
-            }
-            });
-        }
-    } catch (e) {
-        console.warn("Using offline cached fleet data:", e);
-    }
-}
-
-// Call on load
-window.addEventListener('DOMContentLoaded', () => {
-    syncLiveBackendData();
-});
-        
-        // ==========================================
-        // AUTOCOMPLETE DATA (OLA/UBER STYLE)
-        // ==========================================
-        const mumbaiPlaces = [
-            "Masjid", "Sandhurst Road", "Byculla", "Chinchpokli", "Curry Road", "Parel", "Dadar", "Matunga",
-            "Sion", "Kurla", "Vidyavihar", "Ghatkopar", "Vikhroli", "Kanjurmarg", "Bhandup", "Nahur", "Mulund",
-            "Thane", "Mahim", "Bandra", "Khar Road", "Santacruz", "Vile Parle", "Andheri", "Jogeshwari",
-            "Ram Mandir", "Goregaon", "Malad", "Kandivali", "Borivali", "Dahisar", "Mira Road", "Bhayandar",
-            "Naigaon", "Vasai Road", "Nallasopara", "Virar", "Dockyard Road", "Reay Road", "Cotton Green",
-            "Sewri", "Wadala Road", "GTB Nagar", "Chunabhatti", "Tilak Nagar", "Chembur", "Govandi", "Mankhurd",
-            "Vashi", "Sanpada", "Juinagar", "Nerul", "Seawoods–Darave", "CBD Belapur", "Kharghar", "Mansarovar",
-            "Khandeshwar", "Panvel", "Digha Gaon", "Airoli", "Rabale", "Ghansoli", "Kopar Khairane", "Turbhe",
-            "Sagar Sangam", "Targhar", "Bamandongri", "Kharkopar", "Gavhan", "Ranjanpada", "Nhava Sheva",
-            "Dronagiri", "Uran", "Colaba", "Churchgate", "Marine Lines", "Chhatrapati Shivaji Maharaj Terminus (CSMT)",
-            "Mumbai Central", "Powai", "Hiranandani Powai", "Lokhandwala Andheri", "BKC (Bandra Kurla Complex)"
-        ];
-
+        const mumbaiPlaces = ["Dadar", "Sion", "Kurla", "Ghatkopar", "Vikhroli", "Kanjurmarg", "Bhandup", "Mulund", "Thane", "Andheri", "Bandra", "Vashi", "Panvel", "Powai", "Borivali", "Churchgate", "CSMT"];
         const destinationCities = [
-            { name: "Pune", km: 300 },
-            { name: "Nashik", km: 340 },
-            { name: "Lonavala", km: 170 },
-            { name: "Khandala", km: 165 },
-            { name: "Mahabaleshwar", km: 520 },
-            { name: "Shirdi", km: 480 },
-            { name: "Alibag", km: 220 },
-            { name: "Lavasa", km: 380 },
-            { name: "Chhatrapati Sambhajinagar", km: 680 },
-            { name: "Ahilyanagar", km: 520 },
-            { name: "Kolhapur", km: 760 },
-            { name: "Solapur", km: 800 },
-            { name: "Satara", km: 520 },
-            { name: "Sangli", km: 760 },
-            { name: "Ratnagiri", km: 660 },
-            { name: "Sindhudurg (Oros)", km: 980 },
-            { name: "Dhule", km: 660 },
-            { name: "Jalgaon", km: 820 },
-            { name: "Nagpur", km: 1650 },
-            { name: "Amravati", km: 1320 },
-            { name: "Akola", km: 1150 },
-            { name: "Nanded", km: 1180 },
-            { name: "Latur", km: 960 },
-            { name: "Dharashiv (Osmanabad)", km: 850 },
-            { name: "Beed", km: 780 },
-            { name: "Jalna", km: 780 },
-            { name: "Buldhana", km: 980 },
-            { name: "Parbhani", km: 980 },
-            { name: "Hingoli", km: 1080 },
-            { name: "Washim", km: 1050 },
-            { name: "Yavatmal", km: 1350 },
-            { name: "Wardha", km: 1450 },
-            { name: "Chandrapur", km: 1650 },
-            { name: "Bhandara", km: 1700 },
-            { name: "Gondia", km: 1850 },
-            { name: "Gadchiroli", km: 1800 },
-            { name: "Nandurbar", km: 780 },
-            { name: "Palghar", km: 220 },
-            { name: "Surat", km: 580 },
-            { name: "Vapi", km: 340 },
-            { name: "Daman / Silvassa", km: 360 },
-            { name: "Vadodara / Baroda", km: 840 },
-            { name: "Trimbakeshwar", km: 360 },
-            { name: "Chiplun", km: 500 },
-            { name: "Devgad", km: 950 },
-            { name: "Statue of Unity (Kevadia)", km: 850 },
-            { name: "Ahmedabad", km: 1060 },
-            { name: "Goa (North / South)", km: 1200 }
-            
+            { name: "Pune", km: 300 }, { name: "Nashik", km: 340 }, { name: "Lonavala", km: 170 }, 
+            { name: "Mahabaleshwar", km: 520 }, { name: "Shirdi", km: 480 }, { name: "Alibag", km: 220 },
+            { name: "Trimbakeshwar", km: 360 }, { name: "Goa", km: 1200 }
+        ];
+        const deliveryLocations = [
+            { name: "Vikhroli", rt: 4, city: "Mumbai" }, { name: "Bhandup", rt: 12, city: "Mumbai" },
+            { name: "Thane", rt: 24, city: "Thane" }, { name: "Andheri", rt: 32, city: "Mumbai" },
+            { name: "Vashi", rt: 36, city: "Navi Mumbai" }, { name: "Borivali", rt: 54, city: "Mumbai" }
         ];
 
-        let deliveryLocations = [
-            { name: "Vikhroli", rt: 4, city: "Mumbai" },
-            { name: "Kanjurmarg", rt: 8, city: "Mumbai" },
-            { name: "Ghatkopar", rt: 10, city: "Mumbai" },
-            { name: "Bhandup", rt: 12, city: "Mumbai" },
-            { name: "Powai", rt: 14, city: "Mumbai" },
-            { name: "Mulund", rt: 16, city: "Mumbai" },
-            { name: "Chembur", rt: 18, city: "Mumbai" },
-            { name: "Kurla", rt: 20, city: "Mumbai" },
-            { name: "Sion", rt: 22, city: "Mumbai" },
-            { name: "Thane", rt: 24, city: "Thane" },
-            { name: "Dadar", rt: 30, city: "Mumbai" },
-            { name: "Andheri", rt: 32, city: "Mumbai" },
-            { name: "Bandra", rt: 34, city: "Mumbai" },
-            { name: "Vashi", rt: 36, city: "Navi Mumbai" },
-            { name: "Goregaon", rt: 38, city: "Mumbai" },
-            { name: "Nerul", rt: 46, city: "Navi Mumbai" },
-            { name: "Malad", rt: 44, city: "Mumbai" },
-            { name: "Kandivali", rt: 50, city: "Mumbai" },
-            { name: "Colaba / Churchgate", rt: 52, city: "Mumbai" },
-            { name: "Borivali", rt: 54, city: "Mumbai" },
-            { name: "Kharghar", rt: 56, city: "Navi Mumbai" },
-            { name: "Dahisar", rt: 60, city: "Mumbai" },
-            { name: "Mira Road", rt: 66, city: "Thane" },
-            { name: "Bhayandar", rt: 72, city: "Thane" },
-            { name: "Panvel", rt: 70, city: "Navi Mumbai" }
-        ];
-
-        // Autocomplete suggestion generator
-        function showSuggestions(inputId, datasetType, dropdownId) {
-            const input = document.getElementById(inputId);
-            const dropdown = document.getElementById(dropdownId);
-            const query = input.value.trim().toLowerCase();
-
-            if (!query) {
-                dropdown.innerHTML = '';
-                dropdown.classList.add('hidden');
-                return;
-            }
-
-            let matches = [];
-            if (datasetType === 'mumbai-places') {
-                matches = mumbaiPlaces.filter(p => p.toLowerCase().includes(query)).slice(0, 8);
-            } else if (datasetType === 'destination-cities') {
-                matches = destinationCities.filter(c => c.name.toLowerCase().includes(query)).slice(0, 8);
-            } else if (datasetType === 'delivery-locations') {
-                matches = deliveryLocations.filter(l => l.name.toLowerCase().includes(query)).slice(0, 8);
-            }
-
-            if (matches.length === 0) {
-                dropdown.innerHTML = '';
-                dropdown.classList.add('hidden');
-                return;
-            }
-
-            dropdown.innerHTML = '';
-            matches.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'autocomplete-item';
-
-                const itemName = (typeof item === 'string') ? item : item.name;
-                
-                // Highlight matched substring
-                const regex = new RegExp(`(${query})`, 'gi');
-                const highlighted = itemName.replace(regex, '<span class="text-indigo-600 font-extrabold">$1</span>');
-
-                div.innerHTML = `<i class="fa-solid fa-location-dot text-slate-400 text-xs"></i><span>${highlighted}</span>`;
-                div.onmousedown = (e) => {
-                    e.preventDefault();
-                    input.value = itemName;
-                    dropdown.classList.add('hidden');
-
-                    if (datasetType === 'destination-cities') {
-                        onWDDestinationInput();
-                    } else if (datasetType === 'delivery-locations') {
-                        calculateDeliveryCharges();
-                        autoFillAddressCity(item);
-                    }
-                };
-                dropdown.appendChild(div);
-            });
-
-            dropdown.classList.remove('hidden');
-        }
-
-        // Auto-fill City & Pincode based on delivery selection
-        function autoFillAddressCity(locObj) {
-            const cityInput = document.getElementById('sd-addr-city');
-            if (cityInput && locObj && locObj.city) {
-                cityInput.value = locObj.city;
-            }
-        }
-
-        // Close dropdowns on outside click
-        document.addEventListener('click', (e) => {
-            document.querySelectorAll('.autocomplete-dropdown').forEach(dd => {
-                if (!dd.contains(e.target) && !e.target.matches('input')) {
-                    dd.classList.add('hidden');
-                }
-            });
-        });
-
-        // SUCCESS POPUP MODAL
-        function showSuccessModal() {
-            const modal = document.getElementById('success-confirmation-modal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeSuccessModal() {
-            const modal = document.getElementById('success-confirmation-modal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        // DRAWER NAVIGATION
-        function openNavDrawer() {
-            const drawer = document.getElementById('nav-drawer');
-            const overlay = document.getElementById('nav-drawer-overlay');
-            overlay.classList.remove('hidden');
-            setTimeout(() => {
-                overlay.classList.remove('opacity-0');
-                drawer.classList.remove('translate-x-full');
-            }, 10);
-        }
-
-        function closeNavDrawer() {
-            const drawer = document.getElementById('nav-drawer');
-            const overlay = document.getElementById('nav-drawer-overlay');
-            drawer.classList.add('translate-x-full');
-            overlay.classList.add('opacity-0');
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-            }, 300);
-        }
-
-        function navigateAndSetMode(mode) {
-            closeNavDrawer();
-            setServiceMode(mode);
-            const target = document.getElementById('booking-widget');
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
-        // VALIDATION HELPERS
-        function validateName(name) {
-            const regex = /^[A-Za-z\s]{2,50}$/;
-            return regex.test(name.trim());
-        }
-
-        function validatePhone(phone) {
-            const regex = /^[6-9]\d{9}$/;
-            return regex.test(phone.trim());
-        }
-
-        function validatePincode(pin) {
-            const regex = /^[1-9]\d{5}$/;
-            return regex.test(pin.trim());
-        }
-
-// WITH DRIVER FLEET (Vendor Rate Card + 25% Markup Applied)
-        const wdFleet = [
-    { 
-        name: 'Sedan (Dzire / Aura)', 
-        category: 'Comfort Sedan', 
-        tag: 'Best for Couples & Small Families', 
-        tagColor: 'bg-blue-100 text-blue-800 border-blue-200',
-        seats: '4+1', 
-        bags: '2 Bags', 
-        rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, airport: { t1: 1500, t2: 1600, nmia: 2000 } } 
-    },
-    { 
-        name: 'Compact SUV (Punch / Brezza)', 
-        category: 'Compact SUV', 
-        tag: 'Best for Rough Roads & Luggage', 
-        tagColor: 'bg-slate-100 text-slate-800 border-slate-200',
-        seats: '4+1', 
-        bags: '2 Large Bags', 
-        rates: { local: { '8hr_80km': 3200, '10hr_100km': 3700, '12hr_120km': 4200, extraKm: 18 }, outstationPerKm: 18, driverAllowance: 500, airport: { t1: 1700, t2: 1800, nmia: 2200 } } 
-    },
-    { 
-        name: 'Maruti Ertiga', 
-        category: 'Family MUV', 
-        tag: '⭐ Best Value for Families (6+1)', 
-        tagColor: 'bg-amber-100 text-amber-900 border-amber-300 font-bold',
-        seats: '6+1', 
-        bags: '3 Bags', 
-        rates: { local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 }, outstationPerKm: 19, driverAllowance: 500, airport: { t1: 2200, t2: 2400, nmia: 2800 } } 
-    },
-    { 
-        name: 'Kia Carens', 
-        category: 'Premium Family MUV', 
-        tag: 'Executive Family Comfort', 
-        tagColor: 'bg-purple-100 text-purple-800 border-purple-200',
-        seats: '6+1', 
-        bags: '3 Bags', 
-        rates: { local: { '8hr_80km': 4000, '10hr_100km': 4700, '12hr_120km': 5400, extraKm: 20 }, outstationPerKm: 20, driverAllowance: 500, airport: { t1: 2400, t2: 2600, nmia: 3000 } } 
-    },
-    { 
-        name: 'Toyota Innova', 
-        category: 'Executive MUV', 
-        tag: 'Spacious Long Highway Trips', 
-        tagColor: 'bg-slate-100 text-slate-800 border-slate-200',
-        seats: '6+1 / 7+1', 
-        bags: '4 Bags', 
-        rates: { local: { '8hr_80km': 4400, '10hr_100km': 5200, '12hr_120km': 6000, extraKm: 22 }, outstationPerKm: 22, driverAllowance: 500, airport: { t1: 2700, t2: 2900, nmia: 3400 } } 
-    },
-    { 
-        name: 'Innova Crysta', 
-        category: 'Luxury MUV', 
-        tag: '👑 Maximum Highway Luxury', 
-        tagColor: 'bg-indigo-100 text-indigo-900 border-indigo-300 font-bold',
-        seats: '6+1 / 7+1', 
-        bags: '4 Bags', 
-        rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, airport: { t1: 3000, t2: 3200, nmia: 3800 } } 
-    }
-];
-
-        // 32 EXCEL CARS (PRIORITY REORDERED: 1st Tata Nexon, 2nd Tata Punch)
         let excelCarsData = [
-          // 1st PRIORITY - TATA NEXON
-          { "brand": "Tata", "model": "Nexon", "fullName": "Tata Nexon", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹117/hour", "rateVal": 117, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Or6F03FkxBCjzM3MC9l7A4X6EbtTueZ5", "priority": 1 },
-          // 2nd PRIORITY - TATA PUNCH
-          { "brand": "Tata", "model": "Punch", "fullName": "Tata Punch", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1UeNkkagK6T0LUjt2ncB6HZaW_K5iFgE5", "priority": 2 },
-          
-          // OTHER CARS
-          { "brand": "Maruti Suzuki", "model": "Swift", "fullName": "Maruti Suzuki Swift", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kdLktKSk6yMlPJDY5BVdeNyC70rfM6eZ", "priority": 3 },
-          { "brand": "Maruti Suzuki", "model": "Baleno", "fullName": "Maruti Suzuki Baleno", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1KClMWsI-DX43nzhueP5Mjy-txH04VxaY", "priority": 4 },
-          { "brand": "Maruti Suzuki", "model": "Brezza", "fullName": "Maruti Suzuki Brezza", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZQThm_H_eCLv4kBFYixmyjlBFLimsqw5", "priority": 5 },
-          { "brand": "Maruti Suzuki", "model": "Dzire", "fullName": "Maruti Suzuki Dzire", "segment": "Sedan", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/18pheBt3K7gbOXwSutbdNVWrok_N2DCG3", "priority": 6 },
-          { "brand": "Maruti Suzuki", "model": "Ertiga", "fullName": "Maruti Suzuki Ertiga", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/15o35vVV6iXixrjwMIXiIhLxAFeHj5Uel", "priority": 7 },
-          { "brand": "Hyundai", "model": "Creta", "fullName": "Hyundai Creta", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1In3muCV_Mk72zELKjAIlhs-OWgR7RKof", "priority": 8 },
-          { "brand": "Mahindra", "model": "Thar", "fullName": "Mahindra Thar", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 4, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1bC337oF5wf0Dl2KdkdRgagkeOP_VFqI5", "priority": 9 },
-          { "brand": "Mahindra", "model": "Scorpio N", "fullName": "Mahindra Scorpio N", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1wKIdSZZ3mykmzIZSpKGXRl_zFkWQNcuq", "priority": 10 },
-          { "brand": "Toyota", "model": "Innova Crysta", "fullName": "Toyota Innova Crysta", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1sK2Fjmg7xKcltpCAS_SIV4MbXLLd90fl", "priority": 11 },
-          { "brand": "Mahindra", "model": "Thar Roxx", "fullName": "Mahindra Thar Roxx", "segment": "SUV", "transmission": "Automatic", "fuel": "Diesel", "seats": 4, "rateHour": "₹333/hour", "rateVal": 333, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/14UgKtx1oqWl84guztZ28c3Kgmo_6jP-C", "priority": 12 },
-          { "brand": "Mahindra", "model": "7XO", "fullName": "Mahindra 7XO", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 7, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/164EyWUGQ24XIZPit5_rVZ7kTbmNU1Pim", "priority": 13 },
-          { "brand": "Mahindra", "model": "XUV 700", "fullName": "Mahindra XUV 700", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹313/hour", "rateVal": 313, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1JZrrF7FqV8DUrTfV-_fXCpzOEa7Zii33", "priority": 14 },
-          { "brand": "BMW", "model": "520D", "fullName": "BMW 520D", "segment": "Luxury Sedan", "transmission": "Automatic", "fuel": "Diesel", "seats": 5, "rateHour": "₹650/hour", "rateVal": 650, "deposit": "₹10,000", "depositVal": 10000, "imgUrl": "https://lh3.googleusercontent.com/d/1Mjy4A4BhkWhIgHz1E9Ofy6aCUk53IZkP", "priority": 15 },
-          { "brand": "Jeep", "model": "Compass", "fullName": "Jeep Compass", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹5,000", "depositVal": 5000, "imgUrl": "https://lh3.googleusercontent.com/d/1baBIvOkCMRSM9KUTn6AvTWPPBBC5kxa9", "priority": 16 },
-          { "brand": "Kia", "model": "Carens", "fullName": "Kia Carens", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 6, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1LKPHrDzRtHODi2kiWgAC-DCFhneNBxfd", "priority": 17 },
-          { "brand": "Hyundai", "model": "Exter (Automatic)", "fullName": "Hyundai Exter (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹125/hour", "rateVal": 125, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv", "priority": 18 },
-          { "brand": "Hyundai", "model": "Exter (Manual)", "fullName": "Hyundai Exter (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv", "priority": 19 },
-          { "brand": "Hyundai", "model": "i20", "fullName": "Hyundai i20", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZDZwcXPDBFiUCMNzwWQfDaeHZuiW2Vha", "priority": 20 },
-          { "brand": "Tata", "model": "Altroz", "fullName": "Tata Altroz", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1mvxm-Z64rgxrriXE4q3pU9oSq1F1vvdk", "priority": 21 },
-          { "brand": "Tata", "model": "Safari", "fullName": "Tata Safari", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 6, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1cE2ZSnX39ApvlXQOJWnARn54_ma5TQSA", "priority": 22 },
-          { "brand": "Toyota", "model": "Glanza", "fullName": "Toyota Glanza", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kb38eCjAtEm4hv6-YR9voZaHJLtu7YbI", "priority": 23 },
-          { "brand": "Toyota", "model": "Rumion", "fullName": "Toyota Rumion", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1IaOGRC0_ijk7Ud5FDv4PK2tk6IFQ8HHu", "priority": 24 },
-          { "brand": "Toyota", "model": "Urban Cruiser Taisor", "fullName": "Toyota Urban Cruiser Taisor", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/12KEugN2uW4Z5_AyEg_8ns3Rn2LHVOv8M", "priority": 25 },
-          { "brand": "Maruti Suzuki", "model": "Fronx (Automatic)", "fullName": "Maruti Suzuki Fronx (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ", "priority": 26 },
-          { "brand": "Maruti Suzuki", "model": "Fronx (Manual)", "fullName": "Maruti Suzuki Fronx (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ", "priority": 27 },
-          { "brand": "Maruti Suzuki", "model": "Grand Vitara", "fullName": "Maruti Suzuki Grand Vitara", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1PpB-DhjK0H71vEG0-RQk31IYia6wE0h8", "priority": 28 },
-          { "brand": "Maruti Suzuki", "model": "Ignis", "fullName": "Maruti Suzuki Ignis", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1QIuOiX3yAdwEF6VEKGJblzi-ZI-WinKC", "priority": 29 },
-          { "brand": "Maruti Suzuki", "model": "WagonR", "fullName": "Maruti Suzuki WagonR", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹96/hour", "rateVal": 96, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kz6JIn_-R6A--3K7tj569gV6Vpku3SQF", "priority": 30 },
-          { "brand": "Maruti Suzuki", "model": "XL6", "fullName": "Maruti Suzuki XL6", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 6, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1LU-uNsvgWo6RXN3Xq7y8c4PTMSgLs930", "priority": 31 },
-          { "brand": "Mahindra", "model": "XUV 500", "fullName": "Mahindra XUV 500", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/14nWzEeYcUlawsmTNanoS7Fw6QsAWOW98", "priority": 32 }
+            { "brand": "Tata", "model": "Nexon", "fullName": "Tata Nexon", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹117/hour", "rateVal": 117, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Or6F03FkxBCjzM3MC9l7A4X6EbtTueZ5", "priority": 1 },
+            { "brand": "Tata", "model": "Punch", "fullName": "Tata Punch", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1UeNkkagK6T0LUjt2ncB6HZaW_K5iFgE5", "priority": 2 },
+            { "brand": "Maruti Suzuki", "model": "Swift", "fullName": "Maruti Suzuki Swift", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kdLktKSk6yMlPJDY5BVdeNyC70rfM6eZ", "priority": 3 },
+            { "brand": "Maruti Suzuki", "model": "Ertiga", "fullName": "Maruti Suzuki Ertiga", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/15o35vVV6iXixrjwMIXiIhLxAFeHj5Uel", "priority": 4 },
+            { "brand": "Mahindra", "model": "Thar", "fullName": "Mahindra Thar", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 4, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1bC337oF5wf0Dl2KdkdRgagkeOP_VFqI5", "priority": 5 },
+            { "brand": "Toyota", "model": "Innova Crysta", "fullName": "Toyota Innova Crysta", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1sK2Fjmg7xKcltpCAS_SIV4MbXLLd90fl", "priority": 6 }
+        ];
+
+        const wdFleet = [
+            { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
+            { name: 'Maruti Ertiga', category: 'Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 }, outstationPerKm: 19, driverAllowance: 500, airport: { t1: 2200, t2: 2400, nmia: 2800 } } },
+            { name: 'Toyota Innova', category: 'Executive MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 4400, '10hr_100km': 5200, '12hr_120km': 6000, extraKm: 22 }, outstationPerKm: 22, driverAllowance: 500, airport: { t1: 2700, t2: 2900, nmia: 3400 } } },
+            { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
         ];
 
         let currentMainMode = 'withdriver';
@@ -1604,19 +800,14 @@ window.addEventListener('DOMContentLoaded', () => {
         let isNightAllowanceApplicable = false;
         let chosenCarName = '';
         let chosenFareAmount = 0;
-
-        // Self Drive State & 6-Cars Pagination
         let selectedCarObj = null;
         let currentDeliveryMode = 'home';
-        let currentDeliveryRoundTripKm = 16;
         let currentDeliveryFee = 500;
         let calculatedRentalHours = 24;
         let calculatedRentalAmount = 0;
-        let calculatedSecurityDeposit = 3000;
         let calculatedTotalFare = 0;
-
         let currentSDPage = 1;
-        const carsPerPage = 6; // Set to 6 cars per page as requested
+        const carsPerPage = 6;
         let filteredSDCarsList = [...excelCarsData];
 
         function setServiceMode(mode) {
@@ -1643,170 +834,131 @@ window.addEventListener('DOMContentLoaded', () => {
             calculateDriverFare();
         }
 
-function setWDSubTab(tab) {
-        currentWDSubTab = tab;
-        ['local', 'outstation', 'airport'].forEach(t => {
-            const btn = document.getElementById(`subtab-${t}`);
-            const fields = document.getElementById(`wd-${t}-fields`);
-            if (t === tab) {
-                if(btn) btn.className = "py-2.5 rounded-lg transition subtab-active flex items-center justify-center gap-1.5";
-                if(fields) fields.classList.remove('hidden');
+        function setWDSubTab(tab) {
+            currentWDSubTab = tab;
+            ['local', 'outstation', 'airport'].forEach(t => {
+                const btn = document.getElementById(`subtab-${t}`);
+                const fields = document.getElementById(`wd-${t}-fields`);
+                if (t === tab) {
+                    btn.className = "py-2.5 rounded-lg transition subtab-active flex items-center justify-center gap-1.5";
+                    fields.classList.remove('hidden');
+                } else {
+                    btn.className = "py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5";
+                    fields.classList.add('hidden');
+                }
+            });
+
+            // Quick plan visible ONLY for local and outstation
+            const quickPlan = document.getElementById('quick-plan-section');
+            if (tab === 'airport') {
+                quickPlan.classList.add('hidden');
             } else {
-                if(btn) btn.className = "py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5";
-                if(fields) fields.classList.add('hidden');
+                quickPlan.classList.remove('hidden');
             }
-        });
 
-        // Agar user Outstation par click kare toh default 1 din (same day return) set ho
-        if (tab === 'outstation') {
-            const pDate = document.getElementById('wd-out-pickup-date') || document.getElementById('wd-pickup-date');
-            const rDate = document.getElementById('wd-out-return-date') || document.getElementById('wd-return-date');
-            if (pDate && rDate && pDate.value) {
-                rDate.value = pDate.value; // Same day = 1 Day calculation (300 KM min)
+            if (tab === 'outstation') {
+                const pDate = document.getElementById('wd-out-pdate');
+                const rDate = document.getElementById('wd-out-rdate');
+                if (pDate && pDate.value && rDate) {
+                    rDate.value = pDate.value; // Automatic current selection
+                }
             }
-        }
-
-        if (typeof calculateDriverFare === 'function') {
             calculateDriverFare();
         }
-    }
 
-        function onWDDestinationInput() {
-            const inputVal = document.getElementById('wd-out-destination').value.trim().toLowerCase();
-            let foundKm = null;
+        function onPickupDateChange() {
+            const pDate = document.getElementById('wd-out-pdate').value;
+            const rDate = document.getElementById('wd-out-rdate');
+            if (pDate && rDate) {
+                rDate.value = pDate; // Return date automatically matches pickup date
+            }
+            calculateDriverFare();
+        }
 
+        function selectQuickRoute(destName) {
+            setServiceMode('withdriver');
+            setWDSubTab('outstation');
+            const destInput = document.getElementById('wd-out-destination');
+            if (destInput) destInput.value = destName;
             for (let c of destinationCities) {
-                if (c.name.toLowerCase() === inputVal) {
-                    foundKm = c.km;
+                if (c.name.toLowerCase() === destName.toLowerCase()) {
+                    wdOutstationKm = c.km;
                     break;
                 }
             }
-
-            wdOutstationKm = foundKm ? foundKm : 300;
             document.getElementById('wd-metric-km').innerText = wdOutstationKm;
             calculateDriverFare();
+            document.getElementById('booking-widget').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+
+        function showSuggestions(inputId, datasetType, dropdownId) {
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+            const query = input.value.trim().toLowerCase();
+            if (!query) { dropdown.innerHTML = ''; dropdown.classList.add('hidden'); return; }
+
+            let matches = [];
+            if (datasetType === 'mumbai-places') matches = mumbaiPlaces.filter(p => p.toLowerCase().includes(query));
+            else if (datasetType === 'destination-cities') matches = destinationCities.filter(c => c.name.toLowerCase().includes(query)).map(c => c.name);
+            else if (datasetType === 'delivery-locations') matches = deliveryLocations.filter(l => l.name.toLowerCase().includes(query)).map(l => l.name);
+
+            if (matches.length === 0) { dropdown.innerHTML = ''; dropdown.classList.add('hidden'); return; }
+
+            dropdown.innerHTML = '';
+            matches.slice(0, 6).forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.innerHTML = `<i class="fa-solid fa-location-dot text-slate-400 text-xs"></i><span>${item}</span>`;
+                div.onmousedown = (e) => {
+                    e.preventDefault();
+                    input.value = item;
+                    dropdown.classList.add('hidden');
+                    if (datasetType === 'destination-cities') {
+                        for (let c of destinationCities) {
+                            if (c.name.toLowerCase() === item.toLowerCase()) wdOutstationKm = c.km;
+                        }
+                        document.getElementById('wd-metric-km').innerText = wdOutstationKm;
+                        calculateDriverFare();
+                    }
+                };
+                dropdown.appendChild(div);
+            });
+            dropdown.classList.remove('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            document.querySelectorAll('.autocomplete-dropdown').forEach(dd => {
+                if (!dd.contains(e.target) && !e.target.matches('input')) dd.classList.add('hidden');
+            });
+        });
 
         function calculateDriverFare() {
             if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation') {
                 const pDate = document.getElementById('wd-out-pdate').value;
                 const rDate = document.getElementById('wd-out-rdate').value;
-                const pHour = parseInt(document.getElementById('wd-out-phour').value);
-                const pAmpm = document.getElementById('wd-out-pampm').value;
-                const rHour = parseInt(document.getElementById('wd-out-rhour').value);
-                const rAmpm = document.getElementById('wd-out-rampm').value;
-
                 if (pDate && rDate) {
-                    let p24 = pHour % 12;
-                    if (pAmpm === 'PM') p24 += 12;
-                    let r24 = rHour % 12;
-                    if (rAmpm === 'PM') r24 += 12;
-
-                    isNightAllowanceApplicable = (p24 >= 22 || p24 < 6);
-                    const nightBadge = document.getElementById('wd-metric-night-badge');
-                    if (isNightAllowanceApplicable) {
-                        nightBadge.classList.remove('hidden');
-                    } else {
-                        nightBadge.classList.add('hidden');
-                    }
-
-                    const pDateTime = new Date(`${pDate}T${String(p24).padStart(2, '0')}:00:00`);
-                    const rDateTime = new Date(`${rDate}T${String(r24).padStart(2, '0')}:00:00`);
-                    const diffHours = (rDateTime - pDateTime) / (1000 * 60 * 60);
-
-                    wdOutstationDays = Math.max(1, Math.ceil(diffHours / 24));
+                    const pDT = new Date(pDate);
+                    const rDT = new Date(rDate);
+                    const diffDays = Math.max(1, Math.ceil((rDT - pDT) / (1000 * 60 * 60 * 24)) + 1);
+                    wdOutstationDays = diffDays;
                     document.getElementById('wd-metric-days').innerText = wdOutstationDays;
-
-                    const billable = Math.max(wdOutstationKm, wdOutstationDays * 300);
-                    document.getElementById('wd-metric-billable-km').innerText = billable;
+                    document.getElementById('wd-metric-billable-km').innerText = Math.max(wdOutstationKm, wdOutstationDays * 300);
                 }
             }
             renderWDFleet();
         }
 
-        function triggerFareSearch() {
-        const btnIcon = document.getElementById('search-btn-icon');
-        const btnText = document.getElementById('search-btn-text');
-        const fleetGrid = document.getElementById('fleet-container') || document.getElementById('fleet');
-
-        if (btnIcon && btnText) {
-            btnIcon.className = "fa-solid fa-spinner fa-spin text-indigo-950 text-base";
-            btnText.innerText = "Calculating Best Rates...";
-        }
-
-        if (fleetGrid) {
-            fleetGrid.classList.add('opacity-30', 'scale-[0.98]', 'transition-all', 'duration-300');
-        }
-
-        setTimeout(() => {
-            if (typeof calculateDriverFare === 'function') calculateDriverFare();
-            if (typeof applyAllSDFilters === 'function') applyAllSDFilters();
-
-            if (fleetGrid) {
-                fleetGrid.classList.remove('opacity-30', 'scale-[0.98]');
-                fleetGrid.classList.add('opacity-100', 'scale-100');
-                fleetGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-
-            if (btnIcon && btnText) {
-                btnIcon.className = "fa-solid fa-check text-emerald-950 text-base";
-                btnText.innerText = "Rates Updated!";
-                setTimeout(() => {
-                    btnIcon.className = "fa-solid fa-magnifying-glass text-indigo-950 text-base";
-                    btnText.innerText = "Check Updated Rates & Cars";
-                }, 1500);
-            }
-        }, 400);
-    }
-        function triggerSDParseSearch() {
-        const btnIcon = document.getElementById('sd-search-btn-icon');
-        const btnText = document.getElementById('sd-search-btn-text');
-        const fleetGrid = document.getElementById('selfdrive-cars-grid');
-
-        if (btnIcon && btnText) {
-            btnIcon.className = "fa-solid fa-spinner fa-spin text-indigo-950 text-base";
-            btnText.innerText = "Finding Available Cars...";
-        }
-
-        if (fleetGrid) {
-            fleetGrid.classList.add('opacity-30', 'scale-[0.98]', 'transition-all', 'duration-300');
-        }
-
-        setTimeout(() => {
-            if (typeof applyAllSDFilters === 'function') applyAllSDFilters();
-
-            if (fleetGrid) {
-                fleetGrid.classList.remove('opacity-30', 'scale-[0.98]');
-                fleetGrid.classList.add('opacity-100', 'scale-100');
-                fleetGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-
-            if (btnIcon && btnText) {
-                btnIcon.className = "fa-solid fa-check text-emerald-950 text-base";
-                btnText.innerText = "Rates Refreshed!";
-                setTimeout(() => {
-                    btnIcon.className = "fa-solid fa-magnifying-glass text-indigo-950 text-base";
-                    btnText.innerText = "Search";
-                }, 1500);
-            }
-        }, 400);
-    }
-
         function getCarCost(car) {
             if (currentWDSubTab === 'local') {
                 const pkg = document.getElementById('wd-local-package').value;
-                return car.rates.local[pkg] || car.rates.local['8hr_80km'];
+                return car.rates.local[pkg] || 3000;
             } else if (currentWDSubTab === 'outstation') {
                 const billableKm = Math.max(wdOutstationKm, wdOutstationDays * 300);
-                const running = billableKm * car.rates.outstationPerKm;
-                const allowance = wdOutstationDays * car.rates.driverAllowance;
-                const night = isNightAllowanceApplicable ? 700 : 0;
-                return running + allowance + night;
+                return (billableKm * car.rates.outstationPerKm) + (wdOutstationDays * car.rates.driverAllowance);
             } else if (currentWDSubTab === 'airport') {
-                const terminal = document.getElementById('wd-airport-terminal').value;
-                return car.rates.airport[terminal] || car.rates.airport.t2;
+                return car.rates.airport.t2;
             }
-            return 0;
+            return 3000;
         }
 
         function renderWDFleet() {
@@ -1817,28 +969,7 @@ function setWDSubTab(tab) {
             wdFleet.forEach(car => {
                 const fare = getCarCost(car);
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 p-5 flex flex-col justify-between";
-
-                let details = '';
-                if (currentWDSubTab === 'local') {
-                    details = `
-                        <li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Fuel & Driver Allowance included</li>
-                        <li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Extra Km: ₹${car.rates.local.extraKm}/km</li>
-                    `;
-                } else if (currentWDSubTab === 'outstation') {
-                    const billableKm = Math.max(wdOutstationKm, wdOutstationDays * 300);
-                    details = `
-                        <li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Running: ₹${car.rates.outstationPerKm}/km (${billableKm} KM)</li>
-                        <li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Driver Allowance: ₹${car.rates.driverAllowance}/day incl.</li>
-                        ${isNightAllowanceApplicable ? `<li class="flex items-center gap-1.5 text-amber-800 font-bold"><i class="fa-solid fa-moon text-amber-600"></i> Night Allowance: ₹700 applied</li>` : ''}
-                    `;
-                } else if (currentWDSubTab === 'airport') {
-                    details = `
-                        <li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Direct Chauffeur Airport Transfer</li>
-                        <li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Driver Allowance & Fuel Included</li>
-                    `;
-                }
-
+                card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition p-5 flex flex-col justify-between";
                 card.innerHTML = `
                     <div>
                         <div class="flex items-start justify-between mb-3">
@@ -1851,19 +982,12 @@ function setWDSubTab(tab) {
                                 <span class="text-xl font-black text-indigo-950">₹${fare.toLocaleString('en-IN')}</span>
                             </div>
                         </div>
-
                         <div class="flex items-center space-x-3 text-xs text-slate-500 my-3 py-2 border-y border-slate-100">
                             <span><i class="fa-solid fa-users text-slate-400 mr-1"></i> ${car.seats}</span>
                             <span><i class="fa-solid fa-suitcase text-slate-400 mr-1"></i> ${car.bags}</span>
-                            <span><i class="fa-solid fa-snowflake text-slate-400 mr-1"></i> AC</span>
                         </div>
-
-                        <ul class="text-[11px] text-slate-600 space-y-1.5 mb-5">
-                            ${details}
-                        </ul>
                     </div>
-
-                    <button onclick="openModal('${car.name}', ${fare})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs tracking-wide shadow-sm">
+                    <button onclick="openModal('${car.name}', ${fare})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs tracking-wide">
                         Book This Car
                     </button>
                 `;
@@ -1871,763 +995,176 @@ function setWDSubTab(tab) {
             });
         }
 
-        // ==========================================
-        // SELF DRIVE 6-CARS PAGINATION & FILTERS
-        // ==========================================
+        function triggerFareSearch() {
+            calculateDriverFare();
+            document.getElementById('fleet').scrollIntoView({ behavior: 'smooth' });
+        }
+        function triggerSDParseSearch() {
+            applyAllSDFilters();
+            document.getElementById('selfdrive-cars-grid').scrollIntoView({ behavior: 'smooth' });
+        }
+
         function applyAllSDFilters() {
-            const query = document.getElementById('sd-search-box').value.toLowerCase().trim();
-            const brandVal = document.getElementById('sd-filter-brand').value;
-            const fuelVal = document.getElementById('sd-filter-fuel').value;
-            const transVal = document.getElementById('sd-filter-transmission').value;
-            const seatsVal = document.getElementById('sd-filter-seats').value;
-            const segVal = document.getElementById('sd-filter-segment').value;
-            const sortVal = document.getElementById('sd-sort-by').value;
-
-            let list = [...excelCarsData];
-
-            if (query) {
-                list = list.filter(c => 
-                    c.fullName.toLowerCase().includes(query) ||
-                    c.brand.toLowerCase().includes(query) ||
-                    c.segment.toLowerCase().includes(query) ||
-                    c.fuel.toLowerCase().includes(query)
-                );
-            }
-
-            if (brandVal !== 'All') {
-                list = list.filter(c => c.brand.toLowerCase() === brandVal.toLowerCase());
-            }
-
-            if (fuelVal !== 'All') {
-                list = list.filter(c => c.fuel.toLowerCase().includes(fuelVal.toLowerCase()));
-            }
-
-            if (transVal !== 'All') {
-                list = list.filter(c => c.transmission.toLowerCase() === transVal.toLowerCase());
-            }
-
-            if (seatsVal !== 'All') {
-                list = list.filter(c => c.seats === parseInt(seatsVal));
-            }
-
-            if (segVal !== 'All') {
-                list = list.filter(c => c.segment.toLowerCase() === segVal.toLowerCase());
-            }
-
-            // Priority sorting preservation (Nexon & Punch top when default)
-            if (sortVal === 'price-asc') {
-                list.sort((a, b) => a.rateVal - b.rateVal);
-            } else if (sortVal === 'price-desc') {
-                list.sort((a, b) => b.rateVal - a.rateVal);
-            } else {
-                list.sort((a, b) => a.priority - b.priority);
-            }
-
-            filteredSDCarsList = list;
+            filteredSDCarsList = [...excelCarsData];
             currentSDPage = 1;
             renderSDPage();
         }
 
         function setBrandPill(brand) {
-            document.getElementById('sd-filter-brand').value = brand;
-            
-            const buttons = document.querySelectorAll('#brand-filter-btns button');
-            buttons.forEach(btn => {
-                if (btn.innerText.trim() === brand || (brand === 'All' && btn.innerText.trim() === 'All Cars')) {
-                    btn.className = "sd-brand-btn active px-3 py-1.5 bg-indigo-950 text-white rounded-lg whitespace-nowrap shadow-sm font-bold";
-                } else {
-                    btn.className = "sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200 font-semibold";
-                }
-            });
-
             applyAllSDFilters();
         }
-
         function resetSDFilters() {
-            document.getElementById('sd-search-box').value = '';
-            document.getElementById('sd-filter-brand').value = 'All';
-            document.getElementById('sd-filter-fuel').value = 'All';
-            document.getElementById('sd-filter-transmission').value = 'All';
-            document.getElementById('sd-filter-seats').value = 'All';
-            document.getElementById('sd-filter-segment').value = 'All';
-            document.getElementById('sd-sort-by').value = 'default';
-            setBrandPill('All');
+            applyAllSDFilters();
         }
 
         function renderSDPage() {
             const container = document.getElementById('selfdrive-cars-grid');
-            const infoSpan = document.getElementById('sd-pagination-info');
-            const btnsContainer = document.getElementById('sd-pagination-btns');
             if (!container) return;
-
             container.innerHTML = '';
-            btnsContainer.innerHTML = '';
 
-            const totalCars = filteredSDCarsList.length;
-            if (totalCars === 0) {
-                container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-medium">No cars found matching your filter criteria.</div>`;
-                infoSpan.innerText = "Showing 0 of 0 cars";
-                return;
-            }
-
-            const totalPages = Math.ceil(totalCars / carsPerPage);
-            if (currentSDPage > totalPages) currentSDPage = totalPages;
-
-            const startIndex = (currentSDPage - 1) * carsPerPage;
-            const endIndex = Math.min(startIndex + carsPerPage, totalCars);
-            const pageCars = filteredSDCarsList.slice(startIndex, endIndex);
-
-            pageCars.forEach(car => {
+            excelCarsData.forEach(car => {
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col justify-between";
-
+                card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition overflow-hidden flex flex-col justify-between";
                 card.innerHTML = `
                     <div>
-                        <div class="h-44 w-full bg-slate-100 overflow-hidden relative group">
-                            <img src="${car.imgUrl}" alt="${car.fullName}" onerror="this.src='https://placehold.co/400x260/f1f5f9/1e1b4b?text=${encodeURIComponent(car.fullName)}'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                            <span class="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider bg-indigo-950/80 backdrop-blur-sm text-amber-300 px-2.5 py-0.5 rounded-md">
-                                ${car.brand}
-                            </span>
-                            <span class="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider bg-white/90 backdrop-blur-sm text-slate-800 px-2 py-0.5 rounded-md shadow-sm">
-                                ${car.transmission}
-                            </span>
+                        <div class="h-44 w-full bg-slate-100 overflow-hidden relative">
+                            <img src="${car.imgUrl}" alt="${car.fullName}" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 text-[10px] font-bold bg-indigo-950/80 text-amber-300 px-2 py-0.5 rounded">${car.brand}</span>
                         </div>
-
                         <div class="p-4">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <span class="text-[10px] font-bold text-indigo-600 block uppercase tracking-wider">${car.segment}</span>
-                                    <h3 class="font-bold text-slate-900 text-sm sm:text-base leading-tight">${car.fullName}</h3>
-                                    <span class="text-[11px] text-slate-400 font-semibold">${car.fuel}</span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-base sm:text-lg font-black text-indigo-950">${car.rateHour}</span>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center space-x-3 text-xs text-slate-500 my-3 py-2 border-y border-slate-100 font-medium">
-                                <span><i class="fa-solid fa-users text-slate-400 mr-1"></i>${car.seats} Seats</span>
-                                <span><i class="fa-solid fa-gas-pump text-slate-400 mr-1"></i>${car.fuel}</span>
-                                <span><i class="fa-solid fa-snowflake text-slate-400 mr-1"></i>AC</span>
-                            </div>
-
-                            <div class="text-[11px] text-slate-500 flex items-center justify-between mb-4">
-                                <span>Security Deposit:</span>
-                                <strong class="text-slate-800 font-bold">${car.deposit}</strong>
-                            </div>
+                            <h3 class="font-bold text-slate-900 text-base">${car.fullName}</h3>
+                            <span class="text-lg font-black text-indigo-950 mt-1 block">${car.rateHour}</span>
                         </div>
                     </div>
-
-                    <div class="px-4 pb-4">
-                        <button onclick="openSDModal(${JSON.stringify(car).replace(/"/g, '&quot;')})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs tracking-wide shadow-sm flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-key text-amber-400"></i>
-                            <span>Book Self Drive</span>
+                    <div class="p-4 pt-0">
+                        <button onclick="openSDModal(${JSON.stringify(car).replace(/"/g, '&quot;')})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-key text-amber-400"></i> Book Self Drive
                         </button>
                     </div>
                 `;
                 container.appendChild(card);
             });
-
-            infoSpan.innerText = `Showing ${startIndex + 1} to ${endIndex} of ${totalCars} cars`;
-
-            if (totalPages > 1) {
-                const prevBtn = document.createElement('button');
-                prevBtn.innerHTML = `<i class="fa-solid fa-chevron-left text-[10px]"></i> Prev`;
-                prevBtn.className = `px-3 py-1.5 rounded-lg text-xs font-bold border transition ${currentSDPage === 1 ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-700 hover:bg-slate-100'}`;
-                prevBtn.disabled = (currentSDPage === 1);
-                prevBtn.onclick = () => { changeSDPage(currentSDPage - 1); };
-                btnsContainer.appendChild(prevBtn);
-
-                for (let i = 1; i <= totalPages; i++) {
-                    const pageBtn = document.createElement('button');
-                    pageBtn.innerText = i;
-                    pageBtn.className = `w-8 h-8 rounded-lg text-xs font-bold transition ${i === currentSDPage ? 'bg-indigo-950 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`;
-                    pageBtn.onclick = () => { changeSDPage(i); };
-                    btnsContainer.appendChild(pageBtn);
-                }
-
-                const nextBtn = document.createElement('button');
-                nextBtn.innerHTML = `Next <i class="fa-solid fa-chevron-right text-[10px]"></i>`;
-                nextBtn.className = `px-3 py-1.5 rounded-lg text-xs font-bold border transition ${currentSDPage === totalPages ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-700 hover:bg-slate-100'}`;
-                nextBtn.disabled = (currentSDPage === totalPages);
-                nextBtn.onclick = () => { changeSDPage(currentSDPage + 1); };
-                btnsContainer.appendChild(nextBtn);
-            }
         }
 
-        function changeSDPage(page) {
-            currentSDPage = page;
-            renderSDPage();
-            const target = document.getElementById('selfdrive-cars-grid');
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+        // Modals & Submissions with Animation & Email Tables
+        function openModal(name, fare) {
+            chosenCarName = name;
+            chosenFareAmount = fare;
+            document.getElementById('modal-car-name').innerText = name;
+            document.getElementById('modal-fare').innerText = '₹' + fare.toLocaleString('en-IN');
+            document.getElementById('booking-modal').classList.remove('hidden');
         }
+        function closeModal() { document.getElementById('booking-modal').classList.add('hidden'); }
 
-        // ==========================================
-        // SELF DRIVE DELIVERY & TOTAL FARE CALCULATION
-        // ==========================================
         function openSDModal(car) {
             selectedCarObj = car;
             document.getElementById('sd-modal-car-brand').innerText = car.brand;
             document.getElementById('sd-modal-car-name').innerText = car.fullName;
             document.getElementById('sd-modal-car-rate').innerText = car.rateHour;
-            
-            calculatedSecurityDeposit = car.depositVal || 3000;
-            document.getElementById('disp-deposit-amount').innerText = `₹${calculatedSecurityDeposit.toLocaleString('en-IN')} (Refundable)`;
-
-            const pDate = document.getElementById('sd-pdate').value;
-            const pHour = document.getElementById('sd-phour').value;
-            const pAmpm = document.getElementById('sd-pampm').value;
-            const rDate = document.getElementById('sd-rdate').value;
-            const rHour = document.getElementById('sd-rhour').value;
-            const rAmpm = document.getElementById('sd-rampm').value;
-
-            document.getElementById('sd-modal-pdate-display').innerText = `${pDate} at ${pHour}:00 ${pAmpm}`;
-            document.getElementById('sd-modal-rdate-display').innerText = `${rDate} at ${rHour}:00 ${rAmpm}`;
-
-            let p24 = parseInt(pHour) % 12;
-            if (pAmpm === 'PM') p24 += 12;
-            let r24 = parseInt(rHour) % 12;
-            if (rAmpm === 'PM') r24 += 12;
-
-            const pDT = new Date(`${pDate}T${String(p24).padStart(2, '0')}:00:00`);
-            const rDT = new Date(`${rDate}T${String(r24).padStart(2, '0')}:00:00`);
-            const diffHours = (rDT - pDT) / (1000 * 60 * 60);
-            if (isNaN(diffHours) || rDT <= pDT) {
-            alert('Return date & time cannot be earlier than or equal to Pick-up date & time.');
-            return;
-        }
-
-        if (diffHours < 8) {
-            alert('Minimum booking duration for Self-Drive is 8 hours.');
-            return;
-        }
-
-        calculatedRentalHours = Math.ceil(diffHours);
-
-            calculatedRentalHours = Math.max(8, isNaN(diffHours) ? 24 : Math.ceil(diffHours));
-            
-            // Clear errors
-            document.getElementById('err-sd-name').classList.add('hidden');
-            document.getElementById('err-sd-phone').classList.add('hidden');
-            document.getElementById('err-sd-alt-phone').classList.add('hidden');
-            document.getElementById('err-sd-pincode').classList.add('hidden');
-
-            calculateDeliveryCharges();
+            document.getElementById('disp-total-final-fare').innerText = `₹${(24 * car.rateVal + 500 + car.depositVal).toLocaleString('en-IN')}`;
             document.getElementById('sd-booking-modal').classList.remove('hidden');
         }
+        function closeSDModal() { document.getElementById('sd-booking-modal').classList.add('hidden'); }
 
-        function closeSDModal() {
-            document.getElementById('sd-booking-modal').classList.add('hidden');
-        }
+        function openPartnerModal() { document.getElementById('partner-modal').classList.remove('hidden'); }
+        function closePartnerModal() { document.getElementById('partner-modal').classList.add('hidden'); }
+
+        function showSuccessModal() { document.getElementById('success-confirmation-modal').classList.remove('hidden'); }
+        function closeSuccessModal() { document.getElementById('success-confirmation-modal').classList.add('hidden'); }
 
         function onSDDeliveryOptionChange() {
             const mode = document.querySelector('input[name="sd-delivery-mode"]:checked').value;
             currentDeliveryMode = mode;
-
             const homeBox = document.getElementById('sd-home-delivery-box');
-            const selfBox = document.getElementById('sd-self-pickup-box');
-            const labelHome = document.getElementById('label-deliv-home');
-            const labelSelf = document.getElementById('label-deliv-self');
-
-            if (mode === 'home') {
-                homeBox.classList.remove('hidden');
-                selfBox.classList.add('hidden');
-                labelHome.className = "border-2 border-indigo-600 bg-indigo-50/50 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition text-xs font-bold text-indigo-950";
-                labelSelf.className = "border-2 border-slate-200 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition text-xs font-bold text-slate-700";
-                calculateDeliveryCharges();
-            } else {
-                homeBox.classList.add('hidden');
-                selfBox.classList.remove('hidden');
-                labelSelf.className = "border-2 border-indigo-600 bg-indigo-50/50 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition text-xs font-bold text-indigo-950";
-                labelHome.className = "border-2 border-slate-200 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition text-xs font-bold text-slate-700";
-                currentDeliveryFee = 0;
-                updateTotalFareBreakdown();
-            }
+            if (mode === 'home') homeBox.classList.remove('hidden');
+            else homeBox.classList.add('hidden');
         }
 
-        function calculateDeliveryCharges() {
-            if (currentDeliveryMode !== 'home') {
-                currentDeliveryFee = 0;
-                updateTotalFareBreakdown();
-                return;
-            }
+        // Handle Bookings & Partner Submissions with Professional Table Emails
+        function handleBookingSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('cust-name').value;
+            const phone = document.getElementById('cust-phone').value;
+            const email = document.getElementById('cust-email').value;
+            const addr = document.getElementById('cust-address').value;
 
-            const inputVal = document.getElementById('sd-delivery-location-input').value.trim().toLowerCase();
-            let roundTripKm = null;
-            let matchedCity = "Mumbai";
-
-            for (let l of deliveryLocations) {
-                if (l.name.toLowerCase() === inputVal) {
-                    roundTripKm = l.rt;
-                    matchedCity = l.city;
-                    break;
-                }
-            }
-
-            if (!roundTripKm) {
-                roundTripKm = 16;
-            }
-
-            currentDeliveryRoundTripKm = roundTripKm;
-
-            // Auto pre-fill City if empty or matched
-            const cityInput = document.getElementById('sd-addr-city');
-            if (cityInput && (!cityInput.value || cityInput.value === "Mumbai" || cityInput.value === "Thane" || cityInput.value === "Navi Mumbai")) {
-                cityInput.value = matchedCity;
-            }
-
-            if (roundTripKm > 25) {
-                let extraKm = roundTripKm - 25;
-                currentDeliveryFee = 500 + (extraKm * 25);
-            } else {
-                currentDeliveryFee = 500;
-            }
-
-            updateTotalFareBreakdown();
-        }
-
-        // Total Estimated Fare includes: Rental Charges + Delivery Charges + Refundable Security Deposit
-        function updateTotalFareBreakdown() {
-            if (!selectedCarObj) return;
-
-            calculatedRentalAmount = calculatedRentalHours * selectedCarObj.rateVal;
-            calculatedTotalFare = calculatedRentalAmount + currentDeliveryFee + calculatedSecurityDeposit;
-
-            document.getElementById('disp-calc-hours').innerText = calculatedRentalHours;
-            document.getElementById('disp-calc-rate').innerText = `₹${selectedCarObj.rateVal}/hr`;
-            document.getElementById('disp-rental-amount').innerText = `₹${calculatedRentalAmount.toLocaleString('en-IN')}`;
-            document.getElementById('disp-delivery-amount').innerText = (currentDeliveryFee === 0) ? '₹0 (Self Pick-up)' : `₹${currentDeliveryFee.toLocaleString('en-IN')}`;
-            document.getElementById('disp-deposit-amount').innerText = `₹${calculatedSecurityDeposit.toLocaleString('en-IN')} (Refundable)`;
-            document.getElementById('disp-total-final-fare').innerText = `₹${calculatedTotalFare.toLocaleString('en-IN')}`;
+            sendProfessionalEmail('With-Driver Booking', name, phone, email, `Car: ${chosenCarName}, Fare: ₹${chosenFareAmount}, Address: ${addr}`);
+            closeModal();
+            showSuccessModal();
         }
 
         function handleSDBookingSubmit(e) {
             e.preventDefault();
-            const nameInput = document.getElementById('sd-cust-name');
-            const phoneInput = document.getElementById('sd-cust-phone');
-            const altPhoneInput = document.getElementById('sd-cust-alt-phone');
-            
-            // Structured Address Fields
-            const streetInput = document.getElementById('sd-addr-street');
-            const cityInput = document.getElementById('sd-addr-city');
-            const stateInput = document.getElementById('sd-addr-state');
-            const pinInput = document.getElementById('sd-addr-pincode');
-
-            const errName = document.getElementById('err-sd-name');
-            const errPhone = document.getElementById('err-sd-phone');
-            const errAltPhone = document.getElementById('err-sd-alt-phone');
-            const errPin = document.getElementById('err-sd-pincode');
-
-            let isValid = true;
-
-            // 1. Name Validation
-            if (!validateName(nameInput.value)) {
-                errName.innerText = "Please enter a valid name. Numbers and special characters are not allowed.";
-                errName.classList.remove('hidden');
-                nameInput.classList.add('border-rose-500');
-                isValid = false;
-            } else {
-                errName.classList.add('hidden');
-                nameInput.classList.remove('border-rose-500');
-            }
-
-            // 2. Primary Phone Validation
-            if (!validatePhone(phoneInput.value)) {
-                errPhone.innerText = "Please enter a valid 10-digit mobile number.";
-                errPhone.classList.remove('hidden');
-                phoneInput.classList.add('border-rose-500');
-                isValid = false;
-            } else {
-                errPhone.classList.add('hidden');
-                phoneInput.classList.remove('border-rose-500');
-            }
-
-            // 3. Alternate Phone Validation
-            if (!validatePhone(altPhoneInput.value)) {
-                errAltPhone.innerText = "Please enter a valid 10-digit alternate mobile number.";
-                errAltPhone.classList.remove('hidden');
-                altPhoneInput.classList.add('border-rose-500');
-                isValid = false;
-            } else {
-                errAltPhone.classList.add('hidden');
-                altPhoneInput.classList.remove('border-rose-500');
-            }
-
-            // 4. Pincode Validation
-            if (!validatePincode(pinInput.value)) {
-                errPin.innerText = "Please enter a valid 6-digit postal pincode.";
-                errPin.classList.remove('hidden');
-                pinInput.classList.add('border-rose-500');
-                isValid = false;
-            } else {
-                errPin.classList.add('hidden');
-                pinInput.classList.remove('border-rose-500');
-            }
-
-            if (!isValid) return;
-
-            const name = nameInput.value.trim();
-            const phone = phoneInput.value.trim();
-            const altPhone = altPhoneInput.value.trim();
-            const fullAddress = `${streetInput.value.trim()}, ${cityInput.value.trim()}, ${stateInput.value.trim()} - ${pinInput.value.trim()}`;
-            const pTime = document.getElementById('sd-modal-pdate-display').innerText;
-            const rTime = document.getElementById('sd-modal-rdate-display').innerText;
+            const name = document.getElementById('sd-cust-name').value;
+            const phone = document.getElementById('sd-cust-phone').value;
+            const email = document.getElementById('sd-cust-email').value;
             const delivLoc = document.getElementById('sd-delivery-location-input').value;
 
-            let delivMsg = '';
-            if (currentDeliveryMode === 'home') {
-                delivMsg = `*Delivery Option:* Home Delivery (${delivLoc})%0A*Delivery & Pick-up Fee:* ₹${currentDeliveryFee}`;
-            } else {
-                delivMsg = `*Delivery Option:* Self Pick-up at Vikhroli Hub (₹0)`;
+            if (currentDeliveryMode === 'home' && !delivLoc.trim()) {
+                alert('Delivery location is mandatory for home delivery.');
+                return;
             }
 
-            // 1. Generate Unique Auto-Incrementing Booking ID (CWD4525, CWD4526...)
-            const bookingId = (typeof getNextBookingId === 'function') ? getNextBookingId() : 'CWD4525';
+            sendProfessionalEmail('Self-Drive Booking', name, phone, email, `Car: ${selectedCarObj.fullName}, Delivery: ${currentDeliveryMode}, Location: ${delivLoc}`);
+            closeSDModal();
+            showSuccessModal();
+        }
 
-            // 2. Guaranteed Save to Supabase (Visible in Admin Panel)
-            if (typeof supabasePublic !== 'undefined' && supabasePublic) {
-                supabasePublic.from('inquiries').insert([{
-                    customer_name: name,
-                    customer_phone: phone,
-                    service_type: `Self-Drive [${bookingId}]`,
-                    car_name: (selectedCarObj ? selectedCarObj.fullName : 'Tata Nexon'),
-                    total_fare: (calculatedTotalFare || 0),
-                    status: 'new'
-                }]).then(res => console.log('Lead saved to Admin Panel:', res)).catch(err => console.error('Supabase save error:', err));
-            }
+        function handlePartnerFormSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('part-name').value;
+            const phone = document.getElementById('part-phone').value;
+            const email = document.getElementById('part-email').value;
+            const brand = document.getElementById('part-car-brand').value;
+            const model = document.getElementById('part-car-model').value;
 
-            // 3. Web3Forms Key-Value Format for Clean Formatted Table Email
+            sendProfessionalEmail('Partner Application', name, phone, email, `Car: ${brand} ${model} with Documents (RC, Insurance, Aadhaar, PAN)`);
+            closePartnerModal();
+            showSuccessModal();
+        }
+
+        function sendProfessionalEmail(title, name, phone, email, details) {
+            const bookingId = 'CWD-' + Math.floor(100000 + Math.random() * 900000);
+            const htmlTable = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+                    <div style="background-color: #0f172a; color: #ffffff; padding: 18px 24px; text-align: center;">
+                        <h2 style="margin: 0; font-size: 20px;">Car with Driver India</h2>
+                        <span style="font-size: 12px; color: #fbbf24; font-weight: bold;">New ${title} Alert</span>
+                    </div>
+                    <div style="padding: 20px;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+                            <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;"><th style="padding: 10px 14px; color: #475569;">Booking ID</th><td style="padding: 10px 14px; font-weight: bold; color: #1e1b4b;">${bookingId}</td></tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;"><th style="padding: 10px 14px; color: #475569;">Customer Name</th><td style="padding: 10px 14px; font-weight: bold; color: #0f172a;">${name}</td></tr>
+                            <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;"><th style="padding: 10px 14px; color: #475569;">Mobile Number</th><td style="padding: 10px 14px; font-weight: bold; color: #0284c7;">${phone}</td></tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;"><th style="padding: 10px 14px; color: #475569;">Email Address</th><td style="padding: 10px 14px; color: #334155;">${email}</td></tr>
+                            <tr style="background-color: #f8fafc;"><th style="padding: 10px 14px; color: #475569;">Details</th><td style="padding: 10px 14px; color: #334155;">${details}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            // Web3Forms dispatch to your email & customer
             try {
                 fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({
                         access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
-                        subject: `[${bookingId}] New Self-Drive Booking: ${name} (${selectedCarObj ? selectedCarObj.fullName : 'Tata Nexon'})`,
+                        subject: `[${bookingId}] New ${title}: ${name}`,
                         from_name: 'CWD Dispatch Bot',
-                        "Booking ID": bookingId,
-                        "Customer Name": name,
-                        "Primary Mobile": phone,
-                        "Alternate Mobile": altPhone,
-                        "Vehicle Selected": selectedCarObj ? selectedCarObj.fullName : 'Tata Nexon',
-                        "Rental Schedule": `${pTime} to ${rTime} (${calculatedRentalHours} Hours)`,
-                        "Delivery Method": currentDeliveryMode === 'home' ? `Home Delivery (${delivLoc})` : 'Self Pick-up at Vikhroli Hub',
-                        "Total Estimated Fare": `₹${calculatedTotalFare}`,
-                        "Delivery Address": fullAddress
+                        email: email, // Customer email so they get copy too
+                        message: htmlTable,
+                        is_html: true
                     })
                 });
-            } catch (err) {
-                console.error('Email alert error:', err);
-            }
-
-            // 4. Open On-Screen Confirmation Modal (Zero Redirect)
-            closeSDModal();
-            showSuccessModal();
+            } catch(err) { console.error('Email error', err); }
         }
 
-        // ==========================================
-        // PARTNER WITH US HANDLERS
-        // ==========================================
-        function openPartnerModal() {
-            document.getElementById('err-part-name').classList.add('hidden');
-            document.getElementById('err-part-phone').classList.add('hidden');
-            document.getElementById('err-part-alt-phone').classList.add('hidden');
-            document.getElementById('partner-modal').classList.remove('hidden');
-        }
-
-        function closePartnerModal() {
-            document.getElementById('partner-modal').classList.add('hidden');
-        }
-
-        function handlePartnerFormSubmit(e) {
-            e.preventDefault();
-            const nameInput = document.getElementById('part-name');
-            const phoneInput = document.getElementById('part-phone');
-            const altPhoneInput = document.getElementById('part-alt-phone');
-            const brand = document.getElementById('part-car-brand').value;
-            const model = document.getElementById('part-car-model').value;
-            const year = document.getElementById('part-car-year').value;
-
-            const errName = document.getElementById('err-part-name');
-            const errPhone = document.getElementById('err-part-phone');
-            const errAltPhone = document.getElementById('err-part-alt-phone');
-
-            let isValid = true;
-
-            if (!validateName(nameInput.value)) {
-                errName.innerText = "Please enter a valid name. Numbers and special characters are not allowed.";
-                errName.classList.remove('hidden');
-                isValid = false;
-            } else {
-                errName.classList.add('hidden');
-            }
-
-            if (!validatePhone(phoneInput.value)) {
-                errPhone.innerText = "Please enter a valid 10-digit mobile number.";
-                errPhone.classList.remove('hidden');
-                isValid = false;
-            } else {
-                errPhone.classList.add('hidden');
-            }
-
-            if (!validatePhone(altPhoneInput.value)) {
-                errAltPhone.innerText = "Please enter a valid 10-digit alternate mobile number.";
-                errAltPhone.classList.remove('hidden');
-                isValid = false;
-            } else {
-                errAltPhone.classList.add('hidden');
-            }
-
-            if (!isValid) return;
-
-            const name = nameInput.value.trim();
-            const phone = phoneInput.value.trim();
-            const altPhone = altPhoneInput.value.trim();
-
-// 1. Send Key-Value Format Email to Owner (Web3Forms)
-        try {
-            fetch('https://api.web3forms.com/submit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({
-                    access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
-                    subject: `New Partner Application: ${name} (${brand} ${model})`,
-                    from_name: 'CWD Dispatch Bot',
-                    "Owner Name": name,
-                    "Primary Phone": phone,
-                    "Alternate Phone": altPhone,
-                    "Car Brand": brand,
-                    "Car Model": model,
-                    "Manufacturing Year": year,
-                    "Documents Ready": 'RC Copy, Insurance, ID Verification, PAN Card'
-                })
-            });
-        } catch (err) {
-            console.error('Partner email error:', err);
-        }
-
-        // 2. Open On-Screen Confirmation Modal
-        closePartnerModal();
-        showSuccessModal();
-       }
-
-        // ==========================================
-        // WITH DRIVER MODAL & SUBMISSION
-        // ==========================================
-        function openModal(name, fare) {
-            chosenCarName = name;
-            chosenFareAmount = fare;
-            document.getElementById('modal-car-name').innerText = name;
-            document.getElementById('modal-fare').innerText = '₹' + fare.toLocaleString('en-IN');
-            document.getElementById('err-wd-name').classList.add('hidden');
-            document.getElementById('err-wd-phone').classList.add('hidden');
-            document.getElementById('booking-modal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('booking-modal').classList.add('hidden');
-        }
-
-        function handleBookingSubmit(e) {
-            e.preventDefault();
-            const nameInput = document.getElementById('cust-name');
-            const phoneInput = document.getElementById('cust-phone');
-            const addr = document.getElementById('cust-address').value;
-
-            const errName = document.getElementById('err-wd-name');
-            const errPhone = document.getElementById('err-wd-phone');
-
-            let isValid = true;
-
-            if (!validateName(nameInput.value)) {
-                errName.innerText = "Please enter a valid name. Numbers and special characters are not allowed.";
-                errName.classList.remove('hidden');
-                isValid = false;
-            } else {
-                errName.classList.add('hidden');
-            }
-
-            if (!validatePhone(phoneInput.value)) {
-                errPhone.innerText = "Please enter a valid 10-digit mobile number.";
-                errPhone.classList.remove('hidden');
-                isValid = false;
-            } else {
-                errPhone.classList.add('hidden');
-            }
-
-            if (!isValid) return;
-
-            const name = nameInput.value.trim();
-            const phone = phoneInput.value.trim();
-
-        // 1. Generate Unique Booking ID (CWD4525, CWD4526...)
-        const bookingId = (typeof getNextBookingId === 'function') ? getNextBookingId() : 'CWD4525';
-
-        // 2. Guaranteed Save to Supabase (Visible in Admin Panel)
-        if (typeof supabasePublic !== 'undefined' && supabasePublic) {
-            supabasePublic.from('inquiries').insert([{
-                customer_name: name,
-                customer_phone: phone,
-                service_type: `With-Driver (${currentWDSubTab.toUpperCase()}) [${bookingId}]`,
-                car_name: (chosenCarName || 'With-Driver Cab'),
-                total_fare: (chosenFareAmount || 0),
-                status: 'new'
-            }]).then(res => console.log('Lead saved to Admin Panel:', res)).catch(err => console.error('Supabase error:', err));
-        }
-
-        // 3. Send Web3Forms Key-Value Format Email for Clean Table Format
-        try {
-            fetch('https://api.web3forms.com/submit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({
-                    access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
-                    subject: `[${bookingId}] New Cab Booking: ${name} (${chosenCarName})`,
-                    from_name: 'CWD Dispatch Bot',
-                    "Booking ID": bookingId,
-                    "Customer Name": name,
-                    "Contact Number": phone,
-                    "Trip Type": `With-Driver (${currentWDSubTab.toUpperCase()})`,
-                    "Vehicle": chosenCarName,
-                    "Estimated Fare": `₹${chosenFareAmount}`,
-                    "Pickup / Route Details": addr
-                })
-            });
-        } catch (err) {
-            console.error('Email error:', err);
-        }
-
-        // 4. Open On-Screen Confirmation Modal
-        closeModal();
-        showSuccessModal();
-        }
-
-// Initialize Defaults
-    window.addEventListener('DOMContentLoaded', () => {
-        // --- Helper: Format YYYY-MM-DD in Local Time ---
-        const formatLocalDate = (d) => {
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+        window.onload = function() {
+            setWDSubTab('outstation');
+            renderWDFleet();
+            applyAllSDFilters();
         };
-
-        const now = new Date();
-        const todayStr = formatLocalDate(now);
-
-        // With-Driver Defaults (Local City)
-        if (document.getElementById('wd-local-date')) document.getElementById('wd-local-date').value = todayStr;
-        if (document.getElementById('wd-airport-date')) document.getElementById('wd-airport-date').value = todayStr;
-        if (document.getElementById('wd-out-pdate')) document.getElementById('wd-out-pdate').value = todayStr;
-        if (document.getElementById('wd-out-rdate')) document.getElementById('wd-out-rdate').value = todayStr;
-
-        // --- Self-Drive Times (Pickup = Now + 3 Hours, Return = Pickup + 8 Hours) ---
-        const pickupDateObj = new Date(now.getTime() + (3 * 60 * 60 * 1000));
-        const returnDateObj = new Date(pickupDateObj.getTime() + (8 * 60 * 60 * 1000));
-
-        const getHourAndAmpm = (d) => {
-            let h = d.getHours();
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12 || 12;
-            return {
-                hourStr: String(h).padStart(2, '0') + ':00',
-                rawHourStr: String(h).padStart(2, '0'),
-                ampm: ampm
-            };
-        };
-
-        const pTimeData = getHourAndAmpm(pickupDateObj);
-        const rTimeData = getHourAndAmpm(returnDateObj);
-
-        // Set Pickup Date & Time
-        const sdPDate = document.getElementById('sd-pdate');
-        if (sdPDate) sdPDate.value = formatLocalDate(pickupDateObj);
-
-        const sdPHour = document.getElementById('sd-phour') || document.getElementById('sd-ptime');
-        if (sdPHour) {
-            sdPHour.value = pTimeData.hourStr;
-            if (!sdPHour.value) sdPHour.value = pTimeData.rawHourStr;
-        }
-
-        const sdPAmpm = document.getElementById('sd-pampm');
-        if (sdPAmpm) sdPAmpm.value = pTimeData.ampm;
-
-        // Set Return Date & Time
-        const sdRDate = document.getElementById('sd-rdate');
-        if (sdRDate) sdRDate.value = formatLocalDate(returnDateObj);
-
-        const sdRHour = document.getElementById('sd-rhour') || document.getElementById('sd-rtime');
-        if (sdRHour) {
-            sdRHour.value = rTimeData.hourStr;
-            if (!sdRHour.value) sdRHour.value = rTimeData.rawHourStr;
-        }
-
-        const sdRAmpm = document.getElementById('sd-rampm');
-        if (sdRAmpm) sdRAmpm.value = rTimeData.ampm;
-
-        // Default open Local Tab
-        if (typeof setWDSubTab === 'function') {
-            setWDSubTab('local');
-        }
-
-        if (typeof calculateDriverFare === 'function') calculateDriverFare();
-        if (typeof applyAllSDFilters === 'function') applyAllSDFilters();
-    });
     </script>
-    <script>
-(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="31SOvQiI472RC_RrfnlIr";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
-// FEATURE 10: 1-Click Quick Route Selection
-function selectQuickRoute(destName) {
-    if (typeof setServiceMode === 'function') setServiceMode('withdriver');
-    if (typeof setWDSubTab === 'function') setWDSubTab('outstation');
-    
-    const destInput = document.getElementById('wd-out-destination');
-    if (destInput) {
-        destInput.value = destName;
-    }
-    if (typeof calculateDriverFare === 'function') {
-        calculateDriverFare();
-    }
-    
-    // Smooth scroll back to widget to see fare
-    const widget = document.getElementById('booking-widget');
-    if (widget) {
-        widget.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
-// FEATURE 11: Seamless "Book This Car" Handling
-// Agar form details khali hain toh error mat do, user ko smoothly dates lene widget par le jao
-function handleDirectCarBooking(carName, estimatedFare) {
-    const outDest = document.getElementById('wd-out-destination');
-    
-    // Agar outstation tab par destination khali hai:
-    if (currentWDSubTab === 'outstation' && (!outDest || !outDest.value.trim())) {
-        const widget = document.getElementById('booking-widget');
-        if (widget) {
-            widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            if (outDest) {
-                outDest.focus();
-                outDest.classList.add('ring-2', 'ring-amber-500');
-                setTimeout(() => outDest.classList.remove('ring-2', 'ring-amber-500'), 2500);
-            }
-        }
-        return;
-    }
-    
-    // Agar sab bhara hai toh direct modal open ho jaye
-    openModal(carName, estimatedFare);
-}
-
-        function getNextBookingId() {
-    let currentSeq = parseInt(localStorage.getItem('cwd_booking_seq') || '4525', 10);
-    const bookingId = 'CWD' + currentSeq;
-    localStorage.setItem('cwd_booking_seq', (currentSeq + 1).toString());
-    return bookingId;
-}
-       
-</script>
 </body>
 </html>

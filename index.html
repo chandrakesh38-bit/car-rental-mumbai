@@ -846,14 +846,17 @@
                         </a>
                         <span class="text-xs text-slate-400 block mt-1">Available 24x7 on Call & WhatsApp Support</span>
                     </div>
-                    <div class="pt-2 flex flex-wrap gap-2 justify-center sm:justify-start">
-                        <a href="https://wa.me/919702988465" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition">
+                <div class="pt-2 flex flex-wrap gap-2 justify-center sm:justify-start">
+                        <a href="https://wa.me/919702988465" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm">
                             <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp Now
                         </a>
-                        <a href="tel:+919702988465" class="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition">
+                        <a href="tel:+919702988465" class="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition border border-white/20">
                             <i class="fa-solid fa-phone text-xs"></i> Call Us
                         </a>
-                    </div>
+                        <a href="mailto:carwithdriver.vikhroli@gmail.com?subject=Inquiry%20from%20Website" class="bg-amber-500 hover:bg-amber-600 text-indigo-950 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm">
+                            <i class="fa-solid fa-envelope text-xs"></i> Email Us
+                        </a>
+                    </div>    
                 </div>
             </div>
         </div>
@@ -1138,15 +1141,15 @@
 
                 <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs tracking-wide">
                     <i class="fa-brands fa-whatsapp text-emerald-400 text-base"></i>
-                    <span>Submit Partner Application via WhatsApp</span>
+                    <span>Submit Partner Application</span>
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- SUCCESS CONFIRMATION MODAL POPUP -->
+<!-- ENHANCED SUCCESS CONFIRMATION MODAL POPUP -->
     <div id="success-confirmation-modal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all duration-300">
-        <div class="bg-white w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl relative text-center transform scale-100 transition-transform">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl relative text-center border border-slate-100">
             <button type="button" onclick="closeSuccessModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -1156,24 +1159,28 @@
             </div>
 
             <h3 class="text-xl font-black text-slate-900 tracking-tight mb-2">
-                Thank You for Sharing Your Details!
+                Thank You for Submitting!
             </h3>
 
-            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm mx-auto mb-6">
-                Your request has been successfully submitted. Our team will verify the details and get back to you shortly.
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm mx-auto mb-5">
+                Our team will check your request and get back to you shortly. If you wish to reach us immediately, you can connect with us directly:
             </p>
 
-            <div class="space-y-2.5">
-                <button type="button" onclick="closeSuccessModal()" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-extrabold py-3.5 rounded-xl shadow-lg transition text-xs tracking-wide">
-                    OK, Got It
-                </button>
-                <a href="https://wa.me/919702988465" target="_blank" class="text-[11px] font-bold text-slate-500 hover:text-emerald-700 flex items-center justify-center gap-1.5 pt-1">
-                    <i class="fa-brands fa-whatsapp text-emerald-500 text-sm"></i> Need immediate assistance? WhatsApp us
+            <!-- Direct Reach Buttons -->
+            <div class="grid grid-cols-2 gap-3 mb-5">
+                <a href="https://wa.me/919702988465" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-sm">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp Us
+                </a>
+                <a href="tel:+919702988465" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-sm">
+                    <i class="fa-solid fa-phone text-xs"></i> Call Us
                 </a>
             </div>
+
+            <button type="button" onclick="closeSuccessModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl transition text-xs">
+                Close &amp; Return
+            </button>
         </div>
     </div>
-
     <script>
 
 // ==========================================
@@ -2302,8 +2309,30 @@ if (typeof supabasePublic !== 'undefined' && supabasePublic) {
         status: 'new'
     }]).then(res => console.log('Self-Drive lead saved:', res)).catch(err => console.error(err));
 }
-            
-            window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
+            // Send Email via Web3Forms (Silent Background Call)
+            try {
+                fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
+                        subject: `New Self-Drive Booking: ${name} (${selectedCarObj.fullName})`,
+                        Customer_Name: name,
+                        Primary_Phone: phone,
+                        Alternate_Phone: altPhone,
+                        Vehicle: selectedCarObj.fullName,
+                        Schedule: `${pTime} to ${rTime}`,
+                        Duration: `${calculatedRentalHours} Hours`,
+                        Total_Estimated_Fare: `₹${calculatedTotalFare}`,
+                        Delivery_Option: currentDeliveryMode === 'home' ? `Home Delivery (${delivLoc})` : 'Self Pick-up at Vikhroli Hub',
+                        Delivery_Address: fullAddress
+                    })
+                });
+            } catch (err) {
+                console.error('Email error:', err);
+            }
+
+            // Zero Redirect - On-screen confirmation popup opens
             closeSDModal();
             showSuccessModal();
         }
@@ -2369,10 +2398,31 @@ if (typeof supabasePublic !== 'undefined' && supabasePublic) {
 
             const msg = `*New Partner Inquiry - List Your Car (Car with Driver India)*%0A%0A*Owner Name:* ${name}%0A*Phone:* ${phone}%0A*Alternate Phone:* ${altPhone}%0A*Car Brand:* ${brand}%0A*Car Model:* ${model}%0A*Manufacturing Year:* ${year}%0A*Documents Ready:* RC Copy, Valid Insurance, Aadhaar Card, PAN Card.%0A%0APlease contact me with partnership terms and listing process.`;
 
-            window.open(`https://wa.me/919702988465?text=${msg}`, '_blank');
-            closePartnerModal();
-            showSuccessModal();
+// 1. Send Email Alert to Owner (Web3Forms)
+        try {
+            fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({
+                    access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
+                    subject: `New Partner Application: ${name} (${brand} ${model})`,
+                    Owner_Name: name,
+                    Primary_Phone: phone,
+                    Alternate_Phone: altPhone,
+                    Car_Brand: brand,
+                    Car_Model: model,
+                    Manufacturing_Year: year,
+                    Documents_Ready: 'RC Copy, Insurance, ID Verification, PAN Card'
+                })
+            });
+        } catch (err) {
+            console.error('Partner email error:', err);
         }
+
+        // 2. Open On-Screen Confirmation Modal (No WhatsApp Redirect)
+        closePartnerModal();
+        showSuccessModal();
+       }
 
         // ==========================================
         // WITH DRIVER MODAL & SUBMISSION

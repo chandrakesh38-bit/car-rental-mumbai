@@ -2283,78 +2283,10 @@ function setWDSubTab(tab) {
                 delivMsg = `*Delivery Option:* Self Pick-up at Vikhroli Hub (₹0)`;
             }
 
-            const msg = `*New Self-Drive Booking Request - Car with Driver India*%0A%0A` +
-                        `*Customer Name:* ${name}%0A` +
-                        `*Primary Phone:* ${phone}%0A` +
-                        `*Alternate Phone:* ${altPhone}%0A` +
-                        `*Vehicle:* ${selectedCarObj.fullName}%0A` +
-                        `*Trip Schedule:* ${pTime} to ${rTime}%0A` +
-                        `*Duration:* ${calculatedRentalHours} Hours%0A%0A` +
-                        `*--- FARE BREAKUP ---*%0A` +
-                        `*1. Rental Charges:* ₹${calculatedRentalAmount} (${calculatedRentalHours} hrs @ ₹${selectedCarObj.rateVal}/hr)%0A` +
-                        `*2. Delivery Fee:* ₹${currentDeliveryFee}%0A` +
-                        `*3. Refundable Security Deposit:* ₹${calculatedSecurityDeposit} (Refundable after inspection)%0A` +
-                        `*Total Estimated Fare:* ₹${calculatedTotalFare}%0A%0A` +
-                        `${delivMsg}%0A` +
-                        `*Complete Address:* ${fullAddress}%0A%0A` +
-                        `_Customer has confirmed and agreed to mandatory ID & inspection terms._`;
-// 1. Generate Unique Auto-Incrementing Booking ID (CWD4525, CWD4526...)
+            // 1. Generate Unique Auto-Incrementing Booking ID (CWD4525, CWD4526...)
             const bookingId = (typeof getNextBookingId === 'function') ? getNextBookingId() : 'CWD4525';
 
-            // 2. Structured HTML Table for Presentable Email Delivery
-            const emailTableHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-                <div style="background-color: #0f172a; color: #ffffff; padding: 18px 24px; text-align: center;">
-                    <h2 style="margin: 0; font-size: 20px;">Car with Driver India</h2>
-                    <span style="font-size: 12px; color: #fbbf24; font-weight: bold;">New Self-Drive Booking Alert</span>
-                </div>
-                <div style="padding: 20px;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
-                        <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                            <th style="padding: 10px 14px; color: #475569; width: 40%;">Booking ID</th>
-                            <td style="padding: 10px 14px; font-weight: bold; color: #1e1b4b;">${bookingId}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <th style="padding: 10px 14px; color: #475569;">Customer Name</th>
-                            <td style="padding: 10px 14px; font-weight: bold; color: #0f172a;">${name}</td>
-                        </tr>
-                        <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                            <th style="padding: 10px 14px; color: #475569;">Primary Mobile</th>
-                            <td style="padding: 10px 14px; font-weight: bold; color: #0284c7;">${phone}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <th style="padding: 10px 14px; color: #475569;">Alternate Mobile</th>
-                            <td style="padding: 10px 14px; color: #334155;">${altPhone}</td>
-                        </tr>
-                        <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                            <th style="padding: 10px 14px; color: #475569;">Vehicle Selected</th>
-                            <td style="padding: 10px 14px; font-weight: bold; color: #0f172a;">${selectedCarObj ? selectedCarObj.fullName : 'Tata Nexon'}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <th style="padding: 10px 14px; color: #475569;">Rental Schedule</th>
-                            <td style="padding: 10px 14px; color: #334155;">${pTime} to ${rTime} (${calculatedRentalHours} Hours)</td>
-                        </tr>
-                        <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                            <th style="padding: 10px 14px; color: #475569;">Delivery Method</th>
-                            <td style="padding: 10px 14px; color: #334155;">${currentDeliveryMode === 'home' ? `Home Delivery (${delivLoc})` : 'Self Pick-up at Vikhroli Hub'}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <th style="padding: 10px 14px; color: #475569;">Total Estimated Fare</th>
-                            <td style="padding: 10px 14px; font-weight: bold; color: #047857; font-size: 15px;">₹${calculatedTotalFare}</td>
-                        </tr>
-                        <tr style="background-color: #f8fafc;">
-                            <th style="padding: 10px 14px; color: #475569; vertical-align: top;">Delivery Address</th>
-                            <td style="padding: 10px 14px; color: #334155; line-height: 1.4;">${fullAddress}</td>
-                        </tr>
-                    </table>
-                </div>
-                <div style="background-color: #f1f5f9; padding: 12px; text-align: center; font-size: 11px; color: #64748b;">
-                    Car with Driver India • Automated Dispatch Notification
-                </div>
-            </div>
-            `;
-
-            // 3. Guaranteed Save to Supabase (Visible in Admin Panel)
+            // 2. Guaranteed Save to Supabase (Visible in Admin Panel)
             if (typeof supabasePublic !== 'undefined' && supabasePublic) {
                 supabasePublic.from('inquiries').insert([{
                     customer_name: name,
@@ -2366,7 +2298,7 @@ function setWDSubTab(tab) {
                 }]).then(res => console.log('Lead saved to Admin Panel:', res)).catch(err => console.error('Supabase save error:', err));
             }
 
-            // 4. Web3Forms HTML Email Dispatch
+            // 3. Web3Forms Key-Value Format for Clean Formatted Table Email
             try {
                 fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
@@ -2375,15 +2307,22 @@ function setWDSubTab(tab) {
                         access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
                         subject: `[${bookingId}] New Self-Drive Booking: ${name} (${selectedCarObj ? selectedCarObj.fullName : 'Tata Nexon'})`,
                         from_name: 'CWD Dispatch Bot',
-                        message: emailTableHtml,
-                        is_html: true
+                        "Booking ID": bookingId,
+                        "Customer Name": name,
+                        "Primary Mobile": phone,
+                        "Alternate Mobile": altPhone,
+                        "Vehicle Selected": selectedCarObj ? selectedCarObj.fullName : 'Tata Nexon',
+                        "Rental Schedule": `${pTime} to ${rTime} (${calculatedRentalHours} Hours)`,
+                        "Delivery Method": currentDeliveryMode === 'home' ? `Home Delivery (${delivLoc})` : 'Self Pick-up at Vikhroli Hub',
+                        "Total Estimated Fare": `₹${calculatedTotalFare}`,
+                        "Delivery Address": fullAddress
                     })
                 });
             } catch (err) {
                 console.error('Email alert error:', err);
             }
 
-            // 5. Open On-Screen Confirmation Modal (Zero Redirect)
+            // 4. Open On-Screen Confirmation Modal (Zero Redirect)
             closeSDModal();
             showSuccessModal();
         }
@@ -2447,9 +2386,7 @@ function setWDSubTab(tab) {
             const phone = phoneInput.value.trim();
             const altPhone = altPhoneInput.value.trim();
 
-            const msg = `*New Partner Inquiry - List Your Car (Car with Driver India)*%0A%0A*Owner Name:* ${name}%0A*Phone:* ${phone}%0A*Alternate Phone:* ${altPhone}%0A*Car Brand:* ${brand}%0A*Car Model:* ${model}%0A*Manufacturing Year:* ${year}%0A*Documents Ready:* RC Copy, Valid Insurance, Aadhaar Card, PAN Card.%0A%0APlease contact me with partnership terms and listing process.`;
-
-// 1. Send Email Alert to Owner (Web3Forms)
+// 1. Send Key-Value Format Email to Owner (Web3Forms)
         try {
             fetch('https://api.web3forms.com/submit', {
                 method: 'POST',
@@ -2457,20 +2394,21 @@ function setWDSubTab(tab) {
                 body: JSON.stringify({
                     access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
                     subject: `New Partner Application: ${name} (${brand} ${model})`,
-                    Owner_Name: name,
-                    Primary_Phone: phone,
-                    Alternate_Phone: altPhone,
-                    Car_Brand: brand,
-                    Car_Model: model,
-                    Manufacturing_Year: year,
-                    Documents_Ready: 'RC Copy, Insurance, ID Verification, PAN Card'
+                    from_name: 'CWD Dispatch Bot',
+                    "Owner Name": name,
+                    "Primary Phone": phone,
+                    "Alternate Phone": altPhone,
+                    "Car Brand": brand,
+                    "Car Model": model,
+                    "Manufacturing Year": year,
+                    "Documents Ready": 'RC Copy, Insurance, ID Verification, PAN Card'
                 })
             });
         } catch (err) {
             console.error('Partner email error:', err);
         }
 
-        // 2. Open On-Screen Confirmation Modal (No WhatsApp Redirect)
+        // 2. Open On-Screen Confirmation Modal
         closePartnerModal();
         showSuccessModal();
        }
@@ -2524,79 +2462,10 @@ function setWDSubTab(tab) {
             const name = nameInput.value.trim();
             const phone = phoneInput.value.trim();
 
-            let msg = `*New Cab Booking (With Driver) - Car with Driver India*%0A%0A*Customer:* ${name}%0A*Phone:* ${phone}%0A*Trip Type:* ${currentWDSubTab.toUpperCase()}%0A*Vehicle:* ${chosenCarName}%0A*Est. Fare:* ₹${chosenFareAmount}%0A*Pickup Address:* ${addr}%0A*(Fare includes car rental, fuel & driver allowance. Tolls & parking extra as actuals)*`;
-
-            if (currentWDSubTab === 'local') {
-                const pkg = document.getElementById('wd-local-package').value;
-                const area = document.getElementById('wd-local-pickup').value;
-                const d = document.getElementById('wd-local-date').value;
-                const h = document.getElementById('wd-local-hour').value;
-                const m = document.getElementById('wd-local-ampm').value;
-                msg += `%0A*Package:* ${pkg}%0A*Area:* ${area}%0A*Pickup Time:* ${d} at ${h}:00 ${m}`;
-            } else if (currentWDSubTab === 'outstation') {
-                const stn = document.getElementById('wd-out-pickup').value;
-                const dest = document.getElementById('wd-out-destination').value;
-                const pd = document.getElementById('wd-out-pdate').value;
-                const ph = document.getElementById('wd-out-phour').value;
-                const pm = document.getElementById('wd-out-pampm').value;
-                msg += `%0A*Pickup Station/Area:* ${stn}%0A*Destination:* ${dest}%0A*Departure:* ${pd} at ${ph}:00 ${pm}%0A*Days:* ${wdOutstationDays}%0A*Est. Distance:* ${wdOutstationKm} KM%0A*Night Allowance:* ${isNightAllowanceApplicable ? 'Yes (+₹700)' : 'No'}`;
-            } else if (currentWDSubTab === 'airport') {
-                const term = document.getElementById('wd-airport-terminal').value;
-                const d = document.getElementById('wd-airport-date').value;
-                const h = document.getElementById('wd-airport-hour').value;
-                const m = document.getElementById('wd-airport-ampm').value;
-                msg += `%0A*Airport:* ${term.toUpperCase()}%0A*Flight Time:* ${d} at ${h}:00 ${m}`;
-            }
-
-// 1. Generate Unique Booking ID (CWD4525, CWD4526...)
+        // 1. Generate Unique Booking ID (CWD4525, CWD4526...)
         const bookingId = (typeof getNextBookingId === 'function') ? getNextBookingId() : 'CWD4525';
 
-        // 2. Structured Presentable HTML Table for Email
-        const emailTableHtml = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-            <div style="background-color: #0f172a; color: #ffffff; padding: 18px 24px; text-align: center;">
-                <h2 style="margin: 0; font-size: 20px;">Car with Driver India</h2>
-                <span style="font-size: 12px; color: #fbbf24; font-weight: bold;">New Chauffeur Cab Booking Alert</span>
-            </div>
-            <div style="padding: 20px;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
-                    <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                        <th style="padding: 10px 14px; color: #475569; width: 40%;">Booking ID</th>
-                        <td style="padding: 10px 14px; font-weight: bold; color: #1e1b4b;">${bookingId}</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <th style="padding: 10px 14px; color: #475569;">Customer Name</th>
-                        <td style="padding: 10px 14px; font-weight: bold; color: #0f172a;">${name}</td>
-                    </tr>
-                    <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                        <th style="padding: 10px 14px; color: #475569;">Contact Number</th>
-                        <td style="padding: 10px 14px; font-weight: bold; color: #0284c7;">${phone}</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <th style="padding: 10px 14px; color: #475569;">Trip Type</th>
-                        <td style="padding: 10px 14px; font-weight: bold; color: #4f46e5;">With-Driver (${currentWDSubTab.toUpperCase()})</td>
-                    </tr>
-                    <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                        <th style="padding: 10px 14px; color: #475569;">Vehicle</th>
-                        <td style="padding: 10px 14px; font-weight: bold; color: #0f172a;">${chosenCarName}</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <th style="padding: 10px 14px; color: #475569;">Estimated Fare</th>
-                        <td style="padding: 10px 14px; font-weight: bold; color: #047857; font-size: 15px;">₹${chosenFareAmount}</td>
-                    </tr>
-                    <tr style="background-color: #f8fafc;">
-                        <th style="padding: 10px 14px; color: #475569; vertical-align: top;">Pickup / Route Details</th>
-                        <td style="padding: 10px 14px; color: #334155; line-height: 1.4;">${addr}</td>
-                    </tr>
-                </table>
-            </div>
-            <div style="background-color: #f1f5f9; padding: 12px; text-align: center; font-size: 11px; color: #64748b;">
-                Car with Driver India • Automated Dispatch Notification
-            </div>
-        </div>
-        `;
-
-        // 3. Guaranteed Save to Supabase (Visible in Admin Panel)
+        // 2. Guaranteed Save to Supabase (Visible in Admin Panel)
         if (typeof supabasePublic !== 'undefined' && supabasePublic) {
             supabasePublic.from('inquiries').insert([{
                 customer_name: name,
@@ -2608,7 +2477,7 @@ function setWDSubTab(tab) {
             }]).then(res => console.log('Lead saved to Admin Panel:', res)).catch(err => console.error('Supabase error:', err));
         }
 
-        // 4. Send HTML Table Email via Web3Forms (Zero WhatsApp Redirect)
+        // 3. Send Web3Forms Key-Value Format Email for Clean Table Format
         try {
             fetch('https://api.web3forms.com/submit', {
                 method: 'POST',
@@ -2617,15 +2486,20 @@ function setWDSubTab(tab) {
                     access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
                     subject: `[${bookingId}] New Cab Booking: ${name} (${chosenCarName})`,
                     from_name: 'CWD Dispatch Bot',
-                    message: emailTableHtml,
-                    is_html: true
+                    "Booking ID": bookingId,
+                    "Customer Name": name,
+                    "Contact Number": phone,
+                    "Trip Type": `With-Driver (${currentWDSubTab.toUpperCase()})`,
+                    "Vehicle": chosenCarName,
+                    "Estimated Fare": `₹${chosenFareAmount}`,
+                    "Pickup / Route Details": addr
                 })
             });
         } catch (err) {
             console.error('Email error:', err);
         }
 
-        // 5. Open On-Screen Confirmation Modal
+        // 4. Open On-Screen Confirmation Modal
         closeModal();
         showSuccessModal();
         }

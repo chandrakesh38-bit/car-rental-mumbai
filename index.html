@@ -18,6 +18,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         .tab-active { background-color: #0f172a; color: #fbbf24; }
@@ -27,6 +29,8 @@
         .autocomplete-item:hover { background-color: #f8fafc; color: #4f46e5; font-weight: 600; }
         @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .animate-fade-in { animation: fadeInScale 0.25s ease-out forwards; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased">
@@ -48,7 +52,9 @@
                 <a href="https://wa.me/919702988465" target="_blank" class="hidden sm:flex bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition items-center gap-1.5 shadow-sm">
                     <i class="fa-brands fa-whatsapp text-sm"></i> Talk to Us
                 </a>
-
+                <button type="button" onclick="openLoginModal()" class="hidden md:flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-indigo-950 px-3 py-2 rounded-xl border border-slate-200 transition">
+                    <i class="fa-regular fa-user"></i> Login / Account
+                </button>
                 <button type="button" onclick="openNavDrawer()" class="p-2.5 rounded-xl text-slate-700 hover:text-indigo-950 hover:bg-slate-100 transition focus:outline-none flex items-center justify-center border border-slate-200">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
@@ -81,6 +87,10 @@
                     <i class="fa-solid fa-key text-indigo-600 w-5"></i>
                     <span>Self Drive</span>
                 </a>
+                <button type="button" onclick="closeNavDrawer(); openLoginModal();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition text-left font-bold text-slate-700">
+                    <i class="fa-regular fa-user text-indigo-600 w-5"></i>
+                    <span>Login / My Account</span>
+                </button>
                 <button type="button" onclick="closeNavDrawer(); openPartnerModal();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition text-left font-bold text-slate-700">
                     <i class="fa-solid fa-handshake text-amber-500 w-5"></i>
                     <span>Become a Partner</span>
@@ -148,50 +158,85 @@
                     </div>
 
                     <!-- LOCAL CITY FIELDS -->
-                    <div id="wd-local-fields" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="relative">
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address</label>
-                            <input type="text" id="wd-local-pickup" autocomplete="off" oninput="showSuggestions('wd-local-pickup', 'mumbai-places', 'wd-local-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter area or select area">
-                            <div id="wd-local-dropdown" class="autocomplete-dropdown hidden"></div>
+                    <div id="wd-local-fields" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address</label>
+                                <input type="text" id="wd-local-pickup" autocomplete="off" oninput="showSuggestions('wd-local-pickup', 'mumbai-places', 'wd-local-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter area or select area">
+                                <div id="wd-local-dropdown" class="autocomplete-dropdown hidden"></div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time</label>
+                                <div class="grid grid-cols-3 gap-1.5">
+                                    <input type="date" id="wd-local-date" class="bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none">
+                                    <select id="wd-local-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                        <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
+                                        <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
+                                        <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                                    </select>
+                                    <select id="wd-local-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                        <option value="AM" selected>AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Prominent Selectable Local Packages (Feature 4) -->
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> Rental Package</label>
-                            <select id="wd-local-package" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" onchange="calculateDriverFare()">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-2"><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> Select Rental Package</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="button" id="pkg-card-8hr" onclick="selectLocalPackage('8hr_80km')" class="p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/50 text-left transition flex items-center justify-between">
+                                    <div>
+                                        <span class="font-extrabold text-xs sm:text-sm text-indigo-950 block">8 Hours / 80 KM</span>
+                                        <span class="text-[10px] text-slate-500 block">Full Day City Package</span>
+                                    </div>
+                                    <i class="fa-solid fa-circle-check text-indigo-600 text-base" id="pkg-check-8hr"></i>
+                                </button>
+                                <button type="button" id="pkg-card-12hr" onclick="selectLocalPackage('12hr_120km')" class="p-3.5 rounded-xl border-2 border-slate-200 bg-white text-left transition flex items-center justify-between">
+                                    <div>
+                                        <span class="font-extrabold text-xs sm:text-sm text-slate-800 block">12 Hours / 120 KM</span>
+                                        <span class="text-[10px] text-slate-500 block">Extended City Package</span>
+                                    </div>
+                                    <i class="fa-solid fa-circle-check text-slate-300 text-base" id="pkg-check-12hr"></i>
+                                </button>
+                            </div>
+                            <select id="wd-local-package" class="hidden">
                                 <option value="8hr_80km" selected>8 Hours / 80 KM (Full Day)</option>
-                                <option value="10hr_100km">10 Hours / 100 KM</option>
                                 <option value="12hr_120km">12 Hours / 120 KM (Extended)</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time</label>
-                            <div class="grid grid-cols-3 gap-1.5">
-                                <input type="date" id="wd-local-date" class="bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none">
-                                <select id="wd-local-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
-                                    <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
-                                    <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
-                                    <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
-                                </select>
-                                <select id="wd-local-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
-                                    <option value="AM" selected>AM</option>
-                                    <option value="PM">PM</option>
-                                </select>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- OUTSTATION FIELDS -->
-                    <div id="wd-outstation-fields" class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- OUTSTATION FIELDS (ROUND TRIP ONLY) -->
+                    <div id="wd-outstation-fields" class="space-y-4 hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-center">
                             <div class="relative">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-train text-indigo-600 mr-1"></i> Pickup Area / Railway Station</label>
-                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter area or select area">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-train text-indigo-600 mr-1"></i> From (Pickup Location)</label>
+                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter area or select area" value="Bhandup">
                                 <div id="wd-out-pickup-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
+
+                            <!-- Swap Button -->
+                            <div class="flex justify-center md:absolute md:left-1/2 md:-translate-x-1/2 md:top-7 z-10 my-1 md:my-0">
+                                <button type="button" onclick="swapOutstationLocations()" class="w-9 h-9 rounded-full bg-white border border-slate-300 shadow-sm hover:bg-slate-100 flex items-center justify-center text-indigo-950 transition active:scale-95" title="Swap Pickup and Destination">
+                                    <i class="fa-solid fa-right-left rotate-90 md:rotate-0 text-xs"></i>
+                                </button>
+                            </div>
+
                             <div class="relative">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> Destination City (Maharashtra & Beyond)</label>
-                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'destination-cities', 'wd-out-dest-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter area or select area">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> To (Destination City)</label>
+                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'destination-cities', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter area or select area" value="Pune">
                                 <div id="wd-out-dest-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
+                        </div>
+
+                        <!-- Add Stop Feature -->
+                        <div id="intermediate-stops-container" class="space-y-2"></div>
+                        <div>
+                            <button type="button" onclick="addIntermediateStop()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 transition">
+                                <i class="fa-solid fa-plus-circle"></i> + Add Stop
+                            </button>
                         </div>
 
                         <!-- Date & Time Pickers with Auto Return Date Match -->
@@ -238,51 +283,23 @@
                         </div>
                     </div>
 
-                    <!-- AIRPORT FIELDS -->
+                    <!-- AIRPORT FIELDS (DYNAMIC DROP vs PICKUP) -->
                     <div id="wd-airport-fields" class="hidden space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Select Airport</label>
-                                <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" onchange="calculateDriverFare()">
-                                    <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
-                                    <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
-                                    <option value="nmia">Navi Mumbai International Airport (NMIA)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-arrows-split-up-and-left text-indigo-600 mr-1"></i> Transfer Type</label>
-                                <select class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium">
-                                    <option>Drop to Airport</option>
-                                    <option>Pickup from Airport</option>
-                                </select>
-                            </div>
-                            <div class="relative">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> City Address / Area</label>
-                                <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter area or select area">
-                                <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
-                            </div>
+                        <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+                            <button type="button" id="btn-airport-drop" onclick="setAirportTransferType('drop')" class="flex-1 py-2.5 rounded-lg transition bg-white text-indigo-950 shadow-sm">
+                                Drop to Airport
+                            </button>
+                            <button type="button" id="btn-airport-pickup" onclick="setAirportTransferType('pickup')" class="flex-1 py-2.5 rounded-lg transition text-slate-600">
+                                Pickup from Airport
+                            </button>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Flight Date & Time</label>
-                                <div class="grid grid-cols-3 gap-1.5">
-                                    <input type="date" id="wd-airport-date" class="bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none">
-                                    <select id="wd-airport-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
-                                        <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
-                                        <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
-                                        <option value="9">09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12" selected>12:00</option>
-                                    </select>
-                                    <select id="wd-airport-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
-                                        <option value="AM">AM</option>
-                                        <option value="PM" selected>PM</option>
-                                    </select>
-                                </div>
-                            </div>
+                        <div id="airport-dynamic-form" class="space-y-4">
+                            <!-- Injected dynamically based on drop vs pickup -->
                         </div>
                     </div>
 
-                    <!-- QUICK PLAN POPULAR MAHARASHTRA ROUTES (Hidden on Airport Tab) -->
+                    <!-- Quick Plan Popular Maharashtra Routes -->
                     <div id="quick-plan-section" class="mt-6 pt-5 border-t border-slate-100">
                         <span class="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2.5">
                             <i class="fa-solid fa-bolt text-amber-500 mr-1"></i> Quick Plan Popular Maharashtra Routes:
@@ -319,7 +336,7 @@
                     <div class="mt-6 flex justify-center">
                         <button type="button" onclick="triggerFareSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
                             <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="search-btn-icon"></i>
-                            <span id="search-btn-text">Search Updated Rates & Cars</span>
+                            <span id="search-btn-text">Explore Cabs</span>
                         </button>
                     </div>
                 </div>
@@ -484,6 +501,102 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="fleet-container"></div>
     </section>
 
+    <!-- GOOGLE BUSINESS PROFILE RATING & BEST REVIEWS SECTION -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-12" id="reviews">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center space-x-4">
+                <div class="w-14 h-14 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center text-3xl">
+                    <i class="fa-brands fa-google text-[#4285F4]"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl font-black text-slate-900">5.0</span>
+                        <div class="flex text-amber-400 text-sm">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400">(500+ Verified Reviews)</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-700 mt-0.5">Car with Driver India - Google Business Profile</h3>
+                </div>
+            </div>
+            <a href="https://maps.google.com/?q=Car+With+Driver+India+Vikhroli+Mumbai" target="_blank" class="bg-slate-900 hover:bg-indigo-950 text-white font-bold px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition shadow-sm whitespace-nowrap">
+                <i class="fa-brands fa-google text-amber-400"></i>
+                <span>View on Google Maps</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400 ml-1"></i>
+            </a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-900 font-bold flex items-center justify-center text-xs">RS</div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-900 leading-none">Rajesh Sharma</h4>
+                                <span class="text-[10px] text-slate-400 block mt-0.5">Powai, Mumbai</span>
+                            </div>
+                        </div>
+                        <i class="fa-brands fa-google text-[#4285F4] text-xs"></i>
+                    </div>
+                    <div class="flex text-amber-400 text-xs mb-2.5"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <p class="text-xs text-slate-600 leading-relaxed">"Booked an Ertiga with driver for our family holiday to Mahabaleshwar. Driver was punctual, calm, and drove very safely. Highly recommended for family outstation trips!"</p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium"><span>Verified Trip</span><span>Outstation Cab</span></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-900 font-bold flex items-center justify-center text-xs">SK</div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-900 leading-none">Sneha Kulkarni</h4>
+                                <span class="text-[10px] text-slate-400 block mt-0.5">Thane West</span>
+                            </div>
+                        </div>
+                        <i class="fa-brands fa-google text-[#4285F4] text-xs"></i>
+                    </div>
+                    <div class="flex text-amber-400 text-xs mb-2.5"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <p class="text-xs text-slate-600 leading-relaxed">"Took a Tata Punch for self-drive weekend. Doorstep delivery at Mulund was super smooth and car was brand new and clean. Security deposit was refunded on time."</p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium"><span>Verified Trip</span><span>Self Drive Rental</span></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-900 font-bold flex items-center justify-center text-xs">AV</div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-900 leading-none">Amit Verma</h4>
+                                <span class="text-[10px] text-slate-400 block mt-0.5">Vashi, Navi Mumbai</span>
+                            </div>
+                        </div>
+                        <i class="fa-brands fa-google text-[#4285F4] text-xs"></i>
+                    </div>
+                    <div class="flex text-amber-400 text-xs mb-2.5"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <p class="text-xs text-slate-600 leading-relaxed">"Best thing is no hidden pricing. Clear 300 km/day calculation upfront. Airport T2 pickup at 2:30 AM was right on time with driver waiting at arrival exit."</p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium"><span>Verified Trip</span><span>Airport Transfer</span></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-900 font-bold flex items-center justify-center text-xs">VP</div>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-900 leading-none">Vikram Patel</h4>
+                                <span class="text-[10px] text-slate-400 block mt-0.5">Andheri East</span>
+                            </div>
+                        </div>
+                        <i class="fa-brands fa-google text-[#4285F4] text-xs"></i>
+                    </div>
+                    <div class="flex text-amber-400 text-xs mb-2.5"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <p class="text-xs text-slate-600 leading-relaxed">"Booked Innova Crysta for Shirdi Darshan. Clean interior, chilled dual AC, and driver knew the Samruddhi Mahamarg route perfectly. 10/10 service."</p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-medium"><span>Verified Trip</span><span>Outstation Cab</span></div>
+            </div>
+        </div>
+    </section>
+
     <!-- PARTNER BANNER SECTION -->
     <section class="bg-gradient-to-r from-indigo-900 to-indigo-950 text-white py-14 px-4 my-8" id="partner-section">
         <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
@@ -568,7 +681,27 @@
         </div>
     </div>
 
-    <!-- WITH DRIVER BOOKING MODAL -->
+    <!-- LOGIN / MY ACCOUNT MODAL -->
+    <div id="login-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl relative animate-fade-in">
+            <button type="button" onclick="closeLoginModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-900 mb-1">Login / My Account</h3>
+            <p class="text-xs text-slate-500 mb-4">Enter your mobile number to view your bookings and rental history.</p>
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number</label>
+                    <input type="tel" id="login-phone" maxlength="10" required placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
+                </div>
+                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 rounded-xl shadow-lg transition text-xs">
+                    Send OTP & Login
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- WITH DRIVER BOOKING MODAL (WITH MOBILE OTP VERIFICATION) -->
     <div id="booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl relative animate-fade-in">
             <button type="button" onclick="closeModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
@@ -579,7 +712,8 @@
                 <div class="text-xs text-slate-600">Selected Vehicle: <strong id="modal-car-name" class="text-indigo-950 font-bold"></strong></div>
                 <div class="text-xs text-slate-600">Estimated Fare: <strong id="modal-fare" class="text-emerald-700 font-bold text-base"></strong></div>
             </div>
-            <form onsubmit="handleBookingSubmit(event)" class="mt-4 space-y-3">
+            
+            <form id="wd-booking-form" onsubmit="handleBookingSubmit(event)" class="mt-4 space-y-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Your Full Name</label>
                     <input type="text" id="cust-name" required placeholder="Enter full name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
@@ -596,9 +730,32 @@
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Exact Pickup Address / Landmark</label>
                     <textarea id="cust-address" rows="2" required placeholder="Building, Lane, Area in Mumbai/Thane" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
                 </div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm">
+
+                <!-- OTP Verification Section -->
+                <div id="otp-section" class="pt-2 border-t border-slate-100 space-y-2">
+                    <button type="button" id="btn-send-otp" onclick="sendMobileOTP()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                        Verify Mobile [VERIFY MOBILE]
+                    </button>
+                    <div id="otp-input-box" class="hidden space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-700">Enter 6-digit OTP</span>
+                            <span class="text-[10px] text-emerald-600 font-bold" id="otp-sent-status">OTP Sent to Mobile</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="otp-code-input" maxlength="6" placeholder="123456" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-center text-sm font-bold tracking-widest outline-none focus:ring-2 focus:ring-indigo-600">
+                            <button type="button" onclick="verifyMobileOTP()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg transition">
+                                Verify OTP
+                            </button>
+                        </div>
+                    </div>
+                    <div id="otp-verified-badge" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-800 p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-circle-check"></i> ✓ Mobile Verified
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-confirm-wd-booking" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm opacity-50 cursor-not-allowed" disabled>
                     <i class="fa-solid fa-check-circle text-base"></i>
-                    <span>Confirm Booking</span>
+                    <span>Proceed to Review &amp; Payment</span>
                 </button>
             </form>
         </div>
@@ -678,19 +835,17 @@
         </div>
     </div>
 
-    <!-- BECOME A PARTNER MODAL (WITH DOCUMENTS & CAMERA/GALLERY SUPPORT) -->
+    <!-- BECOME A PARTNER MODAL (CAMERA + GALLERY + COMPRESSION) -->
     <div id="partner-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
             <button type="button" onclick="closePartnerModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            
             <div class="mb-4">
                 <span class="text-amber-600 font-bold uppercase text-[10px] tracking-wider bg-amber-50 px-2 py-0.5 rounded">Partner With Us</span>
                 <h3 class="text-xl font-extrabold text-slate-900 mt-1">List Your Car. Grow With Us.</h3>
                 <p class="text-xs text-slate-500 mt-0.5">Submit your details and documents (capture via camera or upload from gallery).</p>
             </div>
-
             <form onsubmit="handlePartnerFormSubmit(event)" class="space-y-3">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
@@ -702,7 +857,6 @@
                         <input type="tel" id="part-phone" maxlength="10" required placeholder="10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
@@ -713,7 +867,6 @@
                         <input type="tel" id="part-alt-phone" maxlength="10" required placeholder="Alternate number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Car Brand</label>
@@ -728,31 +881,27 @@
                         <input type="number" id="part-car-year" min="2016" max="2026" required placeholder="2022" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
                 </div>
-
-                <!-- DOCUMENT UPLOAD SECTION (CAMERA + GALLERY + AUTO COMPRESS) -->
                 <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs space-y-3">
-                    <span class="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">Upload Required Documents (Camera / Gallery - Auto Compressed)</span>
-                    
+                    <span class="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">Upload Required Documents (Camera / Gallery Support)</span>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                         <div>
                             <label class="block text-[11px] font-semibold text-slate-600 mb-1">1. Car RC Copy</label>
-                            <input type="file" id="doc-rc" accept="image/*" capture="environment" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            <input type="file" id="doc-rc" accept="image/*" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold text-slate-600 mb-1">2. Valid Insurance</label>
-                            <input type="file" id="doc-insurance" accept="image/*" capture="environment" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            <input type="file" id="doc-insurance" accept="image/*" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold text-slate-600 mb-1">3. Aadhaar Card</label>
-                            <input type="file" id="doc-aadhaar" accept="image/*" capture="environment" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            <input type="file" id="doc-aadhaar" accept="image/*" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                         </div>
                         <div>
                             <label class="block text-[11px] font-semibold text-slate-600 mb-1">4. PAN Card</label>
-                            <input type="file" id="doc-pan" accept="image/*" capture="environment" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            <input type="file" id="doc-pan" accept="image/*" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                         </div>
                     </div>
                 </div>
-
                 <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs tracking-wide">
                     <i class="fa-solid fa-cloud-arrow-up text-amber-400 text-base"></i>
                     <span>Submit Partner Application</span>
@@ -761,7 +910,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC WITH ALL 32 CARS -->
+    <!-- JAVASCRIPT LOGIC (32 CARS PRESERVED + NEW UX WORKFLOWS) -->
     <script>
         const mumbaiPlaces = ["Masjid", "Sandhurst Road", "Byculla", "Chinchpokli", "Curry Road", "Parel", "Dadar", "Matunga", "Sion", "Kurla", "Vidyavihar", "Ghatkopar", "Vikhroli", "Kanjurmarg", "Bhandup", "Nahur", "Mulund", "Thane", "Mahim", "Bandra", "Khar Road", "Santacruz", "Vile Parle", "Andheri", "Jogeshwari", "Goregaon", "Malad", "Kandivali", "Borivali", "Dahisar", "Mira Road", "Bhayandar", "Vasai", "Virar", "Vashi", "Nerul", "Belapur", "Kharghar", "Panvel", "Powai", "BKC", "Churchgate", "CSMT"];
         const destinationCities = [
@@ -775,7 +924,6 @@
             { name: "Vashi", rt: 36, city: "Navi Mumbai" }, { name: "Borivali", rt: 54, city: "Mumbai" }
         ];
 
-        // ALL 32 CARS RESTORED
         let excelCarsData = [
             { "brand": "Tata", "model": "Nexon", "fullName": "Tata Nexon", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹117/hour", "rateVal": 117, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Or6F03FkxBCjzM3MC9l7A4X6EbtTueZ5", "priority": 1 },
             { "brand": "Tata", "model": "Punch", "fullName": "Tata Punch", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1UeNkkagK6T0LUjt2ncB6HZaW_K5iFgE5", "priority": 2 },
@@ -812,21 +960,24 @@
         ];
 
         const wdFleet = [
-            { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
-            { name: 'Maruti Ertiga', category: 'Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 }, outstationPerKm: 19, driverAllowance: 500, airport: { t1: 2200, t2: 2400, nmia: 2800 } } },
-            { name: 'Toyota Innova', category: 'Executive MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 4400, '10hr_100km': 5200, '12hr_120km': 6000, extraKm: 22 }, outstationPerKm: 22, driverAllowance: 500, airport: { t1: 2700, t2: 2900, nmia: 3400 } } },
-            { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
+            { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
+            { name: 'Maruti Ertiga', category: 'Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 3750, '12hr_120km': 5000, extraKm: 19 }, outstationPerKm: 19, driverAllowance: 500, airport: { t1: 2200, t2: 2400, nmia: 2800 } } },
+            { name: 'Toyota Innova', category: 'Executive MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 4400, '12hr_120km': 6000, extraKm: 22 }, outstationPerKm: 22, driverAllowance: 500, airport: { t1: 2700, t2: 2900, nmia: 3400 } } },
+            { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
         ];
 
         let currentMainMode = 'withdriver';
         let currentWDSubTab = 'outstation';
+        let currentAirportType = 'drop';
         let wdOutstationKm = 300;
         let wdOutstationDays = 1;
+        let isNightAllowanceApplicable = false;
         let chosenCarName = '';
         let chosenFareAmount = 0;
         let selectedCarObj = null;
         let currentDeliveryMode = 'home';
         let calculatedRentalHours = 24;
+        let calculatedTotalFare = 0;
         let currentSDPage = 1;
         const carsPerPage = 6;
         let filteredSDCarsList = [...excelCarsData];
@@ -886,6 +1037,141 @@
             calculateDriverFare();
         }
 
+        function selectLocalPackage(pkgValue) {
+            document.getElementById('wd-local-package').value = pkgValue;
+            const btn8 = document.getElementById('pkg-card-8hr');
+            const btn12 = document.getElementById('pkg-card-12hr');
+            const chk8 = document.getElementById('pkg-check-8hr');
+            const chk12 = document.getElementById('pkg-check-12hr');
+
+            if (pkgValue === '8hr_80km') {
+                btn8.className = "p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/50 text-left transition flex items-center justify-between";
+                btn8.querySelector('span').className = "font-extrabold text-xs sm:text-sm text-indigo-950 block";
+                chk8.className = "fa-solid fa-circle-check text-indigo-600 text-base";
+
+                btn12.className = "p-3.5 rounded-xl border-2 border-slate-200 bg-white text-left transition flex items-center justify-between";
+                btn12.querySelector('span').className = "font-extrabold text-xs sm:text-sm text-slate-800 block";
+                chk12.className = "fa-solid fa-circle-check text-slate-300 text-base";
+            } else {
+                btn12.className = "p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/50 text-left transition flex items-center justify-between";
+                btn12.querySelector('span').className = "font-extrabold text-xs sm:text-sm text-indigo-950 block";
+                chk12.className = "fa-solid fa-circle-check text-indigo-600 text-base";
+
+                btn8.className = "p-3.5 rounded-xl border-2 border-slate-200 bg-white text-left transition flex items-center justify-between";
+                btn8.querySelector('span').className = "font-extrabold text-xs sm:text-sm text-slate-800 block";
+                chk8.className = "fa-solid fa-circle-check text-slate-300 text-base";
+            }
+            calculateDriverFare();
+        }
+
+        // Outstation Swap & Add Stop
+        function swapOutstationLocations() {
+            const fromInput = document.getElementById('wd-out-pickup');
+            const toInput = document.getElementById('wd-out-destination');
+            const temp = fromInput.value;
+            fromInput.value = toInput.value;
+            toInput.value = temp;
+            onWDDestinationInput();
+        }
+
+        function addIntermediateStop() {
+            const container = document.getElementById('intermediate-stops-container');
+            const div = document.createElement('div');
+            div.className = "relative flex items-center gap-2";
+            div.innerHTML = `
+                <div class="w-4 flex flex-col items-center"><div class="w-0.5 h-6 bg-indigo-200"></div></div>
+                <div class="flex-1 relative">
+                    <input type="text" autocomplete="off" oninput="showSuggestions(this.id, 'mumbai-places', this.nextElementSibling.id)" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter intermediate stop area">
+                    <div class="autocomplete-dropdown hidden"></div>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 px-2 py-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+            `;
+            div.querySelector('input').id = 'stop-input-' + Date.now();
+            div.querySelector('.autocomplete-dropdown').id = 'stop-dropdown-' + Date.now();
+            container.appendChild(div);
+        }
+
+        // Dynamic Airport Transfer Form
+        function setAirportTransferType(type) {
+            currentAirportType = type;
+            const btnDrop = document.getElementById('btn-airport-drop');
+            const btnPickup = document.getElementById('btn-airport-pickup');
+            const formBox = document.getElementById('airport-dynamic-form');
+
+            if (type === 'drop') {
+                btnDrop.className = "flex-1 py-2.5 rounded-lg transition bg-white text-indigo-950 shadow-sm";
+                btnPickup.className = "flex-1 py-2.5 rounded-lg transition text-slate-600";
+                formBox.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Location</label>
+                            <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Enter area">
+                            <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Drop Airport</label>
+                            <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="calculateDriverFare()">
+                                <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
+                                <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
+                                <option value="nmia">Navi Mumbai International Airport (NMIA)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Date & Time</label>
+                            <input type="date" id="wd-airport-date" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Flight Number (Optional)</label>
+                            <input type="text" id="wd-airport-flight" placeholder="e.g. AI-602" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Passengers / Luggage</label>
+                            <input type="text" value="4 Passengers | 2 Bags" readonly class="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none font-medium text-slate-600">
+                        </div>
+                    </div>
+                `;
+            } else {
+                btnPickup.className = "flex-1 py-2.5 rounded-lg transition bg-white text-indigo-950 shadow-sm";
+                btnDrop.className = "flex-1 py-2.5 rounded-lg transition text-slate-600";
+                formBox.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Pickup Airport</label>
+                            <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="calculateDriverFare()">
+                                <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
+                                <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
+                                <option value="nmia">Navi Mumbai International Airport (NMIA)</option>
+                            </select>
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Drop Location</label>
+                            <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Enter drop area">
+                            <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Arrival Date & Time</label>
+                            <input type="date" id="wd-airport-date" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Flight Number</label>
+                            <input type="text" id="wd-airport-flight" placeholder="e.g. 6E-504" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Passengers / Luggage</label>
+                            <input type="text" value="4 Passengers | 2 Bags" readonly class="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none font-medium text-slate-600">
+                        </div>
+                    </div>
+                `;
+            }
+            if (document.getElementById('wd-airport-date')) {
+                document.getElementById('wd-airport-date').value = new Date().toISOString().split('T')[0];
+            }
+        }
+
         function onPickupDateChange() {
             const pDate = document.getElementById('wd-out-pdate').value;
             const rDate = document.getElementById('wd-out-rdate');
@@ -900,14 +1186,7 @@
             setWDSubTab('outstation');
             const destInput = document.getElementById('wd-out-destination');
             if (destInput) destInput.value = destName;
-            for (let c of destinationCities) {
-                if (c.name.toLowerCase() === destName.toLowerCase()) {
-                    wdOutstationKm = c.km;
-                    break;
-                }
-            }
-            document.getElementById('wd-metric-km').innerText = wdOutstationKm;
-            calculateDriverFare();
+            onWDDestinationInput();
             document.getElementById('booking-widget').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -934,11 +1213,7 @@
                     input.value = item;
                     dropdown.classList.add('hidden');
                     if (datasetType === 'destination-cities') {
-                        for (let c of destinationCities) {
-                            if (c.name.toLowerCase() === item.toLowerCase()) wdOutstationKm = c.km;
-                        }
-                        document.getElementById('wd-metric-km').innerText = wdOutstationKm;
-                        calculateDriverFare();
+                        onWDDestinationInput();
                     }
                 };
                 dropdown.appendChild(div);
@@ -951,6 +1226,17 @@
                 if (!dd.contains(e.target) && !e.target.matches('input')) dd.classList.add('hidden');
             });
         });
+
+        function onWDDestinationInput() {
+            const inputVal = document.getElementById('wd-out-destination').value.trim().toLowerCase();
+            let foundKm = null;
+            for (let c of destinationCities) {
+                if (c.name.toLowerCase() === inputVal) { foundKm = c.km; break; }
+            }
+            wdOutstationKm = foundKm ? foundKm : 300;
+            document.getElementById('wd-metric-km').innerText = wdOutstationKm;
+            calculateDriverFare();
+        }
 
         function calculateDriverFare() {
             if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation') {
@@ -976,7 +1262,9 @@
                 const billableKm = Math.max(wdOutstationKm, wdOutstationDays * 300);
                 return (billableKm * car.rates.outstationPerKm) + (wdOutstationDays * car.rates.driverAllowance);
             } else if (currentWDSubTab === 'airport') {
-                return car.rates.airport.t2;
+                const termInput = document.getElementById('wd-airport-terminal');
+                const term = termInput ? termInput.value : 't2';
+                return car.rates.airport[term] || car.rates.airport.t2;
             }
             return 3000;
         }
@@ -1139,14 +1427,57 @@
             document.getElementById('selfdrive-cars-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
+        // Login / Account Modal
+        function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
+        function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            alert('OTP sent successfully to your mobile number!');
+            closeLoginModal();
+        }
+
+        // With Driver Modal & OTP Verification Flow
         function openModal(name, fare) {
             chosenCarName = name;
             chosenFareAmount = fare;
             document.getElementById('modal-car-name').innerText = name;
             document.getElementById('modal-fare').innerText = '₹' + fare.toLocaleString('en-IN');
+            
+            // Reset OTP state
+            document.getElementById('otp-input-box').classList.add('hidden');
+            document.getElementById('otp-verified-badge').classList.add('hidden');
+            document.getElementById('btn-send-otp').classList.remove('hidden');
+            const confirmBtn = document.getElementById('btn-confirm-wd-booking');
+            confirmBtn.disabled = true;
+            confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
             document.getElementById('booking-modal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('booking-modal').classList.add('hidden'); }
+
+        function sendMobileOTP() {
+            const phone = document.getElementById('cust-phone').value;
+            if (!phone || phone.length < 10) {
+                alert('Please enter a valid 10-digit mobile number first.');
+                return;
+            }
+            document.getElementById('btn-send-otp').classList.add('hidden');
+            document.getElementById('otp-input-box').classList.remove('hidden');
+        }
+
+        function verifyMobileOTP() {
+            const otpVal = document.getElementById('otp-code-input').value.trim();
+            if (otpVal.length !== 6) {
+                alert('Please enter a valid 6-digit OTP.');
+                return;
+            }
+            document.getElementById('otp-input-box').classList.add('hidden');
+            document.getElementById('otp-verified-badge').classList.remove('hidden');
+            
+            const confirmBtn = document.getElementById('btn-confirm-wd-booking');
+            confirmBtn.disabled = false;
+            confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
 
         function openSDModal(car) {
             selectedCarObj = car;
@@ -1208,7 +1539,7 @@
             const brand = document.getElementById('part-car-brand').value;
             const model = document.getElementById('part-car-model').value;
 
-            sendProfessionalEmail('Partner Application', name, phone, email, `Car: ${brand} ${model} with Documents`);
+            sendProfessionalEmail('Partner Application', name, phone, email, `Car: ${brand} ${model} with Documents (Camera/Gallery Uploads)`);
             closePartnerModal();
             showSuccessModal();
         }
@@ -1251,6 +1582,7 @@
 
         window.onload = function() {
             setWDSubTab('outstation');
+            setAirportTransferType('drop');
             renderWDFleet();
             applyAllSDFilters();
         };

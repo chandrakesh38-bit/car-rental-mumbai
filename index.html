@@ -853,8 +853,9 @@
             </button>
             <h3 class="text-lg font-bold text-slate-900">Book Self-Drive Car</h3>
             
+            <!-- Complete Travel Details Review Section -->
             <div class="mt-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2">
-                <div class="flex justify-between items-start">
+                <div class="flex justify-between items-start border-b border-slate-200 pb-2">
                     <div>
                         <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded" id="sd-modal-car-brand">Brand</span>
                         <h4 class="text-sm font-extrabold text-indigo-950 mt-1" id="sd-modal-car-name">Car Name</h4>
@@ -863,6 +864,10 @@
                         <span class="text-slate-400 text-[10px] block">Rental Rate</span>
                         <strong class="text-indigo-950 font-black text-sm" id="sd-modal-car-rate">₹0/hour</strong>
                     </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-[11px] pt-1">
+                    <div><strong>Pickup:</strong> <span id="sd-review-pdatetime" class="text-slate-900"></span></div>
+                    <div><strong>Return:</strong> <span id="sd-review-rdatetime" class="text-slate-900"></span></div>
                 </div>
             </div>
 
@@ -1418,28 +1423,74 @@
             });
         }
 
+        // Requirement 1: With Driver Explore Cabs Date & Time Validation with 2-hour buffer rule
         function triggerFareSearch() {
-    if (currentMainMode === 'withdriver') {
-        if (currentWDSubTab === 'local') {
-            const localPickup = document.getElementById('wd-local-pickup').value.trim();
-            if (!localPickup) {
-                alert("Please select or enter a pickup area for Local City rental.");
-                document.getElementById('wd-local-pickup').focus();
-                return;
-            }
-        } else if (currentWDSubTab === 'outstation') {
-            const outPickup = document.getElementById('wd-out-pickup').value.trim();
-            const outDest = document.getElementById('wd-out-destination').value.trim();
-            if (!outPickup || !outDest) {
-                alert("Both Pickup location and Destination city are mandatory for Outstation booking.");
-                return;
-            }
-        }
-    }
+            if (currentMainMode === 'withdriver') {
+                let dateVal = '';
+                let hourVal = '9';
+                let ampmVal = 'AM';
 
-    calculateDriverFare(); 
-    document.getElementById('fleet').scrollIntoView({ behavior: 'smooth' }); 
-}
+                if (currentWDSubTab === 'local') {
+                    dateVal = document.getElementById('wd-local-date').value;
+                    hourVal = document.getElementById('wd-local-hour').value;
+                    ampmVal = document.getElementById('wd-local-ampm').value;
+                    const localPickup = document.getElementById('wd-local-pickup').value.trim();
+                    if (!localPickup) {
+                        alert("Please select or enter a pickup area for Local City rental.");
+                        document.getElementById('wd-local-pickup').focus();
+                        return;
+                    }
+                } else if (currentWDSubTab === 'outstation') {
+                    dateVal = document.getElementById('wd-out-pdate').value;
+                    hourVal = document.getElementById('wd-out-phour').value;
+                    ampmVal = document.getElementById('wd-out-pampm').value;
+                    const outPickup = document.getElementById('wd-out-pickup').value.trim();
+                    const outDest = document.getElementById('wd-out-destination').value.trim();
+                    if (!outPickup || !outDest) {
+                        alert("Both Pickup location and Destination city are mandatory for Outstation booking.");
+                        return;
+                    }
+                } else if (currentWDSubTab === 'airport') {
+                    dateVal = document.getElementById('wd-airport-date').value;
+                    const airportPickup = document.getElementById('wd-airport-pickup')?.value.trim();
+                    if (!airportPickup) {
+                        alert("Please fill in the required journey details.");
+                        return;
+                    }
+                }
+
+                if (!dateVal) {
+                    alert("Please fill in the required journey details.");
+                    return;
+                }
+
+                // Parse selected date and time
+                let hour24 = parseInt(hourVal);
+                if (ampmVal === 'PM' && hour24 < 12) hour24 += 12;
+                if (ampmVal === 'AM' && hour24 === 12) hour24 = 0;
+
+                const [year, month, day] = dateVal.split('-').map(Number);
+                const selectedDateTime = new Date(year, month - 1, day, hour24, 0, 0);
+                const now = new Date();
+
+                // Check past date / time rule
+                if (selectedDateTime < now) {
+                    alert("Past dates or times are not allowed. Please choose a valid future date and time.");
+                    return;
+                }
+
+                // Check 2-hour buffer rule
+                const twoHoursFromNow = new Date(now.getTime() + (2 * 60 * 60 * 1000));
+                if (selectedDateTime < twoHoursFromNow) {
+                    alert("Journey time should be at least 2 hours from the current time.");
+                    return;
+                }
+            }
+
+            calculateDriverFare(); 
+            document.getElementById('fleet').scrollIntoView({ behavior: 'smooth' }); 
+        }
+
         function triggerSDParseSearch() { applyAllSDFilters(); document.getElementById('selfdrive-cars-grid').scrollIntoView({ behavior: 'smooth' }); }
 
         function toggleSDFiltersPanel() {
@@ -1627,65 +1678,65 @@
             closeLoginModal();
         }
 
-function openModal(name, fare) {
-    chosenCarName = name;
-    chosenFareAmount = fare;
-    document.getElementById('modal-car-name').innerText = name;
-    document.getElementById('modal-fare').innerText = '₹' + fare.toLocaleString('en-IN');
-    
-    // Travel details summary taiyar karna
-    let tripTypeSummary = currentWDSubTab.toUpperCase();
-    let routeInfo = '';
-    let dateInfo = '';
+        function openModal(name, fare) {
+            chosenCarName = name;
+            chosenFareAmount = fare;
+            document.getElementById('modal-car-name').innerText = name;
+            document.getElementById('modal-fare').innerText = '₹' + fare.toLocaleString('en-IN');
+            
+            // Travel details summary taiyar karna
+            let tripTypeSummary = currentWDSubTab.toUpperCase();
+            let routeInfo = '';
+            let dateInfo = '';
 
-    if (currentWDSubTab === 'local') {
-        const pickup = document.getElementById('wd-local-pickup').value || 'Not specified';
-        const date = document.getElementById('wd-local-date').value || 'Not selected';
-        const time = document.getElementById('wd-local-hour').value + ':00 ' + document.getElementById('wd-local-ampm').value;
-        const pkg = document.getElementById('wd-local-package').value;
-        routeInfo = `Pickup: ${pickup} | Package: ${pkg}`;
-        dateInfo = `Date & Time: ${date} at ${time}`;
-    } else if (currentWDSubTab === 'outstation') {
-        const pickup = document.getElementById('wd-out-pickup').value;
-        const dest = document.getElementById('wd-out-destination').value;
-        const pDate = document.getElementById('wd-out-pdate').value;
-        const rDate = document.getElementById('wd-out-rdate').value;
-        routeInfo = `From: ${pickup} → To: ${dest} (Round Trip)`;
-        dateInfo = `Pickup: ${pDate} | Return: ${rDate}`;
-    } else if (currentWDSubTab === 'airport') {
-        const pickup = document.getElementById('wd-airport-pickup').value || 'Airport Terminal';
-        const term = document.getElementById('wd-airport-terminal').value;
-        const date = document.getElementById('wd-airport-date').value;
-        routeInfo = `Airport Transfer (${term.toUpperCase()}) - Location: ${pickup}`;
-        dateInfo = `Date: ${date}`;
-    }
+            if (currentWDSubTab === 'local') {
+                const pickup = document.getElementById('wd-local-pickup').value || 'Not specified';
+                const date = document.getElementById('wd-local-date').value || 'Not selected';
+                const time = document.getElementById('wd-local-hour').value + ':00 ' + document.getElementById('wd-local-ampm').value;
+                const pkg = document.getElementById('wd-local-package').value;
+                routeInfo = `Pickup: ${pickup} | Package: ${pkg}`;
+                dateInfo = `Date & Time: ${date} at ${time}`;
+            } else if (currentWDSubTab === 'outstation') {
+                const pickup = document.getElementById('wd-out-pickup').value;
+                const dest = document.getElementById('wd-out-destination').value;
+                const pDate = document.getElementById('wd-out-pdate').value;
+                const rDate = document.getElementById('wd-out-rdate').value;
+                routeInfo = `From: ${pickup} → To: ${dest} (Round Trip)`;
+                dateInfo = `Pickup: ${pDate} | Return: ${rDate}`;
+            } else if (currentWDSubTab === 'airport') {
+                const pickup = document.getElementById('wd-airport-pickup').value || 'Airport Terminal';
+                const term = document.getElementById('wd-airport-terminal').value;
+                const date = document.getElementById('wd-airport-date').value;
+                routeInfo = `Airport Transfer (${term.toUpperCase()}) - Location: ${pickup}`;
+                dateInfo = `Date: ${date}`;
+            }
 
-    // Modal ke andar details aur Edit button inject karna
-    const detailsContainer = document.getElementById('modal-stops-display');
-    if (detailsContainer) {
-        detailsContainer.innerHTML = `
-            <div class="mt-2 p-2.5 bg-indigo-50/70 rounded-xl border border-indigo-200 space-y-1 text-xs">
-                <div><strong>Trip Type:</strong> ${tripTypeSummary}</div>
-                <div><strong>Route:</strong> ${routeInfo}</div>
-                <div><strong>Schedule:</strong> ${dateInfo}</div>
-                <div class="pt-1 text-right">
-                    <button type="button" onclick="closeModal(); document.getElementById('booking-widget').scrollIntoView({behavior: 'smooth'});" class="text-indigo-700 hover:text-indigo-900 font-extrabold text-[11px] underline">
-                        <i class="fa-solid fa-pen-to-square"></i> Edit Travel Details
-                    </button>
-                </div>
-            </div>
-        `;
-    }
+            // Modal ke andar details aur Edit button inject karna
+            const detailsContainer = document.getElementById('modal-stops-display');
+            if (detailsContainer) {
+                detailsContainer.innerHTML = `
+                    <div class="mt-2 p-2.5 bg-indigo-50/70 rounded-xl border border-indigo-200 space-y-1 text-xs">
+                        <div><strong>Trip Type:</strong> ${tripTypeSummary}</div>
+                        <div><strong>Route:</strong> ${routeInfo}</div>
+                        <div><strong>Schedule:</strong> ${dateInfo}</div>
+                        <div class="pt-1 text-right">
+                            <button type="button" onclick="closeModal(); document.getElementById('booking-widget').scrollIntoView({behavior: 'smooth'});" class="text-indigo-700 hover:text-indigo-900 font-extrabold text-[11px] underline">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit Travel Details
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
 
-    document.getElementById('otp-input-box').classList.add('hidden');
-    document.getElementById('otp-verified-badge').classList.add('hidden');
-    document.getElementById('btn-send-otp').classList.remove('hidden');
-    const confirmBtn = document.getElementById('btn-confirm-wd-booking');
-    confirmBtn.disabled = true;
-    confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            document.getElementById('otp-input-box').classList.add('hidden');
+            document.getElementById('otp-verified-badge').classList.add('hidden');
+            document.getElementById('btn-send-otp').classList.remove('hidden');
+            const confirmBtn = document.getElementById('btn-confirm-wd-booking');
+            confirmBtn.disabled = true;
+            confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
-    document.getElementById('booking-modal').classList.remove('hidden');
-}
+            document.getElementById('booking-modal').classList.remove('hidden');
+        }
         function closeModal() { document.getElementById('booking-modal').classList.add('hidden'); }
 
         function sendMobileOTP() {
@@ -1712,11 +1763,23 @@ function openModal(name, fare) {
             confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
 
+        // Requirement 2: Self Drive Book This Car Should Show Travel Details
         function openSDModal(car) {
             selectedCarObj = car;
             document.getElementById('sd-modal-car-brand').innerText = car.brand;
             document.getElementById('sd-modal-car-name').innerText = car.fullName;
             document.getElementById('sd-modal-car-rate').innerText = car.rateHour;
+
+            const pDate = document.getElementById('sd-pdate').value || 'Not selected';
+            const pHour = document.getElementById('sd-phour').value;
+            const pAmpm = document.getElementById('sd-pampm').value;
+            const rDate = document.getElementById('sd-rdate').value || 'Not selected';
+            const rHour = document.getElementById('sd-rhour').value;
+            const rAmpm = document.getElementById('sd-rampm').value;
+
+            document.getElementById('sd-review-pdatetime').innerText = `${pDate} @ ${pHour}:00 ${pAmpm}`;
+            document.getElementById('sd-review-rdatetime').innerText = `${rDate} @ ${rHour}:00 ${rAmpm}`;
+
             document.getElementById('disp-total-final-fare').innerText = `₹${(24 * car.rateVal + 500 + car.depositVal).toLocaleString('en-IN')}`;
             document.getElementById('sd-booking-modal').classList.remove('hidden');
         }
@@ -1813,50 +1876,51 @@ function openModal(name, fare) {
             showSuccessModal();
         }
 
-function sendProfessionalEmail(title, name, phone, email, details) {
-    const bookingId = 'CWD-' + Math.floor(100000 + Math.random() * 900000);
-    const whatsappLink = `https://wa.me/91${phone}?text=Hello%20${encodeURIComponent(name)},%20regarding%20your%20booking%20(${bookingId})%20with%20Car%20with%20Driver%20India...`;
-    const callLink = `tel:+91${phone}`;
-    
-    const formattedMessage = 
-        `========================================\n` +
-        `🚗 CAR WITH DRIVER INDIA - NEW BOOKING\n` +
-        `========================================\n\n` +
-        `📌 Alert Type: ${title}\n` +
-        `🆔 Booking ID: ${bookingId}\n\n` +
-        `----------------------------------------\n` +
-        `CUSTOMER DETAILS:\n` +
-        `----------------------------------------\n` +
-        `• Full Name: ${name}\n` +
-        `• Mobile Number: ${phone}\n` +
-        `• Email Address: ${email}\n\n` +
-        `----------------------------------------\n` +
-        `TRIP & VEHICLE DETAILS:\n` +
-        `----------------------------------------\n` +
-        `${details}\n\n` +
-        `----------------------------------------\n` +
-        `QUICK ACTIONS:\n` +
-        `----------------------------------------\n` +
-        `• Chat on WhatsApp: ${whatsappLink}\n` +
-        `• Call Customer: ${callLink}\n\n` +
-        `========================================\n` +
-        `Car with Driver India | Mumbai Operations\n` +
-        `========================================`;
+        function sendProfessionalEmail(title, name, phone, email, details) {
+            const bookingId = 'CWD-' + Math.floor(100000 + Math.random() * 900000);
+            const whatsappLink = `https://wa.me/91${phone}?text=Hello%20${encodeURIComponent(name)},%20regarding%20your%20booking%20(${bookingId})%20with%20Car%20with%20Driver%20India...`;
+            const callLink = `tel:+91${phone}`;
+            
+            const formattedMessage = 
+                `========================================\n` +
+                `🚗 CAR WITH DRIVER INDIA - NEW BOOKING\n` +
+                `========================================\n\n` +
+                `📌 Alert Type: ${title}\n` +
+                `🆔 Booking ID: ${bookingId}\n\n` +
+                `----------------------------------------\n` +
+                `CUSTOMER DETAILS:\n` +
+                `----------------------------------------\n` +
+                `• Full Name: ${name}\n` +
+                `• Mobile Number: ${phone}\n` +
+                `• Email Address: ${email}\n\n` +
+                `----------------------------------------\n` +
+                `TRIP & VEHICLE DETAILS:\n` +
+                `----------------------------------------\n` +
+                `${details}\n\n` +
+                `----------------------------------------\n` +
+                `QUICK ACTIONS:\n` +
+                `----------------------------------------\n` +
+                `• Chat on WhatsApp: ${whatsappLink}\n` +
+                `• Call Customer: ${callLink}\n\n` +
+                `========================================\n` +
+                `Car with Driver India | Mumbai Operations\n` +
+                `========================================`;
 
-    try {
-        fetch('https://api.web3forms.com/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({
-                access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
-                subject: `[${bookingId}] New ${title}: ${name}`,
-                from_name: 'CWD Dispatch Bot',
-                email: email,
-                message: formattedMessage
-            })
-        });
-    } catch(err) { console.error('Email error', err); }
-}
+            try {
+                fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
+                        subject: `[${bookingId}] New ${title}: ${name}`,
+                        from_name: 'CWD Dispatch Bot',
+                        email: email,
+                        message: formattedMessage
+                    })
+                });
+            } catch(err) { console.error('Email error', err); }
+        }
+
         window.onload = function() {
             setWDSubTab('outstation');
             setAirportTransferType('drop');

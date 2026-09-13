@@ -70,6 +70,8 @@
         }
         @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .animate-fade-in { animation: fadeInScale 0.25s ease-out forwards; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide-down { animation: slideDown 0.3s ease-out forwards; }
         .scrollbar-none::-webkit-scrollbar { display: none; }
         .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
         .border-red-500 { border-color: #ef4444 !important; }
@@ -1135,7 +1137,7 @@
     <script>
         const SUPABASE_URL = "https://pwciaihqkfnlenxxiown.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz";
-        const supabasePublic = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+        const supabasePublic = (window.supabase && typeof window.supabase.createClient === 'function') ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
         const mumbaiPlaces = [
             "Ghansoli", "Rabale", "Koparkhairane", "Airoli", "Digha Gaon", "Turbhe", "Vashi", "Sanpada", 
@@ -1169,7 +1171,7 @@
             { name: "Vashi", km: 18, city: "Navi Mumbai", state: "Maharashtra" }, { name: "Panvel", km: 40, city: "Navi Mumbai", state: "Maharashtra" }
         ];
 
-        // 6 WITH DRIVER CARS (Fully restored including Punch/Brezza and Kia Carens)
+        // 6 WITH DRIVER CARS
         const wdFleet = [
             { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
             { name: 'Compact SUV (Punch / Brezza)', category: 'Compact SUV', seats: '4+1', bags: '2 Large Bags', rates: { local: { '8hr_80km': 3200, '10hr_100km': 3700, '12hr_120km': 4200, extraKm: 18 }, outstationPerKm: 18, driverAllowance: 500, airport: { t1: 1700, t2: 1800, nmia: 2200 } } },
@@ -1228,6 +1230,26 @@
         let currentSDPage = 1;
         const carsPerPage = 6;
         let filteredSDCarsList = [...excelCarsData];
+
+        // Professional Custom Alert Banner (No URL displayed)
+        function showCustomAlert(message) {
+            const existingAlert = document.getElementById('custom-floating-alert');
+            if (existingAlert) existingAlert.remove();
+
+            const alertDiv = document.createElement('div');
+            alertDiv.id = 'custom-floating-alert';
+            alertDiv.className = "fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-rose-600 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs sm:text-sm font-bold animate-slide-down border border-rose-400";
+            alertDiv.innerHTML = `
+                <i class="fa-solid fa-circle-exclamation text-lg"></i>
+                <span>${message}</span>
+                <button type="button" onclick="this.parentElement.remove()" class="ml-3 text-white/80 hover:text-white text-base font-black">&times;</button>
+            `;
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                if (alertDiv) alertDiv.remove();
+            }, 4000);
+        }
 
         function setServiceMode(mode) {
             currentMainMode = mode;
@@ -1328,75 +1350,74 @@
             container.appendChild(div);
         }
 
-function setAirportTransferType(type) {
-    currentAirportType = type;
-    const btnDrop = document.getElementById('btn-airport-drop');
-    const btnPickup = document.getElementById('btn-airport-pickup');
-    const formBox = document.getElementById('airport-dynamic-form');
+        function setAirportTransferType(type) {
+            currentAirportType = type;
+            const btnDrop = document.getElementById('btn-airport-drop');
+            const btnPickup = document.getElementById('btn-airport-pickup');
+            const formBox = document.getElementById('airport-dynamic-form');
 
-    // Date & Time HTML snippet jo dono forms mein add hoga
-    const dateTimeHTML = `
-        <div class="mt-4 pt-4 border-t border-slate-200">
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
-            <div class="grid grid-cols-3 gap-1.5">
-                <input type="date" id="wd-airport-date" onclick="this.showPicker()" class="bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer">
-                <select id="wd-airport-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
-                    <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
-                    <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
-                    <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
-                </select>
-                <select id="wd-airport-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
-                    <option value="AM" selected>AM</option>
-                    <option value="PM">PM</option>
-                </select>
-            </div>
-        </div>
-    `;
+            const dateTimeHTML = `
+                <div class="mt-4 pt-4 border-t border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <input type="date" id="wd-airport-date" onclick="this.showPicker()" class="bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer">
+                        <select id="wd-airport-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                            <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
+                            <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
+                            <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                        </select>
+                        <select id="wd-airport-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                            <option value="AM" selected>AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
+                </div>
+            `;
 
-    if (type === 'drop') {
-        if(btnDrop) btnDrop.className = "flex-1 py-2.5 rounded-lg transition bg-white text-indigo-950 shadow-sm font-bold border border-slate-200";
-        if(btnPickup) btnPickup.className = "flex-1 py-2.5 rounded-lg transition text-slate-600 font-semibold border border-transparent";
-        formBox.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="relative">
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Location *</label>
-                    <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Enter pickup area">
-                    <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
-                    <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="calculateDriverFare()">
-                        <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
-                        <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
-                        <option value="nmia">Navi Mumbai International Airport (NMIA)</option>
-                    </select>
-                </div>
-            </div>
-            ${dateTimeHTML}
-        `;
-    } else {
-        if(btnPickup) btnPickup.className = "flex-1 py-2.5 rounded-lg transition bg-white text-indigo-950 shadow-sm font-bold border border-slate-200";
-        if(btnDrop) btnDrop.className = "flex-1 py-2.5 rounded-lg transition text-slate-600 font-semibold border border-transparent";
-        formBox.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
-                    <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="calculateDriverFare()">
-                        <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
-                        <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
-                        <option value="nmia">Navi Mumbai International Airport (NMIA)</option>
-                    </select>
-                </div>
-                <div class="relative">
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Drop Location *</label>
-                    <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Enter drop area">
-                    <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
-                </div>
-            </div>
-            ${dateTimeHTML}
-        `;
-    }
-}
+            if (type === 'drop') {
+                if(btnDrop) btnDrop.className = "flex-1 py-2.5 rounded-lg transition bg-white text-indigo-950 shadow-sm font-bold border border-slate-200";
+                if(btnPickup) btnPickup.className = "flex-1 py-2.5 rounded-lg transition text-slate-600 font-semibold border border-transparent";
+                formBox.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address *</label>
+                            <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Enter pickup area">
+                            <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
+                            <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="calculateDriverFare()">
+                                <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
+                                <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
+                                <option value="nmia">Navi Mumbai International Airport (NMIA)</option>
+                            </select>
+                        </div>
+                    </div>
+                    ${dateTimeHTML}
+                `;
+            } else {
+                if(btnPickup) btnPickup.className = "flex-1 py-2.5 rounded-lg transition bg-white text-indigo-950 shadow-sm font-bold border border-slate-200";
+                if(btnDrop) btnDrop.className = "flex-1 py-2.5 rounded-lg transition text-slate-600 font-semibold border border-transparent";
+                formBox.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
+                            <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="calculateDriverFare()">
+                                <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
+                                <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
+                                <option value="nmia">Navi Mumbai International Airport (NMIA)</option>
+                            </select>
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Drop Area / Address *</label>
+                            <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Enter drop area">
+                            <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
+                        </div>
+                    </div>
+                    ${dateTimeHTML}
+                `;
+            }
+        }
 
         function onPickupDateChange() {
             const pDate = document.getElementById('wd-out-pdate').value;
@@ -1562,27 +1583,73 @@ function setAirportTransferType(type) {
             if (currentWDSubTab === 'local') {
                 const localPickupInput = document.getElementById('wd-local-pickup');
                 const localDateInput = document.getElementById('wd-local-date');
-                if (!localPickupInput.value.trim()) { localPickupInput.classList.add('border-red-500'); firstMissingField = localPickupInput; missing = true; }
-                else localPickupInput.classList.remove('border-red-500');
-                if (!localDateInput.value) { localDateInput.classList.add('border-red-500'); if (!firstMissingField) firstMissingField = localDateInput; missing = true; }
-                else localDateInput.classList.remove('border-red-500');
+                if (!localPickupInput || !localPickupInput.value.trim()) { 
+                    if(localPickupInput) localPickupInput.classList.add('border-red-500'); 
+                    firstMissingField = localPickupInput; 
+                    missing = true; 
+                } else {
+                    localPickupInput.classList.remove('border-red-500');
+                }
+                if (!localDateInput || !localDateInput.value) { 
+                    if(localDateInput) localDateInput.classList.add('border-red-500'); 
+                    if (!firstMissingField) firstMissingField = localDateInput; 
+                    missing = true; 
+                } else {
+                    localDateInput.classList.remove('border-red-500');
+                }
             } else if (currentWDSubTab === 'outstation') {
                 const outPickupInput = document.getElementById('wd-out-pickup');
                 const outDestInput = document.getElementById('wd-out-destination');
                 const outPDateInput = document.getElementById('wd-out-pdate');
                 const outRDateInput = document.getElementById('wd-out-rdate');
-                if (!outPickupInput.value.trim()) { outPickupInput.classList.add('border-red-500'); firstMissingField = outPickupInput; missing = true; }
-                else outPickupInput.classList.remove('border-red-500');
-                if (!outDestInput.value.trim()) { outDestInput.classList.add('border-red-500'); if (!firstMissingField) firstMissingField = outDestInput; missing = true; }
-                else outDestInput.classList.remove('border-red-500');
-                if (!outPDateInput.value) { outPDateInput.classList.add('border-red-500'); if (!firstMissingField) firstMissingField = outPDateInput; missing = true; }
-                else outPDateInput.classList.remove('border-red-500');
-                if (!outRDateInput.value) { outRDateInput.classList.add('border-red-500'); if (!firstMissingField) firstMissingField = outRDateInput; missing = true; }
-                else outRDateInput.classList.remove('border-red-500');
+                
+                if (!outPickupInput || !outPickupInput.value.trim()) { 
+                    if(outPickupInput) outPickupInput.classList.add('border-red-500'); 
+                    firstMissingField = outPickupInput; 
+                    missing = true; 
+                } else { outPickupInput.classList.remove('border-red-500'); }
+
+                if (!outDestInput || !outDestInput.value.trim()) { 
+                    if(outDestInput) outDestInput.classList.add('border-red-500'); 
+                    if (!firstMissingField) firstMissingField = outDestInput; 
+                    missing = true; 
+                } else { outDestInput.classList.remove('border-red-500'); }
+
+                if (!outPDateInput || !outPDateInput.value) { 
+                    if(outPDateInput) outPDateInput.classList.add('border-red-500'); 
+                    if (!firstMissingField) firstMissingField = outPDateInput; 
+                    missing = true; 
+                } else { outPDateInput.classList.remove('border-red-500'); }
+
+                if (!outRDateInput || !outRDateInput.value) { 
+                    if(outRDateInput) outRDateInput.classList.add('border-red-500'); 
+                    if (!firstMissingField) firstMissingField = outRDateInput; 
+                    missing = true; 
+                } else { outRDateInput.classList.remove('border-red-500'); }
+
+            } else if (currentWDSubTab === 'airport') {
+                const airportPickupInput = document.getElementById('wd-airport-pickup');
+                const airportDateInput = document.getElementById('wd-airport-date');
+
+                if (!airportPickupInput || !airportPickupInput.value.trim()) { 
+                    if(airportPickupInput) airportPickupInput.classList.add('border-red-500'); 
+                    firstMissingField = airportPickupInput; 
+                    missing = true; 
+                } else {
+                    airportPickupInput.classList.remove('border-red-500');
+                }
+
+                if (!airportDateInput || !airportDateInput.value) { 
+                    if(airportDateInput) airportDateInput.classList.add('border-red-500'); 
+                    if (!firstMissingField) firstMissingField = airportDateInput; 
+                    missing = true; 
+                } else {
+                    airportDateInput.classList.remove('border-red-500');
+                }
             }
 
             if (missing) {
-                alert("Please fill your journey details first before booking a car.");
+                showCustomAlert("Please fill your journey details (Pickup location and Date) before booking a car.");
                 document.getElementById('with-driver-block').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 if (firstMissingField) firstMissingField.focus();
                 return false;
@@ -1617,7 +1684,7 @@ function setAirportTransferType(type) {
             else rDateInput.classList.remove('border-red-500');
 
             if (missing) {
-                alert("Please fill pickup and return details first before booking this car.");
+                showCustomAlert("Please fill pickup and return details first before booking this car.");
                 document.getElementById('self-drive-block').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 if (firstMissingField) firstMissingField.focus();
                 return false;
@@ -1942,7 +2009,6 @@ function setAirportTransferType(type) {
             const model = document.getElementById('part-car-model').value;
             const year = document.getElementById('part-car-year').value;
             
-            // Send email via Web3Forms with correct configuration
             sendEmailNotification('Partner Application', name, phone, email, `Car Brand: ${brand}, Model: ${model}, Year: ${year}, Documents: RC Copy, Insurance, Aadhaar, PAN`);
             closePartnerModal();
             showSuccessModal();

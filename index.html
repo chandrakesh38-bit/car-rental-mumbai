@@ -243,7 +243,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-center">
                             <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-train text-indigo-600 mr-1"></i> From (Pickup Location) *</label>
-                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search pickup area" value="Bhandup">
+                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter your pick location" value="">
                                 <div id="wd-out-pickup-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
 
@@ -256,7 +256,7 @@
 
                             <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> To (Destination City across Maharashtra) *</label>
-                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'maharashtra-destinations', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search any city/town in Maharashtra" value="Pune">
+                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'maharashtra-destinations', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter drop city" value="">
                                 <div id="wd-out-dest-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                         </div>
@@ -1492,7 +1492,7 @@
                             <span><i class="fa-solid fa-suitcase text-slate-400 mr-1"></i> ${car.bags}</span>
                         </div>
                     </div>
-                    <button onclick="openModal('${car.name}', ${fare})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs tracking-wide">
+                    <button type="button" onclick="handleBookThisCarClick('${car.name}', ${fare})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs tracking-wide">
                         Book This Car
                     </button>
                 `;
@@ -1503,92 +1503,107 @@
         // ========================================================
         // 1A. WITH DRIVER – "BOOK THIS CAR" VALIDATION & LOGIC
         // ========================================================
-        function triggerFareSearch() {
-            if (currentMainMode === 'withdriver') {
-                let missing = false;
-                let firstMissingField = null;
+        function validateJourneyAndOpenBooking(carName, fare) {
+            let missing = false;
+            let firstMissingField = null;
 
-                if (currentWDSubTab === 'local') {
-                    const localPickupInput = document.getElementById('wd-local-pickup');
-                    const localDateInput = document.getElementById('wd-local-date');
-                    
-                    if (!localPickupInput.value.trim()) {
-                        localPickupInput.classList.add('border-red-500');
-                        if (!firstMissingField) firstMissingField = localPickupInput;
-                        missing = true;
-                    } else {
-                        localPickupInput.classList.remove('border-red-500');
-                    }
-
-                    if (!localDateInput.value) {
-                        localDateInput.classList.add('border-red-500');
-                        if (!firstMissingField) firstMissingField = localDateInput;
-                        missing = true;
-                    } else {
-                        localDateInput.classList.remove('border-red-500');
-                    }
-                } else if (currentWDSubTab === 'outstation') {
-                    const outPickupInput = document.getElementById('wd-out-pickup');
-                    const outDestInput = document.getElementById('wd-out-destination');
-                    const outPDateInput = document.getElementById('wd-out-pdate');
-                    const outRDateInput = document.getElementById('wd-out-rdate');
-
-                    if (!outPickupInput.value.trim()) {
-                        outPickupInput.classList.add('border-red-500');
-                        if (!firstMissingField) firstMissingField = outPickupInput;
-                        missing = true;
-                    } else {
-                        outPickupInput.classList.remove('border-red-500');
-                    }
-
-                    if (!outDestInput.value.trim()) {
-                        outDestInput.classList.add('border-red-500');
-                        if (!firstMissingField) firstMissingField = outDestInput;
-                        missing = true;
-                    } else {
-                        outDestInput.classList.remove('border-red-500');
-                    }
-
-                    if (!outPDateInput.value) {
-                        outPDateInput.classList.add('border-red-500');
-                        if (!firstMissingField) firstMissingField = outPDateInput;
-                        missing = true;
-                    } else {
-                        outPDateInput.classList.remove('border-red-500');
-                    }
-
-                    if (!outRDateInput.value) {
-                        outRDateInput.classList.add('border-red-500');
-                        if (!firstMissingField) firstMissingField = outRDateInput;
-                        missing = true;
-                    } else {
-                        outRDateInput.classList.remove('border-red-500');
-                    }
-                } else if (currentWDSubTab === 'airport') {
-                    const airportPickupInput = document.getElementById('wd-airport-pickup');
-                    const airportDateInput = document.getElementById('wd-airport-date');
-
-                    if (!airportPickupInput || !airportPickupInput.value.trim()) {
-                        if (airportPickupInput) airportPickupInput.classList.add('border-red-500');
-                        if (!firstMissingField && airportPickupInput) firstMissingField = airportPickupInput;
-                        missing = true;
-                    } else {
-                        airportPickupInput.classList.remove('border-red-500');
-                    }
-
-                    if (!airportDateInput || !airportDateInput.value) {
-                        if (airportDateInput) airportDateInput.classList.add('border-red-500');
-                        if (!firstMissingField && airportDateInput) firstMissingField = airportDateInput;
-                        missing = true;
-                    } else {
-                        airportDateInput.classList.remove('border-red-500');
-                    }
+            if (currentWDSubTab === 'local') {
+                const localPickupInput = document.getElementById('wd-local-pickup');
+                const localDateInput = document.getElementById('wd-local-date');
+                
+                if (!localPickupInput.value.trim()) {
+                    localPickupInput.classList.add('border-red-500');
+                    if (!firstMissingField) firstMissingField = localPickupInput;
+                    missing = true;
+                } else {
+                    localPickupInput.classList.remove('border-red-500');
                 }
 
-                if (missing) {
-                    alert("Please fill your journey details first before booking a car.");
-                    document.getElementById('with-driver-block').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    if (firstMissingField) firstMissingField.focus();
+                if (!localDateInput.value) {
+                    localDateInput.classList.add('border-red-500');
+                    if (!firstMissingField) firstMissingField = localDateInput;
+                    missing = true;
+                } else {
+                    localDateInput.classList.remove('border-red-500');
+                }
+            } else if (currentWDSubTab === 'outstation') {
+                const outPickupInput = document.getElementById('wd-out-pickup');
+                const outDestInput = document.getElementById('wd-out-destination');
+                const outPDateInput = document.getElementById('wd-out-pdate');
+                const outRDateInput = document.getElementById('wd-out-rdate');
+
+                if (!outPickupInput.value.trim()) {
+                    outPickupInput.classList.add('border-red-500');
+                    if (!firstMissingField) firstMissingField = outPickupInput;
+                    missing = true;
+                } else {
+                    outPickupInput.classList.remove('border-red-500');
+                }
+
+                if (!outDestInput.value.trim()) {
+                    outDestInput.classList.add('border-red-500');
+                    if (!firstMissingField) firstMissingField = outDestInput;
+                    missing = true;
+                } else {
+                    outDestInput.classList.remove('border-red-500');
+                }
+
+                if (!outPDateInput.value) {
+                    outPDateInput.classList.add('border-red-500');
+                    if (!firstMissingField) firstMissingField = outPDateInput;
+                    missing = true;
+                } else {
+                    outPDateInput.classList.remove('border-red-500');
+                }
+
+                if (!outRDateInput.value) {
+                    outRDateInput.classList.add('border-red-500');
+                    if (!firstMissingField) firstMissingField = outRDateInput;
+                    missing = true;
+                } else {
+                    outRDateInput.classList.remove('border-red-500');
+                }
+            } else if (currentWDSubTab === 'airport') {
+                const airportPickupInput = document.getElementById('wd-airport-pickup');
+                const airportDateInput = document.getElementById('wd-airport-date');
+
+                if (!airportPickupInput || !airportPickupInput.value.trim()) {
+                    if (airportPickupInput) airportPickupInput.classList.add('border-red-500');
+                    if (!firstMissingField && airportPickupInput) firstMissingField = airportPickupInput;
+                    missing = true;
+                } else {
+                    airportPickupInput.classList.remove('border-red-500');
+                }
+
+                if (!airportDateInput || !airportDateInput.value) {
+                    if (airportDateInput) airportDateInput.classList.add('border-red-500');
+                    if (!firstMissingField && airportDateInput) firstMissingField = airportDateInput;
+                    missing = true;
+                } else {
+                    airportDateInput.classList.remove('border-red-500');
+                }
+            }
+
+            if (missing) {
+                alert("Please fill your journey details first before booking a car.");
+                document.getElementById('with-driver-block').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (firstMissingField) firstMissingField.focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        function handleBookThisCarClick(carName, fare) {
+            if (!validateJourneyAndOpenBooking(carName, fare)) {
+                return;
+            }
+            openModal(carName, fare);
+        }
+
+        function triggerFareSearch() {
+            if (currentMainMode === 'withdriver') {
+                if (!validateJourneyAndOpenBooking()) {
                     return;
                 }
             }
@@ -1600,7 +1615,7 @@
         // ========================================================
         // 1B. SELF DRIVE – "BOOK SELF DRIVE" VALIDATION & LOGIC
         // ========================================================
-        function triggerSDParseSearch() {
+        function validateSelfDriveJourney() {
             const pDate = document.getElementById('sd-pdate').value;
             const rDate = document.getElementById('sd-rdate').value;
             let missing = false;
@@ -1629,7 +1644,7 @@
                 alert("Please fill pickup and return details first before booking this car.");
                 document.getElementById('self-drive-block').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 if (firstMissingField) firstMissingField.focus();
-                return;
+                return false;
             }
 
             const pHour = parseInt(document.getElementById('sd-phour').value);
@@ -1654,9 +1669,17 @@
                 document.getElementById('self-drive-block').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 rDateInput.classList.add('border-red-500');
                 rDateInput.focus();
-                return;
+                return false;
             } else {
                 rDateInput.classList.remove('border-red-500');
+            }
+
+            return true;
+        }
+
+        function triggerSDParseSearch() {
+            if (!validateSelfDriveJourney()) {
+                return;
             }
 
             applyAllSDFilters(); 
@@ -1755,7 +1778,7 @@
                         </div>
                     </div>
                     <div class="p-4 pt-0">
-                        <button onclick="openSDModal(${JSON.stringify(car).replace(/"/g, '&quot;')})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs flex items-center justify-center gap-2">
+                        <button type="button" onclick="handleBookSelfDriveClick(${JSON.stringify(car).replace(/"/g, '&quot;')})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs flex items-center justify-center gap-2">
                             <i class="fa-solid fa-key text-amber-400"></i> Book Self Drive
                         </button>
                     </div>
@@ -1794,6 +1817,13 @@
             currentSDPage = page;
             renderSDPage();
             document.getElementById('selfdrive-cars-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function handleBookSelfDriveClick(car) {
+            if (!validateSelfDriveJourney()) {
+                return;
+            }
+            openSDModal(car);
         }
 
         function openFareBreakdownModal() {

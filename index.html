@@ -264,7 +264,7 @@
 
                             <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> To (Destination City across Maharashtra) *</label>
-                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'maharashtra-destinations', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter drop city" value="">
+                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'destination-cities', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter drop city" value="">
                                 <div id="wd-out-dest-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                         </div>
@@ -704,7 +704,7 @@
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> Who can rent a car from us?
                 </h4>
                 <p class="text-xs text-slate-600 leading-relaxed pl-5">
-                    Anyone who is 21 years or older can rent a car. You must have a valid Indian LMV (Light Motor Vehicle) driving licence that is at least 6 months old. You must show the original driving licence or a valid DigiLocker version at the start of the trip.
+                    Anyone who is 21 years or older can rent a car. You must have a valid Indian LMV (Light Motor Vehicle) driving licence that is at least 6 months old. You must show the original driving licence or a valid DigiLocker version at the start of the trip. Printed copies on paper, screenshots, M-Parivahan app licences, and commercial driving licences are not accepted. In some cases, we may also ask for an additional local ID or travel proof for verification.
                 </p>
             </div>
 
@@ -722,7 +722,16 @@
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> How does the car booking process work?
                 </h4>
                 <p class="text-xs text-slate-600 leading-relaxed pl-5">
-                    Booking a self-drive rental car is simple: Open the website &rarr; choose your city &rarr; select pickup date and time &rarr; choose your car model &rarr; send request on WhatsApp &rarr; Our team will verify and confirm.
+                    Booking a self-drive rental car is simple: Open the website &rarr; choose your city &rarr; select pickup date and time &rarr; choose your car model &rarr; send request on WhatsApp &rarr; Our team will verify and confirm. You will receive booking details and instructions before your trip.
+                </p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> How early should I book my rental car?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    You can book as late as 3 hours before your trip start time. However, for better car availability and lower prices, we recommend booking 1–2 days in advance, especially on weekends and holidays.
                 </p>
             </div>
 
@@ -733,6 +742,33 @@
                 <p class="text-xs text-slate-600 leading-relaxed pl-5">
                     <strong>Rental Plans:</strong> Minimum 8 hours, maximum 60 days.<br>
                     <strong>Subscription Plans:</strong> Minimum 7 days, up to 24 months.
+                </p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Can I book more than one car?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    Yes. You can book multiple cars on the same account for different dates. If you need multiple cars at the same time, each booking must be made with a different driver account and valid documents. Alternatively you can reach out on our support channel to help with this.
+                </p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Can I add a second driver?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    Yes, you can add a co-driver. Their ID must be shown during delivery. The booking must still be under the primary driver's name.
+                </p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-rose-600"></i> Are pets allowed in the rental car?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    <strong>No.</strong> Pets are strictly not allowed because some customers may have allergies. If found, a penalty will be charged.
                 </p>
             </div>
         </div>
@@ -766,7 +802,7 @@
                             <i class="fa-solid fa-phone text-xs"></i> Call Us
                         </a>
                         <a href="mailto:carwithdriver.vikhroli@gmail.com?subject=Inquiry%20from%20Website" class="bg-amber-500 hover:bg-amber-600 text-indigo-950 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm">
-                            <i class="fa-solid fa-envelope text-xs"></i> Email
+                            <i class="fa-solid fa-envelope text-xs"></i> Email Us
                         </a>
                     </div>    
                 </div>
@@ -833,18 +869,38 @@
         </div>
     </div>
 
-    <!-- WITH DRIVER BOOKING MODAL -->
+    <!-- WITH DRIVER BOOKING SUMMARY / REVIEW MODAL -->
     <div id="booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
             <button type="button" onclick="closeModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <h3 class="text-lg font-bold text-slate-900">Review Your Booking &amp; Checkout</h3>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Review Travel Details &amp; Fare Summary</h3>
             
-            <div class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1 text-xs">
-                <div class="text-slate-600">Selected Vehicle: <strong id="modal-car-name" class="text-indigo-950 font-bold"></strong></div>
-                <div class="text-slate-600">Estimated Total Fare: <strong id="modal-fare" class="text-emerald-700 font-bold text-base"></strong></div>
-                <div id="modal-stops-display" class="text-slate-500 text-[11px] pt-1 border-t border-slate-200"></div>
+            <!-- Detailed Travel Summary Card -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2.5">
+                <div class="flex justify-between items-start border-b border-slate-200 pb-2">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded">Selected Car</span>
+                        <h4 class="text-sm font-extrabold text-indigo-950 mt-1" id="modal-car-name">Car Name</h4>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-slate-400 text-[10px] block">Approx Total Amount</span>
+                        <strong class="text-emerald-700 font-black text-base" id="modal-fare">₹0</strong>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                    <div><strong>Pickup Location:</strong> <span id="modal-summary-pickup" class="text-slate-900"></span></div>
+                    <div><strong>Destination / Route:</strong> <span id="modal-summary-dest" class="text-slate-900"></span></div>
+                    <div><strong>Date &amp; Time:</strong> <span id="modal-summary-datetime" class="text-slate-900"></span></div>
+                    <div><strong>Trip Package:</strong> <span id="modal-summary-package" class="text-slate-900"></span></div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-200 space-y-1">
+                    <div class="text-emerald-800 font-semibold">✓ Inclusions: Car rental, fuel &amp; driver allowance included.</div>
+                    <div class="text-rose-800 font-semibold">✕ Exclusions: Toll taxes, parking fees, and state entry permits are extra as actuals.</div>
+                </div>
             </div>
             
             <form id="wd-booking-form" onsubmit="handleBookingSubmit(event)" class="mt-4 space-y-3">
@@ -867,7 +923,7 @@
 
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm">
                     <i class="fa-solid fa-check-circle text-base"></i>
-                    <span>Proceed &amp; Confirm Booking</span>
+                    <span>Confirm Booking</span>
                 </button>
             </form>
         </div>
@@ -1037,10 +1093,6 @@
                             <option value="Toyota">Toyota</option>
                             <option value="Hyundai">Hyundai</option>
                             <option value="Kia">Kia</option>
-                            <option value="Honda">Honda</option>
-                            <option value="MG Motor">MG Motor</option>
-                            <option value="Skoda">Skoda</option>
-                            <option value="Renault">Renault</option>
                             <option value="Brand Not Listed">Brand Not Listed</option>
                         </select>
                         <input type="text" id="part-car-brand-custom" placeholder="Enter Custom Brand" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none mt-1.5 hidden">
@@ -1117,7 +1169,7 @@
             { name: "Vashi", km: 18, city: "Navi Mumbai", state: "Maharashtra" }, { name: "Panvel", km: 40, city: "Navi Mumbai", state: "Maharashtra" }
         ];
 
-        // 6 WITH DRIVER CARS (Complete List from Main Branch)
+        // 6 WITH DRIVER CARS (Fully restored including Punch/Brezza and Kia Carens)
         const wdFleet = [
             { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
             { name: 'Compact SUV (Punch / Brezza)', category: 'Compact SUV', seats: '4+1', bags: '2 Large Bags', rates: { local: { '8hr_80km': 3200, '10hr_100km': 3700, '12hr_120km': 4200, extraKm: 18 }, outstationPerKm: 18, driverAllowance: 500, airport: { t1: 1700, t2: 1800, nmia: 2200 } } },
@@ -1127,15 +1179,40 @@
             { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
         ];
 
+        // COMPLETE 32 EXCEL CARS FOR SELF DRIVE
         let excelCarsData = [
             { "brand": "Tata", "model": "Nexon", "fullName": "Tata Nexon", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹117/hour", "rateVal": 117, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Or6F03FkxBCjzM3MC9l7A4X6EbtTueZ5", "priority": 1, "bestSelling": true },
             { "brand": "Tata", "model": "Punch", "fullName": "Tata Punch", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1UeNkkagK6T0LUjt2ncB6HZaW_K5iFgE5", "priority": 2, "bestSelling": true },
             { "brand": "Maruti Suzuki", "model": "Swift", "fullName": "Maruti Suzuki Swift", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kdLktKSk6yMlPJDY5BVdeNyC70rfM6eZ", "priority": 3, "bestSelling": true },
-            { "brand": "Maruti Suzuki", "model": "Baleno", "fullName": "Maruti Suzuki Baleno", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1KClMWsI-DX43nzhueP5Mjy-txH04VxaY", "priority": 4 },
+            { "brand": "Maruti Suzuki", "model": "Baleno", "fullName": "Maruti Suzuki Baleno", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1KClMWsI-DX43nzhueP5Mjy-txH04VxaY", "priority": 4, "bestSelling": false },
             { "brand": "Maruti Suzuki", "model": "Brezza", "fullName": "Maruti Suzuki Brezza", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZQThm_H_eCLv4kBFYixmyjlBFLimsqw5", "priority": 5, "bestSelling": false },
-            { "brand": "Maruti Suzuki", "model": "Dzire", "fullName": "Maruti Suzuki Dzire", "segment": "Sedan", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/18pheBt3K7gbOXwSutbdNVWrok_N2DCG3", "priority": 6, "bestSelling": false },
+            { "brand": "Maruti Suzuki", "model": "Dzire", "fullName": "Maruti Suzuki Dzire", "segment": "Sedan", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/18pheBt3K7gbOXwSutbdNVWrok_N2DCG3", "priority": 6, "bestSelling": true },
             { "brand": "Maruti Suzuki", "model": "Ertiga", "fullName": "Maruti Suzuki Ertiga", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/15o35vVV6iXixrjwMIXiIhLxAFeHj5Uel", "priority": 7, "bestSelling": true },
-            { "brand": "Hyundai", "model": "Creta", "fullName": "Hyundai Creta", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1In3muCV_Mk72zELKjAIlhs-OWgR7RKof", "priority": 8, "bestSelling": true }
+            { "brand": "Hyundai", "model": "Creta", "fullName": "Hyundai Creta", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1In3muCV_Mk72zELKjAIlhs-OWgR7RKof", "priority": 8, "bestSelling": true },
+            { "brand": "Mahindra", "model": "Thar", "fullName": "Mahindra Thar", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 4, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1bC337oF5wf0Dl2KdkdRgagkeOP_VFqI5", "priority": 9, "bestSelling": true },
+            { "brand": "Mahindra", "model": "Scorpio N", "fullName": "Mahindra Scorpio N", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1wKIdSZZ3mykmzIZSpKGXRl_zFkWQNcuq", "priority": 10, "bestSelling": true },
+            { "brand": "Toyota", "model": "Innova Crysta", "fullName": "Toyota Innova Crysta", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1sK2Fjmg7xKcltpCAS_SIV4MbXLLd90fl", "priority": 11, "bestSelling": true },
+            { "brand": "Mahindra", "model": "Thar Roxx", "fullName": "Mahindra Thar Roxx", "segment": "SUV", "transmission": "Automatic", "fuel": "Diesel", "seats": 4, "rateHour": "₹333/hour", "rateVal": 333, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/14UgKtx1oqWl84guztZ28c3Kgmo_6jP-C", "priority": 12, "bestSelling": false },
+            { "brand": "Mahindra", "model": "7XO", "fullName": "Mahindra 7XO", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 7, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/164EyWUGQ24XIZPit5_rVZ7kTbmNU1Pim", "priority": 13, "bestSelling": false },
+            { "brand": "Mahindra", "model": "XUV 700", "fullName": "Mahindra XUV 700", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹313/hour", "rateVal": 313, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1JZrrF7FqV8DUrTfV-_fXCpzOEa7Zii33", "priority": 14, "bestSelling": false },
+            { "brand": "BMW", "model": "520D", "fullName": "BMW 520D", "segment": "Luxury Sedan", "transmission": "Automatic", "fuel": "Diesel", "seats": 5, "rateHour": "₹650/hour", "rateVal": 650, "deposit": "₹10,000", "depositVal": 10000, "imgUrl": "https://lh3.googleusercontent.com/d/1Mjy4A4BhkWhIgHz1E9Ofy6aCUk53IZkP", "priority": 15, "bestSelling": false },
+            { "brand": "Jeep", "model": "Compass", "fullName": "Jeep Compass", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹5,000", "depositVal": 5000, "imgUrl": "https://lh3.googleusercontent.com/d/1baBIvOkCMRSM9KUTn6AvTWPPBBC5kxa9", "priority": 16, "bestSelling": false },
+            { "brand": "Kia", "model": "Carens", "fullName": "Kia Carens", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 6, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1LKPHrDzRtHODi2kiWgAC-DCFhneNBxfd", "priority": 17, "bestSelling": false },
+            { "brand": "Hyundai", "model": "Exter (Automatic)", "fullName": "Hyundai Exter (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹125/hour", "rateVal": 125, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv", "priority": 18, "bestSelling": false },
+            { "brand": "Hyundai", "model": "Exter (Manual)", "fullName": "Hyundai Exter (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv", "priority": 19, "bestSelling": false },
+            { "brand": "Hyundai", "model": "i20", "fullName": "Hyundai i20", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZDZwcXPDBFiUCMNzwWQfDaeHZuiW2Vha", "priority": 20, "bestSelling": false },
+            { "brand": "Tata", "model": "Altroz", "fullName": "Tata Altroz", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1mvxm-Z64rgxrriXE4q3pU9oSq1F1vvdk", "priority": 21, "bestSelling": false },
+            { "brand": "Tata", "model": "Safari", "fullName": "Tata Safari", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 6, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1cE2ZSnX39ApvlXQOJWnARn54_ma5TQSA", "priority": 22, "bestSelling": false },
+            { "brand": "Toyota", "model": "Glanza", "fullName": "Toyota Glanza", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kb38eCjAtEm4hv6-YR9voZaHJLtu7YbI", "priority": 23, "bestSelling": false },
+            { "brand": "Toyota", "model": "Rumion", "fullName": "Toyota Rumion", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1IaOGRC0_ijk7Ud5FDv4PK2tk6IFQ8HHu", "priority": 24, "bestSelling": false },
+            { "brand": "Toyota", "model": "Urban Cruiser Taisor", "fullName": "Toyota Urban Cruiser Taisor", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/12KEugN2uW4Z5_AyEg_8ns3Rn2LHVOv8M", "priority": 25, "bestSelling": false },
+            { "brand": "Maruti Suzuki", "model": "Fronx (Automatic)", "fullName": "Maruti Suzuki Fronx (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ", "priority": 26, "bestSelling": false },
+            { "brand": "Maruti Suzuki", "model": "Fronx (Manual)", "fullName": "Maruti Suzuki Fronx (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ", "priority": 27, "bestSelling": false },
+            { "brand": "Maruti Suzuki", "model": "Grand Vitara", "fullName": "Maruti Suzuki Grand Vitara", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1PpB-DhjK0H71vEG0-RQk31IYia6wE0h8", "priority": 28, "bestSelling": false },
+            { "brand": "Maruti Suzuki", "model": "Ignis", "fullName": "Maruti Suzuki Ignis", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1QIuOiX3yAdwEF6VEKGJblzi-ZI-WinKC", "priority": 29, "bestSelling": false },
+            { "brand": "Maruti Suzuki", "model": "WagonR", "fullName": "Maruti Suzuki WagonR", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹96/hour", "rateVal": 96, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kz6JIn_-R6A--3K7tj569gV6Vpku3SQF", "priority": 30, "bestSelling": false },
+            { "brand": "Maruti Suzuki", "model": "XL6", "fullName": "Maruti Suzuki XL6", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 6, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1LU-uNsvgWo6RXN3Xq7y8c4PTMSgLs930", "priority": 31, "bestSelling": false },
+            { "brand": "Mahindra", "model": "Mahindra XUV 500", "fullName": "Mahindra XUV 500", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/14nWzEeYcUlawsmTNanoS7Fw6QsAWOW98", "priority": 32, "bestSelling": false }
         ];
 
         let currentMainMode = 'withdriver';
@@ -1216,7 +1293,7 @@
                 chk12.className = "fa-solid fa-circle-check text-slate-300 text-base";
             } else {
                 btn12.className = "p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/50 text-left transition flex items-center justify-between";
-                btn12.querySelector('span').className = "font-extrabold text-xs sm:text-sm text-indigo-950 block";
+                btn12.querySelector('span').className = "font-extrabold text-xs sm:text-sm text-slate-800 block";
                 chk12.className = "fa-solid fa-circle-check text-indigo-600 text-base";
                 btn8.className = "p-3.5 rounded-xl border-2 border-slate-200 bg-white text-left transition flex items-center justify-between";
                 btn8.querySelector('span').className = "font-extrabold text-xs sm:text-sm text-slate-800 block";
@@ -1691,6 +1768,34 @@
             chosenFareAmount = fare;
             document.getElementById('modal-car-name').innerText = name;
             document.getElementById('modal-fare').innerText = '₹' + fare.toLocaleString('en-IN');
+            
+            let pickupLoc = '';
+            let destLoc = '';
+            let dateTimeStr = '';
+            let pkgStr = '';
+
+            if (currentWDSubTab === 'local') {
+                pickupLoc = document.getElementById('wd-local-pickup').value || 'Mumbai';
+                destLoc = 'Local City Package';
+                dateTimeStr = (document.getElementById('wd-local-date').value || 'Today') + ' @ ' + document.getElementById('wd-local-hour').value + ':00 ' + document.getElementById('wd-local-ampm').value;
+                pkgStr = document.getElementById('wd-local-package').value;
+            } else if (currentWDSubTab === 'outstation') {
+                pickupLoc = document.getElementById('wd-out-pickup').value || 'Mumbai';
+                destLoc = document.getElementById('wd-out-destination').value || 'Maharashtra';
+                dateTimeStr = (document.getElementById('wd-out-pdate').value || 'Today') + ' (' + document.getElementById('wd-out-phour').value + ':00 ' + document.getElementById('wd-out-pampm').value + ')';
+                pkgStr = `Outstation (${wdOutstationKm} KM, ${wdOutstationDays} Days)`;
+            } else if (currentWDSubTab === 'airport') {
+                pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
+                destLoc = document.getElementById('wd-airport-terminal').value.toUpperCase() + ' Airport';
+                dateTimeStr = (document.getElementById('wd-airport-date').value || 'Today') + ' @ ' + document.getElementById('wd-airport-hour').value + ':00 ' + document.getElementById('wd-airport-ampm').value;
+                pkgStr = 'Airport Transfer';
+            }
+
+            document.getElementById('modal-summary-pickup').innerText = pickupLoc;
+            document.getElementById('modal-summary-dest').innerText = destLoc;
+            document.getElementById('modal-summary-datetime').innerText = dateTimeStr;
+            document.getElementById('modal-summary-package').innerText = pkgStr;
+
             document.getElementById('booking-modal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('booking-modal').classList.add('hidden'); }
@@ -1815,7 +1920,9 @@
             }
             const model = document.getElementById('part-car-model').value;
             const year = document.getElementById('part-car-year').value;
-            sendEmailNotification('Partner Application', name, phone, email, `Car Brand: ${brand}, Model: ${model}, Year: ${year}`);
+            
+            // Send email via Web3Forms with correct configuration
+            sendEmailNotification('Partner Application', name, phone, email, `Car Brand: ${brand}, Model: ${model}, Year: ${year}, Documents: RC Copy, Insurance, Aadhaar, PAN`);
             closePartnerModal();
             showSuccessModal();
         }

@@ -18,15 +18,44 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Supabase JS Client v2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        .tab-active { background-color: #0f172a; color: #fbbf24; }
-        .subtab-active { background-color: #ffffff; color: #0f172a; font-weight: 800; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .autocomplete-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 0.75rem; margin-top: 4px; max-height: 220px; overflow-y: auto; z-index: 50; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .autocomplete-item { padding: 10px 14px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 8px; }
-        .autocomplete-item:hover { background-color: #f8fafc; color: #4f46e5; font-weight: 600; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .tab-active { background-color: #f59e0b !important; color: #0f172a !important; font-weight: 700; }
+        .subtab-active { background-color: #ffffff !important; color: #1e1b4b !important; border-bottom: 2px solid #312e81; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 220px;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15);
+            z-index: 60;
+            margin-top: 4px;
+        }
+        .autocomplete-item {
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #1e293b;
+            transition: all 0.15s;
+        }
+        .autocomplete-item:hover {
+            background-color: #f1f5f9;
+            color: #1e1b4b;
+            font-weight: 600;
+        }
         @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .animate-fade-in { animation: fadeInScale 0.25s ease-out forwards; }
         .scrollbar-none::-webkit-scrollbar { display: none; }
@@ -162,13 +191,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address</label>
-                                <input type="text" id="wd-local-pickup" autocomplete="off" oninput="showSuggestions('wd-local-pickup', 'mumbai-places', 'wd-local-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter area or select area">
+                                <input type="text" id="wd-local-pickup" autocomplete="off" oninput="showSuggestions('wd-local-pickup', 'mumbai-places', 'wd-local-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search area (e.g. Ghansoli, Vashi, Dadar)">
                                 <div id="wd-local-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time</label>
                                 <div class="grid grid-cols-3 gap-1.5">
-                                    <input type="date" id="wd-local-date" class="bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none">
+                                    <input type="date" id="wd-local-date" onclick="this.showPicker()" class="bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer">
                                     <select id="wd-local-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
@@ -182,7 +211,7 @@
                             </div>
                         </div>
 
-                        <!-- Local Packages Selection (Requirement 4) -->
+                        <!-- Local Packages Selection -->
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-2"><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> Select Rental Package</label>
                             <div class="grid grid-cols-2 gap-3">
@@ -208,16 +237,16 @@
                         </div>
                     </div>
 
-                    <!-- OUTSTATION FIELDS (ROUND TRIP ONLY WITH SWAP BUTTON & ADD STOP) -->
+                    <!-- OUTSTATION FIELDS (WITH SWAP BUTTON & ADD STOP) -->
                     <div id="wd-outstation-fields" class="space-y-4 hidden">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-center">
                             <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-train text-indigo-600 mr-1"></i> From (Pickup Location)</label>
-                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter pickup location" value="Bhandup">
+                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search pickup area" value="Bhandup">
                                 <div id="wd-out-pickup-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
 
-                            <!-- Swap Button (Requirement 2 & Reference Image) -->
+                            <!-- Swap Button -->
                             <div class="flex justify-center md:absolute md:left-1/2 md:-translate-x-1/2 md:top-7 z-10 my-1 md:my-0">
                                 <button type="button" onclick="swapOutstationLocations()" class="w-9 h-9 rounded-full bg-white border border-slate-300 shadow-sm hover:bg-slate-100 flex items-center justify-center text-indigo-950 transition active:scale-95" title="Swap Pickup and Destination">
                                     <i class="fa-solid fa-right-left rotate-90 md:rotate-0 text-xs"></i>
@@ -226,12 +255,12 @@
 
                             <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> To (Destination City)</label>
-                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'destination-cities', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter drop location" value="Pune">
+                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'destination-cities', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search destination" value="Pune">
                                 <div id="wd-out-dest-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                         </div>
 
-                        <!-- Add Stop Feature (Requirement 7) -->
+                        <!-- Add Stop Feature -->
                         <div id="intermediate-stops-container" class="space-y-2"></div>
                         <div>
                             <button type="button" onclick="addIntermediateStop()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 transition">
@@ -239,12 +268,12 @@
                             </button>
                         </div>
 
-                        <!-- Date & Time Pickers with Auto Return Date Match -->
+                        <!-- Date & Time Pickers -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Pickup Date & Time</label>
                                 <div class="grid grid-cols-3 gap-2">
-                                    <input type="date" id="wd-out-pdate" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="onPickupDateChange()">
+                                    <input type="date" id="wd-out-pdate" onclick="this.showPicker()" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer" onchange="onPickupDateChange()">
                                     <select id="wd-out-phour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6" selected>06:00</option><option value="7">07:00</option><option value="8">08:00</option>
@@ -259,7 +288,7 @@
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Return Date & Time</label>
                                 <div class="grid grid-cols-3 gap-2">
-                                    <input type="date" id="wd-out-rdate" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
+                                    <input type="date" id="wd-out-rdate" onclick="this.showPicker()" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer" onchange="calculateDriverFare()">
                                     <select id="wd-out-rhour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
@@ -283,7 +312,7 @@
                         </div>
                     </div>
 
-                    <!-- AIRPORT FIELDS (DYNAMIC DROP vs PICKUP) -->
+                    <!-- AIRPORT FIELDS -->
                     <div id="wd-airport-fields" class="hidden space-y-4">
                         <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
                             <button type="button" id="btn-airport-drop" onclick="setAirportTransferType('drop')" class="flex-1 py-2.5 rounded-lg transition bg-white text-indigo-950 shadow-sm">
@@ -310,7 +339,7 @@
                         </button>
                     </div>
 
-                    <!-- Search & Refresh Rates Button -->
+                    <!-- Search Button -->
                     <div class="mt-6 flex justify-center">
                         <button type="button" onclick="triggerFareSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
                             <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="search-btn-icon"></i>
@@ -325,9 +354,9 @@
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Choose Pickup Date & Time (Requirement 8)</label>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Choose Pickup Date & Time</label>
                                 <div class="grid grid-cols-3 gap-2">
-                                    <input type="date" id="sd-pdate" class="bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none" placeholder="Choose Pickup Date">
+                                    <input type="date" id="sd-pdate" onclick="this.showPicker()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer" placeholder="Choose Pickup Date">
                                     <select id="sd-phour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
@@ -340,9 +369,9 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Choose Return Date & Time (Requirement 8)</label>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Choose Return Date & Time</label>
                                 <div class="grid grid-cols-3 gap-2">
-                                    <input type="date" id="sd-rdate" class="bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none" placeholder="Choose Return Date">
+                                    <input type="date" id="sd-rdate" onclick="this.showPicker()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer" placeholder="Choose Return Date">
                                     <select id="sd-rhour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
@@ -364,7 +393,7 @@
                         </button>
                     </div>
 
-                    <!-- Collapsible Filters & Sorting Toolbar (Requirement 9) -->
+                    <!-- Collapsible Filters & Sorting Toolbar -->
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                         <div class="flex items-center justify-between">
                             <div class="relative flex-1 mr-3">
@@ -472,10 +501,11 @@
                 </div>
 
             </div>
+
         </div>
     </header>
 
-    <!-- WITH DRIVER FLEET SECTION (Requirement 1: Quick Plan Positioned Below Fleet) -->
+    <!-- WITH DRIVER FLEET SECTION -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-12" id="fleet">
         <div class="text-center mb-8">
             <span class="bg-indigo-50 border border-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2">Verified Fleet</span>
@@ -484,7 +514,7 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12" id="fleet-container"></div>
 
-        <!-- QUICK PLAN POPULAR MAHARASHTRA ROUTES (Requirement 1 & 3: Moved below Explore Cabs) -->
+        <!-- QUICK PLAN POPULAR MAHARASHTRA ROUTES -->
         <div id="quick-plan-section" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
             <span class="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-3">
                 <i class="fa-solid fa-bolt text-amber-500 mr-1"></i> Quick Plan Popular Maharashtra Routes:
@@ -690,7 +720,7 @@
         </div>
     </div>
 
-    <!-- FARE BREAKDOWN INFO MODAL (Requirement 4) -->
+    <!-- FARE BREAKDOWN INFO MODAL -->
     <div id="fare-breakdown-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-fade-in">
             <button type="button" onclick="closeFareBreakdownModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
@@ -701,7 +731,7 @@
             </h3>
             
             <div id="fare-breakdown-content" class="space-y-4 text-xs text-slate-700 leading-relaxed">
-                <!-- Dynamically populated or generic detailed view -->
+                <!-- Dynamically populated -->
             </div>
 
             <div class="mt-6 pt-3 border-t border-slate-100 flex justify-end">
@@ -732,7 +762,7 @@
         </div>
     </div>
 
-    <!-- WITH DRIVER BOOKING MODAL (WITH MOBILE OTP, REVIEW & TWO PAYMENT OPTIONS - Requirements 5 & 6) -->
+    <!-- WITH DRIVER BOOKING MODAL -->
     <div id="booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
             <button type="button" onclick="closeModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
@@ -756,7 +786,7 @@
                     <input type="tel" id="cust-phone" maxlength="10" required placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address (Requirement 7)</label>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address</label>
                     <input type="email" id="cust-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
                 </div>
                 <div>
@@ -764,7 +794,7 @@
                     <textarea id="cust-address" rows="2" required placeholder="Building, Lane, Area in Mumbai/Thane" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
                 </div>
 
-                <!-- OTP Verification Section (Requirement 5) -->
+                <!-- OTP Verification Section -->
                 <div id="otp-section" class="pt-2 border-t border-slate-100 space-y-2">
                     <button type="button" id="btn-send-otp" onclick="sendMobileOTP()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition">
                         Verify Mobile Number (Send OTP)
@@ -786,7 +816,7 @@
                     </div>
                 </div>
 
-                <!-- Two Booking Options (Requirement 6) -->
+                <!-- Two Booking Options -->
                 <div class="pt-3 border-t border-slate-200 space-y-2.5">
                     <label class="block text-xs font-bold text-slate-800 uppercase">Select Booking &amp; Payment Option</label>
                     
@@ -815,7 +845,7 @@
         </div>
     </div>
 
-    <!-- SELF DRIVE BOOKING MODAL (WITH TWO BOOKING OPTIONS - Requirement 11) -->
+    <!-- SELF DRIVE BOOKING MODAL -->
     <div id="sd-booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
             <button type="button" onclick="closeSDModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
@@ -881,7 +911,7 @@
                     </div>
                 </div>
 
-                <!-- Two Booking Options for Self Drive (Requirement 11) -->
+                <!-- Two Booking Options for Self Drive -->
                 <div class="pt-2 border-t border-slate-200 space-y-2">
                     <label class="block text-xs font-bold text-slate-800 uppercase">Select Payment Option</label>
                     <label class="border-2 border-indigo-600 bg-indigo-50/40 rounded-xl p-2.5 flex items-start gap-2 cursor-pointer text-xs">
@@ -989,14 +1019,29 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC (32 CARS PRESERVED + ALL 11 REQUIREMENTS) -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        const mumbaiPlaces = ["Masjid", "Sandhurst Road", "Byculla", "Chinchpokli", "Curry Road", "Parel", "Dadar", "Matunga", "Sion", "Kurla", "Vidyavihar", "Ghatkopar", "Vikhroli", "Kanjurmarg", "Bhandup", "Nahur", "Mulund", "Thane", "Mahim", "Bandra", "Khar Road", "Santacruz", "Vile Parle", "Andheri", "Jogeshwari", "Goregaon", "Malad", "Kandivali", "Borivali", "Dahisar", "Mira Road", "Bhayandar", "Vasai", "Virar", "Vashi", "Nerul", "Belapur", "Kharghar", "Panvel", "Powai", "BKC", "Churchgate", "CSMT"];
+        const SUPABASE_URL = "https://pwciaihqkfnlenxxiown.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz";
+        const supabasePublic = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+        // Expanded Location Search including Ghansoli, Rabale, Koparkhairane (Requirement 1)
+        const mumbaiPlaces = [
+            "Ghansoli", "Rabale", "Koparkhairane", "Airoli", "Digha Gaon", "Turbhe", "Vashi", "Sanpada", 
+            "Juinagar", "Nerul", "Seawoods–Darave", "CBD Belapur", "Kharghar", "Mansarovar", "Khandeshwar", "Panvel",
+            "Masjid", "Sandhurst Road", "Byculla", "Chinchpokli", "Curry Road", "Parel", "Dadar", "Matunga",
+            "Sion", "Kurla", "Vidyavihar", "Ghatkopar", "Vikhroli", "Kanjurmarg", "Bhandup", "Nahur", "Mulund",
+            "Thane", "Mahim", "Bandra", "Khar Road", "Santacruz", "Vile Parle", "Andheri", "Jogeshwari",
+            "Ram Mandir", "Goregaon", "Malad", "Kandivali", "Borivali", "Dahisar", "Mira Road", "Bhayandar",
+            "Naigaon", "Vasai Road", "Nallasopara", "Virar", "Powai", "Hiranandani Powai", "Lokhandwala Andheri", "BKC"
+        ];
+
         const destinationCities = [
             { name: "Pune", km: 300 }, { name: "Nashik", km: 340 }, { name: "Lonavala", km: 170 }, 
             { name: "Mahabaleshwar", km: 520 }, { name: "Shirdi", km: 480 }, { name: "Alibag", km: 220 },
             { name: "Trimbakeshwar", km: 360 }, { name: "Goa", km: 1200 }, { name: "Nagpur", km: 1650 }, { name: "Surat", km: 580 }
         ];
+
         const deliveryLocations = [
             { name: "Vikhroli", rt: 4, city: "Mumbai" }, { name: "Bhandup", rt: 12, city: "Mumbai" },
             { name: "Thane", rt: 24, city: "Thane" }, { name: "Andheri", rt: 32, city: "Mumbai" },
@@ -1136,7 +1181,6 @@
             calculateDriverFare();
         }
 
-        // Outstation Swap & Add Stop (Requirement 2 & 7)
         function swapOutstationLocations() {
             const fromInput = document.getElementById('wd-out-pickup');
             const toInput = document.getElementById('wd-out-destination');
@@ -1163,7 +1207,6 @@
             container.appendChild(div);
         }
 
-        // Dynamic Airport Transfer Form
         function setAirportTransferType(type) {
             currentAirportType = type;
             const btnDrop = document.getElementById('btn-airport-drop');
@@ -1192,7 +1235,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Date & Time</label>
-                            <input type="date" id="wd-airport-date" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none">
+                            <input type="date" id="wd-airport-date" onclick="this.showPicker()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none cursor-pointer">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Flight Number (Optional)</label>
@@ -1226,7 +1269,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Arrival Date & Time</label>
-                            <input type="date" id="wd-airport-date" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none">
+                            <input type="date" id="wd-airport-date" onclick="this.showPicker()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none cursor-pointer">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Flight Number</label>
@@ -1262,7 +1305,6 @@
             document.getElementById('booking-widget').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // Location Search with Google Maps Places API Structure Support (Requirement 10)
         function showSuggestions(inputId, datasetType, dropdownId) {
             const input = document.getElementById(inputId);
             const dropdown = document.getElementById(dropdownId);
@@ -1292,15 +1334,6 @@
                 dropdown.appendChild(div);
             });
             dropdown.classList.remove('hidden');
-
-            /* 
-               GOOGLE PLACES API INTEGRATION STRUCTURE (Requirement 10):
-               To connect Google Maps Places API instead of hardcoded arrays:
-               const autocompleteService = new google.maps.places.AutocompleteService();
-               autocompleteService.getPlacePredictions({ input: query, componentRestrictions: { country: 'in' } }, (predictions) => {
-                   // Render predictions into dropdown
-               });
-            */
         }
 
         document.addEventListener('click', (e) => {
@@ -1388,7 +1421,6 @@
         function triggerFareSearch() { calculateDriverFare(); document.getElementById('fleet').scrollIntoView({ behavior: 'smooth' }); }
         function triggerSDParseSearch() { applyAllSDFilters(); document.getElementById('selfdrive-cars-grid').scrollIntoView({ behavior: 'smooth' }); }
 
-        // Collapsible Filter Panel Toggle (Requirement 9)
         function toggleSDFiltersPanel() {
             const panel = document.getElementById('sd-filters-expandable-panel');
             const btnText = document.getElementById('filter-toggle-text');
@@ -1522,27 +1554,32 @@
             document.getElementById('selfdrive-cars-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // Fare Breakdown Info Modal (Requirement 4)
+        // Dynamic Fare Breakdown Modal for Selected Package (Requirement 3)
         function openFareBreakdownModal() {
             const contentBox = document.getElementById('fare-breakdown-content');
+            if (!contentBox) return;
+
             if (currentWDSubTab === 'local') {
+                const selectedPkg = document.getElementById('wd-local-package') ? document.getElementById('wd-local-package').value : '8hr_80km';
+                const is12Hr = selectedPkg === '12hr_120km';
+
                 contentBox.innerHTML = `
-                    <p class="font-bold text-slate-900">Local Rental Package Details:</p>
-                    <ul class="list-disc pl-4 space-y-1">
-                        <li><strong>Included KM limit:</strong> 80 KM (for 8 hrs) or 120 KM (for 12 hrs).</li>
-                        <li><strong>Included hours:</strong> 8 Hours or 12 Hours as selected.</li>
-                        <li><strong>Extra KM charges:</strong> Applicable per extra KM (e.g., ₹17 to ₹25/km depending on car category) after included KM limit.</li>
-                        <li><strong>Extra hourly charges:</strong> Applicable for extra time spent beyond the package hours.</li>
+                    <p class="font-bold text-slate-900">Local Rental Package Details (${is12Hr ? '12 Hours / 120 KM' : '8 Hours / 80 KM'}):</p>
+                    <ul class="list-disc pl-4 space-y-1.5 pt-1">
+                        <li><strong>Included KM limit:</strong> <span class="text-indigo-950 font-bold">${is12Hr ? '120 KM' : '80 KM'}</span></li>
+                        <li><strong>Included hours:</strong> <span class="text-indigo-950 font-bold">${is12Hr ? '12 Hours' : '8 Hours'}</span></li>
+                        <li><strong>Extra KM charges:</strong> Applicable per extra KM beyond ${is12Hr ? '120 KM' : '80 KM'} (₹17 to ₹25/km depending on vehicle category).</li>
+                        <li><strong>Extra hourly charges:</strong> Applicable for extra time exceeding ${is12Hr ? '12 Hours' : '8 Hours'}.</li>
                         <li><strong>Inclusions:</strong> Car rental, fuel, and chauffeur/driver allowance are fully included.</li>
-                        <li><strong>Exclusions:</strong> Tolls, parking fees, and state entry taxes are charged extra at actual receipts.</li>
+                        <li><strong>Exclusions:</strong> Toll taxes, parking fees, and state entry permits are extra as per actual receipts.</li>
                     </ul>
                 `;
             } else if (currentWDSubTab === 'outstation') {
                 contentBox.innerHTML = `
                     <p class="font-bold text-slate-900">Outstation Round-Trip Chauffeur Details:</p>
-                    <ul class="list-disc pl-4 space-y-1">
-                        <li><strong>Included KM:</strong> Calculated at minimum 300 KM per billed day (or actual estimated round trip distance, whichever is higher).</li>
-                        <li><strong>Fuel:</strong> Fully included in the per-KM running rate.</li>
+                    <ul class="list-disc pl-4 space-y-1.5 pt-1">
+                        <li><strong>Included Distance:</strong> Minimum 300 KM billed per day or actual estimated round trip distance (whichever is higher).</li>
+                        <li><strong>Fuel:</strong> Fully included in per-KM running rates.</li>
                         <li><strong>Driver Allowance:</strong> ₹500 per calendar day included.</li>
                         <li><strong>Night Allowance:</strong> Additional ₹700 applied if trip duties extend or start between 10:00 PM and 6:00 AM.</li>
                         <li><strong>Tolls &amp; Parking:</strong> Extra as per actual toll receipts and parking slips.</li>
@@ -1551,9 +1588,9 @@
             } else {
                 contentBox.innerHTML = `
                     <p class="font-bold text-slate-900">Airport Transfer Details:</p>
-                    <ul class="list-disc pl-4 space-y-1">
-                        <li>Direct Chauffeur transfer between city address and airport terminal (T1, T2, or NMIA).</li>
-                        <li>Fuel, driver allowance, and airport parking parking entry included.</li>
+                    <ul class="list-disc pl-4 space-y-1.5 pt-1">
+                        <li>Direct chauffeur transfer between city address and airport terminal (T1, T2, or NMIA).</li>
+                        <li>Fuel, driver allowance, and airport parking entry included.</li>
                     </ul>
                 `;
             }
@@ -1561,7 +1598,6 @@
         }
         function closeFareBreakdownModal() { document.getElementById('fare-breakdown-modal').classList.add('hidden'); }
 
-        // Login / Account Modal
         function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
         function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
         function handleLoginSubmit(e) {
@@ -1570,14 +1606,12 @@
             closeLoginModal();
         }
 
-        // With Driver Modal & OTP Verification Flow (Requirements 5 & 6)
         function openModal(name, fare) {
             chosenCarName = name;
             chosenFareAmount = fare;
             document.getElementById('modal-car-name').innerText = name;
             document.getElementById('modal-fare').innerText = '₹' + fare.toLocaleString('en-IN');
             
-            // Gather all intermediate stops for review summary display (Requirement 7)
             const stopInputs = document.querySelectorAll('.intermediate-stop-input');
             let stopsText = '';
             if (stopInputs.length > 0) {
@@ -1588,7 +1622,6 @@
             }
             document.getElementById('modal-stops-display').innerText = stopsText;
 
-            // Reset OTP state
             document.getElementById('otp-input-box').classList.add('hidden');
             document.getElementById('otp-verified-badge').classList.add('hidden');
             document.getElementById('btn-send-otp').classList.remove('hidden');
@@ -1608,8 +1641,6 @@
             }
             document.getElementById('btn-send-otp').classList.add('hidden');
             document.getElementById('otp-input-box').classList.remove('hidden');
-            // SMS Gateway Integration Structure note:
-            // Connect your SMS API (Twilio / MSG91) here via fetch to send the 6-digit OTP code to `phone`.
         }
 
         function verifyMobileOTP() {
@@ -1657,12 +1688,11 @@
             const addr = document.getElementById('cust-address').value;
             const paymentOption = document.querySelector('input[name="booking-payment-option"]:checked').value;
 
-            // Gather all intermediate stops in correct sequence (Requirement 7)
             const stopInputs = document.querySelectorAll('.intermediate-stop-input');
             let stopsDetails = '';
             let stopsArray = [];
             if (stopInputs.length > 0) {
-                stopInputs.forEach((inp, idx) => {
+                stopInputs.forEach((inp) => {
                     if (inp.value.trim()) {
                         stopsArray.push(inp.value.trim());
                     }
@@ -1685,7 +1715,7 @@
 
             if (paymentOption === 'advance_payment') {
                 const advanceAmt = Math.round(chosenFareAmount * 0.20);
-                alert(`Redirecting to Payment Gateway for 20% Advance Payment of ₹${advanceAmt.toLocaleString('en-IN')}...\n(Payment Gateway API structure ready for Razorpay/Stripe integration).`);
+                alert(`Redirecting to Payment Gateway for 20% Advance Payment of ₹${advanceAmt.toLocaleString('en-IN')}...\n(Payment Gateway API structure ready).`);
             }
 
             sendProfessionalEmail('With-Driver Booking', name, phone, email, detailsMsg);

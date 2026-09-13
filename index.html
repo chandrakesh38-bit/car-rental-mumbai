@@ -1026,7 +1026,7 @@
                             <input type="file" id="doc-insurance" accept="image/*" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">3. Aadhaar Card</label>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">3. [Aadhaar Redacted]</label>
                             <input type="file" id="doc-aadhaar" accept="image/*" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                         </div>
                         <div>
@@ -1093,7 +1093,7 @@
             { name: "Dadar", km: 18, city: "Mumbai" }, { name: "Parel", km: 20, city: "Mumbai" },
             { name: "Byculla", km: 23, city: "Mumbai" }, { name: "CSMT / CST", km: 26, city: "Mumbai" },
             { name: "Churchgate", km: 28, city: "Mumbai" }, { name: "Marine Lines", km: 27, city: "Mumbai" },
-            { name: "Mumbai Central", km: 24, city: "Mumbai" }, { name: "Bandra", km: 20, city: "Mumbai" },
+            { name: "Mumbai Central", km: 24, city: "Mumbai" }, { name: "Bandra", km: 17, city: "Mumbai" },
             { name: "Andheri", km: 18, city: "Mumbai" }, { name: "Jogeshwari", km: 20, city: "Mumbai" },
             { name: "Goregaon", km: 22, city: "Mumbai" }, { name: "Malad", km: 25, city: "Mumbai" },
             { name: "Kandivali", km: 28, city: "Mumbai" }, { name: "Borivali", km: 32, city: "Mumbai" },
@@ -1266,7 +1266,6 @@
             container.appendChild(div);
         }
 
-        // Requirement 2: Airport Tab - Add Time Selection
         function setAirportTransferType(type) {
             currentAirportType = type;
             const btnDrop = document.getElementById('btn-airport-drop');
@@ -1279,12 +1278,12 @@
                 formBox.innerHTML = `
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="relative">
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Location *</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup / Drop Location *</label>
                             <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Enter pickup area">
                             <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Drop Airport</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
                             <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="calculateDriverFare()">
                                 <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
                                 <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
@@ -1294,7 +1293,7 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Pickup Date & Time *</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Date & Time *</label>
                             <div class="grid grid-cols-3 gap-2">
                                 <input type="date" id="wd-airport-date" onclick="this.showPicker()" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer">
                                 <select id="wd-airport-hour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none">
@@ -1320,7 +1319,7 @@
                 formBox.innerHTML = `
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Pickup Airport</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
                             <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="calculateDriverFare()">
                                 <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
                                 <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
@@ -1328,14 +1327,14 @@
                             </select>
                         </div>
                         <div class="relative">
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Drop Location *</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup / Drop Location *</label>
                             <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Enter drop area">
                             <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Arrival Date & Time *</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Date & Time *</label>
                             <div class="grid grid-cols-3 gap-2">
                                 <input type="date" id="wd-airport-date" onclick="this.showPicker()" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer">
                                 <select id="wd-airport-hour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none">
@@ -1350,7 +1349,7 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Flight Number</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Flight Number (Optional)</label>
                             <input type="text" id="wd-airport-flight" placeholder="e.g. 6E-504" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3.5 py-2.5 text-xs outline-none font-medium">
                         </div>
                     </div>
@@ -1495,68 +1494,95 @@
             });
         }
 
-        // Requirement 1 & 2: With Driver Explore Cabs Date & Time Validation with 2-hour buffer rule
+        // ========================================================
+        // 1A. WITH DRIVER – "BOOK THIS CAR" VALIDATION & LOGIC
+        // ========================================================
         function triggerFareSearch() {
             if (currentMainMode === 'withdriver') {
-                let dateVal = '';
-                let hourVal = '9';
-                let ampmVal = 'AM';
+                let missing = false;
+                let firstMissingField = null;
 
                 if (currentWDSubTab === 'local') {
-                    dateVal = document.getElementById('wd-local-date').value;
-                    hourVal = document.getElementById('wd-local-hour').value;
-                    ampmVal = document.getElementById('wd-local-ampm').value;
-                    const localPickup = document.getElementById('wd-local-pickup').value.trim();
-                    if (!localPickup) {
-                        alert("Please fill in the required journey details.");
-                        document.getElementById('wd-local-pickup').focus();
-                        return;
+                    const localPickupInput = document.getElementById('wd-local-pickup');
+                    const localDateInput = document.getElementById('wd-local-date');
+                    
+                    if (!localPickupInput.value.trim()) {
+                        localPickupInput.classList.add('border-red-500');
+                        if (!firstMissingField) firstMissingField = localPickupInput;
+                        missing = true;
+                    } else {
+                        localPickupInput.classList.remove('border-red-500');
+                    }
+
+                    if (!localDateInput.value) {
+                        localDateInput.classList.add('border-red-500');
+                        if (!firstMissingField) firstMissingField = localDateInput;
+                        missing = true;
+                    } else {
+                        localDateInput.classList.remove('border-red-500');
                     }
                 } else if (currentWDSubTab === 'outstation') {
-                    dateVal = document.getElementById('wd-out-pdate').value;
-                    hourVal = document.getElementById('wd-out-phour').value;
-                    ampmVal = document.getElementById('wd-out-pampm').value;
-                    const outPickup = document.getElementById('wd-out-pickup').value.trim();
-                    const outDest = document.getElementById('wd-out-destination').value.trim();
-                    if (!outPickup || !outDest) {
-                        alert("Please fill in the required journey details.");
-                        return;
+                    const outPickupInput = document.getElementById('wd-out-pickup');
+                    const outDestInput = document.getElementById('wd-out-destination');
+                    const outPDateInput = document.getElementById('wd-out-pdate');
+                    const outRDateInput = document.getElementById('wd-out-rdate');
+
+                    if (!outPickupInput.value.trim()) {
+                        outPickupInput.classList.add('border-red-500');
+                        if (!firstMissingField) firstMissingField = outPickupInput;
+                        missing = true;
+                    } else {
+                        outPickupInput.classList.remove('border-red-500');
+                    }
+
+                    if (!outDestInput.value.trim()) {
+                        outDestInput.classList.add('border-red-500');
+                        if (!firstMissingField) firstMissingField = outDestInput;
+                        missing = true;
+                    } else {
+                        outDestInput.classList.remove('border-red-500');
+                    }
+
+                    if (!outPDateInput.value) {
+                        outPDateInput.classList.add('border-red-500');
+                        if (!firstMissingField) firstMissingField = outPDateInput;
+                        missing = true;
+                    } else {
+                        outPDateInput.classList.remove('border-red-500');
+                    }
+
+                    if (!outRDateInput.value) {
+                        outRDateInput.classList.add('border-red-500');
+                        if (!firstMissingField) firstMissingField = outRDateInput;
+                        missing = true;
+                    } else {
+                        outRDateInput.classList.remove('border-red-500');
                     }
                 } else if (currentWDSubTab === 'airport') {
-                    dateVal = document.getElementById('wd-airport-date').value;
-                    hourVal = document.getElementById('wd-airport-hour').value;
-                    ampmVal = document.getElementById('wd-airport-ampm').value;
-                    const airportPickup = document.getElementById('wd-airport-pickup')?.value.trim();
-                    if (!airportPickup || !dateVal) {
-                        alert("Please fill in the required journey details.");
-                        return;
+                    const airportPickupInput = document.getElementById('wd-airport-pickup');
+                    const airportDateInput = document.getElementById('wd-airport-date');
+
+                    if (!airportPickupInput || !airportPickupInput.value.trim()) {
+                        if (airportPickupInput) airportPickupInput.classList.add('border-red-500');
+                        if (!firstMissingField && airportPickupInput) firstMissingField = airportPickupInput;
+                        missing = true;
+                    } else {
+                        airportPickupInput.classList.remove('border-red-500');
+                    }
+
+                    if (!airportDateInput || !airportDateInput.value) {
+                        if (airportDateInput) airportDateInput.classList.add('border-red-500');
+                        if (!firstMissingField && airportDateInput) firstMissingField = airportDateInput;
+                        missing = true;
+                    } else {
+                        airportDateInput.classList.remove('border-red-500');
                     }
                 }
 
-                if (!dateVal) {
-                    alert("Please fill in the required journey details.");
-                    return;
-                }
-
-                // Parse selected date and time
-                let hour24 = parseInt(hourVal);
-                if (ampmVal === 'PM' && hour24 < 12) hour24 += 12;
-                if (ampmVal === 'AM' && hour24 === 12) hour24 = 0;
-
-                const [year, month, day] = dateVal.split('-').map(Number);
-                const selectedDateTime = new Date(year, month - 1, day, hour24, 0, 0);
-                const now = new Date();
-
-                // Check past date / time rule
-                if (selectedDateTime < now) {
-                    alert("Past dates or times are not allowed. Please choose a valid future date and time.");
-                    return;
-                }
-
-                // Check 2-hour buffer rule
-                const twoHoursFromNow = new Date(now.getTime() + (2 * 60 * 60 * 1000));
-                if (selectedDateTime < twoHoursFromNow) {
-                    alert("Journey time should be at least 2 hours from the current time.");
+                if (missing) {
+                    alert("Please fill your journey details first before booking a car.");
+                    document.getElementById('with-driver-block').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (firstMissingField) firstMissingField.focus();
                     return;
                 }
             }
@@ -1565,32 +1591,67 @@
             document.getElementById('fleet').scrollIntoView({ behavior: 'smooth' }); 
         }
 
-        // Requirement 3: Self Drive - Explore Button Should NOT Work Without Required Details & Highlight Missing Fields
+        // ========================================================
+        // 1B. SELF DRIVE – "BOOK SELF DRIVE" VALIDATION & LOGIC
+        // ========================================================
         function triggerSDParseSearch() {
             const pDate = document.getElementById('sd-pdate').value;
             const rDate = document.getElementById('sd-rdate').value;
             let missing = false;
+            let firstMissingField = null;
 
-            const pDateContainer = document.getElementById('sd-pdate-container');
-            const rDateContainer = document.getElementById('sd-rdate-container');
+            const pDateInput = document.getElementById('sd-pdate');
+            const rDateInput = document.getElementById('sd-rdate');
 
             if (!pDate) {
-                pDateContainer.classList.add('border', 'border-red-500', 'p-2', 'rounded-xl');
+                pDateInput.classList.add('border-red-500');
+                if (!firstMissingField) firstMissingField = pDateInput;
                 missing = true;
             } else {
-                pDateContainer.classList.remove('border', 'border-red-500', 'p-2', 'rounded-xl');
+                pDateInput.classList.remove('border-red-500');
             }
 
             if (!rDate) {
-                rDateContainer.classList.add('border', 'border-red-500', 'p-2', 'rounded-xl');
+                rDateInput.classList.add('border-red-500');
+                if (!firstMissingField) firstMissingField = rDateInput;
                 missing = true;
             } else {
-                rDateContainer.classList.remove('border', 'border-red-500', 'p-2', 'rounded-xl');
+                rDateInput.classList.remove('border-red-500');
             }
 
             if (missing) {
-                alert("Please fill in all required details before exploring available cars.");
+                alert("Please fill pickup and return details first before booking this car.");
+                document.getElementById('self-drive-block').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (firstMissingField) firstMissingField.focus();
                 return;
+            }
+
+            // Test 12 & 13: Return DateTime Validation
+            const pHour = parseInt(document.getElementById('sd-phour').value);
+            const pAmpm = document.getElementById('sd-pampm').value;
+            let pHour24 = pHour;
+            if (pAmpm === 'PM' && pHour24 < 12) pHour24 += 12;
+            if (pAmpm === 'AM' && pHour24 === 12) pHour24 = 0;
+
+            const rHour = parseInt(document.getElementById('sd-rhour').value);
+            const rAmpm = document.getElementById('sd-rampm').value;
+            let rHour24 = rHour;
+            if (rAmpm === 'PM' && rHour24 < 12) rHour24 += 12;
+            if (rAmpm === 'AM' && rHour24 === 12) rHour24 = 0;
+
+            const [pY, pM, pD] = pDate.split('-').map(Number);
+            const [rY, rM, rD] = rDate.split('-').map(Number);
+            const pickupDT = new Date(pY, pM - 1, pD, pHour24, 0, 0);
+            const returnDT = new Date(rY, rM - 1, rD, rHour24, 0, 0);
+
+            if (returnDT <= pickupDT) {
+                alert("Return date and time must be later than pickup date and time. Rental duration cannot be zero or negative.");
+                document.getElementById('self-drive-block').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                rDateInput.classList.add('border-red-500');
+                rDateInput.focus();
+                return;
+            } else {
+                rDateInput.classList.remove('border-red-500');
             }
 
             applyAllSDFilters(); 
@@ -1730,7 +1791,6 @@
             document.getElementById('selfdrive-cars-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // Dynamic Fare Breakdown Modal for Selected Package (Requirement 3)
         function openFareBreakdownModal() {
             const contentBox = document.getElementById('fare-breakdown-content');
             if (!contentBox) return;
@@ -1788,7 +1848,6 @@
             document.getElementById('modal-car-name').innerText = name;
             document.getElementById('modal-fare').innerText = '₹' + fare.toLocaleString('en-IN');
             
-            // Travel details summary taiyar karna
             let tripTypeSummary = currentWDSubTab.toUpperCase();
             let routeInfo = '';
             let dateInfo = '';
@@ -1817,7 +1876,6 @@
                 dateInfo = `Date & Time: ${date} at ${time}`;
             }
 
-            // Modal ke andar details aur Edit button inject karna
             const detailsContainer = document.getElementById('modal-stops-display');
             if (detailsContainer) {
                 detailsContainer.innerHTML = `
@@ -1869,29 +1927,52 @@
             confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
 
-        // Requirement 2 & 5: Self Drive Book This Car Review & Home Delivery Charge Logic
+        // ========================================================
+        // 3. SELF-DRIVE DURATION CALCULATION (ACTUAL DURATION)
+        // ========================================================
         function openSDModal(car) {
             selectedCarObj = car;
             document.getElementById('sd-modal-car-brand').innerText = car.brand;
             document.getElementById('sd-modal-car-name').innerText = car.fullName;
             document.getElementById('sd-modal-car-rate').innerText = car.rateHour;
 
-            const pDate = document.getElementById('sd-pdate').value || 'Not selected';
-            const pHour = document.getElementById('sd-phour').value;
+            const pDate = document.getElementById('sd-pdate').value;
+            const pHour = parseInt(document.getElementById('sd-phour').value);
             const pAmpm = document.getElementById('sd-pampm').value;
-            const rDate = document.getElementById('sd-rdate').value || 'Not selected';
-            const rHour = document.getElementById('sd-rhour').value;
-            const rAmpm = document.getElementById('sd-rampm').value;
+            let pHour24 = pHour;
+            if (pAmpm === 'PM' && pHour24 < 12) pHour24 += 12;
+            if (pAmpm === 'AM' && pHour24 === 12) pHour24 = 0;
 
-            document.getElementById('sd-review-pdatetime').innerText = `${pDate} @ ${pHour}:00 ${pAmpm}`;
-            document.getElementById('sd-review-rdatetime').innerText = `${rDate} @ ${rHour}:00 ${rAmpm}`;
+            const rDate = document.getElementById('sd-rdate').value;
+            const rHour = parseInt(document.getElementById('sd-rhour').value);
+            const rAmpm = document.getElementById('sd-rampm').value;
+            let rHour24 = rHour;
+            if (rAmpm === 'PM' && rHour24 < 12) rHour24 += 12;
+            if (rAmpm === 'AM' && rHour24 === 12) rHour24 = 0;
+
+            if (pDate && rDate) {
+                const [pY, pM, pD] = pDate.split('-').map(Number);
+                const [rY, rM, rD] = rDate.split('-').map(Number);
+                const pickupDT = new Date(pY, pM - 1, pD, pHour24, 0, 0);
+                const returnDT = new Date(rY, rM - 1, rD, rHour24, 0, 0);
+
+                const diffMs = returnDT - pickupDT;
+                calculatedRentalHours = Math.max(1, Math.round(diffMs / (1000 * 60 * 60)));
+            } else {
+                calculatedRentalHours = 24;
+            }
+
+            document.getElementById('sd-review-pdatetime').innerText = `${pDate || 'Selected Date'} @ ${pHour}:00 ${pAmpm}`;
+            document.getElementById('sd-review-rdatetime').innerText = `${rDate || 'Selected Date'} @ ${rHour}:00 ${rAmpm}`;
             document.getElementById('sd-review-duration').innerText = `${calculatedRentalHours} Hours`;
 
             updateSDFareReview();
             document.getElementById('sd-booking-modal').classList.remove('hidden');
         }
 
-        // Requirement 5: Exact Home Delivery Charge Calculation Logic based on Vikhroli Distance
+        // ========================================================
+        // 4, 5, 6, 7, 8, 9, 10, 11, 12. HOME DELIVERY CHARGE LOGIC
+        // ========================================================
         function updateSDFareReview() {
             if (!selectedCarObj) return;
             const baseFare = calculatedRentalHours * selectedCarObj.rateVal;
@@ -1900,26 +1981,44 @@
             let deliveryCharge = 0;
             if (currentDeliveryMode === 'home') {
                 const locInput = document.getElementById('sd-delivery-location-input').value.trim().toLowerCase();
-                let km = 10; // default assumption if typed freely
+                
+                // Requirement 11: No fake default distance or arbitrary fallback if unknown
+                let oneWayDistance = null;
                 const found = mumbaiMetroLocations.find(l => l.name.toLowerCase() === locInput);
                 if (found) {
-                    km = found.km;
-                } else if (locInput.includes('thane')) {
-                    km = 18;
-                } else if (locInput.includes('vashi') || locInput.includes('navi mumbai')) {
-                    km = 20;
-                } else if (locInput.includes('churchgate') || locInput.includes('cst') || locInput.includes('colaba')) {
-                    km = 27;
-                } else if (locInput.includes('virar')) {
-                    km = 64;
-                } else if (locInput.includes('kalyan')) {
-                    km = 32;
+                    oneWayDistance = found.km;
+                } else if (locInput === 'nahur') {
+                    oneWayDistance = 8;
+                } else if (locInput === 'bandra') {
+                    oneWayDistance = 17;
+                } else if (locInput === 'churchgate') {
+                    oneWayDistance = 27;
+                } else {
+                    // Check partial match in list
+                    for (let loc of mumbaiMetroLocations) {
+                        if (loc.name.toLowerCase().includes(locInput) && locInput.length > 2) {
+                            oneWayDistance = loc.km;
+                            break;
+                        }
+                    }
                 }
 
-                if (km <= 20) {
+                if (oneWayDistance === null && locInput.length > 0) {
+                    // Unknown location entered
+                    document.getElementById('sd-review-delivery-charge-row').style.display = 'flex';
+                    document.getElementById('sd-review-delivery-charge').innerText = `Please select a valid location`;
+                    document.getElementById('disp-total-final-fare').innerText = `Invalid Location`;
+                    return;
+                } else if (oneWayDistance === null) {
+                    oneWayDistance = 10; // Default if empty
+                }
+
+                // Exact Business Logic (Step 1, 2, 3)
+                const totalDeliveryKm = oneWayDistance * 2;
+                if (totalDeliveryKm <= 20) {
                     deliveryCharge = 500;
                 } else {
-                    deliveryCharge = km * 2 * 25;
+                    deliveryCharge = totalDeliveryKm * 25;
                 }
 
                 document.getElementById('sd-review-delivery-charge-row').style.display = 'flex';
@@ -1928,7 +2027,7 @@
                 document.getElementById('sd-review-deliv-location-row').style.display = 'block';
                 document.getElementById('sd-review-deliv-location').innerText = document.getElementById('sd-delivery-location-input').value || 'Home Delivery Selected';
             } else {
-                deliveryCharge = 0;
+                deliveryCharge = 0; // Self Pick-up = ₹0
                 document.getElementById('sd-review-delivery-charge-row').style.display = 'none';
                 document.getElementById('sd-review-deliv-mode').innerText = 'Self Pick-up (Vikhroli Hub)';
                 document.getElementById('sd-review-deliv-location-row').style.display = 'none';

@@ -2346,58 +2346,16 @@ function handleBookingSubmit(e) {
     const durationFormatted = formatDuration(selectedPackage.hours);
 
     const message = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        NEW BOOKING
-     CAR WITH DRIVER INDIA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 NEW BOOKING | ${bookingId}
 
-Booking ID: ${bookingId}
+👤 ${name} | ${phone}
+🚗 ${chosenCarName} | ₹${chosenFareAmount.toLocaleString('en-IN')}
+📍 ${pickupAddress}
+📅 ${formatBookingDateTime(startDate)} – ${formatBookingDateTime(endDate)} | ${packageLabel}
+💰 Extra: ₹${extraKmRate}/KM
 
-CUSTOMER DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Customer Name: ${name}
-Mobile: ${phone}
-Email: ${email}
-
-CAR DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Car: ${chosenCarName}
-
-JOURNEY DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Booking start time: ${startFormatted}
-Booking end time: ${endFormatted}
-Total duration: ${durationFormatted}
-Destination / Route: Local City Package
-Trip Package: ${selectedPackage.label}
-Extra KM charges: ₹${extraKmRate} / KM
-
-PICKUP DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Pickup location: ${pickupLocation}
-Pickup address:
-${address}
-
-FARE DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Approx amount: ₹${Number(chosenFareAmount).toLocaleString('en-IN')}
-
-INCLUSIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ Car rental
-✓ Fuel
-✓ Driver allowance
-
-EXCLUSIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✕ Toll taxes
-✕ Parking fees
-✕ State entry permits
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Car With Driver India
-Thank you for choosing us.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Incl: Fuel, Driver
+✕ Excl: Toll, Parking, State Tax
 `;
 
     sendWithDriverBookingEmail(

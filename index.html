@@ -2421,7 +2421,23 @@ function showCustomAlert(message) {
         function closeSDModal() { document.getElementById('sd-booking-modal').classList.add('hidden'); }
 
         function openPartnerModal() { document.getElementById('partner-modal').classList.remove('hidden'); }
-        function closePartnerModal() { document.getElementById('partner-modal').classList.add('hidden'); }    
+        function closePartnerModal() { document.getElementById('partner-modal').classList.add('hidden'); }
+
+        window.showSuccessModal = function(applicationNumber) {
+    const modal = document.getElementById('success-confirmation-modal');
+    const idBox = document.getElementById('success-application-id');
+    const idText = document.getElementById('success-application-number');
+
+    if (applicationNumber) {
+        idText.textContent = applicationNumber;
+        idBox.classList.remove('hidden');
+    } else {
+        idBox.classList.add('hidden');
+    }
+
+    modal.classList.remove('hidden');
+};
+        
         function closeSuccessModal() { document.getElementById('success-confirmation-modal').classList.add('hidden'); }
 
         function onSDDeliveryOptionChange() {

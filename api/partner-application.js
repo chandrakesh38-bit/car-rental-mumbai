@@ -69,7 +69,7 @@ async function uploadToSupabase(file, path) {
         apikey: SUPABASE_SERVICE_ROLE_KEY,
         "Content-Type":
           file.type || "application/octet-stream",
-        "x-upsert": "false",
+        "x-upsert": "true",
       },
       body: await file.arrayBuffer(),
     }

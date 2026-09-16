@@ -1277,24 +1277,39 @@
         let filteredSDCarsList = [...excelCarsData];
 
         // Professional Custom Alert Banner (No URL displayed)
-        function showCustomAlert(message) {
-            const existingAlert = document.getElementById('custom-floating-alert');
-            if (existingAlert) existingAlert.remove();
+function showCustomAlert(message) {
+    const existingAlert = document.getElementById('custom-floating-alert');
+    if (existingAlert) existingAlert.remove();
 
-            const alertDiv = document.createElement('div');
-            alertDiv.id = 'custom-floating-alert';
-            alertDiv.className = "fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-rose-600 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs sm:text-sm font-bold animate-slide-down border border-rose-400";
-            alertDiv.innerHTML = `
-                <i class="fa-solid fa-circle-exclamation text-lg"></i>
-                <span>${message}</span>
-                <button type="button" onclick="this.parentElement.remove()" class="ml-3 text-white/80 hover:text-white text-base font-black">&times;</button>
-            `;
-            document.body.appendChild(alertDiv);
+    const alertDiv = document.createElement('div');
+    alertDiv.id = 'custom-floating-alert';
 
-            setTimeout(() => {
-                if (alertDiv) alertDiv.remove();
-            }, 4000);
-        }
+    alertDiv.className = "fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-32px)] max-w-md bg-white text-slate-800 px-4 py-3.5 rounded-2xl shadow-xl border border-slate-200 flex items-center gap-3";
+
+    alertDiv.innerHTML = `
+        <div class="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid fa-circle-exclamation text-indigo-600 text-sm"></i>
+        </div>
+
+        <div class="flex-1">
+            <p class="text-sm font-semibold text-slate-800 leading-snug">
+                ${message}
+            </p>
+        </div>
+
+        <button type="button"
+            onclick="this.parentElement.remove()"
+            class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition">
+            <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+    `;
+
+    document.body.appendChild(alertDiv);
+
+    setTimeout(() => {
+        if (alertDiv) alertDiv.remove();
+    }, 3000);
+}
 
         function setServiceMode(mode) {
             currentMainMode = mode;
@@ -1699,7 +1714,7 @@
             }
 
             if (missing) {
-                showCustomAlert("Please fill your journey details (Pickup location and Date) before booking a car.");
+                showCustomAlert("Please add your pickup location and date to continue.");
                 document.getElementById('with-driver-block').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 if (firstMissingField) firstMissingField.focus();
                 return false;
@@ -1734,7 +1749,7 @@
             else rDateInput.classList.remove('border-red-500');
 
             if (missing) {
-                showCustomAlert("Please fill pickup and return details first before booking this car.");
+                showCustomAlert("Please select your pickup and return dates to continue.");
                 document.getElementById('self-drive-block').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 if (firstMissingField) firstMissingField.focus();
                 return false;

@@ -75,6 +75,13 @@
         .scrollbar-none::-webkit-scrollbar { display: none; }
         .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
         .border-red-500 { border-color: #ef4444 !important; }
+        .date-input-custom.date-empty {
+    color: transparent !important;
+}
+
+.date-input-custom.date-filled {
+    color: #1e293b !important;
+}
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
@@ -366,7 +373,7 @@
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Choose Pickup Date & Time *</label>
                                 <div class="grid grid-cols-3 gap-2">
                                     <div class="relative">
-    <input type="date" id="sd-pdate" onclick="this.showPicker()" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
+    <input type="date" id="sd-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
     <span id="sd-pdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
         DD/MM/YY
     </span>
@@ -386,7 +393,7 @@
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Choose Return Date & Time *</label>
                                 <div class="grid grid-cols-3 gap-2">
                                     <div class="relative">
-    <input type="date" id="sd-rdate" onclick="this.showPicker()" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
+    <input type="date" id="sd-rdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
     <span id="sd-rdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
         DD/MM/YY
     </span>
@@ -2073,18 +2080,29 @@
         button.innerHTML = 'See More FAQs <i class="fa-solid fa-chevron-down"></i>';
     }
 }
-function updateDatePlaceholder(inputId, placeholderId) {
+
+        function updateDatePlaceholder(inputId, placeholderId) {
     const input = document.getElementById(inputId);
     const placeholder = document.getElementById(placeholderId);
 
     if (!input || !placeholder) return;
 
     function update() {
-        placeholder.style.display = input.value ? 'none' : 'block';
+        if (input.value) {
+            input.classList.remove('date-empty');
+            input.classList.add('date-filled');
+            placeholder.style.display = 'none';
+        } else {
+            input.classList.remove('date-filled');
+            input.classList.add('date-empty');
+            placeholder.style.display = 'block';
+        }
     }
 
     update();
+
     input.addEventListener('change', update);
+    input.addEventListener('input', update);
 }
 
 document.addEventListener('DOMContentLoaded', function () {

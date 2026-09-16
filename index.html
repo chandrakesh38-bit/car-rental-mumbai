@@ -1196,15 +1196,160 @@
             { name: "Silvassa", km: 380 }, { name: "Indore", km: 1100 }
             ];
 
-        const mumbaiMetroLocations = [
-            { name: "Vikhroli West", km: 2, city: "Mumbai", state: "Maharashtra" }, { name: "Vikhroli East", km: 3, city: "Mumbai", state: "Maharashtra" },
-            { name: "Bhandup", km: 8, city: "Mumbai", state: "Maharashtra" }, { name: "Nahur", km: 10, city: "Mumbai", state: "Maharashtra" },
-            { name: "Mulund", km: 12, city: "Mumbai", state: "Maharashtra" }, { name: "Thane Station", km: 16, city: "Thane", state: "Maharashtra" },
-            { name: "Kalyan", km: 32, city: "Kalyan", state: "Maharashtra" }, { name: "Dombivli", km: 28, city: "Dombivli", state: "Maharashtra" },
-            { name: "Ghatkopar", km: 6, city: "Mumbai", state: "Maharashtra" }, { name: "Dadar", km: 18, city: "Mumbai", state: "Maharashtra" },
-            { name: "Andheri", km: 18, city: "Mumbai", state: "Maharashtra" }, { name: "Borivali", km: 32, city: "Mumbai", state: "Maharashtra" },
-            { name: "Vashi", km: 18, city: "Navi Mumbai", state: "Maharashtra" }, { name: "Panvel", km: 40, city: "Navi Mumbai", state: "Maharashtra" }
-        ];
+const mumbaiMetroLocations = [
+    { name: "Bhandup", km: 4, serviceable: true },
+    { name: "Kanjur Marg", km: 4, serviceable: true },
+    { name: "Nahur", km: 5, serviceable: true },
+    { name: "Vidyavihar", km: 5, serviceable: true },
+    { name: "Ghatkopar", km: 6, serviceable: true },
+    { name: "Mulund", km: 7, serviceable: true },
+    { name: "Kurla", km: 9, serviceable: true },
+    { name: "Digha Gaon", km: 10, serviceable: true },
+    { name: "Lokmanya Tilak Terminus", km: 10, serviceable: true },
+    { name: "Govandi", km: 12, serviceable: true },
+    { name: "Guru Tegh Bahadur Nagar", km: 12, serviceable: true },
+    { name: "Sion", km: 12, serviceable: true },
+    { name: "Thane", km: 12, serviceable: true },
+    { name: "Tilak Nagar", km: 12, serviceable: true },
+    { name: "Airoli", km: 13, serviceable: true },
+    { name: "Chembur", km: 13, serviceable: true },
+    { name: "Kalwa", km: 13, serviceable: true },
+    { name: "Chunabhatti", km: 14, serviceable: true },
+    { name: "Mankhurd", km: 14, serviceable: true },
+    { name: "Andheri", km: 15, serviceable: true },
+    { name: "King's Circle", km: 15, serviceable: true },
+    { name: "Matunga", km: 15, serviceable: true },
+    { name: "Mumbra", km: 15, serviceable: true },
+    { name: "Rabale", km: 15, serviceable: true },
+    { name: "Vile Parle", km: 15, serviceable: true },
+    { name: "Cotton Green", km: 16, serviceable: true },
+    { name: "Dadar", km: 16, serviceable: true },
+    { name: "Jogeshwari", km: 16, serviceable: true },
+    { name: "Matunga Road", km: 16, serviceable: true },
+    { name: "Santacruz", km: 16, serviceable: true },
+    { name: "Sewri", km: 16, serviceable: true },
+    { name: "Wadala Road", km: 16, serviceable: true },
+    { name: "Currey Road", km: 17, serviceable: true },
+    { name: "Diva Junction", km: 17, serviceable: true },
+    { name: "Ghansoli", km: 17, serviceable: true },
+    { name: "Khar Road", km: 17, serviceable: true },
+    { name: "Mahim Junction", km: 17, serviceable: true },
+    { name: "Prabhadevi", km: 17, serviceable: true },
+    { name: "Bandra", km: 18, serviceable: true },
+    { name: "Chinchpokli", km: 18, serviceable: true },
+    { name: "Parel", km: 18, serviceable: true },
+    { name: "Ram Mandir", km: 18, serviceable: true },
+    { name: "Reay Road", km: 18, serviceable: true },
+    { name: "Bandra Terminus", km: 19, serviceable: true },
+    { name: "Byculla", km: 19, serviceable: true },
+    { name: "Goregaon", km: 19, serviceable: true },
+    { name: "Koparkhairane", km: 19, serviceable: true },
+    { name: "Lower Parel", km: 19, serviceable: true },
+    { name: "Chhatrapati Shivaji Maharaj Terminus", km: 20, serviceable: true },
+    { name: "Dockyard Road", km: 20, serviceable: true },
+    { name: "Mahalaxmi", km: 20, serviceable: true },
+    { name: "Masjid", km: 20, serviceable: true },
+    { name: "Sandhurst Road", km: 20, serviceable: true },
+    { name: "Grant Road", km: 21, serviceable: true },
+    { name: "Kopar", km: 21, serviceable: true },
+    { name: "Marine Lines", km: 21, serviceable: true },
+    { name: "Mumbai Central", km: 21, serviceable: true },
+    { name: "Turbhe", km: 21, serviceable: true },
+    { name: "Charni Road", km: 22, serviceable: true },
+    { name: "Malad", km: 22, serviceable: true },
+    { name: "Nilaje", km: 22, serviceable: true },
+    { name: "Churchgate", km: 23, serviceable: true },
+    { name: "Ambivli", km: 24, serviceable: true },
+    { name: "Dativali", km: 24, serviceable: true },
+    { name: "Dombivli", km: 24, serviceable: true },
+    { name: "Kandivli", km: 24, serviceable: true },
+    { name: "Vashi", km: 25, serviceable: true },
+    { name: "Ambarnath", km: 26, serviceable: true },
+    { name: "Dahisar", km: 26, serviceable: true },
+    { name: "Sanpada", km: 26, serviceable: true },
+    { name: "Ulhasnagar", km: 26, serviceable: true },
+    { name: "Shahad", km: 27, serviceable: true },
+    { name: "Juinagar", km: 28, serviceable: true },
+    { name: "Bhiwandi Road", km: 29, serviceable: true },
+    { name: "Borivali", km: 29, serviceable: true },
+    { name: "Kharbav", km: 29, serviceable: true },
+    { name: "Vithalwadi", km: 29, serviceable: true },
+    { name: "Mira Road", km: 31, serviceable: true },
+    { name: "Nerul", km: 31, serviceable: true },
+    { name: "Seawoods-Darave-Karave", km: 32, serviceable: true },
+    { name: "Kalyan Junction", km: 33, serviceable: true },
+    { name: "Badlapur", km: 34, serviceable: true },
+    { name: "Kaman Road", km: 34, serviceable: true },
+    { name: "Naigaon", km: 34, serviceable: true },
+    { name: "CBD Belapur", km: 35, serviceable: true },
+    { name: "Bhayandar", km: 36, serviceable: true },
+    { name: "Kharghar", km: 36, serviceable: true },
+    { name: "Mansarovar", km: 36, serviceable: true },
+    { name: "Titwala", km: 36, serviceable: true },
+    { name: "Nallasopara", km: 37, serviceable: true },
+    { name: "Juchandra", km: 38, serviceable: true },
+    { name: "Khandeshwar", km: 38, serviceable: true },
+    { name: "Bamangdongri", km: 41, serviceable: true },
+    { name: "Kalamboli", km: 41, serviceable: true },
+    { name: "Kharkopar", km: 41, serviceable: true },
+    { name: "Taloje Panchnand", km: 43, serviceable: true },
+    { name: "Chouk", km: 44, serviceable: true },
+    { name: "Gavan", km: 44, serviceable: true },
+    { name: "Khadavli", km: 44, serviceable: true },
+    { name: "Panvel", km: 44, serviceable: true },
+    { name: "Vasind", km: 44, serviceable: true },
+    { name: "Navde Road", km: 45, serviceable: true },
+    { name: "Chikhli", km: 46, serviceable: true },
+    { name: "Dolavli", km: 46, serviceable: true },
+    { name: "Vasai Road", km: 46, serviceable: true },
+    { name: "Chikhale", km: 48, serviceable: true },
+    { name: "Dronagiri", km: 48, serviceable: true },
+    { name: "Nhava Sheva", km: 48, serviceable: true },
+    { name: "Asangaon", km: 50, serviceable: true },
+    { name: "Poyanje", km: 50, serviceable: true },
+    { name: "Somatne", km: 50, serviceable: true },
+    { name: "Vangani", km: 50, serviceable: true },
+    { name: "Virar", km: 50, serviceable: true },
+
+    { name: "Targahar", km: null, serviceable: false },
+    { name: "Uran", km: null, serviceable: false },
+    { name: "Rasayani", km: null, serviceable: false },
+    { name: "Kelavli", km: null, serviceable: false },
+    { name: "Apta", km: null, serviceable: false },
+    { name: "Pen", km: null, serviceable: false },
+    { name: "Shelu", km: null, serviceable: false },
+    { name: "Atgaon", km: null, serviceable: false },
+    { name: "Jite", km: null, serviceable: false },
+    { name: "Lowjee", km: null, serviceable: false },
+    { name: "Thansit", km: null, serviceable: false },
+    { name: "Vaitarna", km: null, serviceable: false },
+    { name: "Hamrapur", km: null, serviceable: false },
+    { name: "Neral Junction", km: null, serviceable: false },
+    { name: "Bhivpuri Road", km: null, serviceable: false },
+    { name: "Nidi", km: null, serviceable: false },
+    { name: "Kasu", km: null, serviceable: false },
+    { name: "Nagothane", km: null, serviceable: false },
+    { name: "Palasdhari", km: null, serviceable: false },
+    { name: "Saphale", km: null, serviceable: false },
+    { name: "Karjat", km: null, serviceable: false },
+    { name: "Khardi", km: null, serviceable: false },
+    { name: "Boisar", km: null, serviceable: false },
+    { name: "Umbermali", km: null, serviceable: false },
+    { name: "Khopoli", km: null, serviceable: false },
+    { name: "Palghar", km: null, serviceable: false },
+    { name: "Aman Lodge", km: null, serviceable: false },
+    { name: "Umroli", km: null, serviceable: false },
+    { name: "Jummapatti", km: null, serviceable: false },
+    { name: "Water Pipe", km: null, serviceable: false },
+    { name: "Matheran", km: null, serviceable: false },
+    { name: "Kasara", km: null, serviceable: false },
+    { name: "Roha", km: null, serviceable: false },
+    { name: "Kelve Road", km: null, serviceable: false },
+    { name: "Vangaon", km: null, serviceable: false },
+    { name: "Bordi Road", km: null, serviceable: false },
+    { name: "Gholvad", km: null, serviceable: false },
+    { name: "Dahanu Road", km: null, serviceable: false }
+];
 
         // 6 WITH DRIVER CARS
         const wdFleet = [
@@ -1487,7 +1632,7 @@ function showCustomAlert(message) {
             if (matches.length === 0) { dropdown.innerHTML = ''; dropdown.classList.add('hidden'); return; }
 
             dropdown.innerHTML = '';
-            matches.slice(0, 8).forEach(item => {
+            matches.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'autocomplete-item';
                 div.innerHTML = `<i class="fa-solid fa-location-dot text-slate-400 text-xs"></i><span>${item}</span>`;
@@ -1996,14 +2141,34 @@ function showCustomAlert(message) {
             document.getElementById('disp-total-final-fare').innerText = `₹${total.toLocaleString('en-IN')}`;
         }
 
-        function onDeliveryLocationSelect() {
-            const locInput = document.getElementById('sd-delivery-location-input').value.trim().toLowerCase();
-            const found = mumbaiMetroLocations.find(l => l.name.toLowerCase() === locInput);
-            if (found) {
-                document.getElementById('sd-cust-city').value = found.city;
-                document.getElementById('sd-cust-state').value = found.state;
-            }
-        }
+function onDeliveryLocationSelect() {
+    const input = document.getElementById('sd-delivery-location-input');
+    const locInput = input.value.trim().toLowerCase();
+
+    const found = mumbaiMetroLocations.find(
+        l => l.name.toLowerCase() === locInput
+    );
+
+    if (!found) return;
+
+    // Not servicable location
+    if (found.serviceable === false) {
+        alert('This location is not servicable for home delivery.');
+
+        input.value = '';
+        document.getElementById('sd-cust-city').value = '';
+        document.getElementById('sd-cust-state').value = '';
+
+        updateSDFareReview();
+        return;
+    }
+
+    // Serviceable location
+    document.getElementById('sd-cust-city').value = found.city || '';
+    document.getElementById('sd-cust-state').value = found.state || '';
+
+    updateSDFareReview();
+}
 
         function handleBrandDropdownChange(val) {
             const customInput = document.getElementById('part-car-brand-custom');

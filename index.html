@@ -2779,15 +2779,232 @@ function handleBookingSubmit(e) {
             showSuccessModal();
         }
 
+let lastPartnerForm = null;
+
+function showPartnerUploadProgress() {
+    let modal = document.getElementById('partner-upload-progress-modal');
+
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'partner-upload-progress-modal';
+
+        modal.className =
+            'fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[10000] flex items-center justify-center px-4';
+
+        modal.innerHTML = `
+            <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
+
+                <div class="mx-auto mb-4 w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center">
+                    <i class="fa-solid fa-cloud-arrow-up text-indigo-700 text-xl"></i>
+                </div>
+
+                <h3 id="partner-progress-title"
+                    class="text-lg font-extrabold text-slate-900">
+                    Uploading Documents
+                </h3>
+
+                <p id="partner-progress-text"
+                   class="text-xs text-slate-500 mt-1 mb-5">
+                    Please keep this window open.
+                </p>
+
+                <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                    <div id="partner-progress-bar"
+                         class="bg-indigo-700 h-3 rounded-full transition-all duration-200"
+                         style="width:0%">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mt-2">
+                    <span id="partner-progress-status"
+                          class="text-[10px] font-semibold text-slate-500">
+                        Starting upload...
+                    </span>
+
+                    <span id="partner-progress-percent"
+                          class="text-sm font-extrabold text-indigo-950">
+                        0%
+                    </span>
+                </div>
+
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    return modal;
+}
+
+function updatePartnerProgress(percent, title, text, status) {
+    const bar = document.getElementById('partner-progress-bar');
+    const percentText = document.getElementById('partner-progress-percent');
+    const titleText = document.getElementById('partner-progress-title');
+    const textEl = document.getElementById('partner-progress-text');
+    const statusEl = document.getElementById('partner-progress-status');
+
+    if (bar) bar.style.width = `${percent}%`;
+    if (percentText) percentText.textContent = `${percent}%`;
+    if (titleText) titleText.textContent = title;
+    if (textEl) textEl.textContent = text;
+    if (statusEl) statusEl.textContent = status;
+}
+
+function hidePartnerUploadProgress() {
+    const modal = document.getElementById('partner-upload-progress-modal');
+
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+function showPartnerErrorModal(message) {
+
+    hidePartnerUploadProgress();
+
+    let modal = document.getElementById('partner-error-modal');
+
+    if (modal) modal.remove();
+
+    modal = document.createElement('div');
+    modal.id = 'partner-error-modal';
+
+    modal.className =
+        'fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[10001] flex items-center justify-center px-4';
+
+    modal.innerHTML = `
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
+
+            <div class="text-center">
+
+                <div class="mx-auto mb-4 w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
+                    <i class="fa-solid fa-triangle-exclamation text-red-600 text-xl"></i>
+                </div>
+
+                <h3 class="text-lg font-extrabold text-slate-900">
+                    Submission Failed
+                </h3>
+
+                <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                    We couldn't submit your partner application.
+                    Your documents have not been sent by email.
+                </p>
+
+                <div class="mt-3 bg-red-50 border border-red-100 rounded-xl p-3 text-left">
+                    <p class="text-[11px] text-red-800 leading-relaxed">
+                        ${String(message || 'Something went wrong. Please try again.')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')}
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-5">
+
+                <button
+                    type="button"
+                    id="partner-retry-btn"
+                    class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl text-xs">
+                    <i class="fa-solid fa-rotate-right mr-1"></i>
+                    Retry
+                </button>
+
+                <button
+                    type="button"
+                    id="partner-reupload-btn"
+                    class="border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-xs">
+                    <i class="fa-solid fa-file-arrow-up mr-1"></i>
+                    Re-upload
+                </button>
+
+            </div>
+
+            <a
+                href="https://wa.me/919702988465"
+                target="_blank"
+                class="mt-2 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2">
+                <i class="fa-brands fa-whatsapp"></i>
+                Contact Customer Support
+            </a>
+
+            <button
+                type="button"
+                id="partner-error-close"
+                class="w-full mt-2 text-slate-400 hover:text-slate-700 font-semibold py-2 text-xs">
+                Close
+            </button>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('partner-retry-btn').onclick = function () {
+        modal.remove();
+
+        if (lastPartnerForm) {
+            lastPartnerForm.requestSubmit();
+        }
+    };
+
+    document.getElementById('partner-reupload-btn').onclick = function () {
+        modal.remove();
+
+        const partnerModal = document.getElementById('partner-modal');
+
+        if (partnerModal) {
+            partnerModal.scrollTop = 0;
+        }
+
+        const firstDocument = document.getElementById('part-rc');
+
+        if (firstDocument) {
+            firstDocument.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    };
+
+    document.getElementById('partner-error-close').onclick = function () {
+        modal.remove();
+    };
+}
+
+
 async function handlePartnerFormSubmit(e) {
+
     e.preventDefault();
 
-    if (!window.preparePartnerFiles()) return;
+    lastPartnerForm = e.target;
 
     const submitButton = e.target.querySelector('button[type="submit"]');
     const originalButtonText = submitButton.innerHTML;
 
+    /*
+     * First prepare compressed files and validate total size.
+     */
+    submitButton.disabled = true;
+    submitButton.innerHTML = `
+        <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+        Checking Files...
+    `;
+
+    if (!window.preparePartnerFiles()) {
+
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonText;
+
+        return;
+    }
+
     try {
+
         const name = document.getElementById('part-name').value.trim();
         const phone = document.getElementById('part-phone').value.trim();
         const email = document.getElementById('part-email').value.trim();
@@ -2815,13 +3032,16 @@ async function handlePartnerFormSubmit(e) {
             document.getElementById('part-vehicle-photos').files
         );
 
-        // Maximum 4 vehicle photos
+        /*
+         * Maximum 4 vehicle photos
+         */
         if (vehiclePhotos.length > 4) {
-            alert('Please upload maximum 4 vehicle photos.');
-            return;
+            throw new Error('Please upload maximum 4 vehicle photos.');
         }
 
-        // Allowed file types
+        /*
+         * Allowed file types
+         */
         const allowedDocuments = [
             'image/jpeg',
             'image/png',
@@ -2834,54 +3054,37 @@ async function handlePartnerFormSubmit(e) {
             'image/webp'
         ];
 
-        // Maximum total upload size: 4 MB
-        const allFiles = [...files, ...vehiclePhotos].filter(Boolean);
-
-        const totalSize = allFiles.reduce(
-            (total, file) => total + file.size,
-            0
-        );
-
-        const MAX_TOTAL_SIZE = 4 * 1024 * 1024;
-
-        if (totalSize > MAX_TOTAL_SIZE) {
-            alert(
-                'Total document size is too large. Please keep all uploaded files together under 4 MB.'
-            );
-            return;
-        }
-
-        // Validate document file types
+        /*
+         * Validate required documents
+         */
         for (const file of files) {
+
             if (!file) {
-                alert('Please upload all required documents.');
-                return;
+                throw new Error('Please upload all required documents.');
             }
 
             if (!allowedDocuments.includes(file.type)) {
-                alert(
+                throw new Error(
                     `${file.name}: Only JPG, PNG or PDF files are allowed.`
                 );
-                return;
             }
         }
 
-        // Validate vehicle photos
+        /*
+         * Validate vehicle photos
+         */
         for (const file of vehiclePhotos) {
+
             if (!allowedPhotos.includes(file.type)) {
-                alert(
+                throw new Error(
                     `${file.name}: Only JPG, PNG or WEBP images are allowed.`
                 );
-                return;
             }
         }
 
-        submitButton.disabled = true;
-        submitButton.innerHTML = `
-            <i class="fa-solid fa-spinner fa-spin mr-2"></i>
-            Uploading Documents...
-        `;
-
+        /*
+         * Create FormData
+         */
         const formData = new FormData();
 
         formData.append('name', name);
@@ -2892,23 +3095,31 @@ async function handlePartnerFormSubmit(e) {
         formData.append('car_model', model);
         formData.append('mfg_year', year);
 
-        formData.append('rc', document.getElementById('part-rc').files[0]);
+        formData.append(
+            'rc',
+            document.getElementById('part-rc').files[0]
+        );
+
         formData.append(
             'insurance',
             document.getElementById('part-insurance').files[0]
         );
+
         formData.append(
             'puc',
             document.getElementById('part-puc').files[0]
         );
+
         formData.append(
             'dl',
             document.getElementById('part-dl').files[0]
         );
+
         formData.append(
             'aadhaar',
             document.getElementById('part-aadhaar').files[0]
         );
+
         formData.append(
             'pan',
             document.getElementById('part-pan').files[0]
@@ -2918,27 +3129,139 @@ async function handlePartnerFormSubmit(e) {
             formData.append('vehicle_photos', file);
         });
 
-        const response = await fetch(
-            '/api/partner-application',
-            {
-                method: 'POST',
-                body: formData
-            }
+        /*
+         * Show Windows-style upload progress
+         */
+        showPartnerUploadProgress();
+
+        updatePartnerProgress(
+            0,
+            'Uploading Documents',
+            'Please keep this window open.',
+            'Starting upload...'
         );
 
-        const result = await response.json();
+        submitButton.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+            Uploading...
+        `;
 
-        if (!response.ok || !result.success) {
-            throw new Error(
-                result.message ||
-                'Unable to submit partner application.'
+        /*
+         * XMLHttpRequest gives real browser upload progress.
+         */
+        const result = await new Promise((resolve, reject) => {
+
+            const xhr = new XMLHttpRequest();
+
+            xhr.open(
+                'POST',
+                '/api/partner-application',
+                true
             );
-        }
 
-        // Success
+            xhr.upload.onprogress = function (event) {
+
+                if (event.lengthComputable) {
+
+                    /*
+                     * Keep 10% reserved for server-side processing.
+                     */
+                    const uploadPercent = Math.round(
+                        (event.loaded / event.total) * 90
+                    );
+
+                    updatePartnerProgress(
+                        uploadPercent,
+                        'Uploading Documents',
+                        'Your documents are being securely uploaded.',
+                        `${Math.round(event.loaded / 1024)} KB of ${Math.round(event.total / 1024)} KB`
+                    );
+                }
+            };
+
+            xhr.upload.onload = function () {
+
+                updatePartnerProgress(
+                    90,
+                    'Securing Documents',
+                    'Upload complete. Securing your documents...',
+                    'Processing...'
+                );
+            };
+
+            xhr.onload = function () {
+
+                updatePartnerProgress(
+                    95,
+                    'Securing Documents',
+                    'Saving your application securely...',
+                    'Almost done...'
+                );
+
+                let responseData = {};
+
+                try {
+                    responseData = JSON.parse(xhr.responseText || '{}');
+                } catch (error) {
+                    responseData = {};
+                }
+
+                if (xhr.status >= 200 && xhr.status < 300 && responseData.success) {
+
+                    resolve(responseData);
+
+                } else {
+
+                    reject(
+                        new Error(
+                            responseData.message ||
+                            'Unable to submit partner application.'
+                        )
+                    );
+                }
+            };
+
+            xhr.onerror = function () {
+
+                reject(
+                    new Error(
+                        'Network error. Please check your internet connection and try again.'
+                    )
+                );
+            };
+
+            xhr.ontimeout = function () {
+
+                reject(
+                    new Error(
+                        'The upload took too long. Please try again.'
+                    )
+                );
+            };
+
+            xhr.timeout = 120000;
+
+            xhr.send(formData);
+        });
+
+        /*
+         * SUCCESS
+         */
+        updatePartnerProgress(
+            100,
+            'Application Submitted',
+            'Your partner application has been submitted successfully.',
+            'Completed'
+        );
+
+        await new Promise(resolve => setTimeout(resolve, 700));
+
+        hidePartnerUploadProgress();
+
         e.target.reset();
 
         closePartnerModal();
+
         showSuccessModal();
 
     } catch (error) {
@@ -2948,7 +3271,7 @@ async function handlePartnerFormSubmit(e) {
             error
         );
 
-        alert(
+        showPartnerErrorModal(
             error.message ||
             'Something went wrong. Please try again.'
         );
@@ -2958,8 +3281,8 @@ async function handlePartnerFormSubmit(e) {
         submitButton.disabled = false;
         submitButton.innerHTML = originalButtonText;
     }
-} 
-
+}
+        
         function sendWithDriverBookingEmail(subject, name, phone, email, message) {
     try {
         fetch('https://api.web3forms.com/submit', {

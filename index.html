@@ -727,7 +727,7 @@
                 </p>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+            <div class="hidden faq-more bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> How early should I book my rental car?
                 </h4>
@@ -736,7 +736,7 @@
                 </p>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+            <div class="hidden faq-more bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> What is the minimum and maximum rental duration?
                 </h4>
@@ -746,7 +746,7 @@
                 </p>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+            <div class="hidden faq-more bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> Can I book more than one car?
                 </h4>
@@ -755,7 +755,7 @@
                 </p>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+            <div class="hidden faq-more bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-indigo-600"></i> Can I add a second driver?
                 </h4>
@@ -764,7 +764,7 @@
                 </p>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+            <div class="hidden faq-more bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                 <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-question text-rose-600"></i> Are pets allowed in the rental car?
                 </h4>
@@ -772,7 +772,21 @@
                     <strong>No.</strong> Pets are strictly not allowed because some customers may have allergies. If found, a penalty will be charged.
                 </p>
             </div>
+                </div>
+
+        <!-- SEE MORE FAQ BUTTON -->
+        <div class="text-center mt-6">
+            <button
+                type="button"
+                id="faq-toggle-btn"
+                onclick="toggleFAQs()"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition"
+            >
+                See More FAQs
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
         </div>
+
     </section>
 
     <!-- REACH US & TALK TO US SECTION -->
@@ -2034,6 +2048,21 @@
             renderWDFleet();
             applyAllSDFilters();
         };
+
+        function toggleFAQs() {
+    const faqs = document.querySelectorAll('.faq-more');
+    const button = document.getElementById('faq-toggle-btn');
+
+    faqs.forEach(function(faq) {
+        faq.classList.toggle('hidden');
+    });
+
+    if (button.innerText.includes('See More')) {
+        button.innerHTML = 'See Less FAQs <i class="fa-solid fa-chevron-up"></i>';
+    } else {
+        button.innerHTML = 'See More FAQs <i class="fa-solid fa-chevron-down"></i>';
+    }
+}
     </script>
 </body>
 </html>

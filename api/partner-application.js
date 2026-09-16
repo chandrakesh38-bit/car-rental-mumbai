@@ -151,9 +151,10 @@ async function sendNotificationEmail(application) {
     return;
   }
 
-  const message = `
+const message = `
 New Partner Application
 
+Application ID: ${application.application_number || "Not available"}
 Name: ${application.name}
 Mobile: ${application.phone}
 Email: ${application.email || "Not provided"}
@@ -541,9 +542,15 @@ export default async function handler(request) {
         uploaded.vehicle_photo_paths,
     };
 
-    await saveApplication(
-      application
-    );
+const savedApplication = await saveApplication(application);
+
+const savedRow = Array.isArray(savedApplication)
+  ? savedApplication[0]
+  : savedApplication;
+
+if (savedRow?.application_number) {
+  application.application_number = savedRow.application_number;
+}
 
     // ----------------------------------------
     // EMAIL NOTIFICATION
@@ -557,15 +564,18 @@ export default async function handler(request) {
     // SUCCESS
     // ----------------------------------------
 
-    return jsonResponse({
-      success: true,
+return jsonResponse({
+  success: true,
 
-      message:
-        "Partner application submitted successfully.",
+  message:
+    "Partner application submitted successfully.",
 
-      application_id:
-        applicationId,
-    });
+  application_id:
+    applicationId,
+
+  application_number:
+    application.application_number,
+});
 
   } catch (error) {
 

@@ -278,7 +278,7 @@
 
                             <div class="relative">
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> To (Destination City across Maharashtra) *</label>
-                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'destination-cities', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter drop city" value="">
+                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'maharashtra-destinations', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter drop city" value="">
                                 <div id="wd-out-dest-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                         </div>
@@ -1400,7 +1400,7 @@ function showCustomAlert(message) {
             div.innerHTML = `
                 <div class="w-4 flex flex-col items-center"><div class="w-0.5 h-6 bg-indigo-200"></div></div>
                 <div class="flex-1 relative">
-                    <input type="text" autocomplete="off" oninput="showSuggestions(this.id, 'mumbai-places', this.nextElementSibling.id)" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none font-medium intermediate-stop-input" placeholder="Enter intermediate stop area">
+                    <input type="text" autocomplete="off" oninput="showSuggestions(this.id, 'maharashtra-destinations', this.nextElementSibling.id)" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none font-medium intermediate-stop-input" placeholder="Enter intermediate stop area">
                     <div class="autocomplete-dropdown hidden"></div>
                 </div>
                 <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 px-2 py-1 text-xs"><i class="fa-solid fa-trash"></i></button>

@@ -1351,7 +1351,9 @@
         </div>
 
         <p class="text-[10px] text-slate-500 mt-1">
-            Upload clear JPG, PNG or PDF files. Your documents are stored securely and are not attached to email.
+            <p class="text-[10px] text-slate-500 mt-1">
+    JPG, PNG or PDF • Max 5 MB per file
+</p>
         </p>
     </div>
 
@@ -1458,15 +1460,13 @@
             multiple
             class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
         >
-        <p class="text-[10px] text-slate-400 mt-1">
-            Optional • Upload up to 4 clear vehicle photos.
-        </p>
+
     </div>
 
     <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
         <p class="text-[10px] text-amber-900">
             <i class="fa-solid fa-lock mr-1"></i>
-            Your documents are uploaded to private storage and are not attached to the confirmation email.
+            Your documents are securely stored and are not sent by email.
         </p>
     </div>
 
@@ -3482,10 +3482,7 @@ document.addEventListener('keydown', function(event) {
         info.innerHTML = `
             <strong class="text-slate-700">Optional • Upload up to 4 clear vehicle photos</strong><br>
             Front, Right, Rear and Left • JPG, PNG or WEBP • Max 5 MB each<br>
-            <span class="text-indigo-600 font-semibold">
-                Images are automatically compressed before upload.
-            </span>
-        `;
+            `;
 
         main.appendChild(info);
 

@@ -2224,12 +2224,193 @@ function closeSDServiceabilityModal() {
             }
         }
 
-        function handleBookingSubmit(e) {
-            e.preventDefault();
-            sendEmailNotification('With-Driver Booking', document.getElementById('cust-name').value, document.getElementById('cust-phone').value, document.getElementById('cust-email').value, `Car: ${chosenCarName}, Fare: ₹${chosenFareAmount}`);
-            closeModal();
-            showSuccessModal();
+        function createLocalDateTime(dateValue, hour, ampm) {
+    const [year, month, day] = dateValue.split('-').map(Number);
+
+    let hour24 = hour;
+
+    if (ampm === 'AM' && hour === 12) {
+        hour24 = 0;
+    } else if (ampm === 'PM' && hour !== 12) {
+        hour24 = hour + 12;
+    }
+
+    return new Date(year, month - 1, day, hour24, 0, 0);
+}
+
+function getOrdinalSuffix(day) {
+    if (day >= 11 && day <= 13) return 'th';
+
+    switch (day % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+    }
+}
+
+function formatBookingDateTime(date) {
+    const day = date.getDate();
+    const month = date.toLocaleString('en-IN', { month: 'short' });
+    const year = date.getFullYear();
+
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+
+    return `${day}${getOrdinalSuffix(day)} ${month} ${year}, ${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+}
+
+function formatDuration(hours) {
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+
+    const parts = [];
+
+    if (days > 0) {
+        parts.push(`${days} Day${days > 1 ? 's' : ''}`);
+    }
+
+    if (remainingHours > 0) {
+        parts.push(`${remainingHours} Hour${remainingHours > 1 ? 's' : ''}`);
+    }
+
+    return parts.join(', ') || '0 Hours';
+}
+
+function generateBookingId() {
+    const now = new Date();
+
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+
+    const random = Math.floor(1000 + Math.random() * 9000);
+
+    return `CWD-WD-${yy}${mm}${dd}-${random}`;
+}
+
+function handleBookingSubmit(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('cust-name').value.trim();
+    const phone = document.getElementById('cust-phone').value.trim();
+    const email = document.getElementById('cust-email').value.trim();
+    const address = document.getElementById('cust-address').value.trim();
+
+    const pickupLocation = document.getElementById('wd-local-pickup').value.trim();
+    const packageValue = document.getElementById('wd-local-package').value;
+
+    const startDate = document.getElementById('wd-local-date').value;
+    const startHour = parseInt(document.getElementById('wd-local-hour').value);
+    const startAmPm = document.getElementById('wd-local-ampm').value;
+
+    const car = wdFleet.find(c => c.name === chosenCarName);
+
+    const extraKmRate = car?.rates?.local?.extraKm || 0;
+
+    const packageMap = {
+        '8hr_80km': {
+            label: '8 Hours / 80 KM',
+            hours: 8
+        },
+        '12hr_120km': {
+            label: '12 Hours / 120 KM',
+            hours: 12
         }
+    };
+
+    const selectedPackage = packageMap[packageValue] || {
+        label: packageValue,
+        hours: 8
+    };
+
+    const startDateTime = createLocalDateTime(
+        startDate,
+        startHour,
+        startAmPm
+    );
+
+    const endDateTime = new Date(
+        startDateTime.getTime() + selectedPackage.hours * 60 * 60 * 1000
+    );
+
+    const bookingId = generateBookingId();
+
+    const startFormatted = formatBookingDateTime(startDateTime);
+    const endFormatted = formatBookingDateTime(endDateTime);
+
+    const durationFormatted = formatDuration(selectedPackage.hours);
+
+    const message = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        NEW BOOKING
+     CAR WITH DRIVER INDIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Booking ID: ${bookingId}
+
+CUSTOMER DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Customer Name: ${name}
+Mobile: ${phone}
+Email: ${email}
+
+CAR DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Car: ${chosenCarName}
+
+JOURNEY DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Booking start time: ${startFormatted}
+Booking end time: ${endFormatted}
+Total duration: ${durationFormatted}
+Destination / Route: Local City Package
+Trip Package: ${selectedPackage.label}
+Extra KM charges: ₹${extraKmRate} / KM
+
+PICKUP DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Pickup location: ${pickupLocation}
+Pickup address:
+${address}
+
+FARE DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Approx amount: ₹${Number(chosenFareAmount).toLocaleString('en-IN')}
+
+INCLUSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Car rental
+✓ Fuel
+✓ Driver allowance
+
+EXCLUSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✕ Toll taxes
+✕ Parking fees
+✕ State entry permits
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Car With Driver India
+Thank you for choosing us.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+
+    sendWithDriverBookingEmail(
+        `New booking assigned to your car – ${chosenCarName}`,
+        name,
+        phone,
+        email,
+        message
+    );
+
+    closeModal();
+    showSuccessModal();
+}
 
         function handleSDBookingSubmit(e) {
             e.preventDefault();
@@ -2258,6 +2439,36 @@ function closeSDServiceabilityModal() {
             closePartnerModal();
             showSuccessModal();
         }
+
+        function sendWithDriverBookingEmail(subject, name, phone, email, message) {
+    try {
+        fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
+                subject: subject,
+                from_name: 'CWD Dispatch Bot',
+                email: email,
+                message: message
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (!result.success) {
+                console.error('Web3Forms booking email error:', result);
+            }
+        })
+        .catch(err => {
+            console.error('Booking email error:', err);
+        });
+    } catch (err) {
+        console.error('Booking email error:', err);
+    }
+}
 
         function sendEmailNotification(title, name, phone, email, details) {
             try {

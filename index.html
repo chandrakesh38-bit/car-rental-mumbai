@@ -573,56 +573,137 @@
     </section>
 
 <!-- WHY CHOOSE US / FEATURE STRIP -->
-<section class="max-w-7xl mx-auto px-4 sm:px-6 py-4" id="services">
+<section class="max-w-7xl mx-auto px-4 sm:px-6 py-8" id="services">
+
+    <div class="text-center mb-5">
+        <span class="bg-indigo-50 border border-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2">
+            Why Choose Us
+        </span>
+        <h2 class="text-2xl font-black text-slate-900">
+            Travel With Confidence
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">
+            Click any feature to know more about our service.
+        </p>
+    </div>
 
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
-        <div class="grid grid-cols-3 divide-x divide-slate-200">
+        <div class="grid grid-cols-2 md:grid-cols-5 divide-x divide-y md:divide-y-0 divide-slate-200">
 
-            <!-- Professional Driver -->
-            <div class="px-2.5 py-4 sm:p-5 text-center">
-                <div class="mx-auto w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2">
-                    <i class="fa-solid fa-user-shield text-sm sm:text-base"></i>
+            <!-- CARD 1 -->
+            <button type="button"
+                onclick="openWhyChooseModal('driver')"
+                class="why-choose-card group px-3 py-5 sm:p-5 text-center hover:bg-indigo-50/50 transition-all duration-200 focus:outline-none focus:bg-indigo-50">
+
+                <div class="mx-auto w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition">
+                    <i class="fa-solid fa-user-shield text-base"></i>
                 </div>
 
-                <h3 class="font-bold text-slate-900 text-[11px] sm:text-sm leading-tight">
+                <h3 class="font-bold text-slate-900 text-xs sm:text-sm leading-tight">
                     Professional Driver
                 </h3>
 
-                <p class="hidden sm:block text-[11px] text-slate-500 leading-relaxed mt-1">
-                    Verified & courteous drivers
+                <p class="text-[10px] sm:text-[11px] text-slate-500 leading-relaxed mt-1">
+                    Verified & experienced chauffeurs
                 </p>
-            </div>
 
-            <!-- Transparent Pricing -->
-            <div class="px-2.5 py-4 sm:p-5 text-center">
-                <div class="mx-auto w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2">
-                    <i class="fa-solid fa-receipt text-sm sm:text-base"></i>
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
+                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                </span>
+            </button>
+
+
+            <!-- CARD 2 -->
+            <button type="button"
+                onclick="openWhyChooseModal('pricing')"
+                class="why-choose-card group px-3 py-5 sm:p-5 text-center hover:bg-indigo-50/50 transition-all duration-200 focus:outline-none focus:bg-indigo-50">
+
+                <div class="mx-auto w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition">
+                    <i class="fa-solid fa-receipt text-base"></i>
                 </div>
 
-                <h3 class="font-bold text-slate-900 text-[11px] sm:text-sm leading-tight">
+                <h3 class="font-bold text-slate-900 text-xs sm:text-sm leading-tight">
                     Transparent Pricing
                 </h3>
 
-                <p class="hidden sm:block text-[11px] text-slate-500 leading-relaxed mt-1">
+                <p class="text-[10px] sm:text-[11px] text-slate-500 leading-relaxed mt-1">
                     No hidden charges
                 </p>
-            </div>
 
-            <!-- Doorstep Delivery -->
-            <div class="px-2.5 py-4 sm:p-5 text-center">
-                <div class="mx-auto w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2">
-                    <i class="fa-solid fa-house-chimney text-sm sm:text-base"></i>
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
+                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                </span>
+            </button>
+
+
+            <!-- CARD 3 -->
+            <button type="button"
+                onclick="openWhyChooseModal('doorstep')"
+                class="why-choose-card group px-3 py-5 sm:p-5 text-center hover:bg-indigo-50/50 transition-all duration-200 focus:outline-none focus:bg-indigo-50">
+
+                <div class="mx-auto w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition">
+                    <i class="fa-solid fa-house-chimney text-base"></i>
                 </div>
 
-                <h3 class="font-bold text-slate-900 text-[11px] sm:text-sm leading-tight">
+                <h3 class="font-bold text-slate-900 text-xs sm:text-sm leading-tight">
                     Doorstep Delivery
                 </h3>
 
-                <p class="hidden sm:block text-[11px] text-slate-500 leading-relaxed mt-1">
-                    Mumbai • Thane • Navi Mumbai
+                <p class="text-[10px] sm:text-[11px] text-slate-500 leading-relaxed mt-1">
+                    Pickup & drop at your location
                 </p>
-            </div>
+
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
+                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                </span>
+            </button>
+
+
+            <!-- CARD 4 -->
+            <button type="button"
+                onclick="openWhyChooseModal('fleet')"
+                class="why-choose-card group px-3 py-5 sm:p-5 text-center hover:bg-indigo-50/50 transition-all duration-200 focus:outline-none focus:bg-indigo-50">
+
+                <div class="mx-auto w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition">
+                    <i class="fa-solid fa-car-side text-base"></i>
+                </div>
+
+                <h3 class="font-bold text-slate-900 text-xs sm:text-sm leading-tight">
+                    Clean Fleet
+                </h3>
+
+                <p class="text-[10px] sm:text-[11px] text-slate-500 leading-relaxed mt-1">
+                    Clean & well-maintained cars
+                </p>
+
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
+                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                </span>
+            </button>
+
+
+            <!-- CARD 5 -->
+            <button type="button"
+            onclick="openWhyChooseModal('support')"
+            class="why-choose-card group col-span-2 md:col-span-1 md:col-start-auto px-3 py-5 sm:p-5 text-center hover:bg-indigo-50/50 transition-all duration-200 focus:outline-none focus:bg-indigo-50">
+
+                <div class="mx-auto w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition">
+                    <i class="fa-solid fa-headset text-base"></i>
+                </div>
+
+                <h3 class="font-bold text-slate-900 text-xs sm:text-sm leading-tight">
+                    24/7 Support
+                </h3>
+
+                <p class="text-[10px] sm:text-[11px] text-slate-500 leading-relaxed mt-1">
+                    Safety & round-the-clock support
+                </p>
+
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
+                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                </span>
+            </button>
 
         </div>
 
@@ -903,6 +984,75 @@
         <p class="mt-1 text-slate-400">Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai 400079</p>
         <p class="mt-2 text-slate-500">Phone / WhatsApp: +91 9702988465 • &copy; 2026 Car with Driver India. All rights reserved.</p>
     </footer>
+
+    <!-- WHY CHOOSE US DETAILS MODAL -->
+<div id="why-choose-modal"
+    class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto animate-fade-in">
+
+        <!-- Close Button -->
+        <button type="button"
+            onclick="closeWhyChooseModal()"
+            class="absolute right-4 top-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition z-10">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+
+        <!-- Modal Header -->
+        <div class="p-6 pb-4 border-b border-slate-100">
+
+            <div class="flex items-center gap-3 pr-10">
+
+                <div id="why-modal-icon"
+                    class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+
+                <div>
+                    <h3 id="why-modal-heading"
+                        class="text-lg font-black text-slate-900 leading-tight">
+                        Experienced, Verified & Multi-Lingual Chauffeurs
+                    </h3>
+
+                    <p class="text-[11px] text-slate-500 mt-1">
+                        Car with Driver India
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Modal Details -->
+        <div class="p-6">
+
+            <ul id="why-modal-details"
+                class="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+            </ul>
+
+
+            <!-- CTA -->
+            <div class="mt-6 pt-4 border-t border-slate-100">
+
+                <a id="why-modal-whatsapp"
+                    href="https://wa.me/919702988465?text=Hi%20Car%20with%20Driver%20India%2C%20I%20want%20to%20book%20a%20ride."
+                    target="_blank"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-sm">
+
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span>Book Your Ride Now</span>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
     <!-- SUCCESS ANIMATION MODAL -->
     <div id="success-confirmation-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -2618,6 +2768,153 @@ document.addEventListener('DOMContentLoaded', function () {
     updateDatePlaceholder('wd-out-rdate', 'wd-out-rdate-placeholder');
 
     updateDatePlaceholder('wd-airport-date', 'wd-airport-date-placeholder');
+});
+
+        /* =========================================================
+   WHY CHOOSE US MODAL
+   ========================================================= */
+
+const whyChooseData = {
+
+    driver: {
+        heading: "Experienced, Verified & Multi-Lingual Chauffeurs",
+        icon: "fa-user-shield",
+        details: [
+            "<strong>Marathi, Hindi & English Speaking:</strong> Drivers fluent in Marathi, Hindi, and English, making local commuting, family trips, and corporate travel completely comfortable for everyone.",
+            "<strong>Verified Background:</strong> All drivers are background-verified and possess valid commercial driving licenses.",
+            "<strong>Polite & Courteous:</strong> Well-behaved and professionally dressed drivers trained to handle family trips and corporate travel smoothly.",
+            "<strong>Route Experts:</strong> Deep knowledge of local city traffic routes, shortcuts, and outstation highways across Maharashtra and beyond.",
+            "<strong>Safe Driving:</strong> Strict adherence to safety limits, with no rash driving or over-speeding."
+        ]
+    },
+
+    pricing: {
+        heading: "100% Transparent Fare Policy",
+        icon: "fa-receipt",
+        details: [
+            "<strong>No Hidden Costs:</strong> What you see is what you pay. No last-minute surprises.",
+            "<strong>Clear Breakup:</strong> Fare clearly segregates per-km/rental charges, driver allowance, and toll/parking terms.",
+            "<strong>Flexible Billing:</strong> Easy options for local packages, outstation trips, and airport transfers.",
+            "<strong>Simple Invoices:</strong> Standard digital bills/receipts provided for all completed rides."
+        ]
+    },
+
+    doorstep: {
+        heading: "Pickup & Drop at Your Location",
+        icon: "fa-house-chimney",
+        details: [
+            "<strong>Zero Hassle:</strong> The car and driver arrive right at your residential doorstep, hotel, or office on time.",
+            "<strong>Punctuality:</strong> Drivers reach the pickup point 10–15 minutes before the scheduled time.",
+            "<strong>Flexible Drop:</strong> Drop back safely to your exact preferred location at the end of the trip."
+        ]
+    },
+
+    fleet: {
+        heading: "Sanitized & Neat Cars",
+        icon: "fa-car-side",
+        details: [
+            "<strong>Regularly Serviced:</strong> All vehicles undergo routine mechanical check-ups before every outstation or long trip.",
+            "<strong>Spotless Interior:</strong> Vacuum-cleaned interiors, fresh seat covers, and odor-free cabins.",
+            "<strong>Comfortable Ride:</strong> Good AC performance and sufficient boot space for luggage.",
+            "<strong>Reliable Vehicles:</strong> Well-maintained cars ready for a smooth and comfortable journey."
+        ]
+    },
+
+    support: {
+        heading: "Safe Journeys & Round-the-Clock Support",
+        icon: "fa-headset",
+        details: [
+            "<strong>Live Assistance:</strong> Dedicated phone and WhatsApp support available throughout your trip duration.",
+            "<strong>Trip Coordination:</strong> Direct communication support with the team and driver from start to finish.",
+            "<strong>Emergency Backup:</strong> Immediate vehicle or driver replacement support in case of any rare breakdown.",
+            "<strong>Safe for Families:</strong> Highly trusted by family travelers, senior citizens, and solo riders."
+        ]
+    }
+
+};
+
+
+function openWhyChooseModal(type) {
+
+    const data = whyChooseData[type];
+
+    if (!data) return;
+
+    const modal = document.getElementById('why-choose-modal');
+    const heading = document.getElementById('why-modal-heading');
+    const iconBox = document.getElementById('why-modal-icon');
+    const details = document.getElementById('why-modal-details');
+    const whatsapp = document.getElementById('why-modal-whatsapp');
+
+    if (!modal || !heading || !iconBox || !details) return;
+
+    // Set heading
+    heading.innerText = data.heading;
+
+    // Set icon
+    iconBox.innerHTML = `<i class="fa-solid ${data.icon}"></i>`;
+
+    // Set bullet points
+    details.innerHTML = data.details.map(item => `
+        <li class="flex items-start gap-2.5">
+            <span class="w-5 h-5 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                <i class="fa-solid fa-check text-[9px]"></i>
+            </span>
+            <span>${item}</span>
+        </li>
+    `).join('');
+
+    // Dynamic WhatsApp message
+    const message = `Hi Car with Driver India, I want to book a ride. I would like to know more about ${data.heading}.`;
+
+    if (whatsapp) {
+        whatsapp.href = `https://wa.me/919702988465?text=${encodeURIComponent(message)}`;
+    }
+
+    // Open modal
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    // Prevent background scrolling
+    document.body.classList.add('overflow-hidden');
+}
+
+
+function closeWhyChooseModal() {
+
+    const modal = document.getElementById('why-choose-modal');
+
+    if (!modal) return;
+
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+
+    // Restore background scrolling
+    document.body.classList.remove('overflow-hidden');
+}
+
+
+/* Close when clicking outside the popup */
+document.addEventListener('click', function(event) {
+
+    const modal = document.getElementById('why-choose-modal');
+
+    if (!modal) return;
+
+    if (event.target === modal) {
+        closeWhyChooseModal();
+    }
+
+});
+
+
+/* Close popup with ESC key */
+document.addEventListener('keydown', function(event) {
+
+    if (event.key === 'Escape') {
+        closeWhyChooseModal();
+    }
+
 });
         
     </script>

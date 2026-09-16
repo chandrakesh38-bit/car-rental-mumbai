@@ -1,17 +1,22 @@
 // Car With Driver India
 // Secure Partner Application API
-// Documents are uploaded to PRIVATE Supabase Storage.
-// Documents are NOT attached to email.
+// Private Supabase Storage
+// No documents are attached to email
 
 export const config = {
-  runtime: "nodejs",
+  runtime: "edge",
 };
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
+
 const BUCKET_NAME = "partner-documents";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+// Keep total website upload below Vercel request limit
+const MAX_TOTAL_SIZE = 4 * 1024 * 1024; // 4 MB
+const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3 MB per file
+const MAX_VEHICLE_PHOTOS = 4;
 
 const ALLOWED_DOCUMENT_TYPES = [
   "image/jpeg",
@@ -45,12 +50,12 @@ function cleanFileName(name) {
 
 async function uploadToSupabase(file, path) {
   if (!file || typeof file.arrayBuffer !== "function") {
-    return null;
+    throw new Error("Invalid file.");
   }
 
   if (file.size > MAX_FILE_SIZE) {
     throw new Error(
-      `${file.name || "File"} is larger than 10 MB.`
+      `${file.name || "File"} is larger than 3 MB.`
     );
   }
 
@@ -59,9 +64,11 @@ async function uploadToSupabase(file, path) {
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        Authorization:
+          `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
         apikey: SUPABASE_SERVICE_ROLE_KEY,
-        "Content-Type": file.type || "application/octet-stream",
+        "Content-Type":
+          file.type || "application/octet-stream",
         "x-upsert": "false",
       },
       body: await file.arrayBuffer(),
@@ -70,13 +77,16 @@ async function uploadToSupabase(file, path) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Storage upload failed: ${errorText}`);
+
+    throw new Error(
+      `Document upload failed: ${errorText}`
+    );
   }
 
   return path;
 }
 
-async function deleteFromSupabase(path) {
+async function deleteUploadedFile(path) {
   if (!path) return;
 
   try {
@@ -85,7 +95,8 @@ async function deleteFromSupabase(path) {
       {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          Authorization:
+            `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
           apikey: SUPABASE_SERVICE_ROLE_KEY,
           "Content-Type": "application/json",
         },
@@ -95,7 +106,10 @@ async function deleteFromSupabase(path) {
       }
     );
   } catch (error) {
-    console.error("Cleanup error:", error);
+    console.error(
+      "Failed to delete uploaded file:",
+      error
+    );
   }
 }
 
@@ -105,7 +119,8 @@ async function saveApplication(application) {
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        Authorization:
+          `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
         apikey: SUPABASE_SERVICE_ROLE_KEY,
         "Content-Type": "application/json",
         Prefer: "return=representation",
@@ -116,88 +131,121 @@ async function saveApplication(application) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Database insert failed: ${errorText}`);
+
+    throw new Error(
+      `Database save failed: ${errorText}`
+    );
   }
 
-  return await response.json();
+  return response.json();
 }
 
-async function sendNotificationEmail(details) {
-  const accessKey = process.env.WEB3FORMS_ACCESS_KEY;
+async function sendNotificationEmail(application) {
+  const accessKey =
+    process.env.WEB3FORMS_ACCESS_KEY;
 
-  // Email notification is optional until the Web3Forms key
-  // is added to Vercel Environment Variables.
   if (!accessKey) {
+    console.error(
+      "WEB3FORMS_ACCESS_KEY is missing."
+    );
     return;
   }
 
   const message = `
 New Partner Application
 
-Name: ${details.name}
-Mobile: ${details.phone}
-Email: ${details.email || "Not provided"}
-Alternate Number: ${details.alternate_phone || "Not provided"}
+Name: ${application.name}
+Mobile: ${application.phone}
+Email: ${application.email || "Not provided"}
+Alternate Number: ${
+    application.alternate_phone || "Not provided"
+  }
 
 Vehicle Details
-Brand: ${details.car_brand || "Not provided"}
-Model: ${details.car_model || "Not provided"}
-Manufacturing Year: ${details.mfg_year || "Not provided"}
+Brand: ${application.car_brand || "Not provided"}
+Model: ${application.car_model || "Not provided"}
+Manufacturing Year: ${
+    application.mfg_year || "Not provided"
+  }
 
 Documents:
-Documents uploaded successfully to private Supabase Storage.
+All required documents have been uploaded successfully.
+
+Storage:
+Private Supabase Storage
 
 IMPORTANT:
 No documents are attached to this email.
 `;
 
-  const response = await fetch(
-    "https://api.web3forms.com/submit",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        access_key: accessKey,
-        subject: `New Partner Application - ${details.name}`,
-        from_name: "CWD Partner System",
-        message: message,
-      }),
-    }
-  );
+  try {
+    const response = await fetch(
+      "https://api.web3forms.com/submit",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          access_key: accessKey,
+          subject:
+            `New Partner Application - ${application.name}`,
+          from_name: "CWD Partner System",
+          message,
+        }),
+      }
+    );
 
-  if (!response.ok) {
+    if (!response.ok) {
+      console.error(
+        "Web3Forms email failed:",
+        await response.text()
+      );
+    }
+  } catch (error) {
     console.error(
-      "Email notification failed:",
-      await response.text()
+      "Email notification error:",
+      error
     );
   }
 }
 
 export default async function handler(request) {
+
+  // CORS preflight
   if (request.method === "OPTIONS") {
-    return jsonResponse({ success: true });
+    return jsonResponse({
+      success: true,
+    });
   }
 
+  // Only POST allowed
   if (request.method !== "POST") {
     return jsonResponse(
       {
         success: false,
-        message: "Only POST requests are allowed.",
+        message:
+          "Only POST requests are allowed.",
       },
       405
     );
   }
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    console.error("Supabase environment variables are missing.");
+  // Check environment variables
+  if (
+    !SUPABASE_URL ||
+    !SUPABASE_SERVICE_ROLE_KEY
+  ) {
+    console.error(
+      "Supabase environment variables are missing."
+    );
 
     return jsonResponse(
       {
         success: false,
-        message: "Server configuration error.",
+        message:
+          "Server configuration error.",
       },
       500
     );
@@ -206,50 +254,75 @@ export default async function handler(request) {
   const uploadedFiles = [];
 
   try {
-    const formData = await request.formData();
 
-    // --------------------------------
+    const formData =
+      await request.formData();
+
+    // ----------------------------------------
     // PARTNER DETAILS
-    // --------------------------------
+    // ----------------------------------------
 
-    const name = String(formData.get("name") || "").trim();
-    const phone = String(formData.get("phone") || "").trim();
-    const email = String(formData.get("email") || "").trim();
-    const alternatePhone = String(
-      formData.get("alternate_phone") || ""
-    ).trim();
+    const name =
+      String(
+        formData.get("name") || ""
+      ).trim();
 
-    const carBrand = String(
-      formData.get("car_brand") || ""
-    ).trim();
+    const phone =
+      String(
+        formData.get("phone") || ""
+      ).trim();
 
-    const carModel = String(
-      formData.get("car_model") || ""
-    ).trim();
+    const email =
+      String(
+        formData.get("email") || ""
+      ).trim();
 
-    const mfgYearRaw = String(
-      formData.get("mfg_year") || ""
-    ).trim();
+    const alternatePhone =
+      String(
+        formData.get("alternate_phone") || ""
+      ).trim();
 
-    const mfgYear = mfgYearRaw
-      ? parseInt(mfgYearRaw, 10)
-      : null;
+    const carBrand =
+      String(
+        formData.get("car_brand") || ""
+      ).trim();
+
+    const carModel =
+      String(
+        formData.get("car_model") || ""
+      ).trim();
+
+    const mfgYearRaw =
+      String(
+        formData.get("mfg_year") || ""
+      ).trim();
+
+    const mfgYear =
+      mfgYearRaw
+        ? parseInt(mfgYearRaw, 10)
+        : null;
+
+    // ----------------------------------------
+    // REQUIRED DETAILS CHECK
+    // ----------------------------------------
 
     if (!name || !phone) {
       return jsonResponse(
         {
           success: false,
-          message: "Name and mobile number are required.",
+          message:
+            "Name and mobile number are required.",
         },
         400
       );
     }
 
-    // --------------------------------
+    // ----------------------------------------
     // APPLICATION ID
-    // --------------------------------
+    // ----------------------------------------
 
-    const applicationId = crypto.randomUUID();
+    const applicationId =
+      crypto.randomUUID();
 
     const uploaded = {
       rc_path: null,
@@ -261,18 +334,26 @@ export default async function handler(request) {
       vehicle_photo_paths: [],
     };
 
-    // --------------------------------
-    // DOCUMENT UPLOAD FUNCTION
-    // --------------------------------
+    // ----------------------------------------
+    // DOCUMENT UPLOAD
+    // ----------------------------------------
 
     async function processDocument(
       fieldName,
       databaseField
     ) {
-      const file = formData.get(fieldName);
 
-      if (!file || typeof file.arrayBuffer !== "function") {
-        return;
+      const file =
+        formData.get(fieldName);
+
+      if (
+        !file ||
+        typeof file.arrayBuffer !==
+          "function"
+      ) {
+        throw new Error(
+          `${fieldName.toUpperCase()} document is required.`
+        );
       }
 
       if (
@@ -285,24 +366,37 @@ export default async function handler(request) {
         );
       }
 
-      const safeName = cleanFileName(file.name);
+      if (file.size <= 0) {
+        throw new Error(
+          `${file.name || fieldName} is empty.`
+        );
+      }
+
+      const safeName =
+        cleanFileName(file.name);
 
       const path =
         `${applicationId}/${fieldName}-${safeName}`;
 
       const uploadedPath =
-        await uploadToSupabase(file, path);
+        await uploadToSupabase(
+          file,
+          path
+        );
 
-      uploadedFiles.push(uploadedPath);
+      uploadedFiles.push(
+        uploadedPath
+      );
 
-      uploaded[databaseField] = uploadedPath;
+      uploaded[databaseField] =
+        uploadedPath;
     }
 
-    // --------------------------------
-    // UPLOAD DOCUMENTS
-    // --------------------------------
-
-    await processDocument("rc", "rc_path");
+    // Required documents
+    await processDocument(
+      "rc",
+      "rc_path"
+    );
 
     await processDocument(
       "insurance",
@@ -329,17 +423,32 @@ export default async function handler(request) {
       "pan_path"
     );
 
-    // --------------------------------
+    // ----------------------------------------
     // VEHICLE PHOTOS
-    // --------------------------------
+    // ----------------------------------------
 
     const vehiclePhotos =
-      formData.getAll("vehicle_photos");
+      formData.getAll(
+        "vehicle_photos"
+      );
 
-    for (const file of vehiclePhotos) {
+    if (
+      vehiclePhotos.length >
+      MAX_VEHICLE_PHOTOS
+    ) {
+      throw new Error(
+        "Maximum 4 vehicle photos are allowed."
+      );
+    }
+
+    for (
+      const file of vehiclePhotos
+    ) {
+
       if (
         !file ||
-        typeof file.arrayBuffer !== "function"
+        typeof file.arrayBuffer !==
+          "function"
       ) {
         continue;
       }
@@ -350,13 +459,13 @@ export default async function handler(request) {
         )
       ) {
         throw new Error(
-          `${file.name || "Vehicle photo"}: Only JPG, PNG or WEBP photos are allowed.`
+          `${file.name || "Vehicle photo"}: Only JPG, PNG or WEBP images are allowed.`
         );
       }
 
-      if (file.size > MAX_FILE_SIZE) {
+      if (file.size <= 0) {
         throw new Error(
-          `${file.name || "Vehicle photo"} is larger than 10 MB.`
+          `${file.name || "Vehicle photo"} is empty.`
         );
       }
 
@@ -367,44 +476,64 @@ export default async function handler(request) {
         `${applicationId}/vehicle-photos/${safeName}`;
 
       const uploadedPath =
-        await uploadToSupabase(file, path);
+        await uploadToSupabase(
+          file,
+          path
+        );
 
-      uploadedFiles.push(uploadedPath);
+      uploadedFiles.push(
+        uploadedPath
+      );
 
       uploaded.vehicle_photo_paths.push(
         uploadedPath
       );
     }
 
-    // --------------------------------
-    // SAVE PARTNER APPLICATION
-    // --------------------------------
+    // ----------------------------------------
+    // SAVE APPLICATION TO DATABASE
+    // ----------------------------------------
 
     const application = {
+
       id: applicationId,
+
       name,
+
       phone,
-      email: email || null,
+
+      email:
+        email || null,
+
       alternate_phone:
         alternatePhone || null,
+
       car_brand:
         carBrand || null,
+
       car_model:
         carModel || null,
+
       mfg_year:
         Number.isInteger(mfgYear)
           ? mfgYear
           : null,
 
-      rc_path: uploaded.rc_path,
+      rc_path:
+        uploaded.rc_path,
+
       insurance_path:
         uploaded.insurance_path,
+
       puc_path:
         uploaded.puc_path,
+
       dl_path:
         uploaded.dl_path,
+
       aadhaar_path:
         uploaded.aadhaar_path,
+
       pan_path:
         uploaded.pan_path,
 
@@ -412,41 +541,55 @@ export default async function handler(request) {
         uploaded.vehicle_photo_paths,
     };
 
-    await saveApplication(application);
+    await saveApplication(
+      application
+    );
 
-    // --------------------------------
+    // ----------------------------------------
     // EMAIL NOTIFICATION
-    // --------------------------------
+    // ----------------------------------------
 
     await sendNotificationEmail(
       application
     );
 
-    // --------------------------------
+    // ----------------------------------------
     // SUCCESS
-    // --------------------------------
+    // ----------------------------------------
 
     return jsonResponse({
       success: true,
+
       message:
         "Partner application submitted successfully.",
+
       application_id:
         applicationId,
     });
+
   } catch (error) {
+
     console.error(
       "Partner application error:",
       error
     );
 
-    // Delete uploaded files if something failed
-    for (const path of uploadedFiles) {
-      await deleteFromSupabase(path);
+    // ----------------------------------------
+    // CLEANUP
+    // ----------------------------------------
+
+    for (
+      const path of uploadedFiles
+    ) {
+      await deleteUploadedFile(
+        path
+      );
     }
 
     return jsonResponse(
       {
         success: false,
+
         message:
           error.message ||
           "Unable to submit partner application.",

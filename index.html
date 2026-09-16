@@ -2301,65 +2301,185 @@ function handleBookingSubmit(e) {
     const email = document.getElementById('cust-email').value.trim();
     const address = document.getElementById('cust-address').value.trim();
 
-    const pickupLocation = document.getElementById('wd-local-pickup').value.trim();
-    const packageValue = document.getElementById('wd-local-package').value;
-
-    const startDate = document.getElementById('wd-local-date').value;
-    const startHour = parseInt(document.getElementById('wd-local-hour').value);
-    const startAmPm = document.getElementById('wd-local-ampm').value;
-
     const car = wdFleet.find(c => c.name === chosenCarName);
 
-    const extraKmRate = car?.rates?.local?.extraKm || 0;
+    let message = '';
+    let subject = '';
 
-    const packageMap = {
-        '8hr_80km': {
-            label: '8 Hours / 80 KM',
+    // =========================
+    // LOCAL CITY
+    // =========================
+    if (currentWDSubTab === 'local') {
+
+        const pickupLocation = document.getElementById('wd-local-pickup').value.trim();
+        const packageValue = document.getElementById('wd-local-package').value;
+
+        const startDate = document.getElementById('wd-local-date').value;
+        const startHour = parseInt(document.getElementById('wd-local-hour').value);
+        const startAmPm = document.getElementById('wd-local-ampm').value;
+
+        const extraKmRate = car?.rates?.local?.extraKm || 0;
+
+        const packageMap = {
+            '8hr_80km': { label: '8 Hours / 80 KM', hours: 8 },
+            '12hr_120km': { label: '12 Hours / 120 KM', hours: 12 }
+        };
+
+        const selectedPackage = packageMap[packageValue] || {
+            label: packageValue,
             hours: 8
-        },
-        '12hr_120km': {
-            label: '12 Hours / 120 KM',
-            hours: 12
-        }
-    };
+        };
 
-    const selectedPackage = packageMap[packageValue] || {
-        label: packageValue,
-        hours: 8
-    };
+        const startDateTime = createLocalDateTime(
+            startDate,
+            startHour,
+            startAmPm
+        );
 
-    const startDateTime = createLocalDateTime(
-        startDate,
-        startHour,
-        startAmPm
-    );
+        const endDateTime = new Date(
+            startDateTime.getTime() + selectedPackage.hours * 60 * 60 * 1000
+        );
 
-    const endDateTime = new Date(
-        startDateTime.getTime() + selectedPackage.hours * 60 * 60 * 1000
-    );
+        const bookingId = generateBookingId();
 
-    const bookingId = generateBookingId();
-
-    const startFormatted = formatBookingDateTime(startDateTime);
-    const endFormatted = formatBookingDateTime(endDateTime);
-
-    const durationFormatted = formatDuration(selectedPackage.hours);
-
-const message = `
-🚨 NEW BOOKING | ${bookingId}
+        message = `
+🚨 LOCAL CITY | ${bookingId}
 
 👤 ${name} | ${phone}
 🚗 ${chosenCarName} | ₹${chosenFareAmount.toLocaleString('en-IN')}
 📍 ${pickupLocation} — ${address}
-📅 ${startFormatted} – ${endFormatted} | ${selectedPackage.label}
+📅 ${formatBookingDateTime(startDateTime)} – ${formatBookingDateTime(endDateTime)}
+⏱ ${selectedPackage.label}
 💰 Extra: ₹${extraKmRate}/KM
 
 ✓ Incl: Fuel, Driver
 ✕ Excl: Toll, Parking, State Tax
 `;
 
+        subject = `New booking assigned to your car – ${chosenCarName}`;
+    }
+
+    // =========================
+    // OUTSTATION
+    // =========================
+    else if (currentWDSubTab === 'outstation') {
+
+        const pickupLocation = document.getElementById('wd-out-pickup').value.trim();
+        const destination = document.getElementById('wd-out-destination').value.trim();
+
+        const pickupDate = document.getElementById('wd-out-pdate').value;
+        const pickupHour = parseInt(document.getElementById('wd-out-phour').value);
+        const pickupAmPm = document.getElementById('wd-out-pampm').value;
+
+        const returnDate = document.getElementById('wd-out-rdate').value;
+        const returnHour = parseInt(document.getElementById('wd-out-rhour').value);
+        const returnAmPm = document.getElementById('wd-out-rampm').value;
+
+        const extraKmRate = car?.rates?.outstationPerKm || 0;
+        const driverAllowance = car?.rates?.driverAllowance || 0;
+
+        const startDateTime = createLocalDateTime(
+            pickupDate,
+            pickupHour,
+            pickupAmPm
+        );
+
+        const returnDateTime = createLocalDateTime(
+            returnDate,
+            returnHour,
+            returnAmPm
+        );
+
+        const billableKm = Math.max(
+            wdOutstationKm,
+            wdOutstationDays * 300
+        );
+
+        const bookingId = generateBookingId();
+
+        message = `
+🚨 OUTSTATION | ${bookingId}
+
+👤 ${name} | ${phone}
+🚗 ${chosenCarName} | ₹${chosenFareAmount.toLocaleString('en-IN')}
+📍 ${pickupLocation} → ${destination}
+📅 Start: ${formatBookingDateTime(startDateTime)}
+📅 Return: ${formatBookingDateTime(returnDateTime)}
+⏱ ${wdOutstationDays} Day${wdOutstationDays > 1 ? 's' : ''} | ${billableKm} KM
+💰 ₹${extraKmRate}/KM | Driver ₹${driverAllowance}/Day
+
+✓ Incl: Fuel, Driver
+✕ Excl: Toll, Parking, State Tax
+`;
+
+        subject = `New booking assigned to your car – ${chosenCarName}`;
+    }
+
+    // =========================
+    // AIRPORT
+    // =========================
+    else if (currentWDSubTab === 'airport') {
+
+        const airport = document.getElementById('wd-airport-terminal').value;
+
+        const airportNames = {
+            t1: 'Mumbai Airport T1',
+            t2: 'Mumbai Airport T2',
+            nmia: 'Navi Mumbai International Airport'
+        };
+
+        const airportName = airportNames[airport] || airport;
+
+        const location = document.getElementById('wd-airport-pickup').value.trim();
+
+        const date = document.getElementById('wd-airport-date').value;
+        const hour = parseInt(document.getElementById('wd-airport-hour').value);
+        const ampm = document.getElementById('wd-airport-ampm').value;
+
+        const journeyDateTime = createLocalDateTime(
+            date,
+            hour,
+            ampm
+        );
+
+        const bookingId = generateBookingId();
+
+        if (currentAirportType === 'drop') {
+
+            message = `
+🚨 AIRPORT DROP | ${bookingId}
+
+👤 ${name} | ${phone}
+🚗 ${chosenCarName} | ₹${chosenFareAmount.toLocaleString('en-IN')}
+📍 Pickup: ${location} — ${address}
+✈️ ${airportName}
+📅 ${formatBookingDateTime(journeyDateTime)}
+
+✓ Incl: Fuel, Driver
+✕ Excl: Toll, Parking
+`;
+
+        } else {
+
+            message = `
+🚨 AIRPORT PICKUP | ${bookingId}
+
+👤 ${name} | ${phone}
+🚗 ${chosenCarName} | ₹${chosenFareAmount.toLocaleString('en-IN')}
+✈️ From: ${airportName}
+📍 Drop: ${location} — ${address}
+📅 ${formatBookingDateTime(journeyDateTime)}
+
+✓ Incl: Fuel, Driver
+✕ Excl: Toll, Parking
+`;
+        }
+
+        subject = `New booking assigned to your car – ${chosenCarName}`;
+    }
+
     sendWithDriverBookingEmail(
-        `New booking assigned to your car – ${chosenCarName}`,
+        subject,
         name,
         phone,
         email,
@@ -2369,7 +2489,6 @@ const message = `
     closeModal();
     showSuccessModal();
 }
-
         function handleSDBookingSubmit(e) {
             e.preventDefault();
             const name = document.getElementById('sd-cust-name').value;

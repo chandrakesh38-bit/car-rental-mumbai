@@ -2964,11 +2964,15 @@ function showPartnerErrorModal(message) {
 
     document.body.appendChild(modal);
 
-    document.getElementById('partner-retry-btn').onclick = function () {
+document.getElementById('partner-retry-btn').onclick = function () {
         modal.remove();
 
         if (lastPartnerForm) {
-            lastPartnerForm.requestSubmit();
+            // Modal band karke direct form submit function ko call kar do
+            handlePartnerFormSubmit({
+                preventDefault: function() {},
+                target: lastPartnerForm
+            });
         }
     };
 

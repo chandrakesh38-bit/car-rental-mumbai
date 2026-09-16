@@ -2909,11 +2909,6 @@ function showPartnerErrorModal(message) {
                     Submission Failed
                 </h3>
 
-                <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-                    We couldn't submit your partner application.
-                    Your documents have not been sent by email.
-                </p>
-
                 <div class="mt-3 bg-red-50 border border-red-100 rounded-xl p-3 text-left">
                     <p class="text-[11px] text-red-800 leading-relaxed">
                         ${String(message || 'Something went wrong. Please try again.')
@@ -2924,38 +2919,60 @@ function showPartnerErrorModal(message) {
 
             </div>
 
-            <a
-                href="https://wa.me/919702988465"
-                target="_blank"
-                class="mt-2 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2">
-                <i class="fa-brands fa-whatsapp"></i>
-                Contact Customer Support
-            </a>
+            <div class="mt-5 space-y-2">
 
-            <button
-                type="button"
-                id="partner-error-close"
-                class="w-full mt-2 text-slate-400 hover:text-slate-700 font-semibold py-2 text-xs">
-                Close
-            </button>
+                <button
+                    type="button"
+                    id="partner-reupload-btn"
+                    class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                    Re-upload Documents
+                </button>
+
+                <a
+                    href="https://wa.me/919702988465"
+                    target="_blank"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    Contact Customer Support
+                </a>
+
+                <button
+                    type="button"
+                    id="partner-error-close"
+                    class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">
+                    Close
+                </button>
+
+            </div>
 
         </div>
     `;
 
     document.body.appendChild(modal);
 
-document.getElementById('partner-retry-btn').onclick = function () {
+    // Re-upload button click (wapas form par le jayega aur documents dikhayega)
+    document.getElementById('partner-reupload-btn').onclick = function () {
         modal.remove();
 
-        if (lastPartnerForm) {
-            // Modal band karke direct form submit function ko call kar do
-            handlePartnerFormSubmit({
-                preventDefault: function() {},
-                target: lastPartnerForm
+        const partnerModal = document.getElementById('partner-modal');
+        if (partnerModal) partnerModal.scrollTop = 0;
+
+        const firstDocument = document.getElementById('part-rc');
+        if (firstDocument) {
+            firstDocument.parentElement?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
             });
         }
     };
 
+    // Close button click (ab yeh 100% kaam karega aur popup band kar dega)
+    document.getElementById('partner-error-close').onclick = function () {
+        modal.remove();
+    };
+}
+        
     document.getElementById('partner-reupload-btn').onclick = function () {
         modal.remove();
 

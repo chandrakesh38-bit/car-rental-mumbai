@@ -1206,16 +1206,7 @@
         const SUPABASE_ANON_KEY = "sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz";
         const supabasePublic = (window.supabase && typeof window.supabase.createClient === 'function') ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-        const mumbaiPlaces = [
-            "Ghansoli", "Rabale", "Koparkhairane", "Airoli", "Digha Gaon", "Turbhe", "Vashi", "Sanpada", 
-            "Juinagar", "Nerul", "Seawoods–Darave", "CBD Belapur", "Kharghar", "Mansarovar", "Khandeshwar", "Panvel",
-            "CST / CSMT", "Masjid", "Sandhurst Road", "Byculla", "Chinchpokli", "Curry Road", "Parel", "Dadar", "Matunga",
-            "Sion", "Kurla", "Vidyavihar", "Ghatkopar", "Vikhroli", "Kanjurmarg", "Bhandup", "Nahur", "Mulund",
-            "Thane", "Kalyan", "Dombivli", "Ambernath", "Badlapur", "Ulhasnagar", "Diva", "Mumbra",
-            "Mahim", "Bandra", "Khar Road", "Santacruz", "Vile Parle", "Andheri", "Jogeshwari",
-            "Ram Mandir", "Goregaon", "Malad", "Kandivali", "Borivali", "Dahisar", "Mira Road", "Bhayandar", "Majiwada", "Govandi", "Chembur", "Churchgate", "Lower Parel",
-            "Naigaon", "Vasai Road", "Nallasopara", "Virar", "Powai", "Hiranandani Powai", "Lokhandwala Andheri", "BKC"
-        ];
+let mumbaiPlaces = [];
 
         const destinationCities = [
             { name: "Pune", km: 300 }, { name: "Nashik", km: 340 }, { name: "Nagpur", km: 1650 }, 
@@ -1387,6 +1378,7 @@ const mumbaiMetroLocations = [
     { name: "Gholvad", km: null, serviceable: false },
     { name: "Dahanu Road", km: null, serviceable: false }
 ];
+        mumbaiPlaces = mumbaiMetroLocations.map(location => location.name);
 
         // 6 WITH DRIVER CARS
         const wdFleet = [

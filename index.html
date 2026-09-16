@@ -2345,13 +2345,13 @@ function handleBookingSubmit(e) {
 
     const durationFormatted = formatDuration(selectedPackage.hours);
 
-    const message = `
+const message = `
 🚨 NEW BOOKING | ${bookingId}
 
 👤 ${name} | ${phone}
 🚗 ${chosenCarName} | ₹${chosenFareAmount.toLocaleString('en-IN')}
-📍 ${pickupAddress}
-📅 ${formatBookingDateTime(startDate)} – ${formatBookingDateTime(endDate)} | ${packageLabel}
+📍 ${pickupLocation} — ${address}
+📅 ${startFormatted} – ${endFormatted} | ${selectedPackage.label}
 💰 Extra: ₹${extraKmRate}/KM
 
 ✓ Incl: Fuel, Driver

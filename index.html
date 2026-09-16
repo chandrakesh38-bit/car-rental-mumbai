@@ -3075,20 +3075,75 @@ async function handlePartnerFormSubmit(e) {
         ];
 
         /*
-         * Validate required documents
-         */
-        for (const file of files) {
 
-            if (!file) {
-                throw new Error('Please upload all required documents.');
-            }
+/*
+ * Validate required documents
+ */
+const missingDocuments = [];
 
-            if (!allowedDocuments.includes(file.type)) {
-                throw new Error(
-                    `${file.name}: Only JPG, PNG or PDF files are allowed.`
-                );
-            }
+files.forEach((file, index) => {
+    const field = docFields[index];
+
+    if (!file) {
+        missingDocuments.push(field);
+        
+        const input = document.getElementById(field.id);
+        const wrapper = input?.parentElement;
+        const button = wrapper?.querySelector('button');
+        const label = wrapper?.querySelector('label');
+
+        if (wrapper) {
+            wrapper.classList.add('partner-document-missing');
         }
+
+        if (button) {
+            button.classList.remove(
+                'border-slate-300',
+                'bg-white'
+            );
+
+            button.classList.add(
+                'border-red-500',
+                'bg-red-50',
+                'ring-2',
+                'ring-red-200'
+            );
+        }
+
+        if (label) {
+            label.classList.add('text-red-600');
+        }
+
+        return;
+    }
+
+    if (!allowedDocuments.includes(file.type)) {
+        throw new Error(
+            `${file.name}: Only JPG, PNG or PDF files are allowed.`
+        );
+    }
+});
+
+if (missingDocuments.length > 0) {
+
+    const names = missingDocuments
+        .map(item => item.label)
+        .join(', ');
+
+    const firstMissingInput =
+        document.getElementById(missingDocuments[0].id);
+
+    if (firstMissingInput) {
+        firstMissingInput.parentElement?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+    }
+
+    throw new Error(
+        `Please upload the following mandatory document${missingDocuments.length > 1 ? 's' : ''}:\n\n${names}`
+    );
+}
 
         /*
          * Validate vehicle photos
@@ -3751,6 +3806,33 @@ document.addEventListener('keydown', function(event) {
         }
 
         state.docs[fieldId] = finalFile;
+
+        const input = document.getElementById(fieldId);
+const wrapper = input?.parentElement;
+const button = wrapper?.querySelector('button');
+const label = wrapper?.querySelector('label');
+
+if (wrapper) {
+    wrapper.classList.remove('partner-document-missing');
+}
+
+if (button) {
+    button.classList.remove(
+        'border-red-500',
+        'bg-red-50',
+        'ring-2',
+        'ring-red-200'
+    );
+
+    button.classList.add(
+        'border-slate-300',
+        'bg-white'
+    );
+}
+
+if (label) {
+    label.classList.remove('text-red-600');
+}
 
         createPreviewCard(
             finalFile,

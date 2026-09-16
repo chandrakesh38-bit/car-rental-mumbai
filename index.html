@@ -2151,13 +2151,15 @@ function onDeliveryLocationSelect() {
 
     if (!found) return;
 
-    // Not servicable location
+    // Not serviceable location
     if (found.serviceable === false) {
-        alert('This location is not servicable for home delivery.');
-
         input.value = '';
+
         document.getElementById('sd-cust-city').value = '';
         document.getElementById('sd-cust-state').value = '';
+
+        document.getElementById('sd-serviceability-modal').classList.remove('hidden');
+        document.getElementById('sd-serviceability-modal').classList.add('flex');
 
         updateSDFareReview();
         return;
@@ -2168,6 +2170,14 @@ function onDeliveryLocationSelect() {
     document.getElementById('sd-cust-state').value = found.state || '';
 
     updateSDFareReview();
+}
+
+function closeSDServiceabilityModal() {
+    const modal = document.getElementById('sd-serviceability-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+
+    document.getElementById('sd-delivery-location-input').focus();
 }
 
         function handleBrandDropdownChange(val) {
@@ -2291,5 +2301,30 @@ document.addEventListener('DOMContentLoaded', function () {
 });
         
     </script>
+    <!-- HOME DELIVERY UNAVAILABLE MODAL -->
+<div id="sd-serviceability-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] hidden items-center justify-center px-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
+
+        <div class="mx-auto mb-4 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+            <i class="fa-solid fa-location-dot text-red-600 text-xl"></i>
+        </div>
+
+        <h3 class="text-lg font-extrabold text-slate-900 mb-2">
+            Home Delivery Unavailable
+        </h3>
+
+        <p class="text-sm text-slate-600 leading-relaxed mb-5">
+            This location is not servicable for home delivery.
+        </p>
+
+        <button
+            type="button"
+            onclick="closeSDServiceabilityModal()"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm py-2.5 rounded-xl transition">
+            OK
+        </button>
+
+    </div>
+</div>
 </body>
 </html>

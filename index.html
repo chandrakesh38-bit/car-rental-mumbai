@@ -365,7 +365,12 @@
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Choose Pickup Date & Time *</label>
                                 <div class="grid grid-cols-3 gap-2">
-                                    <input type="date" id="sd-pdate" onclick="this.showPicker()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
+                                    <div class="relative">
+    <input type="date" id="sd-pdate" onclick="this.showPicker()" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
+    <span id="sd-pdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+        DD/MM/YYYY
+    </span>
+</div>
                                     <select id="sd-phour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
@@ -380,7 +385,12 @@
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Choose Return Date & Time *</label>
                                 <div class="grid grid-cols-3 gap-2">
-                                    <input type="date" id="sd-rdate" onclick="this.showPicker()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
+                                    <div class="relative">
+    <input type="date" id="sd-rdate" onclick="this.showPicker()" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
+    <span id="sd-rdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+        DD/MM/YYYY
+    </span>
+</div>
                                     <select id="sd-rhour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
@@ -2063,6 +2073,25 @@
         button.innerHTML = 'See More FAQs <i class="fa-solid fa-chevron-down"></i>';
     }
 }
+function updateDatePlaceholder(inputId, placeholderId) {
+    const input = document.getElementById(inputId);
+    const placeholder = document.getElementById(placeholderId);
+
+    if (!input || !placeholder) return;
+
+    function update() {
+        placeholder.style.display = input.value ? 'none' : 'block';
+    }
+
+    update();
+    input.addEventListener('change', update);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    updateDatePlaceholder('sd-pdate', 'sd-pdate-placeholder');
+    updateDatePlaceholder('sd-rdate', 'sd-rdate-placeholder');
+});
+        
     </script>
 </body>
 </html>

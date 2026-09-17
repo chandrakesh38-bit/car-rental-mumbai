@@ -1,0 +1,7 @@
+<!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-center text-xs">
+        <nav aria-label="Footer navigation" class="max-w-5xl mx-auto px-4 mb-6 flex flex-wrap justify-center gap-x-5 gap-y-3">{{footerLinks}}</nav>
+        <p class="font-semibold text-slate-300">Car with Driver India • Car with Driver LLP</p>
+        <p class="mt-1 text-slate-400">Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai 400079</p>
+        <p class="mt-2 text-slate-500">Phone / WhatsApp: +91 9702988465 • &copy; 2026 Car with Driver India. All rights reserved.</p>
+    </footer>

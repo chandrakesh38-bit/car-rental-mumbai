@@ -1,0 +1,97 @@
+<!-- FAQS SECTION -->
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 py-12" id="faq">
+        <div class="text-center mb-8">
+            <span class="bg-indigo-50 border border-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2">FAQ</span>
+            <h2 class="text-2xl font-black text-slate-900">Frequently Asked Questions</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Everything you need to know about our self-drive and with-driver car rentals.</p>
+        </div>
+
+        <div class="space-y-3" id="faq-accordion">
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Who can rent a car from us?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    Anyone who is 21 years or older can rent a car. You must have a valid Indian LMV (Light Motor Vehicle) driving licence that is at least 6 months old. You must show the original driving licence or a valid DigiLocker version at the start of the trip. Printed copies on paper, screenshots, M-Parivahan app licences, and commercial driving licences are not accepted. In some cases, we may also ask for an additional local ID or travel proof for verification.
+                </p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Can international tourists, foreigners, or NRIs rent a car?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    Yes. International travellers and NRIs can book a self-drive rental car in India. You need: (1) A valid International Driving Licence, (2) Your Passport, and (3) An International Driving Permit (IDP) that is valid in India.
+                </p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> How does the car booking process work?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    Booking a self-drive rental car is simple: Open the website &rarr; choose your city &rarr; select pickup date and time &rarr; choose your car model &rarr; send request on WhatsApp &rarr; Our team will verify and confirm. You will receive booking details and instructions before your trip.
+                </p>
+            </div>
+
+            <div class="hidden faq-more bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> How early should I book my rental car?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    You can book as late as 3 hours before your trip start time. However, for better car availability and lower prices, we recommend booking 1–2 days in advance, especially on weekends and holidays.
+                </p>
+            </div>
+
+            <div class="hidden faq-more bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> What is the minimum and maximum rental duration?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    <strong>Rental Plans:</strong> Minimum 8 hours, maximum 60 days.<br>
+                    <strong>Subscription Plans:</strong> Minimum 7 days, up to 24 months.
+                </p>
+            </div>
+
+            <div class="hidden faq-more bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Can I book more than one car?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    Yes. You can book multiple cars on the same account for different dates. If you need multiple cars at the same time, each booking must be made with a different driver account and valid documents. Alternatively you can reach out on our support channel to help with this.
+                </p>
+            </div>
+
+            <div class="hidden faq-more bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-indigo-600"></i> Can I add a second driver?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    Yes, you can add a co-driver. Their ID must be shown during delivery. The booking must still be under the primary driver's name.
+                </p>
+            </div>
+
+            <div class="hidden faq-more bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                <h4 class="font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-rose-600"></i> Are pets allowed in the rental car?
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed pl-5">
+                    <strong>No.</strong> Pets are strictly not allowed because some customers may have allergies. If found, a penalty will be charged.
+                </p>
+            </div>
+                </div>
+
+        <!-- SEE MORE FAQ BUTTON -->
+        <div class="text-center mt-6">
+            <button
+                type="button"
+                id="faq-toggle-btn"
+                onclick="toggleFAQs()"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition"
+            >
+                See More FAQs
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+        </div>
+
+    </section>

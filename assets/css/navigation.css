@@ -1,0 +1,4 @@
+/* Accommodate all nine links on short mobile screens; original site CSS is unchanged. */
+#nav-drawer { overflow-y: auto; }
+#nav-drawer[aria-hidden="true"] { visibility: hidden; }
+#nav-drawer a[aria-current="page"] { background-color: #eef2ff; color: #1e1b4b; }

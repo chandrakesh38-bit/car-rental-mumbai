@@ -1,0 +1,351 @@
+<!-- BOOKING WIDGET CARD -->
+            <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden text-left text-slate-800" id="booking-widget">
+                
+                <!-- MAIN MODE TABS -->
+                <div class="grid grid-cols-2 bg-slate-100 p-1.5 border-b border-slate-200 gap-1">
+                    <button type="button" id="btn-mode-withdriver" onclick="setServiceMode('withdriver')" class="py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition tab-active shadow-sm">
+                        <i class="fa-solid fa-user-tie"></i> With Driver
+                    </button>
+                    <button type="button" id="btn-mode-selfdrive" onclick="setServiceMode('selfdrive')" class="py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 flex items-center justify-center gap-2 hover:text-indigo-950 transition">
+                        <i class="fa-solid fa-key"></i> Self Drive
+                    </button>
+                </div>
+
+                <!-- 1. WITH DRIVER BLOCK -->
+                <div id="with-driver-block" class="p-5 sm:p-7">
+                    
+                    <!-- Trip Subtabs -->
+                    <div class="grid grid-cols-3 bg-slate-100 rounded-xl p-1 mb-6 border border-slate-200 text-xs sm:text-sm font-semibold">
+                        <button type="button" id="subtab-local" onclick="setWDSubTab('local')" class="py-2.5 rounded-lg transition subtab-active flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-city"></i> <span>Local City</span>
+                        </button>
+                        <button type="button" id="subtab-outstation" onclick="setWDSubTab('outstation')" class="py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-route"></i> <span>Outstation</span>
+                        </button>
+                        <button type="button" id="subtab-airport" onclick="setWDSubTab('airport')" class="py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-plane-departure"></i> <span>Airport</span>
+                        </button>
+                    </div>
+
+                    <!-- LOCAL CITY FIELDS -->
+                    <div id="wd-local-fields" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address *</label>
+                                <input type="text" id="wd-local-pickup" autocomplete="off" oninput="showSuggestions('wd-local-pickup', 'mumbai-places', 'wd-local-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search area (e.g. Kalyan, Thane, Dadar)">
+                                <div id="wd-local-dropdown" class="autocomplete-dropdown hidden"></div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-1.5">
+                                    <div class="relative">
+    <input type="date" id="wd-local-date" onclick="this.showPicker()" class="date-input-custom w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer">
+    <span id="wd-local-date-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+        DD/MM/YY
+    </span>
+</div>
+                                    <select id="wd-local-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                        <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
+                                        <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
+                                        <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                                    </select>
+                                    <select id="wd-local-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                        <option value="AM" selected>AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Local Packages Selection -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-2"><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> Select Rental Package</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="button" id="pkg-card-8hr" onclick="selectLocalPackage('8hr_80km')" class="p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/50 text-left transition flex items-center justify-between">
+                                    <div>
+                                        <span class="font-extrabold text-xs sm:text-sm text-indigo-950 block">8 Hours / 80 KM</span>
+                                        <span class="text-[10px] text-slate-500 block">Full Day City Package</span>
+                                    </div>
+                                    <i class="fa-solid fa-circle-check text-indigo-600 text-base" id="pkg-check-8hr"></i>
+                                </button>
+                                <button type="button" id="pkg-card-12hr" onclick="selectLocalPackage('12hr_120km')" class="p-3.5 rounded-xl border-2 border-slate-200 bg-white text-left transition flex items-center justify-between">
+                                    <div>
+                                        <span class="font-extrabold text-xs sm:text-sm text-slate-800 block">12 Hours / 120 KM</span>
+                                        <span class="text-[10px] text-slate-500 block">Extended City Package</span>
+                                    </div>
+                                    <i class="fa-solid fa-circle-check text-slate-300 text-base" id="pkg-check-12hr"></i>
+                                </button>
+                            </div>
+                            <select id="wd-local-package" class="hidden">
+                                <option value="8hr_80km" selected>8 Hours / 80 KM</option>
+                                <option value="12hr_120km">12 Hours / 120 KM</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- OUTSTATION FIELDS -->
+                    <div id="wd-outstation-fields" class="space-y-4 hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-center">
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-train text-indigo-600 mr-1"></i> From (Pickup Location) *</label>
+                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter pickup location" value="">
+                                <div id="wd-out-pickup-dropdown" class="autocomplete-dropdown hidden"></div>
+                            </div>
+
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> To (Destination City) *</label>
+                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'maharashtra-destinations', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter drop city" value="">
+                                <div id="wd-out-dest-dropdown" class="autocomplete-dropdown hidden"></div>
+                            </div>
+                        </div>
+
+                        <!-- Date & Time Pickers -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div class="relative">
+    <input type="date" id="wd-out-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer" onchange="onPickupDateChange()">
+    <span id="wd-out-pdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+        DD/MM/YY
+    </span>
+</div>
+                                    <select id="wd-out-phour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
+                                        <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
+                                        <option value="5">05:00</option><option value="6" selected>06:00</option><option value="7">07:00</option><option value="8">08:00</option>
+                                        <option value="9">09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                                    </select>
+                                    <select id="wd-out-pampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
+                                        <option value="AM" selected>AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Return Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div class="relative">
+    <input type="date" id="wd-out-rdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer" onchange="calculateDriverFare()">
+    <span id="wd-out-rdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+        DD/MM/YY
+    </span>
+</div>
+                                    <select id="wd-out-rhour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
+                                        <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
+                                        <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
+                                        <option value="9">09:00</option><option value="10" selected>10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                                    </select>
+                                    <select id="wd-out-rampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
+                                        <option value="AM">AM</option>
+                                        <option value="PM" selected>PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Outstation Calculation Strip -->
+                        <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 flex flex-wrap items-center justify-between text-xs sm:text-sm text-indigo-950 gap-2">
+                            <div>Est. Distance: <strong id="wd-metric-km">300</strong> KM (Round Trip)</div>
+                            <div>Billed Days: <strong id="wd-metric-days">1</strong> Day(s) (Min Billed: <strong id="wd-metric-billable-km">300</strong> KM)</div>
+                            <div id="wd-metric-night-badge" class="hidden bg-amber-200 border border-amber-300 text-amber-950 font-bold px-2.5 py-0.5 rounded text-xs flex items-center gap-1">
+                                <i class="fa-solid fa-moon"></i> Night Allowance Added (+₹700)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AIRPORT FIELDS -->
+                    <div id="wd-airport-fields" class="hidden space-y-4">
+                        <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold gap-1">
+                            <button type="button" id="btn-airport-drop" onclick="setAirportTransferType('drop')" class="flex-1 py-2.5 rounded-lg transition bg-white text-indigo-950 shadow-sm font-bold border border-slate-200">
+                                Drop to Airport
+                            </button>
+                            <button type="button" id="btn-airport-pickup" onclick="setAirportTransferType('pickup')" class="flex-1 py-2.5 rounded-lg transition text-slate-600 font-semibold border border-transparent">
+                                Pickup from Airport
+                            </button>
+                        </div>
+
+                        <div id="airport-dynamic-form" class="space-y-4"></div>
+                    </div>
+
+                    <!-- Policy Banner -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 mt-5 text-xs text-amber-950 flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-shield-check text-amber-600"></i>
+                            <span><strong>Pricing Includes:</strong> Car rental, Fuel & Driver Allowance. Extra: Tolls & Parking as actual receipts.</span>
+                        </div>
+                        <button type="button" onclick="openFareBreakdownModal()" class="text-indigo-700 font-bold hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-circle-info"></i> View Fare Breakdown
+                        </button>
+                    </div>
+
+                    <!-- Search Button -->
+                    <div class="mt-6 flex justify-center">
+                        <button type="button" onclick="triggerFareSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
+                            <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="search-btn-icon"></i>
+                            <span id="search-btn-text">Explore Cabs</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. SELF DRIVE BLOCK -->
+                <div id="self-drive-block" class="hidden p-5 sm:p-7 space-y-6">
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Choose Pickup Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div class="relative">
+    <input type="date" id="sd-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
+    <span id="sd-pdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+        DD/MM/YY
+    </span>
+</div>
+                                    <select id="sd-phour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                        <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
+                                        <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
+                                        <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                                    </select>
+                                    <select id="sd-pampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                        <option value="AM">AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Choose Return Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div class="relative">
+    <input type="date" id="sd-rdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
+    <span id="sd-rdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+        DD/MM/YY
+    </span>
+</div>
+                                    <select id="sd-rhour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                        <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
+                                        <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
+                                        <option value="9">09:00</option><option value="10" selected>10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                                    </select>
+                                    <select id="sd-rampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                        <option value="AM">AM</option>
+                                        <option value="PM" selected>PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 mb-2 flex justify-center">
+                        <button type="button" onclick="triggerSDParseSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
+                            <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="sd-search-btn-icon"></i>
+                            <span id="sd-search-btn-text">Search Available Cars</span>
+                        </button>
+                    </div>
+
+                    <!-- Collapsible Filters & Sorting Toolbar -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="relative flex-1 mr-3">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+                                <input type="text" id="sd-search-box" oninput="applyAllSDFilters()" placeholder="Search car (e.g. Nexon, Punch, Thar, Creta)..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-600 outline-none">
+                            </div>
+                            <button type="button" onclick="toggleSDFiltersPanel()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-950 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition whitespace-nowrap">
+                                <i class="fa-solid fa-sliders"></i> <span id="filter-toggle-text">Sort &amp; Filter</span>
+                            </button>
+                        </div>
+
+                        <!-- Expandable Panel -->
+                        <div id="sd-filters-expandable-panel" class="hidden space-y-3 pt-3 border-t border-slate-100 animate-fade-in">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-700">Filter &amp; Sort Options</span>
+                                <button onclick="resetSDFilters()" class="text-xs font-semibold text-indigo-600 hover:underline">Reset All</button>
+                            </div>
+                            <div class="flex items-center gap-2 pb-2">
+                                <label class="text-xs font-bold text-slate-600 whitespace-nowrap">Sort By:</label>
+                                <select id="sd-sort-by" onchange="applyAllSDFilters()" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 outline-none flex-1">
+                                    <option value="default">Featured / Priority</option>
+                                    <option value="best-selling">Best Selling</option>
+                                    <option value="price-asc">Price: Low to High</option>
+                                    <option value="price-desc">Price: High to Low</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fuel Type</label>
+                                    <select id="sd-filter-fuel" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
+                                        <option value="All">All Fuels</option>
+                                        <option value="Petrol">Petrol</option>
+                                        <option value="Diesel">Diesel</option>
+                                        <option value="Petrol + CNG">Petrol + CNG</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Transmission</label>
+                                    <select id="sd-filter-transmission" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
+                                        <option value="All">All Transmissions</option>
+                                        <option value="Manual">Manual</option>
+                                        <option value="Automatic">Automatic</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Seats</label>
+                                    <select id="sd-filter-seats" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
+                                        <option value="All">All Capacities</option>
+                                        <option value="4">4 Seats</option>
+                                        <option value="5">5 Seats</option>
+                                        <option value="6">6 Seats</option>
+                                        <option value="7">7 Seats</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Segment</label>
+                                    <select id="sd-filter-segment" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
+                                        <option value="All">All Segments</option>
+                                        <option value="Hatchback">Hatchback</option>
+                                        <option value="Sedan">Sedan</option>
+                                        <option value="Compact SUV">Compact SUV</option>
+                                        <option value="SUV">SUV</option>
+                                        <option value="MUV / 7-Seater">MUV / 7-Seater</option>
+                                        <option value="Luxury Sedan">Luxury Sedan</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Brand</label>
+                                    <select id="sd-filter-brand" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
+                                        <option value="All">All Brands</option>
+                                        <option value="Tata">Tata</option>
+                                        <option value="Maruti Suzuki">Maruti Suzuki</option>
+                                        <option value="Mahindra">Mahindra</option>
+                                        <option value="Toyota">Toyota</option>
+                                        <option value="Hyundai">Hyundai</option>
+                                        <option value="Kia">Kia</option>
+                                        <option value="Jeep">Jeep</option>
+                                        <option value="BMW">BMW</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Brand Pills -->
+                        <div class="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-slate-100 scrollbar-none text-xs font-bold" id="brand-filter-btns">
+                            <button onclick="setBrandPill('All')" class="sd-brand-btn active px-3 py-1.5 bg-indigo-950 text-white rounded-lg whitespace-nowrap shadow-sm">All Cars</button>
+                            <button onclick="setBrandPill('Tata')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Tata</button>
+                            <button onclick="setBrandPill('Maruti Suzuki')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Maruti Suzuki</button>
+                            <button onclick="setBrandPill('Mahindra')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Mahindra</button>
+                            <button onclick="setBrandPill('Toyota')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Toyota</button>
+                            <button onclick="setBrandPill('Hyundai')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Hyundai</button>
+                        </div>
+                    </div>
+
+                    <!-- Cars Grid (6 per page) -->
+                    <div id="selfdrive-cars-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5"></div>
+
+                    <!-- Pagination -->
+                    <div id="sd-pagination-container" class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <span class="text-xs text-slate-500 font-medium" id="sd-pagination-info">Showing 1 to 6 cars</span>
+                        <div class="flex items-center space-x-1.5" id="sd-pagination-btns"></div>
+                    </div>
+
+                </div>
+
+            </div>

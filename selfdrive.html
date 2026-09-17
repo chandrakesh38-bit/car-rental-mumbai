@@ -6,26 +6,10 @@
     <title>Self Drive Car Rental in Mumbai | Affordable Cars - Car with Driver India</title>
     <meta name="description" content="Rent self-drive cars in Mumbai at affordable hourly rates. Choose from hatchbacks, sedans, SUVs, and luxury cars with doorstep delivery and easy booking.">
     <link rel="canonical" href="https://carswithdriverindia.com/selfdrive.html">
-
-    <!-- Open Graph (WhatsApp / Social Preview) -->
-    <meta property="og:title" content="Self Drive Car Rental in Mumbai | Affordable Cars">
-    <meta property="og:description" content="Rent self-drive cars across Maharashtra at transparent hourly rates with doorstep delivery.">
-    <meta property="og:url" content="https://carswithdriverindia.com/selfdrive.html">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://carswithdriverindia.com/logo.png">
-
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="/logo.png">
-
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Supabase JS Client v2 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .tab-active { background-color: #f59e0b !important; color: #0f172a !important; font-weight: 700; }
@@ -42,15 +26,12 @@
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
             <a href="/index.html" class="flex items-center space-x-3">
-                <div class="flex items-center">
-                    <img src="/logo.png" alt="Car with Driver India" class="h-9 sm:h-11 w-auto max-w-[180px] object-contain">
-                </div>
+                <img src="/logo.png" alt="Car with Driver India" class="h-9 sm:h-11 w-auto max-w-[180px] object-contain">
                 <div>
                     <span class="text-xl font-black text-indigo-950 tracking-tight block leading-none">Car with Driver India</span>
                     <span class="text-[10px] text-slate-400 font-semibold tracking-wider block mt-1">Car with Driver Mobility LLP</span>
                 </div>
             </a>
-
             <div class="flex items-center space-x-3">
                 <a href="https://wa.me/919702988465" target="_blank" class="hidden sm:flex bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition items-center gap-1.5 shadow-sm">
                     <i class="fa-brands fa-whatsapp text-sm"></i> Talk to Us
@@ -77,53 +58,25 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-
             <div class="space-y-1.5 pt-5 text-sm font-bold text-slate-700">
-                <a href="/index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-                    <i class="fa-solid fa-house text-indigo-600 w-5"></i>
-                    <span>Home</span>
-                </a>
-                <a href="/withdriver.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-                    <i class="fa-solid fa-user-tie text-indigo-600 w-5"></i>
-                    <span>With Driver</span>
-                </a>
-                <a href="/selfdrive.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-50 text-indigo-950 transition">
-                    <i class="fa-solid fa-key text-indigo-600 w-5"></i>
-                    <span>Self Drive</span>
-                </a>
-                <a href="/becomeapartner.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-                    <i class="fa-solid fa-handshake text-amber-500 w-5"></i>
-                    <span>Become a Partner</span>
-                </a>
-                <a href="/faqs.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-                    <i class="fa-solid fa-circle-question text-indigo-600 w-5"></i>
-                    <span>FAQs</span>
-                </a>
-                <a href="/ourfleet.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-                    <i class="fa-solid fa-car-side text-indigo-600 w-5"></i>
-                    <span>Our Fleet</span>
-                </a>
-                <a href="/contactus.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-                    <i class="fa-solid fa-phone text-indigo-600 w-5"></i>
-                    <span>Contact Us</span>
-                </a>
-                <a href="/reachus.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-                    <i class="fa-solid fa-location-dot text-indigo-600 w-5"></i>
-                    <span>Reach Us</span>
-                </a>
+                <a href="/index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-house text-indigo-600 w-5"></i><span>Home</span></a>
+                <a href="/withdriver.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-user-tie text-indigo-600 w-5"></i><span>With Driver</span></a>
+                <a href="/selfdrive.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-50 text-indigo-950 transition"><i class="fa-solid fa-key text-indigo-600 w-5"></i><span>Self Drive</span></a>
+                <a href="/becomeapartner.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-handshake text-amber-500 w-5"></i><span>Become a Partner</span></a>
+                <a href="/faqs.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-circle-question text-indigo-600 w-5"></i><span>FAQs</span></a>
+                <a href="/ourfleet.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-car-side text-indigo-600 w-5"></i><span>Our Fleet</span></a>
+                <a href="/contactus.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-phone text-indigo-600 w-5"></i><span>Contact Us</span></a>
+                <a href="/reachus.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-location-dot text-indigo-600 w-5"></i><span>Reach Us</span></a>
             </div>
         </div>
-
         <div class="pt-4 border-t border-slate-100 space-y-2">
             <a href="https://wa.me/919702988465" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm">
-                <i class="fa-brands fa-whatsapp text-sm"></i>
-                <span>WhatsApp: +91 9702988465</span>
+                <i class="fa-brands fa-whatsapp text-sm"></i><span>WhatsApp: +91 9702988465</span>
             </a>
-            <p class="text-[10px] text-slate-400 text-center">Car with Driver LLP • Mumbai, Maharashtra</p>
         </div>
     </div>
 
-    <!-- HERO SECTION / SELF DRIVE WIDGET -->
+    <!-- HERO SECTION / SELF-DRIVE -->
     <header class="bg-gradient-to-b from-indigo-950 via-indigo-900 to-slate-900 text-white pt-10 pb-16 px-4">
         <div class="max-w-4xl mx-auto text-center mb-8">
             <span class="bg-indigo-800/80 border border-indigo-700 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full inline-block mb-3">
@@ -140,25 +93,24 @@
         <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 sm:p-7 text-slate-800">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Pickup Date & Time *</label>
-                    <input type="datetime-local" id="sd-pdate" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Pickup Date *</label>
+                    <input type="date" id="sd-pdate" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Return Date & Time *</label>
-                    <input type="datetime-local" id="sd-rdate" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Return Date *</label>
+                    <input type="date" id="sd-rdate" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium">
                 </div>
             </div>
-
             <div class="mt-6 flex justify-center">
-                <button type="button" onclick="triggerSDParseSearch()" class="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-indigo-950 font-black rounded-xl shadow-md transition text-sm sm:text-base">
-                    Explore Self-Drive Cars
+                <button type="button" onclick="renderSDCars()" class="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-indigo-950 font-black rounded-xl shadow-md transition text-sm sm:text-base">
+                    Explore Available Self-Drive Cars
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- SELF-DRIVE CARS GRID SECTION -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-12" id="selfdrive-cars-section">
+    <!-- CARS GRID SECTION -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div class="text-center mb-8">
             <h2 class="text-2xl font-black text-slate-900">Available Self-Drive Cars</h2>
             <p class="text-xs sm:text-sm text-slate-500 mt-1">Choose your preferred ride and book securely.</p>
@@ -166,7 +118,6 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="selfdrive-cars-grid"></div>
     </section>
 
-    <!-- JAVASCRIPT LOGIC -->
     <script>
         function openNavDrawer() {
             document.getElementById('nav-drawer').classList.remove('translate-x-full');
@@ -180,19 +131,18 @@
         }
 
         const excelCarsData = [
-            { "brand": "Tata", "model": "Nexon", "fullName": "Tata Nexon", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹117/hour", "rateVal": 117, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Or6F03FkxBCjzM3MC9l7A4X6EbtTueZ5" },
-            { "brand": "Tata", "model": "Punch", "fullName": "Tata Punch", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1UeNkkagK6T0LUjt2ncB6HZaW_K5iFgE5" },
-            { "brand": "Maruti Suzuki", "model": "Swift", "fullName": "Maruti Suzuki Swift", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kdLktKSk6yMlPJDY5BVdeNyC70rfM6eZ" },
-            { "brand": "Maruti Suzuki", "model": "Brezza", "fullName": "Maruti Suzuki Brezza", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZQThm_H_eCLv4kBFYixmyjlBFLimsqw5" },
-            { "brand": "Hyundai", "model": "Creta", "fullName": "Hyundai Creta", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1In3muCV_Mk72zELKjAIlhs-OWgR7RKof" },
-            { "brand": "Mahindra", "model": "Thar", "fullName": "Mahindra Thar", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 4, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1bC337oF5wf0Dl2KdkdRgagkeOP_VFqI5" }
+            { "fullName": "Tata Nexon", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹117/hour", "imgUrl": "https://lh3.googleusercontent.com/d/1Or6F03FkxBCjzM3MC9l7A4X6EbtTueZ5" },
+            { "fullName": "Tata Punch", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "imgUrl": "https://lh3.googleusercontent.com/d/1UeNkkagK6T0LUjt2ncB6HZaW_K5iFgE5" },
+            { "fullName": "Maruti Suzuki Swift", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "imgUrl": "https://lh3.googleusercontent.com/d/1kdLktKSk6yMlPJDY5BVdeNyC70rfM6eZ" },
+            { "fullName": "Maruti Suzuki Brezza", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹146/hour", "imgUrl": "https://lh3.googleusercontent.com/d/1ZQThm_H_eCLv4kBFYixmyjlBFLimsqw5" },
+            { "fullName": "Hyundai Creta", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "imgUrl": "https://lh3.googleusercontent.com/d/1In3muCV_Mk72zELKjAIlhs-OWgR7RKof" },
+            { "fullName": "Mahindra Thar", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 4, "rateHour": "₹229/hour", "imgUrl": "https://lh3.googleusercontent.com/d/1bC337oF5wf0Dl2KdkdRgagkeOP_VFqI5" }
         ];
 
         function renderSDCars() {
             const container = document.getElementById('selfdrive-cars-grid');
             if (!container) return;
             container.innerHTML = '';
-
             excelCarsData.forEach(car => {
                 const card = document.createElement('div');
                 card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between";
@@ -200,7 +150,6 @@
                     <div>
                         <div class="h-44 w-full bg-slate-100 overflow-hidden relative">
                             <img src="${car.imgUrl}" alt="${car.fullName}" class="w-full h-full object-cover">
-                            <span class="absolute top-3 left-3 text-[10px] font-bold bg-indigo-950/80 text-amber-300 px-2 py-0.5 rounded">${car.brand}</span>
                         </div>
                         <div class="p-4">
                             <h3 class="font-bold text-slate-900 text-base">${car.fullName}</h3>
@@ -209,8 +158,8 @@
                         </div>
                     </div>
                     <div class="p-4 pt-0">
-                        <a href="https://wa.me/919702988465?text=Hi,%20I%20want%20to%20book%20self-drive%20${encodeURIComponent(car.fullName)}" target="_blank" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs flex items-center justify-center gap-2 block text-center">
-                            <i class="fa-solid fa-key text-amber-400"></i> Book via WhatsApp
+                        <a href="https://wa.me/919702988465?text=Hi,%20I%20want%20to%20book%20self-drive%20${encodeURIComponent(car.fullName)}" target="_blank" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs flex items-center justify-center gap-2 text-center block">
+                            <i class="fa-solid fa-key text-amber-400"></i> Book Self Drive via WhatsApp
                         </a>
                     </div>
                 `;
@@ -218,14 +167,7 @@
             });
         }
 
-        function triggerSDParseSearch() {
-            renderSDCars();
-            document.getElementById('selfdrive-cars-section').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        window.onload = function() {
-            renderSDCars();
-        };
+        window.onload = function() { renderSDCars(); };
     </script>
 </body>
 </html>

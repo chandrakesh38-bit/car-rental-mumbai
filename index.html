@@ -1071,13 +1071,21 @@
                 <h3 class="text-lg font-black text-slate-900">Enquiry Successfully Submitted!</h3>
                 <p class="text-xs text-slate-500 mt-1">Thank you! Our team has received your details and sent confirmation to your email. We will connect with you shortly.</p>
 
-                <div id="success-application-id" class="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-200 hidden">
+<div id="success-application-id" class="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-200 hidden">
                   <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                 Application ID
               </div>
-              <div id="success-application-number" class="mt-1 text-lg font-bold text-gray-900">
+              
+              <!-- ID aur Copy Button -->
+              <div class="mt-1.5 flex items-center justify-center gap-2">
+                  <span id="success-application-number" class="text-sm sm:text-base font-bold text-gray-900 select-all tracking-wide"></span>
+                  <button type="button" onclick="copyApplicationId()" class="px-2.5 py-1 rounded-lg bg-white hover:bg-indigo-50 border border-gray-300 text-indigo-950 text-xs font-bold flex items-center gap-1.5 transition shadow-xs active:scale-95">
+                      <i class="fa-regular fa-copy text-indigo-600"></i>
+                      <span id="copy-btn-text">Copy</span>
+                  </button>
               </div>
-              <div class="mt-1 text-xs text-gray-500">
+
+              <div class="mt-1.5 text-xs text-gray-500">
     Please save this ID for future reference.
   </div>
 </div>
@@ -4062,6 +4070,32 @@ if (label) {
 })();
 </script>
 
+<script>
+function copyApplicationId() {
+    const appIdText = document.getElementById('success-application-number').textContent.trim();
+    if (!appIdText) return;
+
+    navigator.clipboard.writeText(appIdText).then(() => {
+        const btnText = document.getElementById('copy-btn-text');
+        const icon = document.querySelector('#success-application-id .fa-copy, #success-application-id .fa-check');
+        
+        if (btnText) btnText.textContent = 'Copied!';
+        if (icon) {
+            icon.className = 'fa-solid fa-check text-emerald-600';
+        }
+
+        setTimeout(() => {
+            if (btnText) btnText.textContent = 'Copy';
+            if (icon) {
+                icon.className = 'fa-regular fa-copy text-indigo-600';
+            }
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
+}
+</script>
+    
     <!-- HOME DELIVERY UNAVAILABLE MODAL -->
 <div id="sd-serviceability-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] hidden items-center justify-center px-4">
     <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">

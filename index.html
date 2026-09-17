@@ -2950,28 +2950,11 @@ function showPartnerErrorModal(message) {
     `;
 
     document.body.appendChild(modal);
-
-    // Re-upload button click (wapas form par le jayega aur documents dikhayega)
-    document.getElementById('partner-reupload-btn').onclick = function () {
-        modal.remove();
-
-        const partnerModal = document.getElementById('partner-modal');
-        if (partnerModal) partnerModal.scrollTop = 0;
-
-        const firstDocument = document.getElementById('part-rc');
-        if (firstDocument) {
-            firstDocument.parentElement?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        }
-    };
-
+ 
     // Close button click (ab yeh 100% kaam karega aur popup band kar dega)
     document.getElementById('partner-error-close').onclick = function () {
         modal.remove();
     };
-}
         
     document.getElementById('partner-reupload-btn').onclick = function () {
         modal.remove();

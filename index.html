@@ -130,26 +130,40 @@
             </div>
 
             <div class="space-y-1.5 pt-5 text-sm font-bold text-slate-700">
-                <a href="#booking-widget" onclick="navigateAndSetMode('withdriver')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-                    <i class="fa-solid fa-user-tie text-indigo-600 w-5"></i>
-                    <span>With Driver</span>
-                </a>
-                <a href="#booking-widget" onclick="navigateAndSetMode('selfdrive')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-                    <i class="fa-solid fa-key text-indigo-600 w-5"></i>
-                    <span>Self Drive</span>
-                </a>
-                <button type="button" onclick="closeNavDrawer(); openPartnerModal();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition text-left font-bold text-slate-700">
-                    <i class="fa-solid fa-handshake text-amber-500 w-5"></i>
-                    <span>Become a Partner</span>
-                </button>
-                <a href="#reach-us" onclick="closeNavDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-                    <i class="fa-solid fa-phone text-indigo-600 w-5"></i>
-                    <span>Contact Us</span>
-                </a>
-                <a href="#faq" onclick="closeNavDrawer()" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
-                    <i class="fa-solid fa-circle-question text-indigo-600 w-5"></i>
-                    <span>FAQs</span>
-                </a>
+
+            <a href="/index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                <i class="fa-solid fa-house text-indigo-600 w-5"></i>
+                <span>Home</span>
+            </a>
+            <a href="/withdriver.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                <i class="fa-solid fa-user-tie text-indigo-600 w-5"></i>
+                <span>With Driver</span>
+            </a>
+            <a href="/selfdrive.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                <i class="fa-solid fa-key text-indigo-600 w-5"></i>
+                <span>Self Drive</span>
+            </a>
+            <a href="/becomeapartner.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                <i class="fa-solid fa-handshake text-amber-500 w-5"></i>
+                <span>Become a Partner</span>
+            </a>
+            <a href="/faqs.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                <i class="fa-solid fa-circle-question text-indigo-600 w-5"></i>
+                <span>FAQs</span>
+            </a>
+            <a href="/ourfleet.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                <i class="fa-solid fa-car-side text-indigo-600 w-5"></i>
+                <span>Our Fleet</span>
+            </a>
+            <a href="/contactus.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                <i class="fa-solid fa-phone text-indigo-600 w-5"></i>
+                <span>Contact Us</span>
+            </a>
+            <a href="/reachus.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition">
+                <i class="fa-solid fa-location-dot text-indigo-600 w-5"></i>
+                <span>Reach Us</span>
+            </a>
+                
             </div>
         </div>
 
@@ -4094,6 +4108,18 @@ function copyApplicationId() {
         console.error('Failed to copy: ', err);
     });
 }
+
+    function openNavDrawer() {
+        document.getElementById('nav-drawer').classList.remove('translate-x-full');
+        document.getElementById('nav-drawer-overlay').classList.remove('hidden');
+        setTimeout(() => document.getElementById('nav-drawer-overlay').classList.remove('opacity-0'), 10);
+    }
+    function closeNavDrawer() {
+        document.getElementById('nav-drawer').classList.add('translate-x-full');
+        document.getElementById('nav-drawer-overlay').classList.add('opacity-0');
+        setTimeout(() => document.getElementById('nav-drawer-overlay').classList.add('hidden'), 300);
+    }
+    
 </script>
     
     <!-- HOME DELIVERY UNAVAILABLE MODAL -->

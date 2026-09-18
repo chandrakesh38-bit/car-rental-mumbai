@@ -990,8 +990,13 @@ function onPickupDateChange() {
             } else if (currentWDSubTab === 'outstation') {
                 pickupLoc = document.getElementById('wd-out-pickup').value || 'Mumbai';
                 destLoc = document.getElementById('wd-out-destination').value || 'Maharashtra';
-                dateTimeStr = 'Pickup: ' + (document.getElementById('wd-out-pdate').value || 'Today') + ' (' + document.getElementById('wd-out-phour').value + ':00 ' + document.getElementById('wd-out-pampm').value + ')' +
-                    ' — Return: ' + document.getElementById('wd-out-rdate').value + ' (' + document.getElementById('wd-out-rhour').value + ':00 ' + document.getElementById('wd-out-rampm').value + ')';
+                const formatReviewTime = prefix => {
+                    const hour = document.getElementById(prefix + 'hour').value;
+                    const ampm = document.getElementById(prefix + 'ampm').value;
+                    const date = createLocalDateTime(document.getElementById(prefix + 'date').value, Number(hour), ampm);
+                    return `${date.getDate()} ${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}, ${Number(hour)}:00 ${ampm}`;
+                };
+                dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nReturn: ${formatReviewTime('wd-out-r')}`;
                 pkgStr = `Outstation (${wdOutstationKm} KM, ${wdOutstationDays} Days)`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
@@ -1003,6 +1008,7 @@ function onPickupDateChange() {
             document.getElementById('modal-summary-pickup').innerText = pickupLoc;
             document.getElementById('modal-summary-dest').innerText = destLoc;
             document.getElementById('modal-summary-datetime').innerText = dateTimeStr;
+            document.getElementById('modal-summary-datetime').previousElementSibling.hidden = currentWDSubTab === 'outstation';
             document.getElementById('modal-summary-package').innerText = pkgStr;
 
             document.getElementById('booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('booking-modal'), true);

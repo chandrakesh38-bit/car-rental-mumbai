@@ -429,6 +429,11 @@ function showCustomAlert(message) {
                     ${dateTimeHTML}
                 `;
             }
+
+          setTimeout(() => {
+        updateDatePlaceholder('wd-airport-date', 'wd-airport-date-placeholder');
+    }, 50);      
+                
         }
 
         function onPickupDateChange() {

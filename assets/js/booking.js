@@ -312,7 +312,7 @@ function showCustomAlert(message) {
             </p>
         </div>
 
-        <button type="button"
+        <button aria-label="Dismiss message" type="button"
             onclick="this.parentElement.remove()"
             class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition">
             <i class="fa-solid fa-xmark text-sm"></i>
@@ -418,20 +418,22 @@ function showCustomAlert(message) {
 
             const dateTimeHTML = `
                 <div class="mt-4 pt-4 border-t border-slate-200">
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
-                    <div class="grid grid-cols-3 gap-1.5">
+                    <label for="wd-airport-date" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                    <div class="grid grid-cols-3 gap-1.5 booking-datetime">
                         <div class="relative">
     <input type="date" id="wd-airport-date" onclick="this.showPicker()" class="date-input-custom w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer">
-    <span id="wd-airport-date-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+    <span aria-hidden="true" id="wd-airport-date-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
         DD/MM/YY
     </span>
 </div>
-                        <select id="wd-airport-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                        <label for="wd-airport-hour" class="sr-only">Airport pickup hour</label>
+<select id="wd-airport-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
                             <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                             <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                             <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                         </select>
-                        <select id="wd-airport-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                        <label for="wd-airport-ampm" class="sr-only">Airport pickup AM or PM</label>
+<select id="wd-airport-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
                             <option value="AM" selected>AM</option>
                             <option value="PM">PM</option>
                         </select>
@@ -445,12 +447,12 @@ function showCustomAlert(message) {
                 formBox.innerHTML = `
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="relative">
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address *</label>
+                            <label for="wd-airport-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address *</label>
                             <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Enter pickup area">
                             <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
+                            <label for="wd-airport-terminal" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
                             <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="calculateDriverFare()">
                                 <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
                                 <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
@@ -466,7 +468,7 @@ function showCustomAlert(message) {
                 formBox.innerHTML = `
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
+                            <label for="wd-airport-terminal" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
                             <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="calculateDriverFare()">
                                 <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
                                 <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
@@ -474,7 +476,7 @@ function showCustomAlert(message) {
                             </select>
                         </div>
                         <div class="relative">
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Drop Area / Address *</label>
+                            <label for="wd-airport-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Drop Area / Address *</label>
                             <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Enter drop area">
                             <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
                         </div>
@@ -2229,7 +2231,7 @@ function openWhyChooseModal(type) {
     `).join('');
 
     // Dynamic WhatsApp message
-    const message = `Hi Car with Driver India, I want to book a ride. I would like to know more about ${data.heading}.`;
+    const message = `Hi Car with Driver Mobility LLP, I want to book a ride. I would like to know more about ${data.heading}.`;
 
     if (whatsapp) {
         whatsapp.href = `https://wa.me/919702988465?text=${encodeURIComponent(message)}`;

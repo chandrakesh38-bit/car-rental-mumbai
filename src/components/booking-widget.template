@@ -31,25 +31,27 @@
                     <div id="wd-local-fields" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="relative">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address *</label>
+                                <label for="wd-local-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address *</label>
                                 <input type="text" id="wd-local-pickup" autocomplete="off" oninput="showSuggestions('wd-local-pickup', 'mumbai-places', 'wd-local-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search area (e.g. Kalyan, Thane, Dadar)">
                                 <div id="wd-local-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
-                                <div class="grid grid-cols-3 gap-1.5">
+                                <label for="wd-local-date" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-1.5 booking-datetime">
                                     <div class="relative">
     <input type="date" id="wd-local-date" onclick="this.showPicker()" class="date-input-custom w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer">
-    <span id="wd-local-date-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+    <span aria-hidden="true" id="wd-local-date-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
         DD/MM/YY
     </span>
 </div>
-                                    <select id="wd-local-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                    <label for="wd-local-hour" class="sr-only">Local pickup hour</label>
+<select id="wd-local-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                                         <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
-                                    <select id="wd-local-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                    <label for="wd-local-ampm" class="sr-only">Local pickup AM or PM</label>
+<select id="wd-local-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
                                         <option value="AM" selected>AM</option>
                                         <option value="PM">PM</option>
                                     </select>
@@ -59,7 +61,7 @@
 
                         <!-- Local Packages Selection -->
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-2"><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> Select Rental Package</label>
+                            <label for="wd-local-package" class="block text-xs font-bold text-slate-700 uppercase mb-2"><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> Select Rental Package</label>
                             <div class="grid grid-cols-2 gap-3">
                                 <button type="button" id="pkg-card-8hr" onclick="selectLocalPackage('8hr_80km')" class="p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/50 text-left transition flex items-center justify-between">
                                     <div>
@@ -87,13 +89,13 @@
                     <div id="wd-outstation-fields" class="space-y-4 hidden">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-center">
                             <div class="relative">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-train text-indigo-600 mr-1"></i> From (Pickup Location) *</label>
+                                <label for="wd-out-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-train text-indigo-600 mr-1"></i> From (Pickup Location) *</label>
                                 <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter pickup location" value="">
                                 <div id="wd-out-pickup-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
 
                             <div class="relative">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> To (Destination City) *</label>
+                                <label for="wd-out-destination" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> To (Destination City) *</label>
                                 <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'maharashtra-destinations', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter drop city" value="">
                                 <div id="wd-out-dest-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
@@ -102,40 +104,44 @@
                         <!-- Date & Time Pickers -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
-                                <div class="grid grid-cols-3 gap-2">
+                                <label for="wd-out-pdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
     <input type="date" id="wd-out-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer" onchange="onPickupDateChange()">
-    <span id="wd-out-pdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+    <span aria-hidden="true" id="wd-out-pdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
         DD/MM/YY
     </span>
 </div>
-                                    <select id="wd-out-phour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
+                                    <label for="wd-out-phour" class="sr-only">Outstation pickup hour</label>
+<select id="wd-out-phour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6" selected>06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                                         <option value="9">09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
-                                    <select id="wd-out-pampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
+                                    <label for="wd-out-pampm" class="sr-only">Outstation pickup AM or PM</label>
+<select id="wd-out-pampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
                                         <option value="AM" selected>AM</option>
                                         <option value="PM">PM</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Return Date & Time *</label>
-                                <div class="grid grid-cols-3 gap-2">
+                                <label for="wd-out-rdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Return Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
     <input type="date" id="wd-out-rdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer" onchange="calculateDriverFare()">
-    <span id="wd-out-rdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+    <span aria-hidden="true" id="wd-out-rdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
         DD/MM/YY
     </span>
 </div>
-                                    <select id="wd-out-rhour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
+                                    <label for="wd-out-rhour" class="sr-only">Outstation return hour</label>
+<select id="wd-out-rhour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                                         <option value="9">09:00</option><option value="10" selected>10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
-                                    <select id="wd-out-rampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
+                                    <label for="wd-out-rampm" class="sr-only">Outstation return AM or PM</label>
+<select id="wd-out-rampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
                                         <option value="AM">AM</option>
                                         <option value="PM" selected>PM</option>
                                     </select>
@@ -193,40 +199,44 @@
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Choose Pickup Date & Time *</label>
-                                <div class="grid grid-cols-3 gap-2">
+                                <label for="sd-pdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Choose Pickup Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
     <input type="date" id="sd-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
-    <span id="sd-pdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+    <span aria-hidden="true" id="sd-pdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
         DD/MM/YY
     </span>
 </div>
-                                    <select id="sd-phour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                    <label for="sd-phour" class="sr-only">Self-drive pickup hour</label>
+<select id="sd-phour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                                         <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
-                                    <select id="sd-pampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                    <label for="sd-pampm" class="sr-only">Self-drive pickup AM or PM</label>
+<select id="sd-pampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
                                         <option value="AM">AM</option>
                                         <option value="PM">PM</option>
                                     </select>
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Choose Return Date & Time *</label>
-                                <div class="grid grid-cols-3 gap-2">
+                                <label for="sd-rdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Choose Return Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
     <input type="date" id="sd-rdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
-    <span id="sd-rdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+    <span aria-hidden="true" id="sd-rdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
         DD/MM/YY
     </span>
 </div>
-                                    <select id="sd-rhour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                    <label for="sd-rhour" class="sr-only">Self-drive return hour</label>
+<select id="sd-rhour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                                         <option value="9">09:00</option><option value="10" selected>10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
-                                    <select id="sd-rampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                    <label for="sd-rampm" class="sr-only">Self-drive return AM or PM</label>
+<select id="sd-rampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
                                         <option value="AM">AM</option>
                                         <option value="PM" selected>PM</option>
                                     </select>
@@ -247,7 +257,8 @@
                         <div class="flex items-center justify-between">
                             <div class="relative flex-1 mr-3">
                                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
-                                <input type="text" id="sd-search-box" oninput="applyAllSDFilters()" placeholder="Search car (e.g. Nexon, Punch, Thar, Creta)..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-600 outline-none">
+                                <label for="sd-search-box" class="sr-only">Search self-drive cars</label>
+<input type="text" id="sd-search-box" oninput="applyAllSDFilters()" placeholder="Search car (e.g. Nexon, Punch, Thar, Creta)..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-600 outline-none">
                             </div>
                             <button type="button" onclick="toggleSDFiltersPanel()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-950 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition whitespace-nowrap">
                                 <i class="fa-solid fa-sliders"></i> <span id="filter-toggle-text">Sort &amp; Filter</span>
@@ -261,7 +272,7 @@
                                 <button onclick="resetSDFilters()" class="text-xs font-semibold text-indigo-600 hover:underline">Reset All</button>
                             </div>
                             <div class="flex items-center gap-2 pb-2">
-                                <label class="text-xs font-bold text-slate-600 whitespace-nowrap">Sort By:</label>
+                                <label for="sd-sort-by" class="text-xs font-bold text-slate-600 whitespace-nowrap">Sort By:</label>
                                 <select id="sd-sort-by" onchange="applyAllSDFilters()" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 outline-none flex-1">
                                     <option value="default">Featured / Priority</option>
                                     <option value="best-selling">Best Selling</option>
@@ -271,7 +282,7 @@
                             </div>
                             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fuel Type</label>
+                                    <label for="sd-filter-fuel" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fuel Type</label>
                                     <select id="sd-filter-fuel" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
                                         <option value="All">All Fuels</option>
                                         <option value="Petrol">Petrol</option>
@@ -280,7 +291,7 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Transmission</label>
+                                    <label for="sd-filter-transmission" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Transmission</label>
                                     <select id="sd-filter-transmission" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
                                         <option value="All">All Transmissions</option>
                                         <option value="Manual">Manual</option>
@@ -288,7 +299,7 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Seats</label>
+                                    <label for="sd-filter-seats" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Seats</label>
                                     <select id="sd-filter-seats" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
                                         <option value="All">All Capacities</option>
                                         <option value="4">4 Seats</option>
@@ -298,7 +309,7 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Segment</label>
+                                    <label for="sd-filter-segment" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Segment</label>
                                     <select id="sd-filter-segment" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
                                         <option value="All">All Segments</option>
                                         <option value="Hatchback">Hatchback</option>
@@ -310,7 +321,7 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Brand</label>
+                                    <label for="sd-filter-brand" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Brand</label>
                                     <select id="sd-filter-brand" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
                                         <option value="All">All Brands</option>
                                         <option value="Tata">Tata</option>

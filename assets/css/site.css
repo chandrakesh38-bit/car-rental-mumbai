@@ -46,23 +46,29 @@
     color: #1e293b !important;
 }
 
-/* Universal Fix for ALL Date Inputs (Static & Dynamic Airport/Self-Drive/Outstation) */
-input[type="date"],
-.date-input-custom {
-    position: relative !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    padding-left: 2px !important;
-    padding-right: 2px !important;
-    font-size: 10px !important;
-    box-sizing: border-box !important;
+/* Keep the native date control and custom hint aligned. */
+input[type="date"], .date-input-custom {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    padding-inline: 0.75rem !important;
+    font-size: 0.875rem !important;
+    box-sizing: border-box;
 }
-
-/* Universal Fix for all date placeholder overlaps */
-span[id*="placeholder"] {
-    font-size: 10px !important;
-    padding-left: 2px !important;
-    pointer-events: none !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
+.date-input-custom.date-empty::-webkit-datetime-edit { visibility: hidden; }
+span[id$="-placeholder"] {
+    left: 0.75rem !important;
+    right: 2rem;
+    padding: 0 !important;
+    font-size: 0.75rem !important;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+}
+nav a[href="/"] { min-width: 0; }
+nav a[href="/"] > div:last-child { min-width: 0; }
+@media (max-width: 639px) {
+    .booking-datetime.grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .booking-datetime > div:first-child { grid-column: 1 / -1; }
+    nav a[href="/"] .text-xl { font-size: 0.875rem; line-height: 1.25; }
 }

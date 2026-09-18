@@ -990,7 +990,8 @@ function onPickupDateChange() {
             } else if (currentWDSubTab === 'outstation') {
                 pickupLoc = document.getElementById('wd-out-pickup').value || 'Mumbai';
                 destLoc = document.getElementById('wd-out-destination').value || 'Maharashtra';
-                dateTimeStr = (document.getElementById('wd-out-pdate').value || 'Today') + ' (' + document.getElementById('wd-out-phour').value + ':00 ' + document.getElementById('wd-out-pampm').value + ')';
+                dateTimeStr = 'Pickup: ' + (document.getElementById('wd-out-pdate').value || 'Today') + ' (' + document.getElementById('wd-out-phour').value + ':00 ' + document.getElementById('wd-out-pampm').value + ')' +
+                    ' — Return: ' + document.getElementById('wd-out-rdate').value + ' (' + document.getElementById('wd-out-rhour').value + ':00 ' + document.getElementById('wd-out-rampm').value + ')';
                 pkgStr = `Outstation (${wdOutstationKm} KM, ${wdOutstationDays} Days)`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';

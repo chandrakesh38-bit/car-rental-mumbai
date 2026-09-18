@@ -659,6 +659,34 @@ function onPickupDateChange() {
             });
         }
 
+        function validateJourneyDateTimes(pickupIds, returnIds) {
+            const readDateTime = ids => {
+                const [date, hour, ampm] = ids.map(id => document.getElementById(id)?.value);
+                const numericHour = Number(hour);
+                if (!date || !Number.isInteger(numericHour) || numericHour < 1 || numericHour > 12 || !['AM', 'PM'].includes(ampm)) return new Date(NaN);
+                return createLocalDateTime(date, numericHour, ampm);
+            };
+            const pickup = readDateTime(pickupIds);
+            let invalidIds = pickupIds;
+            let message = '';
+            if (!Number.isFinite(pickup.getTime())) {
+                message = 'Please select a valid pickup date and time.';
+            } else if (pickup.getTime() < Date.now()) {
+                message = 'Pickup date and time cannot be earlier than the current date and time.';
+            } else if (returnIds) {
+                const end = readDateTime(returnIds);
+                invalidIds = returnIds;
+                if (!Number.isFinite(end.getTime())) message = 'Please select a valid return date and time.';
+                else if (end < pickup) message = 'Return date and time cannot be earlier than pickup date and time.';
+            }
+            if (!message) return true;
+            showCustomAlert(message);
+            const field = document.getElementById(invalidIds[0]);
+            field?.classList.add('border-red-500');
+            field?.focus();
+            return false;
+        }
+
         function validateJourneyAndOpenBooking(carName, fare) {
             let missing = false;
             let firstMissingField = null;
@@ -737,7 +765,9 @@ function onPickupDateChange() {
                 if (firstMissingField) firstMissingField.focus();
                 return false;
             }
-            return true;
+            if (currentWDSubTab === 'local') return validateJourneyDateTimes(['wd-local-date', 'wd-local-hour', 'wd-local-ampm']);
+            if (currentWDSubTab === 'airport') return validateJourneyDateTimes(['wd-airport-date', 'wd-airport-hour', 'wd-airport-ampm']);
+            return validateJourneyDateTimes(['wd-out-pdate', 'wd-out-phour', 'wd-out-pampm'], ['wd-out-rdate', 'wd-out-rhour', 'wd-out-rampm']);
         }
 
         function handleBookThisCarClick(carName, fare) {
@@ -772,7 +802,7 @@ function onPickupDateChange() {
                 if (firstMissingField) firstMissingField.focus();
                 return false;
             }
-            return true;
+            return validateJourneyDateTimes(['sd-pdate', 'sd-phour', 'sd-pampm'], ['sd-rdate', 'sd-rhour', 'sd-rampm']);
         }
 
         function triggerSDParseSearch() {
@@ -929,6 +959,7 @@ function onPickupDateChange() {
         }
 
         function openFareBreakdownModal() {
+            if (!validateJourneyAndOpenBooking()) return;
             const contentBox = document.getElementById('fare-breakdown-content');
             if (!contentBox) return;
             contentBox.innerHTML = `
@@ -1188,6 +1219,7 @@ function generateBookingId() {
 
 function handleBookingSubmit(e) {
     e.preventDefault();
+    if (!validateJourneyAndOpenBooking()) return;
 
     const name = document.getElementById('cust-name').value.trim();
     const phone = document.getElementById('cust-phone').value.trim();
@@ -1384,6 +1416,7 @@ function handleBookingSubmit(e) {
 }
         function handleSDBookingSubmit(e) {
             e.preventDefault();
+            if (!validateSelfDriveJourney()) return;
             const name = document.getElementById('sd-cust-name').value;
             const phone = document.getElementById('sd-cust-phone').value;
             const email = document.getElementById('sd-cust-email').value;

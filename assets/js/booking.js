@@ -315,8 +315,7 @@ function showCustomAlert(message) {
 
             if (tab === 'outstation') {
                 const pDate = document.getElementById('wd-out-pdate');
-                const rDate = document.getElementById('wd-out-rdate');
-                if (pDate && pDate.value && rDate) rDate.value = pDate.value;
+                const rDate = document.getElementById('wd-out-rdate');                
             } else if (tab === 'airport') {
                 setAirportTransferType('drop');
             }
@@ -436,12 +435,9 @@ function showCustomAlert(message) {
                 
         }
 
-        function onPickupDateChange() {
-            const pDate = document.getElementById('wd-out-pdate').value;
-            const rDate = document.getElementById('wd-out-rdate');
-            if (pDate && rDate) rDate.value = pDate;
-            calculateDriverFare();
-        }
+function onPickupDateChange() {
+    calculateDriverFare();
+}
 
         function selectQuickRoute(destName) {
             setServiceMode('withdriver');

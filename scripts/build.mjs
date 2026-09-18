@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import renderMumbaiPage from '../src/pages/mumbai-car-rental.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pages = JSON.parse(await readFile(path.join(root, 'src/pages.json'), 'utf8'));
@@ -18,14 +19,19 @@ for (const page of pages) {
   const footerLinks = pages.map(p => link(p, 'hover:text-amber-400 transition')).join('\n');
   const data = Object.fromEntries(Object.entries(page).filter(([,v])=>typeof v === 'string').map(([k,v])=>[k,escape(v)]));
   data.canonical = 'https://carswithdriverindia.com' + route;
+  // This page-only renderer leaves the other eight page outputs unchanged.
+  const custom = page.slug === 'mumbai-car-rental'
+    ? await renderMumbaiPage({ root, component, escape, page }) : null;
   let hero = await component('hero');
   // Reuse the existing hero, but give information pages their own introduction.
   if (!page.mode) hero = hero.replace(/(<p\b[^>]*>)[\s\S]*?(<\/p>)/, '$1{{description}}$2');
   const body = [
     render(await component('navigation'), {navigationLinks}),
     '<main>',
-    render(hero, {...data, bookingWidget: page.mode ? await component('booking-widget') : ''}),
-    ...(await Promise.all(page.sections.map(component))),
+    ...(custom ? [custom.main] : [
+      render(hero, {...data, bookingWidget: page.mode ? await component('booking-widget') : ''}),
+      ...(await Promise.all(page.sections.map(component)))
+    ]),
     '</main>',
     await component('route-links'),
     render(await component('footer'), {footerLinks}),
@@ -33,7 +39,8 @@ for (const page of pages) {
     await component('serviceability'),
     ...['booking','partner-documents','application-id','page'].map(n=>`<script src="/assets/js/${n}.js"></script>`)
   ].join('\n');
-  const html = `${render(await component('head'),data)}<body class="bg-slate-50 text-slate-800 antialiased min-h-screen" data-page="${page.slug || 'home'}" data-booking-mode="${page.mode || ''}" data-booking-tab="${page.tab || ''}">\n${body}\n</body>\n</html>\n`;
+  const head = render(await component('head'),data).replace('</head>', (custom?.head || '') + '</head>');
+  const html = `${head}<body class="bg-slate-50 text-slate-800 antialiased min-h-screen" data-page="${page.slug || 'home'}" data-booking-mode="${page.mode || ''}" data-booking-tab="${page.tab || ''}">\n${body}\n</body>\n</html>\n`;
   if (/\{\{\w+\}\}/.test(html)) throw new Error(`Unresolved template in ${route}`);
   await writeFile(path.join(root, `${page.slug || 'index'}.html`), html);
   console.log(`Built ${route}`);

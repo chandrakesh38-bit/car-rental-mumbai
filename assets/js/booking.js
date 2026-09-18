@@ -986,7 +986,7 @@ function onPickupDateChange() {
                 pickupLoc = document.getElementById('wd-local-pickup').value || 'Mumbai';
                 destLoc = 'Local City Package';
                 dateTimeStr = (document.getElementById('wd-local-date').value || 'Today') + ' @ ' + document.getElementById('wd-local-hour').value + ':00 ' + document.getElementById('wd-local-ampm').value;
-                pkgStr = document.getElementById('wd-local-package').value;
+                pkgStr = document.getElementById('wd-local-package').value.replace('8hr_80km', '8 Hours / 80 Km');
             } else if (currentWDSubTab === 'outstation') {
                 pickupLoc = document.getElementById('wd-out-pickup').value || 'Mumbai';
                 destLoc = document.getElementById('wd-out-destination').value || 'Maharashtra';

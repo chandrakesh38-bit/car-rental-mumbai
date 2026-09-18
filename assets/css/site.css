@@ -45,4 +45,12 @@
 .date-input-custom.date-filled {
     color: #1e293b !important;
 }
-    
+
+/* Date Input Fix for Mobile/Desktop Overflow */
+.date-input-custom {
+    padding-left: 6px !important;
+    padding-right: 4px !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+    overflow: hidden;
+}

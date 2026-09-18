@@ -671,8 +671,8 @@ function onPickupDateChange() {
             let message = '';
             if (!Number.isFinite(pickup.getTime())) {
                 message = 'Please select a valid pickup date and time.';
-            } else if (pickup.getTime() < Date.now()) {
-                message = 'Pickup date and time cannot be earlier than the current date and time.';
+            } else if (pickup.getTime() <= Date.now()) {
+                message = 'Pickup date and time must be later than the current date and time.';
             } else if (returnIds) {
                 const end = readDateTime(returnIds);
                 invalidIds = returnIds;

@@ -1044,10 +1044,18 @@ function onPickupDateChange() {
         function openPartnerModal() { document.getElementById('partner-modal').classList.remove('hidden'); syncModalState(document.getElementById('partner-modal'), true); }
         function closePartnerModal() { document.getElementById('partner-modal').classList.add('hidden'); syncModalState(document.getElementById('partner-modal'), false); }
 
-        window.showSuccessModal = function(applicationNumber) {
+        window.showSuccessModal = function(applicationNumber, notifications = {}, isBooking = false) {
     const modal = document.getElementById('success-confirmation-modal');
     const idBox = document.getElementById('success-application-id');
     const idText = document.getElementById('success-application-number');
+    const message = modal.querySelector('h3 + p');
+    message.textContent = notifications.customer_email_sent
+        ? 'Thank you! An acknowledgement has been sent to your email. Our team will connect with you shortly.'
+        : 'Thank you! Your details have been submitted. An email acknowledgement could not be sent. Please keep your reference number.';
+    if (isBooking && !notifications.admin_email_sent) {
+        message.textContent = 'Your enquiry was submitted, but the team email could not be sent. Please contact us at carwithdriver.vikhroli@gmail.com with your Booking ID.';
+    }
+    idBox.querySelector('div').textContent = isBooking ? 'Booking ID' : 'Application ID';
 
     if (applicationNumber) {
         idText.textContent = applicationNumber;
@@ -1240,7 +1248,7 @@ function generateBookingId() {
     return `CWD-WD-${yy}${mm}${dd}-${random}`;
 }
 
-function handleBookingSubmit(e) {
+async function handleBookingSubmit(e) {
     e.preventDefault();
     if (!validateJourneyAndOpenBooking()) return;
 
@@ -1250,6 +1258,7 @@ function handleBookingSubmit(e) {
     const address = document.getElementById('cust-address').value.trim();
 
     const car = wdFleet.find(c => c.name === chosenCarName);
+    const bookingId = e.target.dataset.bookingId || (e.target.dataset.bookingId = generateBookingId());
 
     let message = '';
     let subject = '';
@@ -1288,7 +1297,6 @@ function handleBookingSubmit(e) {
             startDateTime.getTime() + selectedPackage.hours * 60 * 60 * 1000
         );
 
-        const bookingId = generateBookingId();
 
         message = `
 🚨 LOCAL CITY | ${bookingId}
@@ -1343,7 +1351,6 @@ function handleBookingSubmit(e) {
             wdOutstationDays * 300
         );
 
-        const bookingId = generateBookingId();
 
         message = `
 🚨 OUTSTATION | ${bookingId}
@@ -1390,7 +1397,6 @@ function handleBookingSubmit(e) {
             ampm
         );
 
-        const bookingId = generateBookingId();
 
         if (currentAirportType === 'drop') {
 
@@ -1426,28 +1432,35 @@ function handleBookingSubmit(e) {
         subject = `New booking assigned to your car – ${chosenCarName}`;
     }
 
-    sendWithDriverBookingEmail(
-        subject,
-        name,
-        phone,
-        email,
-        message
-    );
-
-    closeModal();
-    showSuccessModal();
+    await sendWithDriverBookingEmail(e.target, bookingId, name, phone, email,
+        message + '\nCustomer address: ' + address, closeModal);
 }
-        function handleSDBookingSubmit(e) {
+        async function handleSDBookingSubmit(e) {
             e.preventDefault();
             if (!validateSelfDriveJourney()) return;
             updateSDFareReview();
-            const name = document.getElementById('sd-cust-name').value;
-            const phone = document.getElementById('sd-cust-phone').value;
-            const email = document.getElementById('sd-cust-email').value;
-            const totalText = document.getElementById('disp-total-final-fare').innerText;
-            sendEmailNotification('Self-Drive Booking', name, phone, email, `Car: ${selectedCarObj.fullName}, Total Fare: ${totalText}`);
-            closeSDModal();
-            showSuccessModal();
+            const name = document.getElementById('sd-cust-name').value.trim();
+            const phone = document.getElementById('sd-cust-phone').value.trim();
+            const email = document.getElementById('sd-cust-email').value.trim();
+            const bookingId = e.target.dataset.bookingId || (e.target.dataset.bookingId = generateBookingId());
+            const text = id => document.getElementById(id).innerText;
+            const value = id => document.getElementById(id).value.trim();
+            const details = [
+                ['Service', 'Self Drive'], ['Car', selectedCarObj.fullName],
+                ['Brand', selectedCarObj.brand], ['Rental rate', selectedCarObj.rateHour],
+                ['Pickup', value('sd-pdate') + ' ' + value('sd-phour') + ':00 ' + value('sd-pampm')],
+                ['Return', value('sd-rdate') + ' ' + value('sd-rhour') + ':00 ' + value('sd-rampm')],
+                ['Duration', text('sd-review-duration')],
+                ['Delivery Mode', text('sd-review-deliv-mode')],
+                ['Delivery Location', currentDeliveryMode === 'home' ? value('sd-delivery-location-input') : 'Self Pick-up'],
+                ['Alternate Mobile', value('sd-cust-alt-phone')],
+                ['Address', currentDeliveryMode === 'home' ? [value('sd-cust-address'), value('sd-cust-city'), value('sd-cust-state'), value('sd-cust-pincode')].join(', ') : 'Self Pick-up'],
+                ['Base Rental Fare', text('sd-review-base-fare')],
+                ['Security Deposit', text('sd-review-deposit')],
+                ['Delivery Charge', currentDeliveryMode === 'home' ? text('sd-review-delivery-charge') : '0'],
+                ['Total Amount', text('disp-total-final-fare')],
+            ].map(([label, v]) => label + ': ' + (v || 'Not provided')).join('\n');
+            await sendEmailNotification(e.target, bookingId, name, phone, email, details, closeSDModal);
         }
 
 let lastPartnerForm = null;
@@ -1973,7 +1986,7 @@ if (missingDocuments.length > 0) {
 
 closePartnerModal();
 
-showSuccessModal(result.application_number);
+showSuccessModal(result.application_number, result);
 
     } catch (error) {
 
@@ -1994,50 +2007,32 @@ showSuccessModal(result.application_number);
     }
 }
         
-        function sendWithDriverBookingEmail(subject, name, phone, email, message) {
-    try {
-        fetch('https://api.web3forms.com/submit', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
-                subject: subject,
-                from_name: 'CWD Dispatch Bot',
-                email: email,
-                message: message
-            })
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (!result.success) {
-                console.error('Web3Forms booking email error:', result);
-            }
-        })
-        .catch(err => {
-            console.error('Booking email error:', err);
-        });
-    } catch (err) {
-        console.error('Booking email error:', err);
-    }
-}
+        function sendWithDriverBookingEmail(...args) {
+            return sendEmailNotification(...args);
+        }
 
-        function sendEmailNotification(title, name, phone, email, details) {
+        async function sendEmailNotification(form, bookingId, name, phone, email, details, closeBookingModal) {
+            if (form.dataset.submitting === 'true') return;
+            form.dataset.submitting = 'true';
+            const button = form.querySelector('button[type="submit"]');
+            button.disabled = true;
             try {
-                fetch('https://api.web3forms.com/submit', {
+                const response = await fetch('/api/booking-enquiry', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({
-                        access_key: '7fc1c790-ab07-4fef-96ec-df301fa0c4ae',
-                        subject: `New ${title} from ${name}`,
-                        from_name: 'CWD Dispatch Bot',
-                        email: email,
-                        message: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\nDetails: ${details}`
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bookingId, name, phone, email, details }),
                 });
-            } catch(err) { console.error('Email error', err); }
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'Unable to submit enquiry. Please try again.');
+                closeBookingModal();
+                showSuccessModal(result.booking_id, result, true);
+                delete form.dataset.bookingId;
+            } catch (error) {
+                showCustomAlert(error.message || 'Unable to submit enquiry. Please try again.');
+            } finally {
+                form.dataset.submitting = 'false';
+                button.disabled = false;
+            }
         }
 
         window.onload = function() {

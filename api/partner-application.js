@@ -1,3 +1,5 @@
+import { sendNotifications } from '../lib/notifications.mjs';
+
 // Car With Driver India
 // Secure Partner Application API
 // Private Supabase Storage
@@ -141,75 +143,19 @@ async function saveApplication(application) {
 }
 
 async function sendNotificationEmail(application) {
-  const accessKey =
-    process.env.WEB3FORMS_ACCESS_KEY;
-
-  if (!accessKey) {
-    console.error(
-      "WEB3FORMS_ACCESS_KEY is missing."
-    );
-    return;
-  }
-
-const message = `
-New Partner Application
-
-Application ID: ${application.application_number || "Not available"}
-Name: ${application.name}
-Mobile: ${application.phone}
-Email: ${application.email || "Not provided"}
-Alternate Number: ${
-    application.alternate_phone || "Not provided"
-  }
-
-Vehicle Details
-Brand: ${application.car_brand || "Not provided"}
-Model: ${application.car_model || "Not provided"}
-Manufacturing Year: ${
-    application.mfg_year || "Not provided"
-  }
-
-Documents:
-All required documents have been uploaded successfully.
-
-Storage:
-Private Supabase Storage
-
-IMPORTANT:
-No documents are attached to this email.
-`;
-
-  try {
-    const response = await fetch(
-      "https://api.web3forms.com/submit",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          access_key: accessKey,
-          subject:
-            `New Partner Application - ${application.name}`,
-          from_name: "CWD Partner System",
-          message,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      console.error(
-        "Web3Forms email failed:",
-        await response.text()
-      );
-    }
-  } catch (error) {
-    console.error(
-      "Email notification error:",
-      error
-    );
-  }
+  // Explicit text fields only: never email private storage paths or signed URLs.
+  const details = [
+    ['Application Number', application.application_number || application.id],
+    ['Name', application.name], ['Mobile', application.phone],
+    ['Email', application.email || 'Not provided'],
+    ['Alternate Number', application.alternate_phone || 'Not provided'],
+    ['Brand', application.car_brand || 'Not provided'],
+    ['Model', application.car_model || 'Not provided'],
+    ['Manufacturing Year', application.mfg_year || 'Not provided'],
+    ['Documents', 'RC, Insurance, PUC, Driving Licence, Aadhaar and PAN uploaded to private storage'],
+    ['Vehicle Photos', application.vehicle_photo_paths.length + ' uploaded to private storage'],
+  ].map(([label, value]) => label + ': ' + value).join('\n');
+  return sendNotifications({ kind: 'partner', reference: application.application_number || application.id, email: application.email, details });
 }
 
 export default async function handler(request) {
@@ -556,7 +502,7 @@ if (savedRow?.application_number) {
     // EMAIL NOTIFICATION
     // ----------------------------------------
 
-    await sendNotificationEmail(
+    const notifications = await sendNotificationEmail(
       application
     );
 
@@ -569,6 +515,8 @@ return jsonResponse({
 
   message:
     "Partner application submitted successfully.",
+
+  ...notifications,
 
   application_id:
     applicationId,

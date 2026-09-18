@@ -487,6 +487,15 @@ function showCustomAlert(message) {
         }
 
 function onPickupDateChange() {
+    const pickupDate = document.getElementById('wd-out-pdate').value;
+    const returnDate = document.getElementById('wd-out-rdate');
+    if (pickupDate) {
+        returnDate.min = pickupDate;
+        if (returnDate.value && returnDate.value < pickupDate) {
+            returnDate.value = pickupDate;
+            returnDate.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
     calculateDriverFare();
 }
 
@@ -2000,6 +2009,10 @@ function updateDatePlaceholder(inputId, placeholderId) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    document.querySelectorAll('input[type="date"]').forEach(input => { input.min = today; });
+
     updateDatePlaceholder('sd-pdate', 'sd-pdate-placeholder');
     updateDatePlaceholder('sd-rdate', 'sd-rdate-placeholder');
 

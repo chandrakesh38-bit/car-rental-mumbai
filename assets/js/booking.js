@@ -2039,7 +2039,7 @@ showSuccessModal(result.application_number);
         }
 
         window.onload = function() {
-            setWDSubTab('outstation');
+            setWDSubTab('local');
             renderWDFleet();
             applyAllSDFilters();
         };

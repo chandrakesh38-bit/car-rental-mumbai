@@ -480,9 +480,7 @@ function showCustomAlert(message) {
                 `;
             }
 
-          setTimeout(() => {
-        updateDatePlaceholder('wd-airport-date', 'wd-airport-date-placeholder');
-    }, 50);      
+          updateDatePlaceholder('wd-airport-date', 'wd-airport-date-placeholder');      
                 
         }
 
@@ -2051,13 +2049,41 @@ showSuccessModal(result.application_number);
     }
 }
 
+const initializedDateInputs = new WeakSet();
+
 function updateDatePlaceholder(inputId, placeholderId) {
     const input = document.getElementById(inputId);
     const placeholder = document.getElementById(placeholderId);
 
     if (!input || !placeholder) return;
 
+    const timePrefix = {
+        'wd-local-date': 'wd-local',
+        'wd-out-pdate': 'wd-out-p',
+        'wd-airport-date': 'wd-airport',
+        'sd-pdate': 'sd-p'
+    }[inputId];
+    const hour = timePrefix && document.getElementById(timePrefix.endsWith('-p') ? timePrefix + 'hour' : timePrefix + '-hour');
+    const ampm = timePrefix && document.getElementById(timePrefix.endsWith('-p') ? timePrefix + 'ampm' : timePrefix + '-ampm');
+
     function update() {
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        input.min = input.min > today ? input.min : today;
+        if (hour && ampm) {
+            const available = (hourValue, period) => !input.value || input.value > today ||
+                (input.value === today && createLocalDateTime(input.value, Number(hourValue), period) > now);
+            const hours = [...hour.options];
+            const periods = [...ampm.options];
+            periods.forEach(option => { option.disabled = !hours.some(h => available(h.value, option.value)); });
+            if (!periods.some(option => option.value === ampm.value && !option.disabled)) {
+                ampm.value = periods.find(option => !option.disabled)?.value || '';
+            }
+            hours.forEach(option => { option.disabled = !ampm.value || !available(option.value, ampm.value); });
+            if (!hours.some(option => option.value === hour.value && !option.disabled)) {
+                hour.value = hours.find(option => !option.disabled)?.value || '';
+            }
+        }
         if (input.value) {
             input.classList.remove('date-empty');
             input.classList.add('date-filled');
@@ -2071,8 +2097,15 @@ function updateDatePlaceholder(inputId, placeholderId) {
 
     update();
 
+    if (initializedDateInputs.has(input)) return;
+    initializedDateInputs.add(input);
     input.addEventListener('change', update);
     input.addEventListener('input', update);
+    for (const field of [input, hour, ampm].filter(Boolean)) {
+        field.addEventListener('focus', update);
+        field.addEventListener('pointerdown', update);
+        if (field !== input) field.addEventListener('change', update);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function () {

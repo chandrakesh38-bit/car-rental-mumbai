@@ -911,6 +911,13 @@ function onPickupDateChange() {
             openSDModal(car);
         }
 
+        function syncModalState(modal, active) {
+            modal.classList.toggle('active', active);
+            document.body.classList.toggle('overflow-hidden',
+                !!document.querySelector('[id$="-modal"].active') ||
+                document.getElementById('nav-drawer')?.getAttribute('aria-hidden') === 'false');
+        }
+
         function openFareBreakdownModal() {
             const contentBox = document.getElementById('fare-breakdown-content');
             if (!contentBox) return;
@@ -921,9 +928,9 @@ function onPickupDateChange() {
                     <li><strong>Tolls & Parking:</strong> Extra as per actual receipts.</li>
                 </ul>
             `;
-            document.getElementById('fare-breakdown-modal').classList.remove('hidden');
+            document.getElementById('fare-breakdown-modal').classList.remove('hidden'); syncModalState(document.getElementById('fare-breakdown-modal'), true);
         }
-        function closeFareBreakdownModal() { document.getElementById('fare-breakdown-modal').classList.add('hidden'); }
+        function closeFareBreakdownModal() { document.getElementById('fare-breakdown-modal').classList.add('hidden'); syncModalState(document.getElementById('fare-breakdown-modal'), false); }
 
         function openModal(name, fare) {
             chosenCarName = name;
@@ -958,9 +965,9 @@ function onPickupDateChange() {
             document.getElementById('modal-summary-datetime').innerText = dateTimeStr;
             document.getElementById('modal-summary-package').innerText = pkgStr;
 
-            document.getElementById('booking-modal').classList.remove('hidden');
+            document.getElementById('booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('booking-modal'), true);
         }
-        function closeModal() { document.getElementById('booking-modal').classList.add('hidden'); }
+        function closeModal() { document.getElementById('booking-modal').classList.add('hidden'); syncModalState(document.getElementById('booking-modal'), false); }
 
         function openSDModal(car) {
             selectedCarObj = car;
@@ -980,12 +987,12 @@ function onPickupDateChange() {
             document.getElementById('sd-review-duration').innerText = `${calculatedRentalHours} Hours`;
 
             updateSDFareReview();
-            document.getElementById('sd-booking-modal').classList.remove('hidden');
+            document.getElementById('sd-booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('sd-booking-modal'), true);
         }
-        function closeSDModal() { document.getElementById('sd-booking-modal').classList.add('hidden'); }
+        function closeSDModal() { document.getElementById('sd-booking-modal').classList.add('hidden'); syncModalState(document.getElementById('sd-booking-modal'), false); }
 
-        function openPartnerModal() { document.getElementById('partner-modal').classList.remove('hidden'); }
-        function closePartnerModal() { document.getElementById('partner-modal').classList.add('hidden'); }
+        function openPartnerModal() { document.getElementById('partner-modal').classList.remove('hidden'); syncModalState(document.getElementById('partner-modal'), true); }
+        function closePartnerModal() { document.getElementById('partner-modal').classList.add('hidden'); syncModalState(document.getElementById('partner-modal'), false); }
 
         window.showSuccessModal = function(applicationNumber) {
     const modal = document.getElementById('success-confirmation-modal');
@@ -1000,9 +1007,10 @@ function onPickupDateChange() {
     }
 
     modal.classList.remove('hidden');
+    syncModalState(modal, true);
 };
         
-        function closeSuccessModal() { document.getElementById('success-confirmation-modal').classList.add('hidden'); }
+        function closeSuccessModal() { document.getElementById('success-confirmation-modal').classList.add('hidden'); syncModalState(document.getElementById('success-confirmation-modal'), false); }
 
         function onSDDeliveryOptionChange() {
             currentDeliveryMode = document.querySelector('input[name="sd-delivery-mode"]:checked').value;
@@ -1064,7 +1072,7 @@ function onDeliveryLocationSelect() {
         document.getElementById('sd-cust-city').value = '';
         document.getElementById('sd-cust-state').value = '';
 
-        document.getElementById('sd-serviceability-modal').classList.remove('hidden');
+        document.getElementById('sd-serviceability-modal').classList.remove('hidden'); syncModalState(document.getElementById('sd-serviceability-modal'), true);
         document.getElementById('sd-serviceability-modal').classList.add('flex');
 
         updateSDFareReview();
@@ -1081,6 +1089,7 @@ function onDeliveryLocationSelect() {
 function closeSDServiceabilityModal() {
     const modal = document.getElementById('sd-serviceability-modal');
     modal.classList.add('hidden');
+    syncModalState(modal, false);
     modal.classList.remove('flex');
 
     document.getElementById('sd-delivery-location-input').focus();
@@ -1429,6 +1438,7 @@ function showPartnerUploadProgress() {
     }
 
     modal.classList.remove('hidden');
+    syncModalState(modal, true);
     modal.classList.add('flex');
 
     return modal;
@@ -1453,6 +1463,7 @@ function hidePartnerUploadProgress() {
 
     if (modal) {
         modal.classList.add('hidden');
+    syncModalState(modal, false);
         modal.classList.remove('flex');
     }
 }
@@ -1463,7 +1474,7 @@ function showPartnerErrorModal(message) {
 
     let modal = document.getElementById('partner-error-modal');
 
-    if (modal) modal.remove();
+    if (modal) { syncModalState(modal, false); modal.remove(); }
 
     modal = document.createElement('div');
     modal.id = 'partner-error-modal';
@@ -1525,13 +1536,11 @@ function showPartnerErrorModal(message) {
     `;
 
     document.body.appendChild(modal);
+    syncModalState(modal, true);
  
-    // Close button click (ab yeh 100% kaam karega aur popup band kar dega)
-    document.getElementById('partner-error-close').onclick = function () {
-        modal.remove();
-    };
         
     document.getElementById('partner-reupload-btn').onclick = function () {
+        syncModalState(modal, false);
         modal.remove();
 
         const partnerModal = document.getElementById('partner-modal');
@@ -1551,6 +1560,7 @@ function showPartnerErrorModal(message) {
     };
 
     document.getElementById('partner-error-close').onclick = function () {
+        syncModalState(modal, false);
         modal.remove();
     };
 }
@@ -2127,6 +2137,7 @@ function openWhyChooseModal(type) {
 
     // Open modal
     modal.classList.remove('hidden');
+    syncModalState(modal, true);
     modal.classList.add('flex');
 
     // Prevent background scrolling
@@ -2141,33 +2152,41 @@ function closeWhyChooseModal() {
     if (!modal) return;
 
     modal.classList.add('hidden');
+    syncModalState(modal, false);
     modal.classList.remove('flex');
 
-    // Restore background scrolling
-    document.body.classList.remove('overflow-hidden');
+    // Scroll locking is synchronized with any other open modal.
 }
 
 
-/* Close when clicking outside the popup */
+function closeExistingModal(modal) {
+    const close = {
+        'fare-breakdown-modal': closeFareBreakdownModal,
+        'booking-modal': closeModal,
+        'sd-booking-modal': closeSDModal,
+        'partner-modal': closePartnerModal,
+        'success-confirmation-modal': closeSuccessModal,
+        'sd-serviceability-modal': closeSDServiceabilityModal,
+        'why-choose-modal': closeWhyChooseModal,
+        'partner-upload-progress-modal': hidePartnerUploadProgress,
+        'partner-error-modal': () => document.getElementById('partner-error-close').click()
+    }[modal.id];
+    if (close) close();
+}
+
+/* Reuse the existing backdrop listener; existing panels are the first child. */
 document.addEventListener('click', function(event) {
-
-    const modal = document.getElementById('why-choose-modal');
-
+    const modal = event.target.closest('[id$="-modal"].active');
     if (!modal) return;
-
-    if (event.target === modal) {
-        closeWhyChooseModal();
-    }
-
+    const content = modal.querySelector('.modal-content') || modal.firstElementChild;
+    if (!content?.contains(event.target)) closeExistingModal(modal);
 });
 
-
-/* Close popup with ESC key */
+/* Close only the topmost visible modal using the existing Escape listener. */
 document.addEventListener('keydown', function(event) {
-
-    if (event.key === 'Escape') {
-        closeWhyChooseModal();
-    }
-
+    if (event.key !== 'Escape') return;
+    const modals = [...document.querySelectorAll('[id$="-modal"].active')];
+    modals.sort((a, b) => (parseInt(getComputedStyle(a).zIndex) || 0) - (parseInt(getComputedStyle(b).zIndex) || 0));
+    const modal = modals.pop();
+    if (modal) closeExistingModal(modal);
 });
-

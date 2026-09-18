@@ -66,13 +66,3 @@ span[id*="placeholder"] {
     white-space: nowrap !important;
     overflow: hidden !important;
 }
-/* Fix overlapping placeholder text when date is selected in Airport / Dynamic inputs */
-input[type="date"]:valid + span[id*="placeholder"],
-input[type="date"]:not(:placeholder-shown) + span[id*="placeholder"] {
-    display: none !important;
-}
-
-/* Ensure background of date input is clean */
-input[type="date"] {
-    background-color: #ffffff !important;
-}

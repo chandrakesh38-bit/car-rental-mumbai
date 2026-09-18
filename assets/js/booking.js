@@ -283,7 +283,7 @@ const mumbaiMetroLocations = [
         let chosenFareAmount = 0;
         let selectedCarObj = null;
         let currentDeliveryMode = 'home';
-        let calculatedRentalHours = 24;
+        let calculatedRentalHours = 0;
         let currentSDPage = 1;
         const carsPerPage = 6;
         let filteredSDCarsList = [...excelCarsData];
@@ -1025,7 +1025,6 @@ function onPickupDateChange() {
 
             document.getElementById('sd-review-pdatetime').innerText = `${pDate || 'Selected'} @ ${pHour}:00 ${pAmpm}`;
             document.getElementById('sd-review-rdatetime').innerText = `${rDate || 'Selected'} @ ${rHour}:00 ${rAmpm}`;
-            document.getElementById('sd-review-duration').innerText = `${calculatedRentalHours} Hours`;
 
             updateSDFareReview();
             document.getElementById('sd-booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('sd-booking-modal'), true);
@@ -1063,7 +1062,21 @@ function onPickupDateChange() {
 
         function updateSDFareReview() {
             if (!selectedCarObj) return;
-            const baseFare = calculatedRentalHours * selectedCarObj.rateVal;
+            const pickupDateTime = createLocalDateTime(
+                document.getElementById('sd-pdate').value,
+                Number(document.getElementById('sd-phour').value),
+                document.getElementById('sd-pampm').value
+            );
+            const returnDateTime = createLocalDateTime(
+                document.getElementById('sd-rdate').value,
+                Number(document.getElementById('sd-rhour').value),
+                document.getElementById('sd-rampm').value
+            );
+            calculatedRentalHours = (returnDateTime - pickupDateTime) / (60 * 60 * 1000);
+            const billedRentalHours = Math.max(24, calculatedRentalHours);
+            document.getElementById('sd-review-duration').innerText =
+                `${calculatedRentalHours} hours actual · ${billedRentalHours} hours billed (24-hour minimum)`;
+            const baseFare = billedRentalHours * selectedCarObj.rateVal;
             const deposit = selectedCarObj.depositVal;
             
             let deliveryCharge = 500;
@@ -1417,6 +1430,7 @@ function handleBookingSubmit(e) {
         function handleSDBookingSubmit(e) {
             e.preventDefault();
             if (!validateSelfDriveJourney()) return;
+            updateSDFareReview();
             const name = document.getElementById('sd-cust-name').value;
             const phone = document.getElementById('sd-cust-phone').value;
             const email = document.getElementById('sd-cust-email').value;

@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQH1RQ70WV"></script>
+    <script src="/assets/js/analytics.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mumbai Car Rental – With Driver &amp; Self Drive | Car with Driver India</title>
+    <!-- Search Engine & Social Meta Tags -->
+    <meta name="description" content="Explore car rental in Mumbai, Thane and Navi Mumbai: with-driver cabs, self-drive cars, airport transfers and outstation trips. Check rates and plan your ride.">
+    <link rel="canonical" href="https://carswithdriverindia.com/mumbai-car-rental">
+    
+    <!-- Open Graph (WhatsApp / Social Preview) -->
+    <meta property="og:title" content="Mumbai Car Rental – With Driver &amp; Self Drive | Car with Driver India">
+    <meta property="og:description" content="Explore car rental in Mumbai, Thane and Navi Mumbai: with-driver cabs, self-drive cars, airport transfers and outstation trips. Check rates and plan your ride.">
+    <meta property="og:url" content="https://carswithdriverindia.com/mumbai-car-rental">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://carswithdriverindia.com/logo.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/logo.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Supabase JS Client v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="stylesheet" href="/assets/css/site.css">
+    <link rel="stylesheet" href="/assets/css/navigation.css">
+    <meta name="robots" content="index, follow">
+    <meta property="og:image:alt" content="Car with Driver India logo">
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"AutoRental","@id":"https://carswithdriverindia.com/#business","name":"Car with Driver India","url":"https://carswithdriverindia.com/","telephone":"+919702988465","logo":"https://carswithdriverindia.com/logo.png","address":{"@type":"PostalAddress","streetAddress":"Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West","addressLocality":"Mumbai","addressRegion":"Maharashtra","postalCode":"400079","addressCountry":"IN"}},{"@type":"Service","@id":"https://carswithdriverindia.com/mumbai-car-rental#service","name":"Mumbai car rental with driver and self drive","serviceType":"Car rental","url":"https://carswithdriverindia.com/mumbai-car-rental","provider":{"@id":"https://carswithdriverindia.com/#business"},"areaServed":[{"@type":"City","name":"Mumbai"},{"@type":"City","name":"Thane"},{"@type":"City","name":"Navi Mumbai"}]},{"@type":"BreadcrumbList","@id":"https://carswithdriverindia.com/mumbai-car-rental#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://carswithdriverindia.com/"},{"@type":"ListItem","position":2,"name":"Mumbai Car Rental","item":"https://carswithdriverindia.com/mumbai-car-rental"}]}]}</script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen" data-page="mumbai-car-rental" data-booking-mode="" data-booking-tab="">
+<!-- NAVBAR -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+            <a href="/" class="flex items-center space-x-3">
+                <div id="site-logo-container" class="flex items-center">
+                    <div id="default-brand-icon" class="hidden w-10 h-10 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-xl shadow-inner">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <img id="dynamic-brand-logo" src="/logo.png" alt="Car with Driver India" class="h-9 sm:h-11 w-auto max-w-[180px] object-contain" onerror="this.classList.add('hidden'); document.getElementById('default-brand-icon').classList.remove('hidden');">
+                </div>
+                <div>
+                    <span class="text-xl font-black text-indigo-950 tracking-tight block leading-none">Car with Driver India</span>
+                    <span class="text-[10px] text-slate-400 font-semibold tracking-wider block mt-1">Car with Driver Mobility LLP</span>
+                </div>
+            </a>
+
+            <div class="flex items-center space-x-3">
+                <a href="https://wa.me/919702988465" target="_blank" class="hidden sm:flex bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition items-center gap-1.5 shadow-sm">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> Talk to Us
+                </a>
+                <button type="button" id="nav-menu-button" aria-label="Open navigation" aria-controls="nav-drawer" aria-expanded="false" onclick="openNavDrawer()" class="p-2.5 rounded-xl text-slate-700 hover:text-indigo-950 hover:bg-slate-100 transition focus:outline-none flex items-center justify-center border border-slate-200">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- RIGHT SLIDE-IN DRAWER MENU -->
+    <div id="nav-drawer-overlay" onclick="closeNavDrawer()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 hidden transition-opacity duration-300 opacity-0"></div>
+    <div id="nav-drawer" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" inert class="fixed top-0 right-0 h-full w-72 sm:w-80 bg-white z-50 shadow-2xl border-l border-slate-200 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between p-6">
+        <div>
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-sm">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <span class="font-extrabold text-sm text-indigo-950">Car with Driver India</span>
+                </div>
+                <button type="button" aria-label="Close navigation" onclick="closeNavDrawer()" class="p-2 text-slate-400 hover:text-slate-700 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-1.5 pt-5 text-sm font-bold text-slate-700">
+<a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-house text-indigo-600 w-5" aria-hidden="true"></i><span>Home</span></a>
+<a href="/with-driver" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-user-tie text-indigo-600 w-5" aria-hidden="true"></i><span>With Driver</span></a>
+<a href="/self-drive" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-key text-indigo-600 w-5" aria-hidden="true"></i><span>Self Drive</span></a>
+<a href="/airport-transfer" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-plane text-indigo-600 w-5" aria-hidden="true"></i><span>Airport Transfer</span></a>
+<a href="/outstation" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-route text-indigo-600 w-5" aria-hidden="true"></i><span>Outstation</span></a>
+<a href="/cars" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-car text-indigo-600 w-5" aria-hidden="true"></i><span>Cars</span></a>
+<a href="/mumbai-car-rental" aria-current="page" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-city text-indigo-600 w-5" aria-hidden="true"></i><span>Mumbai Car Rental</span></a>
+<a href="/faq" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-circle-question text-indigo-600 w-5" aria-hidden="true"></i><span>FAQ</span></a>
+<a href="/contact" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-phone text-indigo-600 w-5" aria-hidden="true"></i><span>Contact</span></a>
+<button type="button" onclick="closeNavDrawer(); openPartnerModal();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition text-left font-bold text-slate-700">
+                    <i class="fa-solid fa-handshake text-amber-500 w-5"></i>
+                    <span>Become a Partner</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 space-y-2">
+            <a href="https://wa.me/919702988465" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+                <span>WhatsApp: +91 9702988465</span>
+            </a>
+            <p class="text-[10px] text-slate-400 text-center">Car with Driver LLP • Mumbai, Maharashtra</p>
+        </div>
+    </div>
+
+<main>
+<header class="bg-gradient-to-b from-indigo-950 via-indigo-900 to-slate-900 text-white px-4 sm:px-6 pt-6 pb-12 sm:pb-16">
+  <div class="max-w-7xl mx-auto">
+    <nav aria-label="Breadcrumb" class="text-xs text-slate-300 mb-10">
+      <ol class="flex flex-wrap items-center gap-2"><li><a href="/" class="hover:text-amber-300">Home</a></li><li aria-hidden="true">/</li><li aria-current="page">Mumbai Car Rental</li></ol>
+    </nav>
+    <div class="grid lg:grid-cols-3 gap-8 lg:gap-12 items-center">
+      <div class="lg:col-span-2">
+        <p class="text-amber-300 text-xs font-bold uppercase tracking-wider mb-4">Mumbai · Thane · Navi Mumbai</p>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight max-w-3xl">Mumbai Car Rental – With Driver &amp; Self Drive</h1>
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl mt-5">A cab for a day of meetings, a self-drive car for family plans, or a ride beyond the city. Choose the car rental service that fits your Mumbai journey, with clear fare details before you submit your request.</p>
+        <p class="text-sm text-slate-300 leading-relaxed max-w-2xl mt-3">Based in Vikhroli West, we serve Mumbai, Thane and Navi Mumbai. Doorstep service is available where applicable; confirm your exact location and any delivery charges when booking.</p>
+        <div class="flex flex-col sm:flex-row gap-3 mt-7">
+          <a href="/with-driver" class="bg-amber-400 hover:bg-amber-500 text-indigo-950 font-extrabold px-6 py-3.5 rounded-xl text-sm text-center shadow-lg transition">Book With Driver <i class="fa-solid fa-arrow-right ml-2" aria-hidden="true"></i></a>
+          <a href="/self-drive" class="bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold px-6 py-3.5 rounded-xl text-sm text-center transition">Rent a Self Drive Car</a>
+        </div>
+      </div>
+      <aside aria-label="Plan your Mumbai journey" class="bg-indigo-900/60 border border-indigo-700 rounded-2xl p-6 sm:p-7">
+        <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-amber-400 text-indigo-950 mb-4"><i class="fa-solid fa-route text-lg" aria-hidden="true"></i></span>
+        <p class="text-xl font-extrabold">Where are you headed?</p>
+        <p class="text-sm text-slate-300 leading-relaxed mt-2 mb-5">Find the right option for your itinerary.</p>
+        <div class="space-y-3 text-sm font-semibold">
+          <a href="#mumbai-airport" class="flex items-center justify-between border-t border-indigo-700 pt-3 hover:text-amber-300">To or from the airport <i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i></a>
+          <a href="#mumbai-local" class="flex items-center justify-between border-t border-indigo-700 pt-3 hover:text-amber-300">Around the city <i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i></a>
+          <a href="#mumbai-outstation" class="flex items-center justify-between border-t border-indigo-700 pt-3 hover:text-amber-300">Beyond Mumbai <i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i></a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</header>
+
+<section aria-labelledby="mumbai-services-heading" class="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+  <p class="text-xs text-indigo-600 font-bold uppercase tracking-wider mb-2">Choose your service</p>
+  <h2 id="mumbai-services-heading" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Car rental services in Mumbai</h2>
+  <p class="text-sm text-slate-600 leading-relaxed mt-3 max-w-2xl">Start with how you want to travel. Each option takes you to the existing booking page, where you can enter your dates and review the fare.</p>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-7">
+    <article class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
+      <i class="fa-solid fa-user-tie text-indigo-600 text-xl mb-4" aria-hidden="true"></i>
+      <h3 class="font-extrabold text-lg text-slate-900">Car Rental With Driver</h3>
+      <p class="text-sm text-slate-600 leading-relaxed mt-2 mb-5">Leave the driving to a chauffeur. Choose a cab for local travel, an airport journey or an outstation trip.</p>
+      <a href="/with-driver" class="mt-auto text-sm font-bold text-indigo-600 hover:underline">Explore cars with driver <span aria-hidden="true">→</span></a>
+    </article>
+    <article class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
+      <i class="fa-solid fa-key text-indigo-600 text-xl mb-4" aria-hidden="true"></i>
+      <h3 class="font-extrabold text-lg text-slate-900">Self Drive Car Rental</h3>
+      <p class="text-sm text-slate-600 leading-relaxed mt-2 mb-5">Prefer to drive yourself? Browse by brand, fuel, transmission and seats, then choose pickup and return dates.</p>
+      <a href="/self-drive" class="mt-auto text-sm font-bold text-indigo-600 hover:underline">Browse self-drive cars <span aria-hidden="true">→</span></a>
+    </article>
+    <article class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
+      <i class="fa-solid fa-plane text-indigo-600 text-xl mb-4" aria-hidden="true"></i>
+      <h3 class="font-extrabold text-lg text-slate-900">Mumbai Airport Transfer</h3>
+      <p class="text-sm text-slate-600 leading-relaxed mt-2 mb-5">Arrange a pickup or drop using the airport booking option. Select your terminal, travel date and pickup or drop area.</p>
+      <a href="/airport-transfer" class="mt-auto text-sm font-bold text-indigo-600 hover:underline">Plan an airport transfer <span aria-hidden="true">→</span></a>
+    </article>
+    <article class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
+      <i class="fa-solid fa-city text-indigo-600 text-xl mb-4" aria-hidden="true"></i>
+      <h3 class="font-extrabold text-lg text-slate-900">Local Mumbai Car Rental</h3>
+      <p class="text-sm text-slate-600 leading-relaxed mt-2 mb-5">Plan a day of meetings, family visits or city errands with a local car-and-driver package.</p>
+      <a href="/with-driver" class="mt-auto text-sm font-bold text-indigo-600 hover:underline">View local travel packages <span aria-hidden="true">→</span></a>
+    </article>
+    <article class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
+      <i class="fa-solid fa-road text-indigo-600 text-xl mb-4" aria-hidden="true"></i>
+      <h3 class="font-extrabold text-lg text-slate-900">Outstation Car Rental</h3>
+      <p class="text-sm text-slate-600 leading-relaxed mt-2 mb-5">Travel beyond Mumbai with a driver. Enter your destination and return date to see the estimated trip fare.</p>
+      <a href="/outstation" class="mt-auto text-sm font-bold text-indigo-600 hover:underline">Explore outstation bookings <span aria-hidden="true">→</span></a>
+    </article>
+    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col justify-center">
+      <p class="text-lg font-extrabold text-indigo-950">Not sure which option fits?</p>
+      <p class="text-sm text-slate-600 leading-relaxed mt-2 mb-4">Tell us your route, number of passengers and travel dates.</p>
+      <a href="/contact" class="text-sm font-bold text-indigo-600 hover:underline">Talk to our Mumbai team <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="mumbai-areas-heading" class="bg-slate-100 border-y border-slate-200 px-4 sm:px-6 py-12 sm:py-16">
+  <div class="max-w-7xl mx-auto">
+    <div class="max-w-2xl">
+      <p class="text-xs text-indigo-600 font-bold uppercase tracking-wider mb-2">Plan your pickup</p>
+      <h2 id="mumbai-areas-heading" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Mumbai areas we serve</h2>
+      <p class="text-sm text-slate-600 leading-relaxed mt-3">Our operating hub is in <strong>Vikhroli West</strong>. The areas below appear in our current self-drive delivery coverage. Service depends on your exact address and chosen rental option, so confirm the location before making travel plans.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-4 mt-7"><div class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+      <h3 class="font-extrabold text-slate-900 mb-4">Mumbai</h3>
+      <ul class="flex flex-wrap gap-2 text-sm text-slate-600"><li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">Bhandup</li><li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">Mulund</li><li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">Ghatkopar</li><li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">Kurla</li><li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">Andheri</li><li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">Bandra</li></ul>
+      
+    </div>
+<div class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+      <h3 class="font-extrabold text-slate-900 mb-4">Thane</h3>
+      <ul class="flex flex-wrap gap-2 text-sm text-slate-600"><li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">Thane</li></ul>
+      <p class="text-sm text-slate-500 leading-relaxed mt-4">Share your exact pickup or delivery address when planning your trip.</p>
+    </div>
+<div class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+      <h3 class="font-extrabold text-slate-900 mb-4">Navi Mumbai</h3>
+      <ul class="flex flex-wrap gap-2 text-sm text-slate-600"><li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">Airoli</li><li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">Vashi</li><li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">Nerul</li><li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">Panvel</li></ul>
+      
+    </div></div>
+    <p class="text-sm text-slate-600 leading-relaxed mt-5"><strong>Travelling from Powai or another nearby area?</strong> <a href="/contact" class="font-bold text-indigo-600 hover:underline">Ask us to confirm pickup or delivery</a>. An area name alone does not guarantee availability for every address or date.</p>
+  </div>
+</section>
+
+<section aria-labelledby="mumbai-fleet-heading" class="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-7">
+    <div class="max-w-2xl">
+      <p class="text-xs text-indigo-600 font-bold uppercase tracking-wider mb-2">Match the car to your plans</p>
+      <h2 id="mumbai-fleet-heading" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Explore our Mumbai rental fleet</h2>
+      <p class="text-sm text-slate-600 leading-relaxed mt-3">From compact city cars to larger family vehicles, these examples come from our existing fleet. Confirm the car and availability for your travel dates on the booking page.</p>
+    </div>
+    <a href="/cars" class="inline-flex items-center justify-center gap-2 bg-indigo-950 hover:bg-indigo-900 text-white text-sm font-bold px-5 py-3 rounded-xl whitespace-nowrap transition">View All Cars <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i></a>
+  </div>
+  <div class="grid sm:grid-cols-3 gap-5">
+    <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <img src="https://lh3.googleusercontent.com/d/1kdLktKSk6yMlPJDY5BVdeNyC70rfM6eZ" alt="Maruti Suzuki Swift — Hatchback in our Mumbai self-drive fleet" width="640" height="400" loading="lazy" decoding="async" class="w-full h-48 sm:h-52 object-cover bg-slate-100">
+      <div class="p-5">
+        <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-2">Self drive · Hatchback</p>
+        <h3 class="font-extrabold text-lg text-slate-900">Maruti Suzuki Swift</h3>
+        <p class="text-sm text-slate-500 mt-2">5 seats · Manual · Petrol + CNG</p>
+      </div>
+    </article>
+
+    <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <img src="https://lh3.googleusercontent.com/d/1Or6F03FkxBCjzM3MC9l7A4X6EbtTueZ5" alt="Tata Nexon — Compact SUV in our Mumbai self-drive fleet" width="640" height="400" loading="lazy" decoding="async" class="w-full h-48 sm:h-52 object-cover bg-slate-100">
+      <div class="p-5">
+        <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-2">Self drive · Compact SUV</p>
+        <h3 class="font-extrabold text-lg text-slate-900">Tata Nexon</h3>
+        <p class="text-sm text-slate-500 mt-2">5 seats · Manual · Petrol + CNG</p>
+      </div>
+    </article>
+
+    <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <img src="https://lh3.googleusercontent.com/d/15o35vVV6iXixrjwMIXiIhLxAFeHj5Uel" alt="Maruti Suzuki Ertiga — MUV / 7-Seater in our Mumbai self-drive fleet" width="640" height="400" loading="lazy" decoding="async" class="w-full h-48 sm:h-52 object-cover bg-slate-100">
+      <div class="p-5">
+        <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-2">Self drive · MUV / 7-Seater</p>
+        <h3 class="font-extrabold text-lg text-slate-900">Maruti Suzuki Ertiga</h3>
+        <p class="text-sm text-slate-500 mt-2">7 seats · Manual · Petrol + CNG</p>
+      </div>
+    </article></div>
+  <div class="mt-8">
+    <h3 class="text-lg font-extrabold text-slate-900 mb-4">Prefer a car with a driver?</h3>
+    <ul class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <li class="rounded-xl bg-slate-50 border border-slate-200 p-4">
+      <span class="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Comfort Sedan</span>
+      <span class="block font-bold text-sm text-slate-900">Sedan (Dzire / Aura)</span>
+      <span class="block text-xs text-slate-500 mt-1">4+1 seats · 2 Bags</span>
+    </li>
+
+    <li class="rounded-xl bg-slate-50 border border-slate-200 p-4">
+      <span class="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Compact SUV</span>
+      <span class="block font-bold text-sm text-slate-900">Compact SUV (Punch / Brezza)</span>
+      <span class="block text-xs text-slate-500 mt-1">4+1 seats · 2 Large Bags</span>
+    </li>
+
+    <li class="rounded-xl bg-slate-50 border border-slate-200 p-4">
+      <span class="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Family MUV</span>
+      <span class="block font-bold text-sm text-slate-900">Maruti Ertiga</span>
+      <span class="block text-xs text-slate-500 mt-1">6+1 seats · 3 Bags</span>
+    </li>
+
+    <li class="rounded-xl bg-slate-50 border border-slate-200 p-4">
+      <span class="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Premium Family MUV</span>
+      <span class="block font-bold text-sm text-slate-900">Kia Carens</span>
+      <span class="block text-xs text-slate-500 mt-1">6+1 seats · 3 Bags</span>
+    </li>
+
+    <li class="rounded-xl bg-slate-50 border border-slate-200 p-4">
+      <span class="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Executive MUV</span>
+      <span class="block font-bold text-sm text-slate-900">Toyota Innova</span>
+      <span class="block text-xs text-slate-500 mt-1">6+1 seats · 4 Bags</span>
+    </li>
+
+    <li class="rounded-xl bg-slate-50 border border-slate-200 p-4">
+      <span class="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Luxury MUV</span>
+      <span class="block font-bold text-sm text-slate-900">Innova Crysta</span>
+      <span class="block text-xs text-slate-500 mt-1">6+1 seats · 4 Bags</span>
+    </li></ul>
+    <p class="text-sm text-slate-600 mt-4">Compare the local, airport or outstation fares on the <a href="/with-driver" class="font-bold text-indigo-600 hover:underline">with-driver booking page</a>.</p>
+  </div>
+</section>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16 grid lg:grid-cols-2 gap-5">
+  <section id="mumbai-airport" aria-labelledby="mumbai-airport-heading" class="scroll-mt-24 bg-indigo-950 text-white rounded-2xl p-6 sm:p-8">
+    <i class="fa-solid fa-plane-arrival text-amber-400 text-2xl mb-5" aria-hidden="true"></i>
+    <h2 id="mumbai-airport-heading" class="text-2xl font-extrabold tracking-tight">Mumbai airport transfers</h2>
+    <p class="text-sm text-slate-300 leading-relaxed mt-4">Book an airport pickup after your flight or a drop from your chosen area. The existing transfer form supports Mumbai Airport T1, T2 and Navi Mumbai International Airport.</p>
+    <ul class="text-sm text-slate-300 space-y-3 mt-5 mb-6 list-disc pl-5">
+      <li>Choose “Pickup from Airport” or “Drop to Airport”.</li>
+      <li>Enter your terminal, pickup or drop area, date and time.</li>
+      <li>Review the cab fare and listed toll/parking exclusions.</li>
+    </ul>
+    <a href="/airport-transfer" class="inline-flex bg-amber-400 hover:bg-amber-500 text-indigo-950 font-extrabold px-5 py-3 rounded-xl text-sm transition">Book Airport Transfer</a>
+  </section>
+  <section id="mumbai-local" aria-labelledby="mumbai-local-heading" class="scroll-mt-24 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8">
+    <i class="fa-solid fa-building text-indigo-600 text-2xl mb-5" aria-hidden="true"></i>
+    <h2 id="mumbai-local-heading" class="text-2xl font-extrabold text-slate-900 tracking-tight">Local Mumbai car rental</h2>
+    <p class="text-sm text-slate-600 leading-relaxed mt-4">Keep your city itinerary together with a local car-and-driver package. It is a practical option for business travel, meetings, family visits, events or a day with several stops.</p>
+    <p class="text-sm text-slate-600 leading-relaxed mt-4">Choose an available hourly and kilometre package, add your pickup location and date, then compare cars. Review the package allowance and extra-kilometre terms before submitting your request.</p>
+    <a href="/with-driver" class="inline-flex mt-6 bg-indigo-950 hover:bg-indigo-900 text-white font-bold px-5 py-3 rounded-xl text-sm transition">Choose a Local Package</a>
+  </section>
+</div>
+
+<section id="mumbai-outstation" aria-labelledby="mumbai-outstation-heading" class="scroll-mt-24 bg-slate-100 border-y border-slate-200 px-4 sm:px-6 py-12 sm:py-16">
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-7 lg:gap-12 items-center">
+    <div>
+      <p class="text-xs text-indigo-600 font-bold uppercase tracking-wider mb-2">Beyond the city</p>
+      <h2 id="mumbai-outstation-heading" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Outstation trips from Mumbai</h2>
+      <p class="text-sm text-slate-600 leading-relaxed mt-4">Plan a weekend away, a family visit or a longer journey with a driver. Pune, Lonavala, Shirdi and Nashik are among the destinations in our outstation booking options.</p>
+      <p class="text-sm text-slate-600 leading-relaxed mt-3">Enter your destination and pickup/return dates to review the estimated round-trip distance, billed days and fare. Check the displayed inclusions and exclusions for your chosen car.</p>
+      <a href="/outstation" class="inline-flex mt-6 bg-indigo-950 hover:bg-indigo-900 text-white text-sm font-bold px-5 py-3 rounded-xl transition">Book Outstation</a>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-3" aria-label="Outstation route ideas"><a href="/outstation" class="rounded-xl bg-white border border-slate-200 px-4 py-3 text-sm font-bold text-indigo-950 hover:border-indigo-400 transition">Mumbai to Pune <i class="fa-solid fa-arrow-right text-xs ml-2 text-indigo-600" aria-hidden="true"></i></a>
+<a href="/mumbai-to-lonavala-car-rental" class="rounded-xl bg-white border border-slate-200 px-4 py-3 text-sm font-bold text-indigo-950 hover:border-indigo-400 transition">Mumbai to Lonavala <i class="fa-solid fa-arrow-right text-xs ml-2 text-indigo-600" aria-hidden="true"></i></a>
+<a href="/mumbai-to-shirdi-car-rental" class="rounded-xl bg-white border border-slate-200 px-4 py-3 text-sm font-bold text-indigo-950 hover:border-indigo-400 transition">Mumbai to Shirdi <i class="fa-solid fa-arrow-right text-xs ml-2 text-indigo-600" aria-hidden="true"></i></a>
+<a href="/outstation" class="rounded-xl bg-white border border-slate-200 px-4 py-3 text-sm font-bold text-indigo-950 hover:border-indigo-400 transition">Mumbai to Nashik <i class="fa-solid fa-arrow-right text-xs ml-2 text-indigo-600" aria-hidden="true"></i></a></div>
+  </div>
+</section>
+
+<!-- WHY CHOOSE US / FEATURE STRIP -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 py-8" id="services">
+
+    <div class="text-center mb-5">
+        <span class="bg-indigo-50 border border-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2">
+            Why Choose Us
+        </span>
+        <h2 class="text-2xl font-black text-slate-900">
+            Travel With Confidence
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">
+            Click any feature to know more about our service.
+        </p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+        <div class="grid grid-cols-2 md:grid-cols-5 divide-x divide-y md:divide-y-0 divide-slate-200">
+
+            <!-- CARD 1 -->
+            <button type="button"
+                onclick="openWhyChooseModal('driver')"
+                class="why-choose-card group px-3 py-5 sm:p-5 text-center hover:bg-indigo-50/50 transition-all duration-200 focus:outline-none focus:bg-indigo-50">
+
+                <div class="mx-auto w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition">
+                    <i class="fa-solid fa-user-shield text-base"></i>
+                </div>
+
+                <h3 class="font-bold text-slate-900 text-xs sm:text-sm leading-tight">
+                    Professional Driver
+                </h3>
+
+                <p class="text-[10px] sm:text-[11px] text-slate-500 leading-relaxed mt-1">
+                    Verified & experienced chauffeurs
+                </p>
+
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
+                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                </span>
+            </button>
+
+
+            <!-- CARD 2 -->
+            <button type="button"
+                onclick="openWhyChooseModal('pricing')"
+                class="why-choose-card group px-3 py-5 sm:p-5 text-center hover:bg-indigo-50/50 transition-all duration-200 focus:outline-none focus:bg-indigo-50">
+
+                <div class="mx-auto w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition">
+                    <i class="fa-solid fa-receipt text-base"></i>
+                </div>
+
+                <h3 class="font-bold text-slate-900 text-xs sm:text-sm leading-tight">
+                    Transparent Pricing
+                </h3>
+
+                <p class="text-[10px] sm:text-[11px] text-slate-500 leading-relaxed mt-1">
+                    No hidden charges
+                </p>
+
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
+                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                </span>
+            </button>
+
+
+            <!-- CARD 3 -->
+            <button type="button"
+                onclick="openWhyChooseModal('doorstep')"
+                class="why-choose-card group px-3 py-5 sm:p-5 text-center hover:bg-indigo-50/50 transition-all duration-200 focus:outline-none focus:bg-indigo-50">
+
+                <div class="mx-auto w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition">
+                    <i class="fa-solid fa-house-chimney text-base"></i>
+                </div>
+
+                <h3 class="font-bold text-slate-900 text-xs sm:text-sm leading-tight">
+                    Doorstep Delivery
+                </h3>
+
+                <p class="text-[10px] sm:text-[11px] text-slate-500 leading-relaxed mt-1">
+                    Pickup & drop at your location
+                </p>
+
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
+                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                </span>
+            </button>
+
+
+            <!-- CARD 4 -->
+            <button type="button"
+                onclick="openWhyChooseModal('fleet')"
+                class="why-choose-card group px-3 py-5 sm:p-5 text-center hover:bg-indigo-50/50 transition-all duration-200 focus:outline-none focus:bg-indigo-50">
+
+                <div class="mx-auto w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition">
+                    <i class="fa-solid fa-car-side text-base"></i>
+                </div>
+
+                <h3 class="font-bold text-slate-900 text-xs sm:text-sm leading-tight">
+                    Clean Fleet
+                </h3>
+
+                <p class="text-[10px] sm:text-[11px] text-slate-500 leading-relaxed mt-1">
+                    Clean & well-maintained cars
+                </p>
+
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
+                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                </span>
+            </button>
+
+
+            <!-- CARD 5 -->
+            <button type="button"
+            onclick="openWhyChooseModal('support')"
+            class="why-choose-card group col-span-2 md:col-span-1 md:col-start-auto px-3 py-5 sm:p-5 text-center hover:bg-indigo-50/50 transition-all duration-200 focus:outline-none focus:bg-indigo-50">
+
+                <div class="mx-auto w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition">
+                    <i class="fa-solid fa-headset text-base"></i>
+                </div>
+
+                <h3 class="font-bold text-slate-900 text-xs sm:text-sm leading-tight">
+                    24/7 Support
+                </h3>
+
+                <p class="text-[10px] sm:text-[11px] text-slate-500 leading-relaxed mt-1">
+                    Safety & round-the-clock support
+                </p>
+
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
+                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                </span>
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section aria-labelledby="mumbai-steps-heading" class="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
+  <h2 id="mumbai-steps-heading" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">How it works</h2>
+  <ol class="grid md:grid-cols-3 gap-6 mt-7">
+    <li class="border-t-2 border-amber-400 pt-5"><span class="text-xs text-indigo-600 font-bold">01</span><h3 class="text-lg font-extrabold text-slate-900 mt-2">Choose your car or service</h3><p class="text-sm text-slate-600 leading-relaxed mt-2">Decide between with-driver and self-drive, or start with your airport or outstation journey.</p></li>
+    <li class="border-t-2 border-amber-400 pt-5"><span class="text-xs text-indigo-600 font-bold">02</span><h3 class="text-lg font-extrabold text-slate-900 mt-2">Enter your trip details</h3><p class="text-sm text-slate-600 leading-relaxed mt-2">Use the existing booking form to add your dates, locations and the details needed for your chosen service.</p></li>
+    <li class="border-t-2 border-amber-400 pt-5"><span class="text-xs text-indigo-600 font-bold">03</span><h3 class="text-lg font-extrabold text-slate-900 mt-2">Confirm your booking</h3><p class="text-sm text-slate-600 leading-relaxed mt-2">Review the fare and submit your request. Our team will follow up to confirm your travel arrangements.</p></li>
+  </ol>
+</section>
+
+<section aria-labelledby="mumbai-faq-heading" class="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
+  <h2 id="mumbai-faq-heading" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Mumbai car rental FAQ</h2>
+  <p class="text-sm text-slate-600 mt-3 mb-6">A few answers before you plan your trip. See our <a href="/faq" class="font-bold text-indigo-600 hover:underline">full car rental FAQs</a> for more details.</p>
+  <div class="space-y-3">
+    <details class="bg-white border border-slate-200 rounded-xl p-5" open><summary class="font-bold text-sm text-slate-900 cursor-pointer">What types of cars can I rent in Mumbai?</summary><p class="text-sm text-slate-600 leading-relaxed mt-3">The fleet includes hatchbacks, sedans, SUVs and larger family vehicles. You can compare cabs with drivers or use the self-drive filters for seats, transmission, fuel and brand. Confirm the model and availability for your dates before finalising your plans.</p></details>
+    <details class="bg-white border border-slate-200 rounded-xl p-5"><summary class="font-bold text-sm text-slate-900 cursor-pointer">Do you provide car rental with driver in Mumbai?</summary><p class="text-sm text-slate-600 leading-relaxed mt-3">Yes. The with-driver booking page supports Local City, Outstation and Airport trips. Select the option you need, enter your journey details and review the fare for your chosen cab.</p></details>
+    <details class="bg-white border border-slate-200 rounded-xl p-5"><summary class="font-bold text-sm text-slate-900 cursor-pointer">Do you offer self-drive cars in Mumbai?</summary><p class="text-sm text-slate-600 leading-relaxed mt-3">Yes. Select pickup and return dates on the self-drive page, browse the fleet and review rental, deposit and delivery details. The booking form offers home delivery or self pickup; delivery depends on the location.</p></details>
+    <details class="bg-white border border-slate-200 rounded-xl p-5"><summary class="font-bold text-sm text-slate-900 cursor-pointer">Do you provide Mumbai airport transfers?</summary><p class="text-sm text-slate-600 leading-relaxed mt-3">Yes. The airport transfer form offers pickup and drop options for Mumbai T1, Mumbai T2 and Navi Mumbai International Airport. Choose the terminal and provide your area, date and time.</p></details>
+    <details class="bg-white border border-slate-200 rounded-xl p-5"><summary class="font-bold text-sm text-slate-900 cursor-pointer">Do you provide car rental in Thane and Navi Mumbai?</summary><p class="text-sm text-slate-600 leading-relaxed mt-3">These areas are part of our service coverage. The current self-drive delivery list includes Thane, Airoli, Vashi, Nerul and Panvel. Confirm your exact address and chosen service with our team, as coverage and delivery charges can vary by location.</p></details>
+    <details class="bg-white border border-slate-200 rounded-xl p-5"><summary class="font-bold text-sm text-slate-900 cursor-pointer">Can I book a car for local Mumbai travel?</summary><p class="text-sm text-slate-600 leading-relaxed mt-3">Yes. Use the Local City option on the with-driver page, choose a package, and enter your pickup area and date. Review the included hours and kilometres, extra-kilometre terms and other listed exclusions.</p></details>
+    <details class="bg-white border border-slate-200 rounded-xl p-5"><summary class="font-bold text-sm text-slate-900 cursor-pointer">Can I book an outstation car from Mumbai?</summary><p class="text-sm text-slate-600 leading-relaxed mt-3">Yes. The outstation option supports destinations including Pune, Lonavala, Shirdi and Nashik. Add pickup and return dates to review the estimated distance, billed days and cab fare before sending your request.</p></details>
+  </div>
+</section>
+
+<section aria-labelledby="mumbai-cta-heading" class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-12 sm:pb-16">
+  <div class="bg-gradient-to-r from-indigo-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-10 grid lg:grid-cols-3 gap-7 items-center">
+    <div class="lg:col-span-2">
+      <p class="text-amber-300 text-xs font-bold uppercase tracking-wider mb-3">Let's plan your journey</p>
+      <h2 id="mumbai-cta-heading" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Need a Car in Mumbai?</h2>
+      <p class="text-sm text-slate-300 leading-relaxed mt-3 max-w-xl">Compare cars and rates, or share your trip with our team. We can help you choose the right service for your itinerary.</p>
+      <div class="flex flex-col sm:flex-row gap-3 mt-6">
+        <a href="/cars" class="bg-amber-400 hover:bg-amber-500 text-indigo-950 text-center font-extrabold px-6 py-3 rounded-xl text-sm transition">Check Rates</a>
+        <a href="https://wa.me/919702988465" target="_blank" rel="noopener noreferrer" class="bg-emerald-600 hover:bg-emerald-700 text-white text-center font-bold px-6 py-3 rounded-xl text-sm transition"><i class="fa-brands fa-whatsapp mr-2" aria-hidden="true"></i>WhatsApp Us</a>
+      </div>
+    </div>
+    <div class="border-t lg:border-t-0 lg:border-l border-indigo-700 pt-6 lg:pt-0 lg:pl-7">
+      <p class="font-bold text-sm mb-3">Our Mumbai operating hub</p>
+      <address class="not-italic text-sm text-slate-300 leading-relaxed">Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai, Maharashtra 400079</address>
+      <a href="tel:+919702988465" class="inline-block text-amber-300 font-bold text-sm mt-4">+91 9702988465</a>
+      <a href="/contact" class="block text-sm text-white underline underline-offset-4 mt-3">Contact our Mumbai team</a>
+    </div>
+  </div>
+</section>
+
+</main>
+<!-- SEO Outstation Routes Cluster -->
+    <div class="bg-slate-100 border-t border-slate-200 py-6 px-4 sm:px-8">
+        <div class="max-w-7xl mx-auto">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
+                Popular Round-Trip Chauffeur Routes:
+            </span>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-slate-600 font-medium">
+                <a href="/mumbai-to-shirdi-car-rental" class="hover:text-indigo-600 hover:underline">Mumbai to Shirdi Car Rental</a>
+                <span class="text-slate-300">•</span>
+                <a href="/mumbai-to-trimbakeshwar-car-rental" class="hover:text-indigo-600 hover:underline">Mumbai to Trimbakeshwar Cab</a>
+                <span class="text-slate-300">•</span>
+                <a href="/mumbai-to-lonavala-car-rental" class="hover:text-indigo-600 hover:underline">Mumbai to Lonavala Car Rental</a>
+                <span class="text-slate-300">•</span>
+                <a href="/outstation" class="hover:text-indigo-600 hover:underline">Mumbai to Pune Cabs</a>
+            </div>
+        </div>
+    </div>
+
+<!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-center text-xs">
+        <nav aria-label="Footer navigation" class="max-w-5xl mx-auto px-4 mb-6 flex flex-wrap justify-center gap-x-5 gap-y-3"><a href="/" class="hover:text-amber-400 transition"><span>Home</span></a>
+<a href="/with-driver" class="hover:text-amber-400 transition"><span>With Driver</span></a>
+<a href="/self-drive" class="hover:text-amber-400 transition"><span>Self Drive</span></a>
+<a href="/airport-transfer" class="hover:text-amber-400 transition"><span>Airport Transfer</span></a>
+<a href="/outstation" class="hover:text-amber-400 transition"><span>Outstation</span></a>
+<a href="/cars" class="hover:text-amber-400 transition"><span>Cars</span></a>
+<a href="/mumbai-car-rental" aria-current="page" class="hover:text-amber-400 transition"><span>Mumbai Car Rental</span></a>
+<a href="/faq" class="hover:text-amber-400 transition"><span>FAQ</span></a>
+<a href="/contact" class="hover:text-amber-400 transition"><span>Contact</span></a></nav>
+        <p class="font-semibold text-slate-300">Car with Driver India • Car with Driver LLP</p>
+        <p class="mt-1 text-slate-400">Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai 400079</p>
+        <p class="mt-2 text-slate-500">Phone / WhatsApp: +91 9702988465 • &copy; 2026 Car with Driver India. All rights reserved.</p>
+    </footer>
+
+<!-- WHY CHOOSE US DETAILS MODAL -->
+<div id="why-choose-modal"
+    class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto animate-fade-in">
+
+        <!-- Close Button -->
+        <button type="button"
+            onclick="closeWhyChooseModal()"
+            class="absolute right-4 top-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition z-10">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+
+        <!-- Modal Header -->
+        <div class="p-6 pb-4 border-b border-slate-100">
+
+            <div class="flex items-center gap-3 pr-10">
+
+                <div id="why-modal-icon"
+                    class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+
+                <div>
+                    <h3 id="why-modal-heading"
+                        class="text-lg font-black text-slate-900 leading-tight">
+                        Experienced, Verified & Multi-Lingual Chauffeurs
+                    </h3>
+
+                    <p class="text-[11px] text-slate-500 mt-1">
+                        Car with Driver India
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Modal Details -->
+        <div class="p-6">
+
+            <ul id="why-modal-details"
+                class="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+            </ul>
+
+
+            <!-- CTA -->
+            <div class="mt-6 pt-4 border-t border-slate-100">
+
+                <a id="why-modal-whatsapp"
+                    href="https://wa.me/919702988465?text=Hi%20Car%20with%20Driver%20India%2C%20I%20want%20to%20book%20a%20ride."
+                    target="_blank"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-sm">
+
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span>Book Your Ride Now</span>
+
+                </a>
+
+                <button
+                type="button"
+                onclick="closeWhyChooseModal()"
+                class="w-full mt-3 px-5 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-50 transition">
+                Close
+            </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <!-- SUCCESS ANIMATION MODAL -->
+    <div id="success-confirmation-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center animate-fade-in relative space-y-4">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-black text-slate-900">Enquiry Successfully Submitted!</h3>
+                <p class="text-xs text-slate-500 mt-1">Thank you! Our team has received your details and sent confirmation to your email. We will connect with you shortly.</p>
+
+<div id="success-application-id" class="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-200 hidden">
+                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Application ID
+              </div>
+              
+              <!-- ID aur Copy Button -->
+              <div class="mt-1.5 flex items-center justify-center gap-2">
+                  <span id="success-application-number" class="text-sm sm:text-base font-bold text-gray-900 select-all tracking-wide"></span>
+                  <button type="button" onclick="copyApplicationId()" class="px-2.5 py-1 rounded-lg bg-white hover:bg-indigo-50 border border-gray-300 text-indigo-950 text-xs font-bold flex items-center gap-1.5 transition shadow-xs active:scale-95">
+                      <i class="fa-regular fa-copy text-indigo-600"></i>
+                      <span id="copy-btn-text">Copy</span>
+                  </button>
+              </div>
+
+              <div class="mt-1.5 text-xs text-gray-500">
+    Please save this ID for future reference.
+  </div>
+</div>
+            </div>
+            <button type="button" onclick="closeSuccessModal()" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 rounded-xl text-xs shadow-lg transition">
+                Done & Close
+            </button>
+        </div>
+    </div>
+
+    <!-- FARE BREAKDOWN INFO MODAL -->
+    <div id="fare-breakdown-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-fade-in">
+            <button type="button" onclick="closeFareBreakdownModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-receipt text-indigo-600"></i> Transparent Fare Details &amp; Inclusions
+            </h3>
+            <div id="fare-breakdown-content" class="space-y-4 text-xs text-slate-700 leading-relaxed"></div>
+            <div class="mt-6 pt-3 border-t border-slate-100 flex justify-end">
+                <button type="button" onclick="closeFareBreakdownModal()" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold px-5 py-2.5 rounded-xl text-xs">
+                    Got It
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WITH DRIVER BOOKING SUMMARY / REVIEW MODAL -->
+    <div id="booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
+            <button type="button" onclick="closeModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Review Travel Details &amp; Fare Summary</h3>
+            
+            <!-- Detailed Travel Summary Card -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2.5">
+                <div class="flex justify-between items-start border-b border-slate-200 pb-2">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded">Selected Car</span>
+                        <h4 class="text-sm font-extrabold text-indigo-950 mt-1" id="modal-car-name">Car Name</h4>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-slate-400 text-[10px] block">Approx Total Amount</span>
+                        <strong class="text-emerald-700 font-black text-base" id="modal-fare">₹0</strong>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                    <div><strong>Pickup Location:</strong> <span id="modal-summary-pickup" class="text-slate-900"></span></div>
+                    <div><strong>Destination / Route:</strong> <span id="modal-summary-dest" class="text-slate-900"></span></div>
+                    <div><strong>Date &amp; Time:</strong> <span id="modal-summary-datetime" class="text-slate-900"></span></div>
+                    <div><strong>Trip Package:</strong> <span id="modal-summary-package" class="text-slate-900"></span></div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-200 space-y-1">
+                    <div class="text-emerald-800 font-semibold">✓ Inclusions: Car rental, fuel &amp; driver allowance included.</div>
+                    <div class="text-rose-800 font-semibold">✕ Exclusions: Toll taxes, parking fees, and state entry permits are extra as actuals.</div>
+                </div>
+            </div>
+            
+            <form id="wd-booking-form" onsubmit="handleBookingSubmit(event)" class="mt-4 space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Your Full Name *</label>
+                    <input type="text" id="cust-name" required placeholder="Enter full name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number (WhatsApp) *</label>
+                    <input type="tel" id="cust-phone" maxlength="10" required placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address *</label>
+                    <input type="email" id="cust-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Exact Pickup Address / Landmark *</label>
+                    <textarea id="cust-address" rows="2" required placeholder="Building, Lane, Area in Mumbai/Thane" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm">
+                    <i class="fa-solid fa-check-circle text-base"></i>
+                    <span>Confirm Booking</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SELF DRIVE BOOKING REVIEW MODAL -->
+    <div id="sd-booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
+            <button type="button" onclick="closeSDModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-900">Self-Drive Booking Review &amp; Checkout</h3>
+            
+            <div class="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2.5">
+                <div class="flex justify-between items-start border-b border-slate-200 pb-2">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded" id="sd-modal-car-brand">Brand</span>
+                        <h4 class="text-sm font-extrabold text-indigo-950 mt-1" id="sd-modal-car-name">Car Name</h4>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-slate-400 text-[10px] block">Rental Rate</span>
+                        <strong class="text-indigo-950 font-black text-sm" id="sd-modal-car-rate">₹0/hour</strong>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-[11px] pt-1">
+                    <div><strong>Pickup:</strong> <span id="sd-review-pdatetime" class="text-slate-900"></span></div>
+                    <div><strong>Return:</strong> <span id="sd-review-rdatetime" class="text-slate-900"></span></div>
+                    <div><strong>Duration:</strong> <span id="sd-review-duration" class="text-slate-900"></span></div>
+                    <div><strong>Delivery Mode:</strong> <span id="sd-review-deliv-mode" class="text-slate-900"></span></div>
+                </div>
+                <div id="sd-review-deliv-location-row" class="text-[11px] pt-1 border-t border-slate-200">
+                    <strong>Delivery Location:</strong> <span id="sd-review-deliv-location" class="text-slate-900"></span>
+                </div>
+
+                <div class="pt-2 border-t border-slate-200 space-y-1 text-xs">
+                    <div class="flex justify-between text-slate-600">
+                        <span>Base Rental Fare:</span>
+                        <strong id="sd-review-base-fare" class="text-slate-900">₹0</strong>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>Security Deposit (Refundable):</span>
+                        <strong id="sd-review-deposit" class="text-slate-900">₹0</strong>
+                    </div>
+                    <div id="sd-review-delivery-charge-row" class="flex justify-between text-slate-600">
+                        <span>Home Delivery Charge:</span>
+                        <strong id="sd-review-delivery-charge" class="text-slate-900">₹0</strong>
+                    </div>
+                    <div class="flex justify-between text-indigo-950 pt-1 border-t border-slate-200 text-sm font-black">
+                        <span>Total Amount:</span>
+                        <strong id="disp-total-final-fare" class="text-emerald-700 text-base">₹0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <form onsubmit="handleSDBookingSubmit(event)" class="mt-4 space-y-3.5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-800 uppercase mb-1.5">Choose Delivery Option</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="border-2 border-indigo-600 bg-indigo-50/50 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition text-xs font-bold text-indigo-950" id="label-deliv-home">
+                            <input type="radio" name="sd-delivery-mode" value="home" checked onchange="onSDDeliveryOptionChange()" class="text-indigo-600">
+                            <span><i class="fa-solid fa-truck-ramp-box mr-1"></i> Home Delivery</span>
+                        </label>
+                        <label class="border-2 border-slate-200 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition text-xs font-bold text-slate-700" id="label-deliv-self">
+                            <input type="radio" name="sd-delivery-mode" value="self" onchange="onSDDeliveryOptionChange()" class="text-indigo-600">
+                            <span><i class="fa-solid fa-building mr-1"></i> Self Pick-up</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-2.5 pt-1">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name *</label>
+                        <input type="text" id="sd-cust-name" required placeholder="Full Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number *</label>
+                            <input type="tel" id="sd-cust-phone" maxlength="10" required placeholder="10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Alternate Mobile Number</label>
+                            <input type="tel" id="sd-cust-alt-phone" maxlength="10" placeholder="Optional alternate number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address *</label>
+                        <input type="email" id="sd-cust-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                </div>
+
+                <div id="sd-home-delivery-box" class="space-y-3 p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl relative">
+                    <div class="relative">
+                        <label class="block text-xs font-bold text-indigo-950 mb-1">Delivery Location *</label>
+                        <input type="text" id="sd-delivery-location-input" autocomplete="off" oninput="showSuggestions('sd-delivery-location-input', 'mumbai-metro-locations', 'sd-delivery-dropdown'); updateSDFareReview(); onDeliveryLocationSelect();" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-800 font-medium focus:ring-2 focus:ring-indigo-600 outline-none" placeholder="Search area, railway station or landmark (e.g. Kalyan, Thane, Vikhroli)">
+                        <div id="sd-delivery-dropdown" class="autocomplete-dropdown hidden"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Delivery Address *</label>
+                        <textarea id="sd-cust-address" rows="2" placeholder="Flat / House No., Building Name, Street / Locality" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">City *</label>
+                            <input type="text" id="sd-cust-city" required placeholder="City" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">State *</label>
+                            <input type="text" id="sd-cust-state" required placeholder="State" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Pincode *</label>
+                            <input type="text" id="sd-cust-pincode" maxlength="6" placeholder="Pincode" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs tracking-wide">
+                    <i class="fa-solid fa-key text-base"></i>
+                    <span>Confirm Self-Drive Booking</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- BECOME A PARTNER MODAL -->
+    <div id="partner-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
+            <button type="button" onclick="closePartnerModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="mb-4">
+                <span class="text-amber-600 font-bold uppercase text-[10px] tracking-wider bg-amber-50 px-2 py-0.5 rounded">Partner With Us</span>
+                <h3 class="text-xl font-extrabold text-slate-900 mt-1">List Your Car. Grow With Us.</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Submit your details and required documents.</p>
+            </div>
+            <form onsubmit="handlePartnerFormSubmit(event)" class="space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
+                        <input type="text" id="part-name" required placeholder="Owner Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mobile Number *</label>
+                        <input type="tel" id="part-phone" maxlength="10" required placeholder="10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Email Address *</label>
+                        <input type="email" id="part-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Alternate Number *</label>
+                        <input type="tel" id="part-alt-phone" maxlength="10" required placeholder="10-digit alternate number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Car Brand *</label>
+                        <select id="part-car-brand-select" onchange="handleBrandDropdownChange(this.value)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none bg-white font-medium">
+                            <option value="Tata" selected>Tata</option>
+                            <option value="Maruti Suzuki">Maruti Suzuki</option>
+                            <option value="Mahindra">Mahindra</option>
+                            <option value="Toyota">Toyota</option>
+                            <option value="Hyundai">Hyundai</option>
+                            <option value="Kia">Kia</option>
+                            <option value="Brand Not Listed">Brand Not Listed</option>
+                        </select>
+                        <input type="text" id="part-car-brand-custom" placeholder="Enter Custom Brand" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none mt-1.5 hidden">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Car Model *</label>
+                        <input type="text" id="part-car-model" required placeholder="e.g. Nexon, Ertiga" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mfg Year *</label>
+                        <select id="part-car-year" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none bg-white font-medium">
+                            <option value="2026" selected>2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                        </select>
+                    </div>
+                </div>
+
+<!-- PARTNER DOCUMENT UPLOADS -->
+<div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+
+    <div>
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-file-shield text-indigo-600"></i>
+            <span class="font-bold text-sm text-slate-900">
+                Upload Vehicle & Owner Documents
+            </span>
+        </div>
+
+        <p class="text-[10px] text-slate-500 mt-1">
+            <p class="text-[10px] text-slate-500 mt-1">
+    JPG, PNG or PDF • Max 5 MB per file
+</p>
+        </p>
+    </div>
+
+    <!-- RC -->
+    <div>
+        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+            RC Copy *
+        </label>
+        <input
+            type="file"
+            id="part-rc"
+            name="rc"
+            accept=".jpg,.jpeg,.png,.pdf"
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+    </div>
+
+    <!-- Insurance -->
+    <div>
+        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+            Valid Insurance *
+        </label>
+        <input
+            type="file"
+            id="part-insurance"
+            name="insurance"
+            accept=".jpg,.jpeg,.png,.pdf"
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+    </div>
+
+    <!-- PUC -->
+    <div>
+        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+            PUC *
+        </label>
+        <input
+            type="file"
+            id="part-puc"
+            name="puc"
+            accept=".jpg,.jpeg,.png,.pdf"
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+    </div>
+
+    <!-- Driving Licence -->
+    <div>
+        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+            Owner Driving Licence *
+        </label>
+        <input
+            type="file"
+            id="part-dl"
+            name="dl"
+            accept=".jpg,.jpeg,.png,.pdf"
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+    </div>
+
+    <!-- Aadhaar -->
+    <div>
+        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+            Aadhaar Card *
+        </label>
+        <input
+            type="file"
+            id="part-aadhaar"
+            name="aadhaar"
+            accept=".jpg,.jpeg,.png,.pdf"
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+    </div>
+
+    <!-- PAN -->
+    <div>
+        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+            PAN Card *
+        </label>
+        <input
+            type="file"
+            id="part-pan"
+            name="pan"
+            accept=".jpg,.jpeg,.png,.pdf"
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+    </div>
+
+    <!-- Vehicle Photos -->
+    <div>
+        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+            Vehicle Photos
+        </label>
+        <input
+            type="file"
+            id="part-vehicle-photos"
+            name="vehicle_photos"
+            accept=".jpg,.jpeg,.png,.webp"
+            multiple
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+
+    </div>
+
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
+        <p class="text-[10px] text-amber-900">
+            <i class="fa-solid fa-lock mr-1"></i>
+            Your documents are securely stored and are not sent by email.
+        </p>
+    </div>
+
+</div>
+
+                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 rounded-xl shadow-lg transition text-xs">
+                    Submit Partner Application
+                </button>
+            </form>
+        </div>
+    </div>
+
+<!-- HOME DELIVERY UNAVAILABLE MODAL -->
+<div id="sd-serviceability-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] hidden items-center justify-center px-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
+
+        <div class="mx-auto mb-4 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+            <i class="fa-solid fa-location-dot text-red-600 text-xl"></i>
+        </div>
+
+        <h3 class="text-lg font-extrabold text-slate-900 mb-2">
+            Home Delivery Unavailable
+        </h3>
+
+        <p class="text-sm text-slate-600 leading-relaxed mb-5">
+            This location is not servicable for home delivery.
+        </p>
+
+        <button
+            type="button"
+            onclick="closeSDServiceabilityModal()"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm py-2.5 rounded-xl transition">
+            OK
+        </button>
+
+    </div>
+</div>
+
+<script src="/assets/js/booking.js"></script>
+<script src="/assets/js/partner-documents.js"></script>
+<script src="/assets/js/application-id.js"></script>
+<script src="/assets/js/page.js"></script>
+</body>
+</html>

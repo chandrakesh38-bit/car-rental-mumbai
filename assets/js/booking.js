@@ -22,6 +22,8 @@ let mumbaiPlaces = [];
             ];
 
 const mumbaiMetroLocations = [
+    { name: "Vikhroli", km: 1, serviceable: true },
+    { name: "Powai", km: 2, serviceable: true },    
     { name: "Bhandup", km: 4, serviceable: true },
     { name: "Kanjur Marg", km: 4, serviceable: true },
     { name: "Nahur", km: 5, serviceable: true },
@@ -29,6 +31,7 @@ const mumbaiMetroLocations = [
     { name: "Ghatkopar", km: 6, serviceable: true },
     { name: "Mulund", km: 7, serviceable: true },
     { name: "Kurla", km: 9, serviceable: true },
+    { name: "Sakinaka", km: 9, serviceable: true },    
     { name: "Digha Gaon", km: 10, serviceable: true },
     { name: "Lokmanya Tilak Terminus", km: 10, serviceable: true },
     { name: "Govandi", km: 12, serviceable: true },
@@ -283,7 +286,7 @@ const mumbaiMetroLocations = [
         let chosenFareAmount = 0;
         let selectedCarObj = null;
         let currentDeliveryMode = 'home';
-        let calculatedRentalHours = 24;
+        let calculatedRentalHours = 0;
         let currentSDPage = 1;
         const carsPerPage = 6;
         let filteredSDCarsList = [...excelCarsData];
@@ -480,9 +483,7 @@ function showCustomAlert(message) {
                 `;
             }
 
-          setTimeout(() => {
-        updateDatePlaceholder('wd-airport-date', 'wd-airport-date-placeholder');
-    }, 50);      
+          updateDatePlaceholder('wd-airport-date', 'wd-airport-date-placeholder');      
                 
         }
 
@@ -659,6 +660,34 @@ function onPickupDateChange() {
             });
         }
 
+        function validateJourneyDateTimes(pickupIds, returnIds) {
+            const readDateTime = ids => {
+                const [date, hour, ampm] = ids.map(id => document.getElementById(id)?.value);
+                const numericHour = Number(hour);
+                if (!date || !Number.isInteger(numericHour) || numericHour < 1 || numericHour > 12 || !['AM', 'PM'].includes(ampm)) return new Date(NaN);
+                return createLocalDateTime(date, numericHour, ampm);
+            };
+            const pickup = readDateTime(pickupIds);
+            let invalidIds = pickupIds;
+            let message = '';
+            if (!Number.isFinite(pickup.getTime())) {
+                message = 'Please select a valid pickup date and time.';
+            } else if (pickup.getTime() <= Date.now()) {
+                message = 'Pickup date and time must be later than the current date and time.';
+            } else if (returnIds) {
+                const end = readDateTime(returnIds);
+                invalidIds = returnIds;
+                if (!Number.isFinite(end.getTime())) message = 'Please select a valid return date and time.';
+                else if (end < pickup) message = 'Return date and time cannot be earlier than pickup date and time.';
+            }
+            if (!message) return true;
+            showCustomAlert(message);
+            const field = document.getElementById(invalidIds[0]);
+            field?.classList.add('border-red-500');
+            field?.focus();
+            return false;
+        }
+
         function validateJourneyAndOpenBooking(carName, fare) {
             let missing = false;
             let firstMissingField = null;
@@ -737,7 +766,9 @@ function onPickupDateChange() {
                 if (firstMissingField) firstMissingField.focus();
                 return false;
             }
-            return true;
+            if (currentWDSubTab === 'local') return validateJourneyDateTimes(['wd-local-date', 'wd-local-hour', 'wd-local-ampm']);
+            if (currentWDSubTab === 'airport') return validateJourneyDateTimes(['wd-airport-date', 'wd-airport-hour', 'wd-airport-ampm']);
+            return validateJourneyDateTimes(['wd-out-pdate', 'wd-out-phour', 'wd-out-pampm'], ['wd-out-rdate', 'wd-out-rhour', 'wd-out-rampm']);
         }
 
         function handleBookThisCarClick(carName, fare) {
@@ -772,7 +803,7 @@ function onPickupDateChange() {
                 if (firstMissingField) firstMissingField.focus();
                 return false;
             }
-            return true;
+            return validateJourneyDateTimes(['sd-pdate', 'sd-phour', 'sd-pampm'], ['sd-rdate', 'sd-rhour', 'sd-rampm']);
         }
 
         function triggerSDParseSearch() {
@@ -929,6 +960,7 @@ function onPickupDateChange() {
         }
 
         function openFareBreakdownModal() {
+            if (!validateJourneyAndOpenBooking()) return;
             const contentBox = document.getElementById('fare-breakdown-content');
             if (!contentBox) return;
             contentBox.innerHTML = `
@@ -957,11 +989,17 @@ function onPickupDateChange() {
                 pickupLoc = document.getElementById('wd-local-pickup').value || 'Mumbai';
                 destLoc = 'Local City Package';
                 dateTimeStr = (document.getElementById('wd-local-date').value || 'Today') + ' @ ' + document.getElementById('wd-local-hour').value + ':00 ' + document.getElementById('wd-local-ampm').value;
-                pkgStr = document.getElementById('wd-local-package').value;
+                pkgStr = document.getElementById('wd-local-package').value.replace('8hr_80km', '8 Hours / 80 Km');
             } else if (currentWDSubTab === 'outstation') {
                 pickupLoc = document.getElementById('wd-out-pickup').value || 'Mumbai';
                 destLoc = document.getElementById('wd-out-destination').value || 'Maharashtra';
-                dateTimeStr = (document.getElementById('wd-out-pdate').value || 'Today') + ' (' + document.getElementById('wd-out-phour').value + ':00 ' + document.getElementById('wd-out-pampm').value + ')';
+                const formatReviewTime = prefix => {
+                    const hour = document.getElementById(prefix + 'hour').value;
+                    const ampm = document.getElementById(prefix + 'ampm').value;
+                    const date = createLocalDateTime(document.getElementById(prefix + 'date').value, Number(hour), ampm);
+                    return `${date.getDate()} ${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}, ${Number(hour)}:00 ${ampm}`;
+                };
+                dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nReturn: ${formatReviewTime('wd-out-r')}`;
                 pkgStr = `Outstation (${wdOutstationKm} KM, ${wdOutstationDays} Days)`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
@@ -973,6 +1011,7 @@ function onPickupDateChange() {
             document.getElementById('modal-summary-pickup').innerText = pickupLoc;
             document.getElementById('modal-summary-dest').innerText = destLoc;
             document.getElementById('modal-summary-datetime').innerText = dateTimeStr;
+            document.getElementById('modal-summary-datetime').previousElementSibling.hidden = currentWDSubTab === 'outstation';
             document.getElementById('modal-summary-package').innerText = pkgStr;
 
             document.getElementById('booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('booking-modal'), true);
@@ -994,7 +1033,6 @@ function onPickupDateChange() {
 
             document.getElementById('sd-review-pdatetime').innerText = `${pDate || 'Selected'} @ ${pHour}:00 ${pAmpm}`;
             document.getElementById('sd-review-rdatetime').innerText = `${rDate || 'Selected'} @ ${rHour}:00 ${rAmpm}`;
-            document.getElementById('sd-review-duration').innerText = `${calculatedRentalHours} Hours`;
 
             updateSDFareReview();
             document.getElementById('sd-booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('sd-booking-modal'), true);
@@ -1032,7 +1070,21 @@ function onPickupDateChange() {
 
         function updateSDFareReview() {
             if (!selectedCarObj) return;
-            const baseFare = calculatedRentalHours * selectedCarObj.rateVal;
+            const pickupDateTime = createLocalDateTime(
+                document.getElementById('sd-pdate').value,
+                Number(document.getElementById('sd-phour').value),
+                document.getElementById('sd-pampm').value
+            );
+            const returnDateTime = createLocalDateTime(
+                document.getElementById('sd-rdate').value,
+                Number(document.getElementById('sd-rhour').value),
+                document.getElementById('sd-rampm').value
+            );
+            calculatedRentalHours = (returnDateTime - pickupDateTime) / (60 * 60 * 1000);
+            const billedRentalHours = Math.max(24, calculatedRentalHours);
+            document.getElementById('sd-review-duration').innerText =
+                `${calculatedRentalHours} hours actual · ${billedRentalHours} hours billed (24-hour minimum)`;
+            const baseFare = billedRentalHours * selectedCarObj.rateVal;
             const deposit = selectedCarObj.depositVal;
             
             let deliveryCharge = 500;
@@ -1188,6 +1240,7 @@ function generateBookingId() {
 
 function handleBookingSubmit(e) {
     e.preventDefault();
+    if (!validateJourneyAndOpenBooking()) return;
 
     const name = document.getElementById('cust-name').value.trim();
     const phone = document.getElementById('cust-phone').value.trim();
@@ -1384,6 +1437,8 @@ function handleBookingSubmit(e) {
 }
         function handleSDBookingSubmit(e) {
             e.preventDefault();
+            if (!validateSelfDriveJourney()) return;
+            updateSDFareReview();
             const name = document.getElementById('sd-cust-name').value;
             const phone = document.getElementById('sd-cust-phone').value;
             const email = document.getElementById('sd-cust-email').value;
@@ -2004,13 +2059,41 @@ showSuccessModal(result.application_number);
     }
 }
 
+const initializedDateInputs = new WeakSet();
+
 function updateDatePlaceholder(inputId, placeholderId) {
     const input = document.getElementById(inputId);
     const placeholder = document.getElementById(placeholderId);
 
     if (!input || !placeholder) return;
 
+    const timePrefix = {
+        'wd-local-date': 'wd-local',
+        'wd-out-pdate': 'wd-out-p',
+        'wd-airport-date': 'wd-airport',
+        'sd-pdate': 'sd-p'
+    }[inputId];
+    const hour = timePrefix && document.getElementById(timePrefix.endsWith('-p') ? timePrefix + 'hour' : timePrefix + '-hour');
+    const ampm = timePrefix && document.getElementById(timePrefix.endsWith('-p') ? timePrefix + 'ampm' : timePrefix + '-ampm');
+
     function update() {
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        input.min = input.min > today ? input.min : today;
+        if (hour && ampm) {
+            const available = (hourValue, period) => !input.value || input.value > today ||
+                (input.value === today && createLocalDateTime(input.value, Number(hourValue), period) > now);
+            const hours = [...hour.options];
+            const periods = [...ampm.options];
+            periods.forEach(option => { option.disabled = !hours.some(h => available(h.value, option.value)); });
+            if (!periods.some(option => option.value === ampm.value && !option.disabled)) {
+                ampm.value = periods.find(option => !option.disabled)?.value || '';
+            }
+            hours.forEach(option => { option.disabled = !ampm.value || !available(option.value, ampm.value); });
+            if (!hours.some(option => option.value === hour.value && !option.disabled)) {
+                hour.value = hours.find(option => !option.disabled)?.value || '';
+            }
+        }
         if (input.value) {
             input.classList.remove('date-empty');
             input.classList.add('date-filled');
@@ -2024,8 +2107,15 @@ function updateDatePlaceholder(inputId, placeholderId) {
 
     update();
 
+    if (initializedDateInputs.has(input)) return;
+    initializedDateInputs.add(input);
     input.addEventListener('change', update);
     input.addEventListener('input', update);
+    for (const field of [input, hour, ampm].filter(Boolean)) {
+        field.addEventListener('focus', update);
+        field.addEventListener('pointerdown', update);
+        if (field !== input) field.addEventListener('change', update);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function () {

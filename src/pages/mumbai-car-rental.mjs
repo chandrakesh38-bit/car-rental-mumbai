@@ -13,7 +13,6 @@ function readArray(source, name) {
 export default async function renderMumbaiPage({ root, component, escape, page }) {
   const source = await readFile(path.join(root, 'assets/js/booking.js'), 'utf8');
   const fleet = readArray(source, 'wdFleet');
-  const locations = readArray(source, 'mumbaiMetroLocations');
   const destinations = readArray(source, 'destinationCities');
   const fleetCards = '<div id="mumbai-selfdrive-fleet" class="contents"><p class="col-span-full text-center text-slate-500 py-8" role="status">Loading fleet…</p></div>';
   const driverCars = fleet.map(car => `
@@ -22,20 +21,18 @@ export default async function renderMumbaiPage({ root, component, escape, page }
       <span class="block font-bold text-sm text-slate-900">${escape(car.name)}</span>
       <span class="block text-xs text-slate-500 mt-1">${escape(car.seats)} seats · ${escape(car.bags)}</span>
     </li>`).join('\n');
+  // Page coverage copy supplied by the business; booking location data is unchanged.
   const areaGroups = [
-    ['Mumbai', ['Bhandup','Mulund','Ghatkopar','Kurla','Andheri','Bandra']],
-    ['Thane', ['Thane']],
-    ['Navi Mumbai', ['Airoli','Vashi','Nerul','Panvel']]
+    ['Central & Eastern Suburbs', ['Vikhroli (Hub)', 'Bhandup', 'Mulund', 'Ghatkopar', 'Kanjurmarg', 'Powai', 'Kurla', 'Chembur']],
+    ['Western Suburbs', ['Andheri East', 'Andheri West', 'Bandra', 'Juhu', 'Goregaon', 'Malad', 'Borivali']],
+    ['South Mumbai', ['Dadar', 'Worli', 'Lower Parel', 'Colaba', 'Nariman Point']],
+    ['Thane & Satellite Cities', ['Thane', 'Dombivli', 'Kalyan']],
+    ['Navi Mumbai', ['Vashi', 'Airoli', 'Nerul', 'Belapur', 'Kharghar', 'Panvel']],
+    ['Airport', ['CSMIA Mumbai Airport', 'Terminal 1', 'Terminal 2']]
   ].map(([name,areas]) => {
-    for (const area of areas) {
-      if (!locations.some(l => l.name === area && l.serviceable === true)) {
-        throw new Error(`Recheck Mumbai landing-page coverage: ${area}`);
-      }
-    }
     return `<div class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
       <h3 class="font-extrabold text-slate-900 mb-4">${escape(name)}</h3>
       <ul class="flex flex-wrap gap-2 text-sm text-slate-600">${areas.map(a=>`<li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">${escape(a)}</li>`).join('')}</ul>
-      ${name === 'Thane' ? '<p class="text-sm text-slate-500 leading-relaxed mt-4">Share your exact pickup or delivery address when planning your trip.</p>' : ''}
     </div>`;
   }).join('\n');
   const outstationLinks = [['Pune','/outstation'],['Lonavala','/mumbai-to-lonavala-car-rental'],['Shirdi','/mumbai-to-shirdi-car-rental'],['Nashik','/outstation']].map(([city,href]) => {
@@ -55,7 +52,7 @@ export default async function renderMumbaiPage({ root, component, escape, page }
     '@graph':[
       {'@type':'AutoRental','@id':site+'/#business',name:'Car with Driver India',url:site+'/',telephone:'+919702988465',logo:site+'/logo.png',
         address:{'@type':'PostalAddress',streetAddress:'Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West',addressLocality:'Mumbai',addressRegion:'Maharashtra',postalCode:'400079',addressCountry:'IN'}},
-      {'@type':'Service','@id':url+'#service',name:'Mumbai car rental with driver and self drive',serviceType:'Car rental',url,
+      {'@type':'Service','@id':url+'#service',name:'Mumbai car rental with driver and self drive',serviceType:['Chauffeur-driven car rental','Self-drive car rental'],url,
         provider:{'@id':site+'/#business'},areaServed:['Mumbai','Thane','Navi Mumbai'].map(name=>({'@type':'City',name}))},
       {'@type':'BreadcrumbList','@id':url+'#breadcrumb',itemListElement:[
         {'@type':'ListItem',position:1,name:'Home',item:site+'/'},

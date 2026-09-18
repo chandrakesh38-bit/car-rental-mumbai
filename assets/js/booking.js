@@ -22,6 +22,8 @@ let mumbaiPlaces = [];
             ];
 
 const mumbaiMetroLocations = [
+    { name: "Vikhroli", km: 1, serviceable: true },
+    { name: "Powai", km: 2, serviceable: true },    
     { name: "Bhandup", km: 4, serviceable: true },
     { name: "Kanjur Marg", km: 4, serviceable: true },
     { name: "Nahur", km: 5, serviceable: true },
@@ -29,6 +31,7 @@ const mumbaiMetroLocations = [
     { name: "Ghatkopar", km: 6, serviceable: true },
     { name: "Mulund", km: 7, serviceable: true },
     { name: "Kurla", km: 9, serviceable: true },
+    { name: "Sakinaka", km: 9, serviceable: true },    
     { name: "Digha Gaon", km: 10, serviceable: true },
     { name: "Lokmanya Tilak Terminus", km: 10, serviceable: true },
     { name: "Govandi", km: 12, serviceable: true },

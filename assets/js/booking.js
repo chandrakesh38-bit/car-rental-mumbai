@@ -500,11 +500,21 @@ function onPickupDateChange() {
 }
 
         function selectQuickRoute(destName) {
-            setServiceMode('withdriver');
+            const card = [...document.querySelectorAll('#quick-plan-routes button')].find(button =>
+                button.firstElementChild?.textContent.split('➔').pop().trim() === destName);
+            const route = card?.firstElementChild?.textContent.split('➔').map(value => value.trim());
+            if (currentMainMode !== 'withdriver') setServiceMode('withdriver');
             setWDSubTab('outstation');
+            document.getElementById('wd-out-pickup').value = route?.[0] || 'Mumbai';
             const destInput = document.getElementById('wd-out-destination');
-            if (destInput) destInput.value = destName;
+            if (destInput) destInput.value = route?.[1] || destName;
             onWDDestinationInput();
+            const distance = card?.textContent.match(/([\d,]+(?:\.\d+)?)\s*KM\b/i);
+            if (distance) {
+                wdOutstationKm = Number(distance[1].replace(/,/g, ''));
+                document.getElementById('wd-metric-km').innerText = wdOutstationKm;
+                calculateDriverFare();
+            }
             document.getElementById('booking-widget').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 

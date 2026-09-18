@@ -13,23 +13,9 @@ function readArray(source, name) {
 export default async function renderMumbaiPage({ root, component, escape, page }) {
   const source = await readFile(path.join(root, 'assets/js/booking.js'), 'utf8');
   const fleet = readArray(source, 'wdFleet');
-  const selfDrive = readArray(source, 'excelCarsData');
   const locations = readArray(source, 'mumbaiMetroLocations');
   const destinations = readArray(source, 'destinationCities');
-  const displayCars = ['Hatchback', 'Compact SUV', 'MUV / 7-Seater'].map(segment => {
-    const car = selfDrive.find(c => c.segment === segment);
-    if (!car) throw new Error(`No existing self-drive car in category: ${segment}`);
-    return car;
-  });
-  const fleetCards = displayCars.map(car => `
-    <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-      <img src="${escape(car.imgUrl)}" alt="${escape(car.fullName)} — ${escape(car.segment)} in our Mumbai self-drive fleet" width="640" height="400" loading="lazy" decoding="async" class="w-full h-48 sm:h-52 object-cover bg-slate-100">
-      <div class="p-5">
-        <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-2">Self drive · ${escape(car.segment)}</p>
-        <h3 class="font-extrabold text-lg text-slate-900">${escape(car.fullName)}</h3>
-        <p class="text-sm text-slate-500 mt-2">${escape(car.seats)} seats · ${escape(car.transmission)} · ${escape(car.fuel)}</p>
-      </div>
-    </article>`).join('\n');
+  const fleetCards = '<div id="mumbai-selfdrive-fleet" class="contents"><p class="col-span-full text-center text-slate-500 py-8" role="status">Loading fleet…</p></div>';
   const driverCars = fleet.map(car => `
     <li class="rounded-xl bg-slate-50 border border-slate-200 p-4">
       <span class="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">${escape(car.category)}</span>

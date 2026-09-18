@@ -187,41 +187,92 @@ const mumbaiMetroLocations = [
             { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
         ];
 
-        // COMPLETE 32 EXCEL CARS FOR SELF DRIVE
-        let excelCarsData = [
-            { "brand": "Tata", "model": "Nexon", "fullName": "Tata Nexon", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹117/hour", "rateVal": 117, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Or6F03FkxBCjzM3MC9l7A4X6EbtTueZ5", "priority": 1, "bestSelling": true },
-            { "brand": "Tata", "model": "Punch", "fullName": "Tata Punch", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1UeNkkagK6T0LUjt2ncB6HZaW_K5iFgE5", "priority": 2, "bestSelling": true },
-            { "brand": "Maruti Suzuki", "model": "Swift", "fullName": "Maruti Suzuki Swift", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kdLktKSk6yMlPJDY5BVdeNyC70rfM6eZ", "priority": 3, "bestSelling": true },
-            { "brand": "Maruti Suzuki", "model": "Baleno", "fullName": "Maruti Suzuki Baleno", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1KClMWsI-DX43nzhueP5Mjy-txH04VxaY", "priority": 4, "bestSelling": false },
-            { "brand": "Maruti Suzuki", "model": "Brezza", "fullName": "Maruti Suzuki Brezza", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZQThm_H_eCLv4kBFYixmyjlBFLimsqw5", "priority": 5, "bestSelling": false },
-            { "brand": "Maruti Suzuki", "model": "Dzire", "fullName": "Maruti Suzuki Dzire", "segment": "Sedan", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/18pheBt3K7gbOXwSutbdNVWrok_N2DCG3", "priority": 6, "bestSelling": true },
-            { "brand": "Maruti Suzuki", "model": "Ertiga", "fullName": "Maruti Suzuki Ertiga", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/15o35vVV6iXixrjwMIXiIhLxAFeHj5Uel", "priority": 7, "bestSelling": true },
-            { "brand": "Hyundai", "model": "Creta", "fullName": "Hyundai Creta", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1In3muCV_Mk72zELKjAIlhs-OWgR7RKof", "priority": 8, "bestSelling": true },
-            { "brand": "Mahindra", "model": "Thar", "fullName": "Mahindra Thar", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 4, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1bC337oF5wf0Dl2KdkdRgagkeOP_VFqI5", "priority": 9, "bestSelling": true },
-            { "brand": "Mahindra", "model": "Scorpio N", "fullName": "Mahindra Scorpio N", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1wKIdSZZ3mykmzIZSpKGXRl_zFkWQNcuq", "priority": 10, "bestSelling": true },
-            { "brand": "Toyota", "model": "Innova Crysta", "fullName": "Toyota Innova Crysta", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1sK2Fjmg7xKcltpCAS_SIV4MbXLLd90fl", "priority": 11, "bestSelling": true },
-            { "brand": "Mahindra", "model": "Thar Roxx", "fullName": "Mahindra Thar Roxx", "segment": "SUV", "transmission": "Automatic", "fuel": "Diesel", "seats": 4, "rateHour": "₹333/hour", "rateVal": 333, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/14UgKtx1oqWl84guztZ28c3Kgmo_6jP-C", "priority": 12, "bestSelling": false },
-            { "brand": "Mahindra", "model": "7XO", "fullName": "Mahindra 7XO", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 7, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/164EyWUGQ24XIZPit5_rVZ7kTbmNU1Pim", "priority": 13, "bestSelling": false },
-            { "brand": "Mahindra", "model": "XUV 700", "fullName": "Mahindra XUV 700", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹313/hour", "rateVal": 313, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1JZrrF7FqV8DUrTfV-_fXCpzOEa7Zii33", "priority": 14, "bestSelling": false },
-            { "brand": "BMW", "model": "520D", "fullName": "BMW 520D", "segment": "Luxury Sedan", "transmission": "Automatic", "fuel": "Diesel", "seats": 5, "rateHour": "₹650/hour", "rateVal": 650, "deposit": "₹10,000", "depositVal": 10000, "imgUrl": "https://lh3.googleusercontent.com/d/1Mjy4A4BhkWhIgHz1E9Ofy6aCUk53IZkP", "priority": 15, "bestSelling": false },
-            { "brand": "Jeep", "model": "Compass", "fullName": "Jeep Compass", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹229/hour", "rateVal": 229, "deposit": "₹5,000", "depositVal": 5000, "imgUrl": "https://lh3.googleusercontent.com/d/1baBIvOkCMRSM9KUTn6AvTWPPBBC5kxa9", "priority": 16, "bestSelling": false },
-            { "brand": "Kia", "model": "Carens", "fullName": "Kia Carens", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 6, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1LKPHrDzRtHODi2kiWgAC-DCFhneNBxfd", "priority": 17, "bestSelling": false },
-            { "brand": "Hyundai", "model": "Exter (Automatic)", "fullName": "Hyundai Exter (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹125/hour", "rateVal": 125, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv", "priority": 18, "bestSelling": false },
-            { "brand": "Hyundai", "model": "Exter (Manual)", "fullName": "Hyundai Exter (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1Xr2sz7JNItXbig-ARJOnlYDHQg7GF1sv", "priority": 19, "bestSelling": false },
-            { "brand": "Hyundai", "model": "i20", "fullName": "Hyundai i20", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol", "seats": 5, "rateHour": "₹113/hour", "rateVal": 113, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1ZDZwcXPDBFiUCMNzwWQfDaeHZuiW2Vha", "priority": 20, "bestSelling": false },
-            { "brand": "Tata", "model": "Altroz", "fullName": "Tata Altroz", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1mvxm-Z64rgxrriXE4q3pU9oSq1F1vvdk", "priority": 21, "bestSelling": false },
-            { "brand": "Tata", "model": "Safari", "fullName": "Tata Safari", "segment": "MUV / 7-Seater", "transmission": "Automatic", "fuel": "Diesel", "seats": 6, "rateHour": "₹375/hour", "rateVal": 375, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1cE2ZSnX39ApvlXQOJWnARn54_ma5TQSA", "priority": 22, "bestSelling": false },
-            { "brand": "Toyota", "model": "Glanza", "fullName": "Toyota Glanza", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kb38eCjAtEm4hv6-YR9voZaHJLtu7YbI", "priority": 23, "bestSelling": false },
-            { "brand": "Toyota", "model": "Rumion", "fullName": "Toyota Rumion", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 7, "rateHour": "₹138/hour", "rateVal": 138, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1IaOGRC0_ijk7Ud5FDv4PK2tk6IFQ8HHu", "priority": 24, "bestSelling": false },
-            { "brand": "Toyota", "model": "Urban Cruiser Taisor", "fullName": "Toyota Urban Cruiser Taisor", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/12KEugN2uW4Z5_AyEg_8ns3Rn2LHVOv8M", "priority": 25, "bestSelling": false },
-            { "brand": "Maruti Suzuki", "model": "Fronx (Automatic)", "fullName": "Maruti Suzuki Fronx (Automatic)", "segment": "Compact SUV", "transmission": "Automatic", "fuel": "Petrol", "seats": 5, "rateHour": "₹108/hour", "rateVal": 108, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ", "priority": 26, "bestSelling": false },
-            { "brand": "Maruti Suzuki", "model": "Fronx (Manual)", "fullName": "Maruti Suzuki Fronx (Manual)", "segment": "Compact SUV", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1veZedIFNHABbzOVVy1eBNqgceXjn1wqJ", "priority": 27, "bestSelling": false },
-            { "brand": "Maruti Suzuki", "model": "Grand Vitara", "fullName": "Maruti Suzuki Grand Vitara", "segment": "SUV", "transmission": "Manual", "fuel": "Diesel", "seats": 5, "rateHour": "₹167/hour", "rateVal": 167, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/1PpB-DhjK0H71vEG0-RQk31IYia6wE0h8", "priority": 28, "bestSelling": false },
-            { "brand": "Maruti Suzuki", "model": "Ignis", "fullName": "Maruti Suzuki Ignis", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹104/hour", "rateVal": 104, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1QIuOiX3yAdwEF6VEKGJblzi-ZI-WinKC", "priority": 29, "bestSelling": false },
-            { "brand": "Maruti Suzuki", "model": "WagonR", "fullName": "Maruti Suzuki WagonR", "segment": "Hatchback", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 5, "rateHour": "₹96/hour", "rateVal": 96, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1kz6JIn_-R6A--3K7tj569gV6Vpku3SQF", "priority": 30, "bestSelling": false },
-            { "brand": "Maruti Suzuki", "model": "XL6", "fullName": "Maruti Suzuki XL6", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Petrol + CNG", "seats": 6, "rateHour": "₹146/hour", "rateVal": 146, "deposit": "₹3,000", "depositVal": 3000, "imgUrl": "https://lh3.googleusercontent.com/d/1LU-uNsvgWo6RXN3Xq7y8c4PTMSgLs930", "priority": 31, "bestSelling": false },
-            { "brand": "Mahindra", "model": "Mahindra XUV 500", "fullName": "Mahindra XUV 500", "segment": "MUV / 7-Seater", "transmission": "Manual", "fuel": "Diesel", "seats": 7, "rateHour": "₹188/hour", "rateVal": 188, "deposit": "₹4,000", "depositVal": 4000, "imgUrl": "https://lh3.googleusercontent.com/d/14nWzEeYcUlawsmTNanoS7Fw6QsAWOW98", "priority": 32, "bestSelling": false }
-        ];
+        // Supabase vehicles is the source of truth; never restore deleted cars from a fallback.
+        let excelCarsData = [];
+
+        function escapeFleetHTML(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+        }
+
+        function fleetImageURL(value) {
+            try { const url = new URL(value); if (['http:', 'https:'].includes(url.protocol)) return url.href; } catch (_) {}
+            return '/logo.png';
+        }
+
+        let fleetRequest;
+        function loadWebsiteFleet() {
+            if (fleetRequest) return fleetRequest;
+            fleetRequest = fetchWebsiteFleet().finally(() => { fleetRequest = null; });
+            return fleetRequest;
+        }
+
+        async function fetchWebsiteFleet() {
+            const grid = document.getElementById('selfdrive-cars-grid');
+            const landing = document.getElementById('mumbai-selfdrive-fleet');
+            const status = message => {
+                for (const container of [grid, landing].filter(Boolean)) {
+                    container.innerHTML = '<p class="col-span-full py-12 text-center text-slate-400 font-medium" role="status"></p>';
+                    container.firstChild.textContent = message;
+                }
+            };
+            // Let the original synchronous booking initializer finish before showing loading state.
+            await Promise.resolve();
+            status('Loading fleet…');
+            try {
+                const rows = [];
+                const columns = 'id,brand,model,full_name,segment,service_type,transmission,fuel_type,seating_capacity,rate_per_hour,refundable_deposit,image_url,display_order,is_active';
+                for (let offset = 0; ; offset += 500) {
+                    const query = new URLSearchParams({select: columns, is_active: 'eq.true', service_type: 'in.(Self-Drive,Both)', order: 'display_order.asc,id.asc', limit: '500', offset: String(offset)});
+                    const response = await fetch(`${SUPABASE_URL}/rest/v1/vehicles?${query}`, {headers: {apikey: SUPABASE_ANON_KEY}, cache: 'no-store', signal: AbortSignal.timeout(15000)});
+                    if (!response.ok) throw new Error('Fleet request failed');
+                    const batch = await response.json();
+                    if (!Array.isArray(batch)) throw new Error('Invalid fleet response');
+                    rows.push(...batch);
+                    if (batch.length < 500) break;
+                }
+                excelCarsData = rows.filter(row => row.is_active === true && ['Self-Drive', 'Both'].includes(row.service_type)).map(row => {
+                    const rate = Number(row.rate_per_hour), deposit = Number(row.refundable_deposit), seats = Number(row.seating_capacity);
+                    if (row.rate_per_hour == null || row.refundable_deposit == null || !Number.isFinite(rate) || rate < 0 || !Number.isFinite(deposit) || deposit < 0 || !Number.isInteger(seats) || seats < 1) throw new Error('Invalid vehicle pricing or seats');
+                    return {id: row.id, brand: row.brand || '', model: row.model || '', fullName: row.full_name || `${row.brand} ${row.model}`, segment: row.segment || '', transmission: row.transmission || '', fuel: row.fuel_type || '', seats,
+                        rateVal: rate, rateHour: `₹${rate}/hour`, depositVal: deposit, deposit: `₹${deposit.toLocaleString('en-IN')}`, imgUrl: fleetImageURL(row.image_url), priority: Number(row.display_order) || 0,
+                        // Preserve the existing featured ranks without adding a database column.
+                        bestSelling: [1, 2, 3, 6, 7, 8, 9, 10, 11].includes(Number(row.display_order))};
+                });
+                if (grid) {
+                    for (const [id, field] of [['brand','brand'],['fuel','fuel'],['transmission','transmission'],['seats','seats'],['segment','segment']]) {
+                        const select = document.getElementById('sd-filter-' + id);
+                        const selected = select.value;
+                        const values = [...new Set(excelCarsData.map(car => String(car[field])))].filter(Boolean);
+                        // Retain the existing filter choices and add new catalog values.
+                        for (const value of values) if (![...select.options].some(option => option.value === value)) select.add(new Option(value, value));
+                        select.value = selected;
+                    }
+                    applyAllSDFilters();
+                }
+                if (landing) {
+                    const featured = [];
+                    for (const segment of ['Hatchback', 'Compact SUV', 'MUV / 7-Seater']) {
+                        const car = excelCarsData.find(car => car.segment === segment);
+                        if (car) featured.push(car);
+                    }
+                    for (const car of excelCarsData) if (featured.length < 3 && !featured.includes(car)) featured.push(car);
+                    landing.innerHTML = featured.map(car => `<article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                        <img src="${escapeFleetHTML(car.imgUrl)}" alt="${escapeFleetHTML(car.fullName)} — ${escapeFleetHTML(car.segment)} in our Mumbai self-drive fleet" width="640" height="400" loading="lazy" decoding="async" class="w-full h-48 sm:h-52 object-cover bg-slate-100">
+                        <div class="p-5"><p class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-2">Self drive · ${escapeFleetHTML(car.segment)}</p><h3 class="font-extrabold text-lg text-slate-900">${escapeFleetHTML(car.fullName)}</h3><p class="text-sm text-slate-500 mt-2">${car.seats} seats · ${escapeFleetHTML(car.transmission)} · ${escapeFleetHTML(car.fuel)}</p></div></article>`).join('');
+                    if (!featured.length) status('No self-drive cars are currently available.');
+                }
+            } catch (error) {
+                excelCarsData = [];
+                filteredSDCarsList = [];
+                status('Unable to load the fleet. Please try again.');
+                for (const container of [grid, landing].filter(Boolean)) {
+                    const retry = document.createElement('button');
+                    retry.type = 'button'; retry.textContent = 'Retry';
+                    retry.className = 'col-span-full text-center text-indigo-900 font-bold py-3';
+                    retry.onclick = () => loadWebsiteFleet(); container.appendChild(retry);
+                }
+            }
+        }
 
         let currentMainMode = 'withdriver';
         let currentWDSubTab = 'outstation';
@@ -315,7 +366,7 @@ function showCustomAlert(message) {
 
             if (tab === 'outstation') {
                 const pDate = document.getElementById('wd-out-pdate');
-                const rDate = document.getElementById('wd-out-rdate');                
+                const rDate = document.getElementById('wd-out-rdate');
             } else if (tab === 'airport') {
                 setAirportTransferType('drop');
             }
@@ -795,20 +846,21 @@ function onPickupDateChange() {
                 card.innerHTML = `
                     <div>
                         <div class="h-44 w-full bg-slate-100 overflow-hidden relative">
-                            <img src="${car.imgUrl}" alt="${car.fullName}" class="w-full h-full object-cover">
-                            <span class="absolute top-3 left-3 text-[10px] font-bold bg-indigo-950/80 text-amber-300 px-2 py-0.5 rounded">${car.brand}</span>
+                            <img src="${escapeFleetHTML(car.imgUrl)}" alt="${escapeFleetHTML(car.fullName)}" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 text-[10px] font-bold bg-indigo-950/80 text-amber-300 px-2 py-0.5 rounded">${escapeFleetHTML(car.brand)}</span>
                         </div>
                         <div class="p-4">
-                            <h3 class="font-bold text-slate-900 text-base">${car.fullName}</h3>
-                            <span class="text-lg font-black text-indigo-950 mt-1 block">${car.rateHour}</span>
+                            <h3 class="font-bold text-slate-900 text-base">${escapeFleetHTML(car.fullName)}</h3>
+                            <span class="text-lg font-black text-indigo-950 mt-1 block">${escapeFleetHTML(car.rateHour)}</span>
                         </div>
                     </div>
                     <div class="p-4 pt-0">
-                        <button type="button" onclick="handleBookSelfDriveClick(${JSON.stringify(car).replace(/"/g, '&quot;')})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs flex items-center justify-center gap-2">
+                        <button type="button" data-book-self-drive class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs flex items-center justify-center gap-2">
                             <i class="fa-solid fa-key text-amber-400"></i> Book Self Drive
                         </button>
                     </div>
                 `;
+                card.querySelector('[data-book-self-drive]').onclick = () => handleBookSelfDriveClick(car);
                 container.appendChild(card);
             });
 

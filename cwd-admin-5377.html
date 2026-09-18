@@ -365,6 +365,9 @@
 
             <form onsubmit="handleSaveVehicle(event)" class="mt-4 space-y-3.5">
                 <input type="hidden" id="v-id">
+                <label class="block text-[11px] font-bold text-slate-700 uppercase">Display Name
+                    <input type="text" id="v-full-name" placeholder="Defaults to brand and model" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs mt-1">
+                </label>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -393,7 +396,7 @@
                         <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Service Type</label>
                         <select id="v-service" class="w-full border border-slate-300 rounded-lg px-2.5 py-2 text-xs outline-none">
                             <option value="Both">Both (Self Drive + With Driver)</option>
-                            <option value="Self Drive">Self Drive Only</option>
+                            <option value="Self-Drive">Self Drive Only</option>
                             <option value="With Driver">With Driver Only</option>
                         </select>
                     </div>
@@ -577,39 +580,48 @@
             }
 
             tbody.innerHTML = '';
+            if (!cars.length) tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-400">No fleet vehicles yet. Add a car to get started.</td></tr>';
             cars.forEach(car => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition";
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-bold text-slate-500">#${car.display_order}</td>
-                    <td class="py-3 px-4 flex items-center gap-2.5">
-                        <img src="${car.image_url}" class="w-10 h-7 object-cover rounded bg-slate-100" onerror="this.src='https://placehold.co/80x50?text=Car'">
-                        <strong class="text-slate-900">${car.full_name}</strong>
-                    </td>
-                    <td class="py-3 px-4 text-slate-600">${car.segment} • ${car.fuel_type} (${car.transmission})</td>
-                    <td class="py-3 px-4 font-bold text-indigo-950">₹${car.rate_per_hour}/hr</td>
-                    <td class="py-3 px-4 text-slate-600">₹${car.refundable_deposit}</td>
-                    <td class="py-3 px-4">
-                        <button onclick="toggleVehicleStatus('${car.id}', ${car.is_active})" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${car.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">
-                            ${car.is_active ? 'Active' : 'Inactive'}
-                        </button>
-                    </td>
-                    <td class="py-3 px-4 text-right space-x-2">
-                        <button onclick='editVehicle(${JSON.stringify(car).replace(/'/g, "&apos;")})' class="text-indigo-600 hover:text-indigo-900 font-bold">Edit</button>
-                        <button onclick="deleteVehicle('${car.id}', '${car.full_name}')" class="text-rose-600 hover:text-rose-900 font-bold">Delete</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+                tr.className = 'hover:bg-slate-50 transition';
+                for (const value of ['#' + car.display_order, car.full_name, car.segment + ' • ' + car.fuel_type + ' (' + car.transmission + ')', '₹' + car.rate_per_hour + '/hr', '₹' + car.refundable_deposit]) {
+                    const td = document.createElement('td'); td.className = 'py-3 px-4 text-sm text-slate-700'; td.textContent = value; tr.appendChild(td);
+                }
+                const img = document.createElement('img');
+                img.className = 'w-10 h-7 object-cover rounded bg-slate-100 inline-block mr-2';
+                img.alt = ''; img.src = vehicleImageURL(car.image_url) || '/logo.png';
+                img.onerror = () => { img.onerror = null; img.src = '/logo.png'; };
+                tr.children[1].prepend(img);
+                const status = document.createElement('td'); status.className = 'py-3 px-4';
+                const toggle = document.createElement('button');
+                toggle.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold ' + (car.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600');
+                toggle.textContent = car.is_active ? 'Active' : 'Inactive';
+                toggle.onclick = () => toggleVehicleStatus(car.id, car.is_active);
+                status.appendChild(toggle); tr.appendChild(status);
+                const actions = document.createElement('td'); actions.className = 'py-3 px-4 text-right space-x-2';
+                for (const [label, handler] of [['Edit', () => editVehicle(car)], ['Delete', () => deleteVehicle(car.id, car.full_name)]]) {
+                    const button = document.createElement('button'); button.textContent = label;
+                    button.className = label === 'Edit' ? 'text-indigo-600 font-bold' : 'text-rose-600 font-bold';
+                    button.onclick = handler; actions.appendChild(button);
+                }
+                tr.appendChild(actions); tbody.appendChild(tr);
             });
+        }
+
+        function vehicleImageURL(value) {
+            if (!value) return '';
+            try { const url = new URL(value); if (['https:', 'http:'].includes(url.protocol)) return url.href; } catch (_) {}
+            return '';
         }
 
         function openVehicleModal() {
             document.getElementById('vehicle-modal-title').innerText = "Add New Fleet Vehicle";
             document.getElementById('v-id').value = '';
+            document.getElementById('v-full-name').value = '';
             document.getElementById('v-brand').value = '';
             document.getElementById('v-model').value = '';
             document.getElementById('v-segment').value = 'Compact SUV';
-            document.getElementById('v-service').value = 'Both';
+            document.getElementById('v-service').value = 'Self-Drive';
             document.getElementById('v-transmission').value = 'Manual';
             document.getElementById('v-fuel').value = 'Petrol + CNG';
             document.getElementById('v-seats').value = '5';
@@ -629,10 +641,11 @@
         function editVehicle(car) {
             document.getElementById('vehicle-modal-title').innerText = "Edit Vehicle: " + car.full_name;
             document.getElementById('v-id').value = car.id;
+            document.getElementById('v-full-name').value = car.full_name || '';
             document.getElementById('v-brand').value = car.brand;
             document.getElementById('v-model').value = car.model;
             document.getElementById('v-segment').value = car.segment;
-            document.getElementById('v-service').value = car.service_type || 'Both';
+            document.getElementById('v-service').value = car.service_type === 'Self Drive' ? 'Self-Drive' : (car.service_type || 'Both');
             document.getElementById('v-transmission').value = car.transmission;
             document.getElementById('v-fuel').value = car.fuel_type;
             document.getElementById('v-seats').value = car.seating_capacity;
@@ -648,9 +661,16 @@
         async function handleImageFileUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
+            if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+                document.getElementById('upload-status').innerText = 'Choose a JPG, PNG or WEBP image under 5 MB.'; return;
+            }
 
             const status = document.getElementById('upload-status');
             status.innerText = "Uploading image to Supabase Storage...";
+            const saveButton = document.getElementById('btn-save-vehicle');
+            saveButton.disabled = true;
+            e.target.disabled = true;
+            try {
 
             const fileExt = file.name.split('.').pop();
             const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -671,6 +691,12 @@
 
             document.getElementById('v-img-url').value = publicUrlData.publicUrl;
             status.innerText = "Image uploaded and URL linked!";
+            } catch (error) {
+                status.innerText = 'Upload failed: ' + error.message;
+            } finally {
+                saveButton.disabled = false;
+                e.target.disabled = false;
+            }
         }
 
         async function handleSaveVehicle(e) {
@@ -681,7 +707,7 @@
             const payload = {
                 brand: brand,
                 model: model,
-                full_name: `${brand} ${model}`,
+                full_name: document.getElementById('v-full-name').value.trim() || `${brand} ${model}`,
                 segment: document.getElementById('v-segment').value,
                 service_type: document.getElementById('v-service').value,
                 transmission: document.getElementById('v-transmission').value,
@@ -694,30 +720,50 @@
                 is_active: document.getElementById('v-active').checked
             };
 
+            if (!brand || !model || !Number.isInteger(payload.seating_capacity) || payload.seating_capacity < 1 ||
+                !Number.isFinite(payload.rate_per_hour) || payload.rate_per_hour < 0 ||
+                !Number.isFinite(payload.refundable_deposit) || payload.refundable_deposit < 0 ||
+                !Number.isInteger(payload.display_order) || payload.display_order < 0 ||
+                (payload.image_url && !vehicleImageURL(payload.image_url))) {
+                alert('Enter a brand, model, valid seats, non-negative prices/rank and an HTTP(S) image URL.'); return;
+            }
+            const button = e.target.querySelector('button[type="submit"]');
+            if (button.disabled) return;
+            button.disabled = true;
+            try {
             let res;
             if (id) {
-                res = await supabaseClient.from('vehicles').update(payload).eq('id', id);
+                res = await supabaseClient.from('vehicles').update(payload).eq('id', id).select('id');
             } else {
-                res = await supabaseClient.from('vehicles').insert([payload]);
+                res = await supabaseClient.from('vehicles').insert([payload]).select('id');
             }
 
+            if (!res.error && !res.data?.length) res.error = {message: 'No vehicle was saved. Check your fleet permissions and reload.'};
             if (res.error) {
                 alert("Error saving vehicle: " + res.error.message);
             } else {
                 closeVehicleModal();
-                loadVehicles();
+                await loadVehicles();
             }
+            } catch (error) { alert('Unable to save vehicle: ' + error.message); }
+            finally { button.disabled = false; }
         }
 
         async function toggleVehicleStatus(id, currentStatus) {
-            await supabaseClient.from('vehicles').update({ is_active: !currentStatus }).eq('id', id);
-            loadVehicles();
+            try {
+                const {data, error} = await supabaseClient.from('vehicles').update({ is_active: !currentStatus }).eq('id', id).select('id');
+                if (error || !data?.length) throw new Error(error?.message || 'No vehicle updated. Check your fleet permissions.');
+                await loadVehicles();
+            } catch (error) { alert('Unable to update vehicle: ' + error.message); }
         }
 
         async function deleteVehicle(id, name) {
             if (confirm(`Are you sure you want to permanently delete "${name}" from your fleet?`)) {
-                await supabaseClient.from('vehicles').delete().eq('id', id);
-                loadVehicles();
+                try {
+                    const {data, error} = await supabaseClient.from('vehicles').delete().eq('id', id).select('id');
+                    if (error || !data?.length) throw new Error(error?.message || 'No vehicle deleted. Check your fleet permissions.');
+                    await loadVehicles();
+                } catch (error) { alert('Unable to delete vehicle: ' + error.message); }
             }
         }
 

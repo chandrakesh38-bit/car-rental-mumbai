@@ -11,9 +11,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pages = JSON.parse(await readFile(path.join(root,'src/pages.json'),'utf8'));
 const baseline = process.env.BASELINE_DIR;
+const testPort = Number(process.env.TEST_PORT || 4173);
 const reports = process.env.TEST_OUTPUT || path.join(root, '.test-output');
 await mkdir(reports,{recursive:true});
-const servers = [await startServer(root,4173)];
+const servers = [await startServer(root,testPort)];
 if (baseline) servers.push(await startServer(baseline,4174));
 const browser = await chromium.launch({headless:true,...(process.env.BROWSER_CHANNEL ? {channel:process.env.BROWSER_CHANNEL} : {})});
 const context = await browser.newContext({ignoreHTTPSErrors:true,viewport:{width:1440,height:1000}});
@@ -50,9 +51,10 @@ const check=async(name,fn)=>{
   if(process.env.TEST_FILTER && !name.includes(process.env.TEST_FILTER)) return;
   await fn(); completed.push(name); console.log('PASS '+name);
 };
-const go=async(slug='',port=4173)=>{
+const go=async(slug='',port=testPort)=>{
   const response=await page.goto(`http://127.0.0.1:${port}/${slug}`,{waitUntil:'load'});
   assert.equal(response.status(),200);
+  if (port === testPort) await page.waitForFunction(() => !document.getElementById('booking-widget') || fleetRequest === null);
 };
 const visible=async id=>assert.equal(await page.locator('#'+id).isVisible(),true,id);
 const fill=async(id,value)=>page.locator('#'+id).fill(value);
@@ -124,7 +126,7 @@ try {
       await go(source.slug);
       await page.locator('#nav-menu-button').click();
       await page.locator(`#nav-drawer a[href="/${target.slug}"]`).click();
-      await page.waitForURL(`http://127.0.0.1:4173/${target.slug}`);
+      await page.waitForURL(`http://127.0.0.1:${testPort}/${target.slug}`);
       await page.waitForLoadState('load');
       assert.equal(await page.title(),target.title);
     }
@@ -156,7 +158,7 @@ try {
     return state;
   }
   for(const [slug,tab] of [['with-driver','local'],['outstation','outstation'],['airport-transfer','airport']]) await check(`${tab} validation, fares, booking modal and mocked email; baseline parity`,async()=>{
-    const updated=await driverScenario(slug,tab,4173);
+    const updated=await driverScenario(slug,tab,testPort);
     if(baseline) assert.deepEqual(updated,await driverScenario('',tab,4174));
   });
   await check('local packages, all airport terminals/directions, quick routes and fare details',async()=>{
@@ -194,7 +196,7 @@ try {
     return state;
   }
   await check('self-drive validation, filtering, fare review, delivery and serviceability; baseline parity',async()=>{
-    const updated=await selfDriveScenario('self-drive',4173);
+    const updated=await selfDriveScenario('self-drive',testPort);
     if(baseline) assert.deepEqual(updated,await selfDriveScenario('',4174));
   });
   await check('self-drive filters, sort, pagination, no-results and reset',async()=>{
@@ -259,5 +261,6 @@ try {
   await writeFile(path.join(reports,'results.json'),JSON.stringify({filter:process.env.TEST_FILTER||null,completed,uncaughtJavaScriptErrors:errors,mockedEmails:emails.length,mockedPartnerApplications:applications.length,baselineParity:!!baseline},null,2));
   console.log('All checks passed. External submissions were intercepted; no real bookings or uploads were sent.');
 } finally {
+  await context.unrouteAll({behavior: 'ignoreErrors'});
   await browser.close();for(const server of servers) server.close();
 }

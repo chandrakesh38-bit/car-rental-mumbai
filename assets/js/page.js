@@ -4,6 +4,7 @@
     window.onload = null;
 
     document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('booking-widget') || document.getElementById('mumbai-selfdrive-fleet')) loadWebsiteFleet();
         if (!document.getElementById('booking-widget')) return;
         // Run the original initializer only on pages that contain its required DOM.
         initializeBooking.call(window);

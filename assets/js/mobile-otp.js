@@ -26,7 +26,20 @@ async function loadSdk(captcha) {
       if (window.sendOtp && window.verifyOtp && data?.otpLength) return data;
       await pause(100);
     }
-    throw Error('OTP service is not ready. Please retry.');
+    const debug = {
+  initSendOTP: typeof window.initSendOTP,
+  sendOtp: typeof window.sendOtp,
+  verifyOtp: typeof window.verifyOtp,
+  getWidgetData: typeof window.getWidgetData,
+  widgetData: typeof window.getWidgetData === 'function'
+    ? window.getWidgetData()
+    : null
+};
+
+throw Error(
+  'OTP DEBUG: ' + JSON.stringify(debug)
+);
+
   })().catch(error => { sdkPromise = null; throw error; });
   return sdkPromise;
 }

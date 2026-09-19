@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<title>Self Drive Document Verification | Car with Driver Mobility LLP</title>
+<link rel="stylesheet" href="/assets/css/self-drive-documents.css">
+<script type="module" src="/assets/js/self-drive-documents.js"></script>
+</head>
+<body>
+<header><a href="/self-drive"><img src="/logo.png" alt="" width="44" height="44"><span>Car with Driver Mobility LLP</span></a></header>
+<main>
+<h1>Self Drive Document Verification</h1>
+<p>Booking ID: <strong id="booking-id">Checking secure link…</strong></p>
+<p>Upload clear, readable copies for manual verification. Uploading documents does not confirm your booking.</p>
+<p class="notice">JPG/PNG/PDF supported · Maximum 5 MB per file. Please ensure all text and document edges are visible.</p>
+<p id="page-message" role="status" aria-live="polite">Checking your secure upload link…</p>
+<form id="documents-form" hidden>
+<div id="document-cards"></div>
+<div class="card"><label for="alternate-phone">Alternate mobile number <span aria-hidden="true">*</span></label><input id="alternate-phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" pattern="[6-9][0-9]{9}" required placeholder="10-digit alternate mobile number"></div>
+<div id="upload-progress" hidden><p><strong id="overall-status">Waiting — 0%</strong></p><progress id="overall-progress" max="100" value="0" aria-label="Overall upload progress"></progress><p>Please do not close or refresh this page while documents are uploading.</p></div>
+<button id="submit-documents" type="submit">Submit Documents</button>
+</form>
+<section id="success" hidden role="status"><h2>Documents Submitted Successfully</h2><p>Your documents have been received and are pending verification. Our team will verify them and contact you.</p></section>
+<p class="privacy">Your documents are stored privately and reviewed manually. Do not share this secure link. For help, contact <a href="mailto:carwithdriver.vikhroli@gmail.com">carwithdriver.vikhroli@gmail.com</a>.</p>
+</main>
+</body>
+</html>

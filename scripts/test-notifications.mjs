@@ -56,7 +56,7 @@ const values={ 'cust-name':'Test','cust-phone':'9999999999','cust-email':'test@e
  'sd-pdate':'2099-01-01','sd-phour':'9','sd-pampm':'AM','sd-rdate':'2099-01-01','sd-rhour':'10','sd-rampm':'PM'};
 const texts={'sd-review-duration':'13 actual hours / 24 billed hours','sd-review-deliv-mode':'Home Delivery','sd-review-base-fare':'2400','sd-review-deposit':'5000','sd-review-delivery-charge':'100','disp-total-final-fare':'7500'};
 let requests=[],closed=0,shown=[],alerts=[],valid=true;
-const context=vm.createContext({console,Date,Math,document:{getElementById:id=>({value:values[id],innerText:texts[id]})},
+const context=vm.createContext({console,Date,Math,crypto,document:{getElementById:id=>({value:values[id],innerText:texts[id]})},
  validateJourneyAndOpenBooking:()=>valid,validateSelfDriveJourney:()=>valid,updateSDFareReview:()=>{},
  wdFleet:[{name:'Sedan',rates:{local:{extraKm:15},outstationPerKm:15,driverAllowance:300}}],chosenCarName:'Sedan',chosenFareAmount:10000,wdOutstationKm:600,wdOutstationDays:3,currentDeliveryMode:'home',selectedCarObj:{fullName:'Test Car',brand:'Brand',rateHour:'100/hour'},
  createLocalDateTime:(d,h,a)=>new Date(d+'T'+String(h%12+(a==='PM'?12:0)).padStart(2,'0')+':00:00'),formatBookingDateTime:d=>d.toISOString(),

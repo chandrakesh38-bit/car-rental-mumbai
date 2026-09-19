@@ -1056,6 +1056,18 @@ function onPickupDateChange() {
         message.textContent = 'Your enquiry was submitted, but the team email could not be sent. Please contact us at carwithdriver.vikhroli@gmail.com with your Booking ID.';
     }
     idBox.querySelector('div').textContent = isBooking ? 'Booking ID' : 'Application ID';
+    // Reuse the existing success popup; document UI is Self Drive only.
+    modal.querySelector('h3').textContent = notifications.upload_url ? 'Booking Request Received' : 'Enquiry Successfully Submitted!';
+    modal.querySelector('[data-document-upload]')?.remove();
+    if (notifications.upload_url) {
+        message.textContent = 'Your Self Drive booking request has been received. Please upload your documents for manual verification. Uploading documents does not confirm your booking. Our team will verify them and contact you.' + (notifications.customer_email_sent ? ' A secure upload link has been sent to your email.' : ' Please save the upload link below; the email acknowledgement could not be sent.');
+        const link = document.createElement('a');
+        link.dataset.documentUpload = 'true';
+        link.href = notifications.upload_url;
+        link.textContent = 'Upload Documents';
+        link.className = 'block w-full bg-indigo-950 text-white font-bold rounded-xl px-4 py-3 text-sm';
+        idBox.after(link);
+    }
 
     if (applicationNumber) {
         idText.textContent = applicationNumber;
@@ -1460,7 +1472,7 @@ async function handleBookingSubmit(e) {
                 ['Delivery Charge', currentDeliveryMode === 'home' ? text('sd-review-delivery-charge') : '0'],
                 ['Total Amount', text('disp-total-final-fare')],
             ].map(([label, v]) => label + ': ' + (v || 'Not provided')).join('\n');
-            await sendEmailNotification(e.target, bookingId, name, phone, email, details, closeSDModal);
+            await sendEmailNotification(e.target, bookingId, name, phone, email, details, closeSDModal, 'selfdrive');
         }
 
 let lastPartnerForm = null;
@@ -2011,7 +2023,7 @@ showSuccessModal(result.application_number, result);
             return sendEmailNotification(...args);
         }
 
-        async function sendEmailNotification(form, bookingId, name, phone, email, details, closeBookingModal) {
+        async function sendEmailNotification(form, bookingId, name, phone, email, details, closeBookingModal, serviceMode = 'withdriver') {
             if (form.dataset.submitting === 'true') return;
             form.dataset.submitting = 'true';
             const button = form.querySelector('button[type="submit"]');
@@ -2020,13 +2032,17 @@ showSuccessModal(result.application_number, result);
                 const response = await fetch('/api/booking-enquiry', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bookingId, name, phone, email, details }),
+                    body: JSON.stringify({ bookingId, name, phone, email, details, serviceMode,
+                        ...(serviceMode === 'selfdrive' ? { submissionKey: form.dataset.submissionKey || (form.dataset.submissionKey = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('')) } : {}),
+                    }),
                 });
                 const result = await response.json();
+                if (response.status === 409) { delete form.dataset.bookingId; delete form.dataset.submissionKey; }
                 if (!response.ok || !result.success) throw new Error(result.message || 'Unable to submit enquiry. Please try again.');
                 closeBookingModal();
                 showSuccessModal(result.booking_id, result, true);
                 delete form.dataset.bookingId;
+                delete form.dataset.submissionKey;
             } catch (error) {
                 showCustomAlert(error.message || 'Unable to submit enquiry. Please try again.');
             } finally {

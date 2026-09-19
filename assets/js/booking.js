@@ -1,3 +1,4 @@
+const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
 
         const SUPABASE_URL = "https://pwciaihqkfnlenxxiown.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz";
@@ -1662,6 +1663,14 @@ async function handlePartnerFormSubmit(e) {
 
     e.preventDefault();
 
+    if (e.target.dataset.submitting === 'true') return;
+    e.target.dataset.submitting = 'true';
+    let otpProof;
+    try {
+        const otp = await mobileOtpReady;
+        if (!otp) throw new Error('Mobile verification could not load. Please refresh and retry.');
+        otpProof = otp.requireFormOtp(e.target, 'part-phone', 'partner');
+    } catch (error) { e.target.dataset.submitting = 'false'; showCustomAlert(error.message); return; }
     lastPartnerForm = e.target;
 
     const submitButton = e.target.querySelector('button[type="submit"]');
@@ -1677,6 +1686,7 @@ async function handlePartnerFormSubmit(e) {
     `;
 
     if (!window.preparePartnerFiles()) {
+        e.target.dataset.submitting = 'false';
 
         submitButton.disabled = false;
         submitButton.innerHTML = originalButtonText;
@@ -1825,6 +1835,7 @@ if (missingDocuments.length > 0) {
 
         formData.append('name', name);
         formData.append('phone', phone);
+        formData.append('otpProof', otpProof);
         formData.append('email', email);
         formData.append('alternate_phone', alternatePhone);
         formData.append('car_brand', brand);
@@ -2014,6 +2025,7 @@ showSuccessModal(result.application_number, result);
 
     } finally {
 
+        e.target.dataset.submitting = 'false';
         submitButton.disabled = false;
         submitButton.innerHTML = originalButtonText;
     }
@@ -2029,10 +2041,13 @@ showSuccessModal(result.application_number, result);
             const button = form.querySelector('button[type="submit"]');
             button.disabled = true;
             try {
+                const otp = await mobileOtpReady;
+                if (!otp) throw new Error('Mobile verification could not load. Please refresh and retry.');
+                const otpProof = otp.requireFormOtp(form, serviceMode === 'selfdrive' ? 'sd-cust-phone' : 'cust-phone', 'booking');
                 const response = await fetch('/api/booking-enquiry', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bookingId, name, phone, email, details, serviceMode,
+                    body: JSON.stringify({ bookingId, name, phone, email, details, serviceMode, otpProof,
                         ...(serviceMode === 'selfdrive' ? { submissionKey: form.dataset.submissionKey || (form.dataset.submissionKey = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('')) } : {}),
                     }),
                 });

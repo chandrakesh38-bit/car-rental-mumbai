@@ -1,3 +1,4 @@
+import { requireMobileOtp } from '../lib/mobile-otp.mjs';
 import { createVerification } from '../lib/self-drive-documents.mjs';
 import { sendNotifications, validEmail } from '../lib/notifications.mjs';
 
@@ -13,13 +14,14 @@ export default async function handler(request) {
   try {
     const raw = await request.text();
     if (raw.length > 20000) return json({ success: false, message: 'Enquiry is too large.' }, 413);
-    const { bookingId, name, phone, email, details, serviceMode, submissionKey } = JSON.parse(raw);
+    const { bookingId, name, phone, email, details, serviceMode, submissionKey, otpProof } = JSON.parse(raw);
     if (!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId || '') ||
         typeof name !== 'string' || !name.trim() || name.length > 200 ||
         typeof phone !== 'string' || !/^[+\d\s()-]{7,30}$/.test(phone) ||
         !validEmail(email) || typeof details !== 'string' || !details.trim() || details.length > 15000) {
       return json({ success: false, message: 'Please check your enquiry details and email address.' }, 400);
     }
+    await requireMobileOtp(otpProof, phone, 'booking', new URL(request.url).origin);
     const uploadUrl = serviceMode === 'selfdrive'
       ? await createVerification({ bookingId, submissionKey, name, phone, email, details }, new URL(request.url).origin)
       : undefined;

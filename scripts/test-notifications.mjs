@@ -1,3 +1,6 @@
+import { otpProof } from './otp-test-fixture.mjs';
+const bookingProof = await otpProof('booking', 'https://test.example');
+const partnerProof = await otpProof('partner', 'https://test.example');
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
@@ -25,7 +28,7 @@ globalThis.fetch = async (url, options) => {
   }
   return Response.json({});
 };
-const payload = { bookingId: 'CWD-WD-260919-1234', name: 'Test Customer', phone: '9999999999', email: 'test@example.com', details: 'Outstation\nPickup: Mumbai\nReturn: 26 Sep 2026 10:00 PM\nTotal: 10000' };
+const payload = { otpProof: bookingProof, bookingId: 'CWD-WD-260919-1234', name: 'Test Customer', phone: '9999999999', email: 'test@example.com', details: 'Outstation\nPickup: Mumbai\nReturn: 26 Sep 2026 10:00 PM\nTotal: 10000' };
 const book = (data=payload) => booking(new Request('https://test.example/api/booking-enquiry', { method: 'POST', headers: { origin: 'https://test.example' }, body: JSON.stringify(data) }));
 let result = await (await book()).json();
 assert.equal(result.success, true); assert.equal(result.customer_email_sent, true);assert.equal(calls.length, 2);
@@ -37,7 +40,7 @@ assert.equal((await book({...payload,email:'bad'})).status,400);
 for (const failure of ['customer','all','network']) {fail=failure;result=await(await book()).json();assert.equal(result.success,true);assert.equal(result.customer_email_sent,false);}
 fail='';delete process.env.RESEND_API_KEY;result=await(await book()).json();assert.equal(result.success,true);assert.equal(result.admin_email_sent,false);process.env.RESEND_API_KEY='test-key-not-real';
 function application() {
- const form=new FormData();for(const[k,v]of Object.entries({name:'Partner Test',phone:'9999999999',email:'partner@example.com',alternate_phone:'8888888888',car_brand:'Test Brand',car_model:'Test Model',mfg_year:'2024'}))form.set(k,v);
+ const form=new FormData();form.set("otpProof",partnerProof);for(const[k,v]of Object.entries({name:'Partner Test',phone:'9999999999',email:'partner@example.com',alternate_phone:'8888888888',car_brand:'Test Brand',car_model:'Test Model',mfg_year:'2024'}))form.set(k,v);
  for(const field of ['rc','insurance','puc','dl','aadhaar','pan'])form.set(field,new File(['test'],field+'.pdf',{type:'application/pdf'}));
  form.append('vehicle_photos',new File(['test'],'front.jpg',{type:'image/jpeg'}));
  return new Request('https://test.example/api/partner-application',{method:'POST',body:form});
@@ -56,7 +59,7 @@ const values={ 'cust-name':'Test','cust-phone':'9999999999','cust-email':'test@e
  'sd-pdate':'2099-01-01','sd-phour':'9','sd-pampm':'AM','sd-rdate':'2099-01-01','sd-rhour':'10','sd-rampm':'PM'};
 const texts={'sd-review-duration':'13 actual hours / 24 billed hours','sd-review-deliv-mode':'Home Delivery','sd-review-base-fare':'2400','sd-review-deposit':'5000','sd-review-delivery-charge':'100','disp-total-final-fare':'7500'};
 let requests=[],closed=0,shown=[],alerts=[],valid=true;
-const context=vm.createContext({console,Date,Math,crypto,document:{getElementById:id=>({value:values[id],innerText:texts[id]})},
+const context=vm.createContext({mobileOtpReady:Promise.resolve({requireFormOtp:()=>bookingProof}),console,Date,Math,crypto,document:{getElementById:id=>({value:values[id],innerText:texts[id]})},
  validateJourneyAndOpenBooking:()=>valid,validateSelfDriveJourney:()=>valid,updateSDFareReview:()=>{},
  wdFleet:[{name:'Sedan',rates:{local:{extraKm:15},outstationPerKm:15,driverAllowance:300}}],chosenCarName:'Sedan',chosenFareAmount:10000,wdOutstationKm:600,wdOutstationDays:3,currentDeliveryMode:'home',selectedCarObj:{fullName:'Test Car',brand:'Brand',rateHour:'100/hour'},
  createLocalDateTime:(d,h,a)=>new Date(d+'T'+String(h%12+(a==='PM'?12:0)).padStart(2,'0')+':00:00'),formatBookingDateTime:d=>d.toISOString(),

@@ -1,3 +1,4 @@
+import { requireMobileOtp } from '../lib/mobile-otp.mjs';
 import { sendNotifications } from '../lib/notifications.mjs';
 
 // Car With Driver India
@@ -267,6 +268,8 @@ export default async function handler(request) {
     // ----------------------------------------
     // APPLICATION ID
     // ----------------------------------------
+
+    await requireMobileOtp(formData.get('otpProof'), phone, 'partner', new URL(request.url).origin);
 
     const applicationId =
       crypto.randomUUID();
@@ -552,7 +555,7 @@ return jsonResponse({
           error.message ||
           "Unable to submit partner application.",
       },
-      500
+      error.status || 500
     );
   }
 }

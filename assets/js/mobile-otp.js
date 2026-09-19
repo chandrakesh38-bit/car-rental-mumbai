@@ -15,7 +15,12 @@ async function loadSdk(captcha) {
       script.onerror = () => { clearTimeout(timer); script.remove(); reject(Error('Could not load OTP service. Check your connection and retry.')); };
       document.head.append(script);
     });
-    if (!window.getWidgetData) window.initSendOTP({ widgetId: config.widgetId, tokenAuth: config.tokenAuth, exposeMethods: true, captchaRenderId: captcha.id });
+    window.initSendOTP({
+  widgetId: config.widgetId,
+  tokenAuth: config.tokenAuth,
+  exposeMethods: true,
+  captchaRenderId: captcha.id
+});
     for (let i = 0; i < 200; i++) {
       const data = window.getWidgetData?.();
       if (window.sendOtp && window.verifyOtp && data?.otpLength) return data;

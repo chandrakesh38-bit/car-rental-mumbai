@@ -46,9 +46,11 @@ async function initialize() {
     if (state.file?.type.startsWith('image/')) {const img=document.createElement('img');state.url=URL.createObjectURL(state.file);img.src=state.url;img.alt=state.label+' preview';state.preview.append(img);}
     else if (state.file || state.saved) {const card=document.createElement('div');card.className='pdf';card.textContent=state.file?.type==='application/pdf'||state.saved?.mime_type==='application/pdf'?'PDF document ready':'Document uploaded';state.preview.append(card);}
     const file=state.file||state.saved;state.info.textContent=file?`${file.name||file.filename} · ${sizeText(file.size||file.size_bytes)}`:'';
-    state.status.textContent=state.saved?'Uploaded':state.error?'Failed — '+state.error:state.file?'Ready to upload ✓':'Waiting';
+    state.reason.textContent=state.rejectionReason ? 'Re-upload Required: '+state.rejectionReason : '';
+    state.reason.hidden=!state.rejectionReason;
+    state.status.textContent=state.saved?(state.saved.review_status==='approved'?'Approved ✓':'Uploaded — Pending Review'):state.error?'Failed — '+state.error:state.file?'Ready to upload ✓':'Waiting';
     state.status.classList.toggle('error',Boolean(state.error));
-    state.actions.hidden=!state.file||Boolean(state.saved);state.input.disabled=busy||Boolean(state.saved);state.input.hidden=Boolean(state.saved);
+    state.actions.hidden=!state.file||Boolean(state.saved);state.input.disabled=busy||Boolean(state.saved);state.input.hidden=Boolean(state.saved);state.input.labels[0].hidden=Boolean(state.saved);
   }
   for (const[kind,label]of FIELDS) {
     const card=document.createElement('section');card.className='card';
@@ -59,11 +61,12 @@ async function initialize() {
     const preview=document.createElement('div');preview.className='preview';card.append(preview);
     const info=document.createElement('p');info.className='filename';card.append(info);
     const status=document.createElement('p');status.className='status';status.setAttribute('aria-live','polite');card.append(status);
+    const reason=document.createElement('p');reason.className='error';card.append(reason);
     const progress=document.createElement('progress');progress.max=100;progress.value=0;progress.hidden=true;progress.setAttribute('aria-label',label+' upload progress');card.append(progress);
     const actions=document.createElement('div');actions.className='actions';card.append(actions);
     const change=document.createElement('button');change.type='button';change.textContent='Change';change.onclick=()=>{if(!busy)input.click();};actions.append(change);
     const remove=document.createElement('button');remove.type='button';remove.textContent='Remove';actions.append(remove);
-    const state={kind,label,input,preview,info,status,progress,actions,file:null,saved:null,error:null,version:0,percent:0};states.set(kind,state);
+    const state={kind,label,input,preview,info,status,reason,progress,actions,file:null,saved:null,error:null,version:0,percent:0};states.set(kind,state);
     remove.onclick=()=>{if(busy)return;state.version++;state.file=null;state.error=null;input.value='';render(state);};
     input.onchange=async()=>{if(!input.files[0]||busy)return;const version=++state.version;const file=input.files[0];preparing++;submit.disabled=true;state.error=null;state.file=null;render(state);status.textContent='Preparing preview…';try{const ready=await prepareFile(file);if(version===state.version){state.file=ready;}}catch(e){if(version===state.version)state.error=e.message;}finally{preparing--;submit.disabled=busy||preparing>0;if(version===state.version)render(state);}};
     document.getElementById('document-cards').append(card);render(state);
@@ -73,7 +76,7 @@ async function initialize() {
     document.getElementById('overall-progress').value=percent;
     document.getElementById('overall-status').textContent=`${busy?'Uploading':'Waiting'} — ${percent}%`;
   }
-  function done() {form.hidden=true;document.getElementById('success').hidden=false;report('');}
+  function done(status='pending_verification') {form.hidden=true;const success=document.getElementById('success');success.hidden=false;if(status==='verified'){success.querySelector('h2').textContent='Documents Verified';success.querySelector('p').textContent='Our team has verified your documents. This does not confirm your booking; our team will contact you separately.';}else if(status==='rejected'){success.querySelector('h2').textContent='Please Contact Our Team';success.querySelector('p').textContent='Please contact our team about your document review.';}report('');}
   window.addEventListener('beforeunload',e=>{if(busy){e.preventDefault();e.returnValue='';}});
   function upload(url,file,onprogress) {
     return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('PUT',url);xhr.setRequestHeader('Content-Type',file.type);xhr.setRequestHeader('x-upsert','false');xhr.timeout=120000;xhr.upload.onprogress=e=>{if(e.lengthComputable)onprogress(Math.round(e.loaded/e.total*95));};xhr.onload=()=>xhr.status>=200&&xhr.status<300?resolve():reject(Error('Upload failed. Please retry this file.'));xhr.onerror=()=>reject(Error('Network error. Please retry this file.'));xhr.ontimeout=()=>reject(Error('Upload timed out. Please retry this file.'));xhr.send(file);});
@@ -109,7 +112,8 @@ async function initialize() {
   };
   try {
     const result=await api('status');document.getElementById('booking-id').textContent=result.booking_id;
-    for(const file of result.files){const s=states.get(file.kind);if(s){s.saved=file;s.percent=100;render(s);}}
-    if(result.status!=='awaiting_documents')done();else{form.hidden=false;report('Choose each document, check the preview, then click Submit Documents.');}
+    for(const file of result.files){const s=states.get(file.kind);if(s){if(file.review_status==='reupload_required'){s.rejectionReason=file.rejection_reason;s.saved=null;s.percent=0;}else{s.saved=file;s.percent=100;}render(s);}}
+    document.getElementById('alternate-phone').value=result.alternate_phone||'';
+    if(!['awaiting_documents','reupload_required'].includes(result.status))done(result.status);else{form.hidden=false;if(result.status==='reupload_required'){document.querySelector('h1').textContent='Re-upload Documents';report('Replace only the requested documents below. Approved documents remain locked.');}else report('Choose each document, check the preview, then click Submit Documents.');}
   } catch(error){report(error.message,true);}
 }

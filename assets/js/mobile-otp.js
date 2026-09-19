@@ -19,7 +19,13 @@ async function loadSdk(captcha) {
   widgetId: config.widgetId,
   tokenAuth: config.tokenAuth,
   exposeMethods: true,
-  captchaRenderId: captcha.id
+  captchaRenderId: captcha.id,
+  success: (data) => {
+    console.log('MSG91 success:', data);
+  },
+  failure: (error) => {
+    console.error('MSG91 failure:', error);
+  }
 });
     for (let i = 0; i < 200; i++) {
       const data = window.getWidgetData?.();

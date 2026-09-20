@@ -65,26 +65,9 @@ async function reconcile(record) {
   return { ...record, ...patch, razorpay_status: link.status };
 }
 async function handle(request) {
-  if (!['GET','POST','DELETE'].includes(request.method)) return json({success:false,message:'Method not allowed.'},405);
+  if (!['GET','POST'].includes(request.method)) return json({success:false,message:'Method not allowed.'},405);
   try {
     const adminUser = await admin(request);
-    if (request.method === 'DELETE') {
-      const body = await request.json();
-      const bookingId = String(body.booking_id || ''), confirmation = String(body.confirmation || '');
-      if (!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId) || confirmation !== bookingId) return json({success:false,message:'Type the exact Booking ID to confirm deletion.'},400);
-      const bookings = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=booking_id&limit=1');
-      if (!bookings?.length) return json({success:false,message:'Booking not found.'},404);
-      // Remove local payment audit rows first because the FK intentionally
-      // restricts deleting a booking that still has payment records.
-      await db('booking_payments?booking_id=eq.'+encodeURIComponent(bookingId),{method:'DELETE',headers:{Prefer:'return=minimal'}});
-      // Delete the parent next. If another table has a restrictive FK, return
-      // Supabase's safe constraint code/message so the admin UI identifies it
-      // instead of masking the problem as a generic request failure.
-      await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId),{method:'DELETE',headers:{Prefer:'return=minimal'}});
-      const remaining = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=booking_id&limit=1');
-      if (remaining?.length) throw Object.assign(new Error('Booking could not be deleted because related records still exist.'), { status: 409 });
-      return json({success:true});
-    }
     if (request.method === 'GET') {
       const url = new URL(request.url), bookingId = url.searchParams.get('booking_id');
       if (url.searchParams.get('dashboard') === '1') {
@@ -121,6 +104,17 @@ async function handle(request) {
     const body = await request.json();
     const bookingId = String(body.booking_id || ''), action = String(body.action || '');
     if (!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId)) return json({success:false,message:'Invalid booking ID.'},400);
+    if (action === 'delete_booking') {
+      const confirmation = String(body.confirmation || '');
+      if (confirmation !== bookingId) return json({success:false,message:'Type the exact Booking ID to confirm deletion.'},400);
+      const existing = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=booking_id&limit=1');
+      if (!existing?.length) return json({success:false,message:'Booking not found.'},404);
+      await db('booking_payments?booking_id=eq.'+encodeURIComponent(bookingId),{method:'DELETE',headers:{Prefer:'return=minimal'}});
+      await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId),{method:'DELETE',headers:{Prefer:'return=minimal'}});
+      const remaining = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=booking_id&limit=1');
+      if (remaining?.length) return json({success:false,message:'Booking could not be deleted because related records still exist.'},409);
+      return json({success:true});
+    }
     const bookings = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&limit=1');
     const booking = bookings?.[0]; if (!booking) return json({success:false,message:'Booking not found.'},404);
     if (action === 'record_offline') {

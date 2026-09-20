@@ -1080,10 +1080,10 @@
             body.innerHTML='<p class="py-10 text-center text-slate-400">Loading booking...</p>';
             let payments=[];
             try {
-                const { data, error } = await supabaseClient.from('booking_payments').select('*').eq('booking_id', b.booking_id).order('created_at', { ascending: false });
-                if (!error && data) payments = data;
-            } catch (_) {
-                payments = [];
+                const result = await adminApi('/api/admin-payment?booking_id='+encodeURIComponent(b.booking_id));
+                payments = result.payments || [];
+            } catch (error) {
+                console.error('Unable to load payment history:', error);
             }
             const fare=Number(b.total_fare||b.fare_amount||0), paid=Number(b.paid_amount||0), balance=Math.max(0,fare-paid);
             body.innerHTML=`
@@ -1132,7 +1132,8 @@
             try{
                 if(btn){btn.disabled=true;btn.textContent='Generating…';}
                 show('Creating secure Razorpay payment link…');
-                await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'create',booking_id:currentAdminBooking.booking_id,amount,payment_type})});
+                const result = await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'create',booking_id:currentAdminBooking.booking_id,amount,payment_type})});
+                if (!result.payment?.razorpay_payment_link_url) throw new Error('Payment link was created but its URL was not returned.');
                 await renderBookingDetail();
             }catch(e){
                 show(e.message||'Unable to generate payment link.',true);

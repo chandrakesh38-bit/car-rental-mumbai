@@ -123,9 +123,15 @@ async function loadSdk() {
       success: () => {},
       failure: () => {}
     });
-    for (let i = 0; i < 100; i++) {
+    // MSG91 can expose send/verify methods before getWidgetData() finishes
+    // hydrating on a fresh SDK/captcha mount. The methods are the readiness
+    // signal; sendOtp() below can use conservative defaults until widget data
+    // becomes available.
+    for (let i = 0; i < 200; i++) {
       const data = typeof window.getWidgetData === 'function' ? window.getWidgetData() : null;
-      if (typeof window.sendOtp === 'function' && typeof window.verifyOtp === 'function' && data?.otpLength) return data;
+      if (typeof window.sendOtp === 'function' && typeof window.verifyOtp === 'function') {
+        return data || state.settings || { otpLength: 6, retryTime: 30, processes: [] };
+      }
       await pause(100);
     }
     throw Error('OTP service is not ready. Please retry.');

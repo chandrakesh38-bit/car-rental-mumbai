@@ -97,7 +97,7 @@
                         <i class="fa-solid fa-circle-question w-4 text-amber-300"></i> FAQs
                     </button>
                     <button onclick="switchTab('inquiries')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-inquiries">
-                        <i class="fa-solid fa-inbox w-4 text-rose-400"></i> Lead Inquiries
+                        <i class="fa-solid fa-calendar-check w-4 text-rose-400"></i> Bookings
                     </button>
                 </nav>
             </div>
@@ -381,31 +381,37 @@
                 </div>
             </div>
 
-            <!-- SECTION 7: INQUIRIES ARCHIVE -->
+            <!-- SECTION 7: BOOKINGS -->
             <div id="section-inquiries" class="hidden space-y-6">
                 <div>
-                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Booking Leads &amp; Inquiries</h2>
-                    <p class="text-xs text-slate-500 mt-0.5">Archive of incoming customer rental requests.</p>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Bookings</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Booking operations, payment collection and status tracking.</p>
                 </div>
-
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-extrabold tracking-wider">
+                        <table class="w-full text-left text-[11px] whitespace-nowrap">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[9px] font-extrabold tracking-wider">
                                 <tr>
-                                    <th class="py-3.5 px-4">Date</th>
-                                    <th class="py-3.5 px-4">Customer</th>
-                                    <th class="py-3.5 px-4">Service</th>
-                                    <th class="py-3.5 px-4">Vehicle</th>
-                                    <th class="py-3.5 px-4">Fare</th>
-                                    <th class="py-3.5 px-4">Status</th>
+                                    <th class="py-3 px-3">Booking ID</th><th class="py-3 px-3">Date</th><th class="py-3 px-3">Customer</th>
+                                    <th class="py-3 px-3">Service</th><th class="py-3 px-3">Trip Type</th><th class="py-3 px-3">Vehicle</th>
+                                    <th class="py-3 px-3">Route</th><th class="py-3 px-3">Fare</th><th class="py-3 px-3">Paid</th>
+                                    <th class="py-3 px-3">Balance</th><th class="py-3 px-3">Payment Status</th><th class="py-3 px-3">Booking Status</th>
+                                    <th class="py-3 px-3 text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-inquiries-table-body" class="divide-y divide-slate-100">
-                                <!-- Loaded dynamically -->
-                            </tbody>
+                            <tbody id="admin-inquiries-table-body" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <div id="booking-detail-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[70] hidden items-center justify-center p-4">
+                <div class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl max-h-[92vh] overflow-y-auto">
+                    <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                        <div><h3 id="booking-detail-title" class="text-lg font-black text-slate-900">Booking</h3><p class="text-xs text-slate-500">Booking & payment management</p></div>
+                        <button onclick="closeBookingDetail()" class="text-slate-400 hover:text-slate-800 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div id="booking-detail-body" class="p-6"></div>
                 </div>
             </div>
 
@@ -1019,31 +1025,99 @@
             await loadFaqs();
         }
 
+        let currentAdminBooking = null;
+
+        function money(value) { return '₹' + Number(value || 0).toLocaleString('en-IN'); }
+        function statusBadge(value) {
+            const v = String(value || 'pending').toLowerCase();
+            const cls = v === 'paid' || v === 'confirmed' || v === 'completed' ? 'bg-emerald-100 text-emerald-800' : v === 'cancelled' || v === 'failed' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-900';
+            return '<span class="px-2 py-1 rounded-full text-[9px] font-bold '+cls+'">'+escapeAdminHtml(v.replaceAll('_',' '))+'</span>';
+        }
+
         async function loadInquiries() {
             const tbody = document.getElementById('admin-inquiries-table-body');
+            tbody.innerHTML = '<tr><td colspan="13" class="py-8 text-center text-slate-400">Loading bookings...</td></tr>';
+            const { data: inqs, error } = await supabaseClient.from('inquiries').select('*').not('booking_id','is',null).order('created_at', { ascending: false }).limit(200);
+            if (error) { tbody.innerHTML = '<tr><td colspan="13" class="py-6 text-center text-rose-600">Unable to load bookings: '+escapeAdminHtml(error.message)+'</td></tr>'; return; }
+            if (!inqs?.length) { tbody.innerHTML = '<tr><td colspan="13" class="py-8 text-center text-slate-400">No structured bookings yet. New verified bookings will appear here.</td></tr>'; return; }
             tbody.innerHTML = '';
-            const { data: inqs, error } = await supabaseClient.from('inquiries').select('*').order('created_at', { ascending: false }).limit(100);
-            if (error) {
-                tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-rose-600">Unable to load leads: '+escapeAdminHtml(error.message)+'</td></tr>';
-                return;
-            }
-            if (!inqs || inqs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">No leads recorded yet.</td></tr>';
-                return;
-            }
             inqs.forEach(i => {
-                const tr = document.createElement('tr');
+                const fare = Number(i.total_fare || i.fare_amount || 0), paid = Number(i.paid_amount || 0), balance = Math.max(0,fare-paid);
+                const tr = document.createElement('tr'); tr.className='hover:bg-slate-50';
                 tr.innerHTML = `
-                    <td class="py-3 px-4 text-slate-500">${new Date(i.created_at).toLocaleDateString()}</td>
-                    <td class="py-3 px-4 font-bold text-slate-800">${i.customer_name}<br><span class="font-normal text-slate-400">${i.customer_phone}</span></td>
-                    <td class="py-3 px-4">${i.service_type}</td>
-                    <td class="py-3 px-4 font-semibold text-indigo-950">${i.car_name}</td>
-                    <td class="py-3 px-4 font-bold text-emerald-700">₹${Number(i.fare_amount || i.total_fare || 0).toLocaleString('en-IN')}</td>
-                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900">${i.inquiry_status || 'Received'}</span></td>
-                `;
+                    <td class="py-3 px-3 font-bold text-indigo-950">${escapeAdminHtml(i.booking_id)}</td>
+                    <td class="py-3 px-3 text-slate-500">${new Date(i.created_at).toLocaleDateString('en-IN')}</td>
+                    <td class="py-3 px-3 font-bold">${escapeAdminHtml(i.customer_name)}<br><span class="font-normal text-slate-400">${escapeAdminHtml(i.customer_phone)}</span></td>
+                    <td class="py-3 px-3">${escapeAdminHtml(i.service_type || '')}</td><td class="py-3 px-3">${escapeAdminHtml(i.trip_type || '')}</td>
+                    <td class="py-3 px-3 font-semibold">${escapeAdminHtml(i.car_name || '')}</td><td class="py-3 px-3 max-w-[220px] truncate" title="${escapeAdminHtml(i.route || '')}">${escapeAdminHtml(i.route || '—')}</td>
+                    <td class="py-3 px-3 font-bold">${money(fare)}</td><td class="py-3 px-3 text-emerald-700 font-bold">${money(paid)}</td><td class="py-3 px-3 font-bold">${money(balance)}</td>
+                    <td class="py-3 px-3">${statusBadge(i.payment_status)}</td><td class="py-3 px-3">${statusBadge(i.booking_status)}</td>
+                    <td class="py-3 px-3 text-right"><button class="bg-indigo-950 text-white px-3 py-1.5 rounded-lg font-bold" data-view-booking>View</button></td>`;
+                tr.querySelector('[data-view-booking]').onclick=()=>openBookingDetail(i);
                 tbody.appendChild(tr);
             });
         }
+
+        async function adminApi(path, options={}) {
+            const { data:{ session } } = await supabaseClient.auth.getSession();
+            if (!session?.access_token) throw new Error('Admin session expired. Please log in again.');
+            const response = await fetch(path,{...options,headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,...(options.headers||{})}});
+            const data = await response.json().catch(()=>({}));
+            if (!response.ok || !data.success) throw new Error(data.message || 'Request failed.');
+            return data;
+        }
+
+        async function openBookingDetail(booking) {
+            currentAdminBooking = booking;
+            document.getElementById('booking-detail-title').textContent = booking.booking_id;
+            const modal=document.getElementById('booking-detail-modal'); modal.classList.remove('hidden'); modal.classList.add('flex');
+            await renderBookingDetail();
+        }
+        function closeBookingDetail(){ const m=document.getElementById('booking-detail-modal');m.classList.add('hidden');m.classList.remove('flex');currentAdminBooking=null; }
+
+        async function renderBookingDetail() {
+            const b=currentAdminBooking, body=document.getElementById('booking-detail-body'); if(!b)return;
+            body.innerHTML='<p class="py-10 text-center text-slate-400">Loading booking...</p>';
+            let payments=[]; try { payments=(await adminApi('/api/admin-payment?booking_id='+encodeURIComponent(b.booking_id))).payments||[]; } catch(e) { body.innerHTML='<p class="text-rose-600">'+escapeAdminHtml(e.message)+'</p>'; return; }
+            const fare=Number(b.total_fare||b.fare_amount||0), paid=Number(b.paid_amount||0), balance=Math.max(0,fare-paid);
+            body.innerHTML=`
+                <div class="grid md:grid-cols-2 gap-4 text-xs">
+                    <div class="border rounded-2xl p-4 space-y-2"><h4 class="font-black text-sm">Customer</h4><p><b>${escapeAdminHtml(b.customer_name)}</b></p><p>${escapeAdminHtml(b.customer_phone)}</p><p>${escapeAdminHtml(b.customer_email||'—')}</p></div>
+                    <div class="border rounded-2xl p-4 space-y-2"><h4 class="font-black text-sm">Trip</h4><p>${escapeAdminHtml(b.service_type||'')} • ${escapeAdminHtml(b.trip_type||'')}</p><p><b>${escapeAdminHtml(b.car_name||'')}</b></p><p>${escapeAdminHtml(b.route||'—')}</p></div>
+                </div>
+                <div class="mt-4 border rounded-2xl p-4">
+                    <div class="flex flex-wrap gap-4 items-end">
+                        <label class="text-xs font-bold">Booking Status<select id="booking-status-select" class="block mt-1 border rounded-lg px-3 py-2"><option value="received">Received</option><option value="availability_confirmed">Availability Confirmed</option><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
+                        <button onclick="saveBookingStatus()" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold">Save Status</button>
+                    </div>
+                </div>
+                <div class="mt-4 bg-slate-50 border rounded-2xl p-4">
+                    <h4 class="font-black text-sm mb-3">Payment</h4>
+                    <div class="grid grid-cols-3 gap-3 mb-4"><div><span class="text-[10px] text-slate-500">TOTAL FARE</span><b class="block">${money(fare)}</b></div><div><span class="text-[10px] text-slate-500">PAID</span><b class="block text-emerald-700">${money(paid)}</b></div><div><span class="text-[10px] text-slate-500">BALANCE</span><b class="block">${money(balance)}</b></div></div>
+                    ${balance>0 ? `<div class="flex flex-wrap gap-2 items-end border-t pt-4">
+                        <label class="text-xs font-bold">Amount<input id="payment-amount" type="number" min="1" max="${balance}" class="block mt-1 border rounded-lg px-3 py-2 w-36" placeholder="₹"></label>
+                        <label class="text-xs font-bold">Payment Type<select id="payment-type" class="block mt-1 border rounded-lg px-3 py-2"><option value="advance">Advance</option><option value="full">Full Payment</option><option value="balance">Balance Payment</option></select></label>
+                        <button onclick="generatePaymentLink()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Generate Payment Link</button>
+                    </div>` : '<p class="text-emerald-700 font-bold">Payment complete ✓</p>'}
+                </div>
+                <div class="mt-4"><h4 class="font-black text-sm mb-2">Payment History</h4><div class="space-y-2">${payments.length?payments.map(paymentCard).join(''):'<p class="text-xs text-slate-400">No payment requests yet.</p>'}</div></div>
+                <details class="mt-4 border rounded-xl p-3"><summary class="text-xs font-bold cursor-pointer">Full booking details</summary><pre class="mt-3 text-[11px] whitespace-pre-wrap text-slate-600">${escapeAdminHtml(b.booking_details||'No details')}</pre></details>`;
+            document.getElementById('booking-status-select').value=b.booking_status||'received';
+        }
+
+        function paymentCard(p) {
+            const link=escapeAdminHtml(p.razorpay_payment_link_url||'');
+            return `<div class="border rounded-xl p-3 text-xs"><div class="flex justify-between gap-3"><div><b>${money(p.amount)} • ${escapeAdminHtml(p.payment_type)}</b><div class="mt-1">${statusBadge(p.status)}</div></div><div class="text-right text-[10px] text-slate-400">${new Date(p.created_at).toLocaleString('en-IN')}</div></div>
+            <div class="mt-3 flex flex-wrap gap-2">${p.status==='pending'?`<button onclick="copyPaymentLink('${link}')" class="border px-2 py-1 rounded font-bold">Copy Link</button><button onclick="sharePaymentWhatsApp('${link}',${Number(p.amount)})" class="border px-2 py-1 rounded font-bold text-emerald-700">WhatsApp</button><button onclick="verifyPayment('${p.id}')" class="border px-2 py-1 rounded font-bold text-indigo-700">Verify Payment</button><button onclick="cancelPayment('${p.id}')" class="border px-2 py-1 rounded font-bold text-rose-700">Cancel Link</button>`:''}${p.razorpay_payment_id?'<span class="text-slate-500">Payment ID: '+escapeAdminHtml(p.razorpay_payment_id)+'</span>':''}</div></div>`;
+        }
+
+        async function saveBookingStatus(){ const value=document.getElementById('booking-status-select').value; const {error}=await supabaseClient.from('inquiries').update({booking_status:value,updated_at:new Date().toISOString()}).eq('booking_id',currentAdminBooking.booking_id); if(error)return alert(error.message); currentAdminBooking.booking_status=value; await loadInquiries(); await renderBookingDetail(); }
+        async function generatePaymentLink(){ try{const amount=Number(document.getElementById('payment-amount').value),payment_type=document.getElementById('payment-type').value; await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'create',booking_id:currentAdminBooking.booking_id,amount,payment_type})}); await renderBookingDetail();}catch(e){alert(e.message)}}
+        async function verifyPayment(id){try{await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'verify',booking_id:currentAdminBooking.booking_id,payment_id:id})});const {data}=await supabaseClient.from('inquiries').select('*').eq('booking_id',currentAdminBooking.booking_id).single();if(data)currentAdminBooking=data;await loadInquiries();await renderBookingDetail();}catch(e){alert(e.message)}}
+        async function cancelPayment(id){if(!confirm('Cancel this payment link?'))return;try{await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'cancel',booking_id:currentAdminBooking.booking_id,payment_id:id})});await renderBookingDetail();}catch(e){alert(e.message)}}
+        async function copyPaymentLink(link){try{await navigator.clipboard.writeText(link);alert('Payment link copied.');}catch{prompt('Copy payment link:',link)}}
+        function sharePaymentWhatsApp(link,amount){const b=currentAdminBooking,phone=String(b.customer_phone||'').replace(/\D/g,'').replace(/^0+/,'');const mobile=phone.length===10?'91'+phone:phone;const msg=`Hello ${b.customer_name},\n\nPlease find the payment link for your booking with Car With Driver India.\n\nBooking ID: ${b.booking_id}\nTotal Booking Amount: ${money(b.total_fare)}\nAmount to Pay: ${money(amount)}\n\nPay Now: ${link}\n\nThank you,\nCar With Driver India`;window.open('https://wa.me/'+mobile+'?text='+encodeURIComponent(msg),'_blank','noopener');}
+
 
         // Initialize state on page load
         window.addEventListener('DOMContentLoaded', () => {

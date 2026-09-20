@@ -652,17 +652,31 @@ function onPickupDateChange() {
             renderWDFleet();
         }
 
+        function currentDriverNightAllowance() {
+            let hourId = '';
+            let ampmId = '';
+            if (currentWDSubTab === 'local') { hourId = 'wd-local-hour'; ampmId = 'wd-local-ampm'; }
+            else if (currentWDSubTab === 'outstation') { hourId = 'wd-out-phour'; ampmId = 'wd-out-pampm'; }
+            else if (currentWDSubTab === 'airport') { hourId = 'wd-airport-hour'; ampmId = 'wd-airport-ampm'; }
+            const hourEl = document.getElementById(hourId);
+            const ampmEl = document.getElementById(ampmId);
+            if (!hourEl || !ampmEl) return 0;
+            let hour = Number(hourEl.value) % 12;
+            if (ampmEl.value === 'PM') hour += 12;
+            return (hour >= 22 || hour < 6) ? livePricingRules.driverNightAllowance : 0;
+        }
+
         function getCarCost(car) {
             if (currentWDSubTab === 'local') {
                 const pkg = document.getElementById('wd-local-package').value;
-                return car.rates.local[pkg] || 3000;
+                return (car.rates.local[pkg] || 3000) + currentDriverNightAllowance();
             } else if (currentWDSubTab === 'outstation') {
                 const billableKm = Math.max(wdOutstationKm, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                return (billableKm * car.rates.outstationPerKm) + (wdOutstationDays * car.rates.driverAllowance);
+                return (billableKm * car.rates.outstationPerKm) + (wdOutstationDays * car.rates.driverAllowance) + currentDriverNightAllowance();
             } else if (currentWDSubTab === 'airport') {
                 const termInput = document.getElementById('wd-airport-terminal');
                 const term = termInput ? termInput.value : 't2';
-                return car.rates.airport[term] || car.rates.airport.t2;
+                return (car.rates.airport[term] || car.rates.airport.t2) + currentDriverNightAllowance();
             }
             return 3000;
         }

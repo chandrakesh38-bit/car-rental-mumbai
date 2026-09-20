@@ -250,7 +250,6 @@ export async function requestFormOtp(form, phoneId, purpose) {
   state.retryAt = 0;
   modal.querySelector('[data-phone]').textContent = '+' + mobile;
   modal.querySelector('[data-digits]').replaceChildren();
-  modal.querySelector('[data-captcha]').replaceChildren();
   message('Sending OTP…');
   modal.classList.remove('hidden');
   document.body.classList.add('otp-modal-open');

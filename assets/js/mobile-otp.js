@@ -119,7 +119,9 @@ async function loadSdk() {
       widgetId: config.widgetId,
       tokenAuth: config.tokenAuth,
       exposeMethods: true,
-      captchaRenderId: captcha.id
+      captchaRenderId: captcha.id,
+      success: () => {},
+      failure: () => {}
     });
     for (let i = 0; i < 100; i++) {
       const data = typeof window.getWidgetData === 'function' ? window.getWidgetData() : null;

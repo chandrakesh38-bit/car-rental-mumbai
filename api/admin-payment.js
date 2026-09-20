@@ -27,7 +27,15 @@ async function admin(request) {
 async function db(path, options = {}) {
   const r = await fetch(base() + '/rest/v1/' + path, { ...options, headers: { apikey: serviceKey(), Authorization: 'Bearer ' + serviceKey(), 'Content-Type': 'application/json', ...(options.headers || {}) } });
   const body = await r.text();
-  if (!r.ok) throw Object.assign(new Error('Database operation failed.'), { status: 503, detail: body });
+  if (!r.ok) {
+    let safe = 'Database operation failed.';
+    try {
+      const parsed = JSON.parse(body);
+      if (parsed?.code) safe += ' [' + String(parsed.code).slice(0,20) + ']';
+      if (parsed?.message) safe += ' ' + String(parsed.message).slice(0,240);
+    } catch {}
+    throw Object.assign(new Error(safe), { status: 503 });
+  }
   return body ? JSON.parse(body) : null;
 }
 async function razor(path, options = {}) {
@@ -69,11 +77,9 @@ async function handle(request) {
       // Remove local payment audit rows first because the FK intentionally
       // restricts deleting a booking that still has payment records.
       await db('booking_payments?booking_id=eq.'+encodeURIComponent(bookingId),{method:'DELETE',headers:{Prefer:'return=minimal'}});
-      // The inquiries table may have other child rows (for example self-drive
-      // verification records) with restrictive foreign keys. Clear those
-      // known booking-linked records before deleting the parent booking.
-      try { await db('self_drive_verifications?booking_id=eq.'+encodeURIComponent(bookingId),{method:'DELETE',headers:{Prefer:'return=minimal'}}); } catch {}
-      try { await db('self_drive_document_files?booking_id=eq.'+encodeURIComponent(bookingId),{method:'DELETE',headers:{Prefer:'return=minimal'}}); } catch {}
+      // Delete the parent next. If another table has a restrictive FK, return
+      // Supabase's safe constraint code/message so the admin UI identifies it
+      // instead of masking the problem as a generic request failure.
       await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId),{method:'DELETE',headers:{Prefer:'return=minimal'}});
       const remaining = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=booking_id&limit=1');
       if (remaining?.length) throw Object.assign(new Error('Booking could not be deleted because related records still exist.'), { status: 409 });

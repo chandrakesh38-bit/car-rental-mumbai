@@ -15,7 +15,7 @@ export default async function handler(request) {
   try {
     const raw = await request.text();
     if (raw.length > 10000) return json({ success: false, message: 'Request too large.' }, 413);
-    const { accessToken, phone, purpose } = JSON.parse(raw);
-    return json({ success: true, ...await verifyAccessToken(accessToken, phone, purpose, origin) });
+    const { accessToken, phone, purpose, reqId } = JSON.parse(raw);
+    return json({ success: true, ...await verifyAccessToken(accessToken, phone, purpose, origin, reqId) });
   } catch (error) { return json({ success: false, message: error.status ? error.message : 'Unable to verify OTP. Please retry.' }, error.status || 400); }
 }

@@ -9,7 +9,11 @@ const razorAuth = () => {
 async function admin(request) {
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
   if (!token || !base() || !serviceKey()) throw Object.assign(new Error('Admin authentication required.'), { status: 401 });
-  const r = await fetch(base() + '/auth/v1/user', { headers: { apikey: serviceKey(), Authorization: 'Bearer ' + token } });
+  // Validate the exact Supabase access token from the signed-in admin session.
+  // Use the project's publishable/anon key for Auth validation; the service
+  // role remains server-only and is used only for subsequent DB operations.
+  const publicKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz';
+  const r = await fetch(base() + '/auth/v1/user', { headers: { apikey: publicKey, Authorization: 'Bearer ' + token } });
   if (!r.ok) throw Object.assign(new Error('Admin session expired.'), { status: 401 });
   return r.json();
 }

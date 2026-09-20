@@ -15,7 +15,14 @@ async function admin(request) {
   const publicKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz';
   const r = await fetch(base() + '/auth/v1/user', { headers: { apikey: publicKey, Authorization: 'Bearer ' + token } });
   if (!r.ok) throw Object.assign(new Error('Admin session expired.'), { status: 401 });
-  return r.json();
+  const user = await r.json();
+  // Authorization is separate from authentication: only explicitly allowed
+  // admin emails may use payment-management APIs.
+  const allowed = String(process.env.ADMIN_EMAILS || '').split(',').map(v => v.trim().toLowerCase()).filter(Boolean);
+  if (!allowed.length) throw Object.assign(new Error('Admin allowlist is not configured.'), { status: 503 });
+  const email = String(user?.email || '').trim().toLowerCase();
+  if (!email || !allowed.includes(email)) throw Object.assign(new Error('Admin access denied.'), { status: 403 });
+  return user;
 }
 async function db(path, options = {}) {
   const r = await fetch(base() + '/rest/v1/' + path, { ...options, headers: { apikey: serviceKey(), Authorization: 'Bearer ' + serviceKey(), 'Content-Type': 'application/json', ...(options.headers || {}) } });

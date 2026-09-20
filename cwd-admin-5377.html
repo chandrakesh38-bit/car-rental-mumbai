@@ -1078,7 +1078,7 @@
         async function renderBookingDetail() {
             const b=currentAdminBooking, body=document.getElementById('booking-detail-body'); if(!b)return;
             body.innerHTML='<p class="py-10 text-center text-slate-400">Loading booking...</p>';
-            let payments=[];
+            let payments=[], paymentLoadError='';
             try {
                 const result = await adminApi('/api/admin-payment?booking_id='+encodeURIComponent(b.booking_id));
                 payments = result.payments || [];
@@ -1091,6 +1091,7 @@
                 }
             } catch (error) {
                 console.error('Unable to load payment history:', error);
+                paymentLoadError = error?.message || 'Unable to load payment history.';
             }
             const fare=Number(b.total_fare||b.fare_amount||0), paid=Number(b.paid_amount||0), balance=Math.max(0,fare-paid);
             body.innerHTML=`
@@ -1114,7 +1115,7 @@
                         <p id="payment-action-message" class="w-full text-xs font-semibold hidden"></p>
                     </div>` : '<p class="text-emerald-700 font-bold">Payment complete ✓</p>'}
                 </div>
-                <div class="mt-4"><h4 class="font-black text-sm mb-2">Payment History</h4><div class="space-y-2">${payments.length?payments.map(paymentCard).join(''):'<p class="text-xs text-slate-400">No payment requests yet.</p>'}</div></div>
+                <div class="mt-4"><h4 class="font-black text-sm mb-2">Payment History</h4><div class="space-y-2">${paymentLoadError?'<p class="text-xs font-semibold text-rose-600">Payment history could not load: '+escapeAdminHtml(paymentLoadError)+'</p>':payments.length?payments.map(paymentCard).join(''):'<p class="text-xs text-slate-400">No payment requests yet.</p>'}</div></div>
                 <details class="mt-4 border rounded-xl p-3"><summary class="text-xs font-bold cursor-pointer">Full booking details</summary><pre class="mt-3 text-[11px] whitespace-pre-wrap text-slate-600">${escapeAdminHtml(b.booking_details||'No details')}</pre></details>`;
             document.getElementById('booking-status-select').value=b.booking_status||'received';
             const paymentBtn = document.getElementById('generate-payment-link-btn');

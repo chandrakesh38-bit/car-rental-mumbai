@@ -222,7 +222,7 @@ async function verifyAndFinish() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: AbortSignal.timeout(20000),
-      body: JSON.stringify({ accessToken, phone: state.mobile, purpose: state.purpose })
+      body: JSON.stringify({ accessToken, phone: state.mobile, purpose: state.purpose, reqId: state.reqId })
     });
     const verified = await response.json();
     if (!response.ok || !verified.success) throw Error(verified.message || 'Incorrect or expired OTP.');

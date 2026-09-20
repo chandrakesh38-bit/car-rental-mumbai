@@ -20,7 +20,7 @@ async function sync(bookingId){
   const fare=Number(bs?.[0]?.total_fare||0),status=paid<=0?'pending':paid>=fare&&fare>0?'paid':'partially_paid';
   await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({paid_amount:paid,payment_status:status,updated_at:new Date().toISOString()})});
 }
-export default async function handler(request){
+async function handle(request){
   if(request.method!=='POST')return json({ok:false},405);
   try{
     const secret=process.env.RAZORPAY_WEBHOOK_SECRET;if(!secret)return json({ok:false},503);
@@ -39,3 +39,5 @@ export default async function handler(request){
     return json({ok:true});
   }catch{return json({ok:false},500);}
 }
+
+export function POST(request){ return handle(request); }

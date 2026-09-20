@@ -56,7 +56,29 @@ async function handle(request) {
     if (request.method === 'GET') {
       const url = new URL(request.url), bookingId = url.searchParams.get('booking_id');
       if (!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId || '')) return json({success:false,message:'Invalid booking ID.'},400);
-      const rows = await db('booking_payments?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&order=created_at.desc');
+      let rows = await db('booking_payments?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&order=created_at.desc');
+      // Webhooks remain primary. If one is delayed/missed, reconcile pending
+      // requests against Razorpay whenever the admin opens/refreshed a booking.
+      // Only Razorpay's server-side API can promote a request to paid.
+      let changed = false;
+      const reconciled = [];
+      for (const row of (rows || [])) {
+        if (row.status === 'pending' && row.razorpay_payment_link_id) {
+          try {
+            const fresh = await reconcile(row);
+            reconciled.push(fresh);
+            if (fresh.status !== row.status) changed = true;
+          } catch {
+            // Do not block payment history if Razorpay is temporarily unavailable.
+            reconciled.push(row);
+          }
+        } else reconciled.push(row);
+      }
+      if (changed) {
+        rows = await db('booking_payments?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&order=created_at.desc');
+      } else {
+        rows = reconciled;
+      }
       return json({success:true,payments:rows || []});
     }
     const body = await request.json();

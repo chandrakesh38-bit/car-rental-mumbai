@@ -254,46 +254,46 @@ const mumbaiMetroLocations = [
         ];
 
 
-        function normalizeRateCarName(value) {
-            return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-        }
-
-        function matchWithDriverCar(rate) {
-            const dbName = normalizeRateCarName(rate.full_name);
-            return wdFleet.find(car => {
-                const siteName = normalizeRateCarName(car.name);
-                if (dbName === siteName) return true;
-                if (/dzire|aura|sedan/.test(dbName) && /dzire|aura|sedan/.test(siteName)) return true;
-                if (/punch|brezza|compact suv/.test(dbName) && /punch|brezza|compact suv/.test(siteName)) return true;
-                if (/ertiga/.test(dbName) && /ertiga/.test(siteName)) return true;
-                if (/carens/.test(dbName) && /carens/.test(siteName)) return true;
-                if (/crysta/.test(dbName) && /crysta/.test(siteName)) return true;
-                if (/innova/.test(dbName) && !/crysta/.test(dbName) && /innova/.test(siteName) && !/crysta/.test(siteName)) return true;
-                return false;
-            });
+        function withDriverPublicName(row) {
+            const name = String(row.full_name || '').trim();
+            if (String(row.segment || '').toLowerCase() === 'sedan' && /dzire|aura/i.test(name)) return 'Sedan (Dzire / Aura)';
+            return name;
         }
 
         async function loadWithDriverRatesPublic() {
             if (!supabasePublic) return;
-            const { data, error } = await supabasePublic.from('with_driver_rates').select('*');
+            const { data, error } = await supabasePublic.from('with_driver_rates').select('*').eq('is_active', true).order('display_order', { ascending: true }).order('full_name', { ascending: true });
             if (error || !data?.length) return;
-            data.forEach(rate => {
-                const car = matchWithDriverCar(rate);
-                if (!car) return;
-                const local8 = Number(rate.local_pkg_8hr_80km);
-                const extraHour = Number(rate.local_extra_hour_rate);
-                const extraKm = Number(rate.local_extra_km_rate);
-                const outstation = Number(rate.outstation_rate_per_km);
-                const allowance = Number(rate.driver_allowance_per_day);
-                if (Number.isFinite(local8)) car.rates.local['8hr_80km'] = local8;
-                if (Number.isFinite(extraHour)) {
-                    car.rates.local['10hr_100km'] = local8 + (extraHour * 2);
-                    car.rates.local['12hr_120km'] = local8 + (extraHour * 4);
-                }
-                if (Number.isFinite(extraKm)) car.rates.local.extraKm = extraKm;
-                if (Number.isFinite(outstation)) car.rates.outstationPerKm = outstation;
-                if (Number.isFinite(allowance)) car.rates.driverAllowance = allowance;
-            });
+            const seen = new Set();
+            wdFleet = data.map(row => {
+                const name = withDriverPublicName(row);
+                const key = name.toLowerCase();
+                if (seen.has(key)) return null;
+                seen.add(key);
+                const local8 = Number(row.local_pkg_8hr_80km) || 0;
+                const extraHour = Number(row.local_extra_hour_rate) || 0;
+                return {
+                    name,
+                    category: row.segment || 'With Driver',
+                    seats: `${Number(row.seating_capacity) || 4}+1`,
+                    bags: `${Number(row.bag_capacity) || 0} Bags`,
+                    rates: {
+                        local: {
+                            '8hr_80km': local8,
+                            '10hr_100km': local8 + (extraHour * 2),
+                            '12hr_120km': local8 + (extraHour * 4),
+                            extraKm: Number(row.local_extra_km_rate) || 0
+                        },
+                        outstationPerKm: Number(row.outstation_rate_per_km) || 0,
+                        driverAllowance: Number(row.driver_allowance_per_day) || 0,
+                        airport: {
+                            t1: Number(row.airport_t1_rate) || 0,
+                            t2: Number(row.airport_t2_rate) || 0,
+                            nmia: Number(row.airport_nmia_rate) || 0
+                        }
+                    }
+                };
+            }).filter(Boolean);
             if (document.getElementById('fleet-container')) renderWDFleet();
         }
 

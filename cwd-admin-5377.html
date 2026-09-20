@@ -1082,6 +1082,13 @@
             try {
                 const result = await adminApi('/api/admin-payment?booking_id='+encodeURIComponent(b.booking_id));
                 payments = result.payments || [];
+                // Reconciliation may have updated the booking totals server-side.
+                // Refresh this booking so the summary uses the same fresh data.
+                const { data: freshBooking } = await supabaseClient.from('inquiries').select('*').eq('booking_id', b.booking_id).single();
+                if (freshBooking) {
+                    currentAdminBooking = freshBooking;
+                    Object.assign(b, freshBooking);
+                }
             } catch (error) {
                 console.error('Unable to load payment history:', error);
             }

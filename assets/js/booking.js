@@ -4,6 +4,69 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
         const SUPABASE_ANON_KEY = "sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz";
         const supabasePublic = (window.supabase && typeof window.supabase.createClient === 'function') ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+        // Public pricing is database-backed so CWD Admin changes are reflected without code deploys.
+        const livePricingRules = {
+            baseDeliveryCharge: 500,
+            extraDeliveryChargePerKm: 25,
+            freeThresholdKm: 25,
+            driverNightAllowance: 500,
+            minimumOutstationKmPerDay: 300,
+        };
+
+        function pricingRuleKey(name) {
+            const n = String(name || '').toLowerCase();
+            if (n.includes('base') && n.includes('delivery')) return 'baseDeliveryCharge';
+            if (n.includes('extra') && n.includes('delivery')) return 'extraDeliveryChargePerKm';
+            if (n.includes('threshold')) return 'freeThresholdKm';
+            if (n.includes('night') && n.includes('allowance')) return 'driverNightAllowance';
+            if (n.includes('minimum') && n.includes('outstation')) return 'minimumOutstationKmPerDay';
+            return null;
+        }
+
+        async function loadPublicPricingRules() {
+            if (!supabasePublic) return;
+            const { data, error } = await supabasePublic.from('pricing_rules').select('rule_name,rule_value');
+            if (error || !data) return;
+            data.forEach(rule => {
+                const key = pricingRuleKey(rule.rule_name);
+                const value = Number(rule.rule_value);
+                if (key && Number.isFinite(value) && value >= 0) livePricingRules[key] = value;
+            });
+            if (document.getElementById('booking-widget')) {
+                calculateDriverFare();
+                if (selectedCarObj) updateSDFareReview();
+            }
+        }
+
+        async function loadPublicFaqs() {
+            const accordion = document.getElementById('faq-accordion');
+            if (!accordion || !supabasePublic) return;
+            const { data, error } = await supabasePublic.from('faqs').select('id,question,answer,display_order,is_active').eq('is_active', true).order('display_order', { ascending: true });
+            if (error || !data) return;
+            accordion.innerHTML = '';
+            data.forEach((faq, index) => {
+                const item = document.createElement('div');
+                item.className = (index >= 3 ? 'hidden faq-more ' : '') + 'bg-white border border-slate-200 rounded-xl p-4 shadow-sm';
+                const heading = document.createElement('h4');
+                heading.className = 'font-bold text-sm text-slate-900 mb-1.5 flex items-center gap-2';
+                const icon = document.createElement('i');
+                icon.className = 'fa-solid fa-circle-question text-indigo-600';
+                heading.append(icon, document.createTextNode(' ' + faq.question));
+                const answer = document.createElement('p');
+                answer.className = 'text-xs text-slate-600 leading-relaxed pl-5';
+                answer.textContent = faq.answer;
+                item.append(heading, answer);
+                accordion.appendChild(item);
+            });
+            const toggle = document.getElementById('faq-toggle-btn');
+            if (toggle) toggle.classList.toggle('hidden', data.length <= 3);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPublicPricingRules();
+            loadPublicFaqs();
+        });
+
 let mumbaiPlaces = [];
 
         const destinationCities = [
@@ -583,7 +646,7 @@ function onPickupDateChange() {
                     const diffDays = Math.max(1, Math.ceil((rDT - pDT) / (1000 * 60 * 60 * 24)) + 1);
                     wdOutstationDays = diffDays;
                     document.getElementById('wd-metric-days').innerText = wdOutstationDays;
-                    document.getElementById('wd-metric-billable-km').innerText = Math.max(wdOutstationKm, wdOutstationDays * 300);
+                    document.getElementById('wd-metric-billable-km').innerText = Math.max(wdOutstationKm, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
                 }
             }
             renderWDFleet();
@@ -594,7 +657,7 @@ function onPickupDateChange() {
                 const pkg = document.getElementById('wd-local-package').value;
                 return car.rates.local[pkg] || 3000;
             } else if (currentWDSubTab === 'outstation') {
-                const billableKm = Math.max(wdOutstationKm, wdOutstationDays * 300);
+                const billableKm = Math.max(wdOutstationKm, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
                 return (billableKm * car.rates.outstationPerKm) + (wdOutstationDays * car.rates.driverAllowance);
             } else if (currentWDSubTab === 'airport') {
                 const termInput = document.getElementById('wd-airport-terminal');
@@ -626,7 +689,7 @@ function onPickupDateChange() {
                         hrsIncludedText = "10 Hours included";
                     }
                 } else if (currentWDSubTab === 'outstation') {
-                    const billableKm = Math.max(wdOutstationKm, wdOutstationDays * 300);
+                    const billableKm = Math.max(wdOutstationKm, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
                     kmIncludedText = `${billableKm} KM included`;
                     hrsIncludedText = `${wdOutstationDays * 24} Hours (${wdOutstationDays} Day) included`;
                 } else if (currentWDSubTab === 'airport') {
@@ -1110,17 +1173,14 @@ function onPickupDateChange() {
             const baseFare = billedRentalHours * selectedCarObj.rateVal;
             const deposit = selectedCarObj.depositVal;
             
-            let deliveryCharge = 500;
+            let deliveryCharge = livePricingRules.baseDeliveryCharge;
             if (currentDeliveryMode === 'home') {
                 const locInput = document.getElementById('sd-delivery-location-input').value.trim().toLowerCase();
                 const found = mumbaiMetroLocations.find(l => l.name.toLowerCase() === locInput);
                 let oneWayKm = found ? found.km : 10;
                 let totalDeliveryKm = oneWayKm * 2;
-                if (totalDeliveryKm <= 20) {
-                    deliveryCharge = 500;
-                } else {
-                    deliveryCharge = totalDeliveryKm * 25;
-                }
+                deliveryCharge = livePricingRules.baseDeliveryCharge +
+                    Math.max(0, totalDeliveryKm - livePricingRules.freeThresholdKm) * livePricingRules.extraDeliveryChargePerKm;
                 document.getElementById('sd-review-delivery-charge-row').style.display = 'flex';
                 document.getElementById('sd-review-delivery-charge').innerText = `₹${deliveryCharge.toLocaleString('en-IN')}`;
                 document.getElementById('sd-review-deliv-mode').innerText = 'Home Delivery';
@@ -1368,7 +1428,7 @@ async function handleBookingSubmit(e) {
 
         const billableKm = Math.max(
             wdOutstationKm,
-            wdOutstationDays * 300
+            wdOutstationDays * livePricingRules.minimumOutstationKmPerDay
         );
 
 

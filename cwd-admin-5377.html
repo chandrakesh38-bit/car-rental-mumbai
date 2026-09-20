@@ -319,6 +319,17 @@
                     <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">FAQ Manager</h2>
                     <p class="text-xs text-slate-500 mt-0.5">Control questions and answers showcased in the website FAQ accordion.</p>
                 </div>
+
+                <form onsubmit="createFaq(event)" class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm max-w-3xl space-y-3">
+                    <h3 class="font-bold text-sm text-slate-900">Add FAQ</h3>
+                    <input id="faq-new-question" required maxlength="500" placeholder="Question" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs">
+                    <textarea id="faq-new-answer" required maxlength="5000" rows="3" placeholder="Answer" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs"></textarea>
+                    <div class="flex gap-3 items-center">
+                        <label class="text-xs font-semibold">Display order <input id="faq-new-order" type="number" min="0" value="1" class="w-20 border rounded px-2 py-1 ml-1"></label>
+                        <label class="text-xs font-semibold"><input id="faq-new-active" type="checkbox" checked> Active</label>
+                        <button class="ml-auto bg-indigo-950 text-white font-bold px-4 py-2 rounded-lg text-xs">Add FAQ</button>
+                    </div>
+                </form>
                 <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm max-w-3xl space-y-3" id="faqs-admin-list">
                     <!-- Populated dynamically -->
                 </div>
@@ -795,8 +806,11 @@
 
         async function updateRule(id) {
             const val = parseFloat(document.getElementById(`rule-${id}`).value);
-            await supabaseClient.from('pricing_rules').update({ rule_value: val }).eq('id', id);
-            alert("Pricing rule updated successfully!");
+            if (!Number.isFinite(val) || val < 0) return alert('Enter a valid pricing value.');
+            const { data, error } = await supabaseClient.from('pricing_rules').update({ rule_value: val }).eq('id', id).select('id,rule_value');
+            if (error || !data?.length) return alert('Pricing update failed: ' + (error?.message || 'No row updated.'));
+            await loadPricingRules();
+            alert('Pricing rule updated. The public website now reads this value from the database.');
         }
 
         // 3. LOCATIONS
@@ -899,23 +913,74 @@
         }
 
         // 6. FAQS & INQUIRIES
+        function escapeAdminHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
         async function loadFaqs() {
             const list = document.getElementById('faqs-admin-list');
-            list.innerHTML = '';
-            const { data: faqs } = await supabaseClient.from('faqs').select('*').order('display_order', { ascending: true });
-            if (!faqs) return;
-            faqs.forEach(f => {
-                const div = document.createElement('div');
-                div.className = "p-3 rounded-xl border border-slate-200 text-xs";
-                div.innerHTML = `<strong>${f.question}</strong><p class="text-slate-600 mt-1">${f.answer}</p>`;
-                list.appendChild(div);
-            });
+            list.innerHTML = '<p class="text-xs text-slate-400">Loading FAQs...</p>';
+            const { data: faqs, error } = await supabaseClient.from('faqs').select('*').order('display_order', { ascending: true });
+            if (error) { list.innerHTML = '<p class="text-xs text-rose-600">Unable to load FAQs: '+escapeAdminHtml(error.message)+'</p>'; return; }
+            if (!faqs?.length) { list.innerHTML = '<p class="text-xs text-slate-400">No FAQs yet.</p>'; return; }
+            list.innerHTML = faqs.map(f => `
+                <div class="p-4 rounded-xl border border-slate-200 text-xs space-y-2" data-faq-id="${f.id}">
+                    <input data-field="question" maxlength="500" value="${escapeAdminHtml(f.question)}" class="w-full border rounded-lg px-3 py-2 font-bold">
+                    <textarea data-field="answer" maxlength="5000" rows="3" class="w-full border rounded-lg px-3 py-2">${escapeAdminHtml(f.answer)}</textarea>
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <label>Order <input data-field="display_order" type="number" min="0" value="${Number(f.display_order)||0}" class="w-20 border rounded px-2 py-1"></label>
+                        <label><input data-field="is_active" type="checkbox" ${f.is_active ? 'checked' : ''}> Active</label>
+                        <button type="button" onclick="saveFaq('${f.id}')" class="ml-auto bg-indigo-950 text-white px-3 py-1.5 rounded font-bold">Save</button>
+                        <button type="button" onclick="deleteFaq('${f.id}')" class="text-rose-600 font-bold px-2 py-1.5">Delete</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function createFaq(event) {
+            event.preventDefault();
+            const payload = {
+                question: document.getElementById('faq-new-question').value.trim(),
+                answer: document.getElementById('faq-new-answer').value.trim(),
+                display_order: Number(document.getElementById('faq-new-order').value) || 0,
+                is_active: document.getElementById('faq-new-active').checked,
+            };
+            const { error } = await supabaseClient.from('faqs').insert(payload);
+            if (error) return alert('Unable to add FAQ: ' + error.message);
+            event.target.reset();
+            document.getElementById('faq-new-order').value = 1;
+            document.getElementById('faq-new-active').checked = true;
+            await loadFaqs();
+        }
+
+        async function saveFaq(id) {
+            const row = document.querySelector('[data-faq-id="'+id+'"]');
+            const payload = {
+                question: row.querySelector('[data-field="question"]').value.trim(),
+                answer: row.querySelector('[data-field="answer"]').value.trim(),
+                display_order: Number(row.querySelector('[data-field="display_order"]').value) || 0,
+                is_active: row.querySelector('[data-field="is_active"]').checked,
+            };
+            if (!payload.question || !payload.answer) return alert('Question and answer are required.');
+            const { error } = await supabaseClient.from('faqs').update(payload).eq('id', id);
+            if (error) return alert('Unable to update FAQ: ' + error.message);
+            await loadFaqs();
+        }
+
+        async function deleteFaq(id) {
+            if (!confirm('Delete this FAQ permanently?')) return;
+            const { error } = await supabaseClient.from('faqs').delete().eq('id', id);
+            if (error) return alert('Unable to delete FAQ: ' + error.message);
+            await loadFaqs();
         }
 
         async function loadInquiries() {
             const tbody = document.getElementById('admin-inquiries-table-body');
             tbody.innerHTML = '';
-            const { data: inqs } = await supabaseClient.from('inquiries').select('*').order('created_at', { ascending: false }).limit(25);
+            const { data: inqs, error } = await supabaseClient.from('inquiries').select('*').order('created_at', { ascending: false }).limit(100);
+            if (error) {
+                tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-rose-600">Unable to load leads: '+escapeAdminHtml(error.message)+'</td></tr>';
+                return;
+            }
             if (!inqs || inqs.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">No leads recorded yet.</td></tr>';
                 return;
@@ -927,8 +992,8 @@
                     <td class="py-3 px-4 font-bold text-slate-800">${i.customer_name}<br><span class="font-normal text-slate-400">${i.customer_phone}</span></td>
                     <td class="py-3 px-4">${i.service_type}</td>
                     <td class="py-3 px-4 font-semibold text-indigo-950">${i.car_name}</td>
-                    <td class="py-3 px-4 font-bold text-emerald-700">₹${i.fare_amount}</td>
-                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900">${i.inquiry_status}</span></td>
+                    <td class="py-3 px-4 font-bold text-emerald-700">₹${Number(i.fare_amount || i.total_fare || 0).toLocaleString('en-IN')}</td>
+                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900">${i.inquiry_status || 'Received'}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -938,42 +1003,6 @@
         window.addEventListener('DOMContentLoaded', () => {
             checkAuthState();
         });
-
-        // LEAD INQUIRIES FETCH & DISPLAY
-async function loadInquiries() {
-    const tableBody = document.getElementById('inquiries-table-body') || document.querySelector('#section-inquiries tbody');
-    if (!tableBody || !supabaseClient) return;
-
-    tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">Loading inquiries...</td></tr>`;
-
-    const { data, error } = await supabaseClient
-        .from('inquiries')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-    if (error || !data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">No leads recorded yet.</td></tr>`;
-        return;
-    }
-
-    tableBody.innerHTML = data.map(lead => `
-        <tr class="border-b border-slate-100 hover:bg-slate-50 text-sm">
-            <td class="py-3 px-4">${new Date(lead.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
-            <td class="py-3 px-4 font-medium text-slate-800">${lead.customer_name || 'Guest'}<br><span class="text-xs text-slate-500">${lead.customer_phone || '-'}</span></td>
-            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-xs bg-indigo-50 text-indigo-600 font-semibold">${lead.service_type || 'Self-Drive'}</span></td>
-            <td class="py-3 px-4">${lead.car_name || '-'}</td>
-            <td class="py-3 px-4 font-semibold text-slate-800">₹${lead.total_fare || 0}</td>
-            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700 font-medium">Received</span></td>
-        </tr>
-    `).join('');
-}
-
-// Jab switchTab('inquiries') chale, tab call ho:
-const origSwitchTab = switchTab;
-switchTab = function(tab) {
-    origSwitchTab(tab);
-    if (tab === 'inquiries') loadInquiries();
-};
 
  // Load With-Driver Rates
 async function loadWithDriverRates() {

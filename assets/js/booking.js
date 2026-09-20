@@ -1264,6 +1264,13 @@ function generateBookingId() {
 async function handleBookingSubmit(e) {
     e.preventDefault();
     if (!validateJourneyAndOpenBooking()) return;
+    if (!e.target.reportValidity()) return;
+    let otpProof;
+    try {
+        const otp = await mobileOtpReady;
+        if (!otp) throw new Error('Mobile verification could not load. Please refresh and retry.');
+        otpProof = await otp.requestFormOtp(e.target, 'cust-phone', 'booking');
+    } catch (error) { if (!error.cancelled) showCustomAlert(error.message); return; }
 
     const name = document.getElementById('cust-name').value.trim();
     const phone = document.getElementById('cust-phone').value.trim();
@@ -1446,11 +1453,18 @@ async function handleBookingSubmit(e) {
     }
 
     await sendWithDriverBookingEmail(e.target, bookingId, name, phone, email,
-        message + '\nCustomer address: ' + address, closeModal);
+        message + '\nCustomer address: ' + address, closeModal, 'withdriver', otpProof);
 }
         async function handleSDBookingSubmit(e) {
             e.preventDefault();
             if (!validateSelfDriveJourney()) return;
+            if (!e.target.reportValidity()) return;
+            let otpProof;
+            try {
+                const otp = await mobileOtpReady;
+                if (!otp) throw new Error('Mobile verification could not load. Please refresh and retry.');
+                otpProof = await otp.requestFormOtp(e.target, 'sd-cust-phone', 'booking');
+            } catch (error) { if (!error.cancelled) showCustomAlert(error.message); return; }
             updateSDFareReview();
             const name = document.getElementById('sd-cust-name').value.trim();
             const phone = document.getElementById('sd-cust-phone').value.trim();
@@ -1664,13 +1678,15 @@ async function handlePartnerFormSubmit(e) {
     e.preventDefault();
 
     if (e.target.dataset.submitting === 'true') return;
-    e.target.dataset.submitting = 'true';
+    if (!e.target.reportValidity()) return;
+    if (!window.preparePartnerFiles()) return;
     let otpProof;
     try {
         const otp = await mobileOtpReady;
         if (!otp) throw new Error('Mobile verification could not load. Please refresh and retry.');
-        otpProof = otp.requireFormOtp(e.target, 'part-phone', 'partner');
-    } catch (error) { e.target.dataset.submitting = 'false'; showCustomAlert(error.message); return; }
+        otpProof = await otp.requestFormOtp(e.target, 'part-phone', 'partner');
+    } catch (error) { if (!error.cancelled) showCustomAlert(error.message); return; }
+    e.target.dataset.submitting = 'true';
     lastPartnerForm = e.target;
 
     const submitButton = e.target.querySelector('button[type="submit"]');
@@ -1685,14 +1701,6 @@ async function handlePartnerFormSubmit(e) {
         Checking Files...
     `;
 
-    if (!window.preparePartnerFiles()) {
-        e.target.dataset.submitting = 'false';
-
-        submitButton.disabled = false;
-        submitButton.innerHTML = originalButtonText;
-
-        return;
-    }
 
     try {
 
@@ -2041,9 +2049,7 @@ showSuccessModal(result.application_number, result);
             const button = form.querySelector('button[type="submit"]');
             button.disabled = true;
             try {
-                const otp = await mobileOtpReady;
-                if (!otp) throw new Error('Mobile verification could not load. Please refresh and retry.');
-                const otpProof = otp.requireFormOtp(form, serviceMode === 'selfdrive' ? 'sd-cust-phone' : 'cust-phone', 'booking');
+                if (!otpProof) throw new Error('Please verify your mobile number before submitting.');
                 const response = await fetch('/api/booking-enquiry', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

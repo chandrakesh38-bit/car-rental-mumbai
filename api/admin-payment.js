@@ -59,7 +59,7 @@ async function reconcile(record) {
 async function handle(request) {
   if (!['GET','POST'].includes(request.method)) return json({success:false,message:'Method not allowed.'},405);
   try {
-    await admin(request);
+    const adminUser = await admin(request);
     if (request.method === 'GET') {
       const url = new URL(request.url), bookingId = url.searchParams.get('booking_id');
       if (!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId || '')) return json({success:false,message:'Invalid booking ID.'},400);
@@ -93,6 +93,19 @@ async function handle(request) {
     if (!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId)) return json({success:false,message:'Invalid booking ID.'},400);
     const bookings = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&limit=1');
     const booking = bookings?.[0]; if (!booking) return json({success:false,message:'Booking not found.'},404);
+    if (action === 'record_offline') {
+      const amount = Number(body.amount), method = String(body.payment_method || '').toLowerCase();
+      if (!Number.isFinite(amount) || amount <= 0 || !['cash','bank_transfer','offline_upi'].includes(method)) return json({success:false,message:'Invalid offline payment.'},400);
+      const summary = await syncBooking(bookingId);
+      const balance = Math.max(0, Number(summary.fare || 0) - Number(summary.paid || 0));
+      if (amount > balance) return json({success:false,message:'Amount cannot exceed booking balance.'},400);
+      const rows = await db('booking_payments',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({
+        booking_id:bookingId,payment_type:'offline',amount,status:'paid',payment_method:method,
+        recorded_by:String(adminUser?.email || '').toLowerCase(),paid_at:new Date().toISOString()
+      })});
+      const updated = await syncBooking(bookingId);
+      return json({success:true,payment:rows?.[0],summary:updated});
+    }
     if (action === 'create') {
       const amount = Number(body.amount), type = String(body.payment_type || '');
       if (!Number.isFinite(amount) || amount <= 0 || !['advance','full','balance'].includes(type)) return json({success:false,message:'Invalid payment request.'},400);

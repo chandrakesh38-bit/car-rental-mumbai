@@ -408,6 +408,7 @@
                 <div>
                     <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Bookings</h2>
                     <p class="text-xs text-slate-500 mt-0.5">Booking operations, payment collection and status tracking.</p>
+                    <p class="text-[10px] text-emerald-700 font-bold mt-1"><i class="fa-solid fa-arrows-rotate mr-1"></i>Live • auto-refreshes every 10 seconds</p>
                 </div>
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
@@ -647,6 +648,7 @@
             if (tab === 'cms') loadCmsSettings();
             if (tab === 'whatsapp') loadWhatsAppTemplate();
             if (tab === 'faqs') loadFaqs();
+            setBookingsAutoRefresh(tab === 'inquiries');
             if (tab === 'inquiries') loadInquiries();
         }
 
@@ -1084,9 +1086,19 @@
         async function refreshBookingDetail(){
             if(!currentAdminBooking)return; const btn=document.getElementById('booking-refresh-btn');
             try{if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Refreshing…';}const result=await adminApi('/api/admin-payment?dashboard=1');const fresh=(result.bookings||[]).find(x=>x.booking_id===currentAdminBooking.booking_id);if(fresh)currentAdminBooking=fresh;await renderBookingDetail();}catch(e){alert(e.message)}finally{const b=document.getElementById('booking-refresh-btn');if(b){b.disabled=false;b.innerHTML='<i class="fa-solid fa-check mr-1"></i> Updated';setTimeout(()=>{if(b)b.innerHTML='<i class="fa-solid fa-rotate mr-1"></i> Refresh'},900);}}}
-        async function loadInquiries() {
+        let bookingsAutoRefreshTimer = null;
+        function setBookingsAutoRefresh(enabled) {
+            if (bookingsAutoRefreshTimer) { clearInterval(bookingsAutoRefreshTimer); bookingsAutoRefreshTimer = null; }
+            if (enabled) bookingsAutoRefreshTimer = setInterval(() => {
+                const section = document.getElementById('section-inquiries');
+                const modal = document.getElementById('booking-detail-modal');
+                if (section && !section.classList.contains('hidden') && (!modal || modal.classList.contains('hidden'))) loadInquiries(true);
+            }, 10000);
+        }
+
+        async function loadInquiries(silent=false) {
             const tbody = document.getElementById('admin-inquiries-table-body');
-            tbody.innerHTML = '<tr><td colspan="13" class="py-8 text-center text-slate-400">Loading bookings...</td></tr>';
+            if (!silent) tbody.innerHTML = '<tr><td colspan="13" class="py-8 text-center text-slate-400">Loading bookings...</td></tr>';
             const { data: inqs, error } = await supabaseClient.from('inquiries').select('*').not('booking_id','is',null).order('created_at', { ascending: false }).limit(200);
             if (error) { tbody.innerHTML = '<tr><td colspan="13" class="py-6 text-center text-rose-600">Unable to load bookings: '+escapeAdminHtml(error.message)+'</td></tr>'; return; }
             if (!inqs?.length) { tbody.innerHTML = '<tr><td colspan="13" class="py-8 text-center text-slate-400">No structured bookings yet. New verified bookings will appear here.</td></tr>'; return; }

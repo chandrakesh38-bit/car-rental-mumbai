@@ -245,7 +245,7 @@ const mumbaiMetroLocations = [
         mumbaiPlaces = mumbaiMetroLocations.map(location => location.name);
 
         // 6 WITH DRIVER CARS
-        const wdFleet = [
+        let wdFleet = [
             { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
             { name: 'Compact SUV (Punch / Brezza)', category: 'Compact SUV', seats: '4+1', bags: '2 Large Bags', rates: { local: { '8hr_80km': 3200, '10hr_100km': 3700, '12hr_120km': 4200, extraKm: 18 }, outstationPerKm: 18, driverAllowance: 500, airport: { t1: 1700, t2: 1800, nmia: 2200 } } },
             { name: 'Maruti Ertiga', category: 'Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 }, outstationPerKm: 19, driverAllowance: 500, airport: { t1: 2200, t2: 2400, nmia: 2800 } } },
@@ -253,6 +253,52 @@ const mumbaiMetroLocations = [
             { name: 'Toyota Innova', category: 'Executive MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 4400, '10hr_100km': 5200, '12hr_120km': 6000, extraKm: 22 }, outstationPerKm: 22, driverAllowance: 500, airport: { t1: 2700, t2: 2900, nmia: 3400 } } },
             { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
         ];
+
+
+        function normalizeRateCarName(value) {
+            return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        }
+
+        function matchWithDriverCar(rate) {
+            const dbName = normalizeRateCarName(rate.full_name);
+            return wdFleet.find(car => {
+                const siteName = normalizeRateCarName(car.name);
+                if (dbName === siteName) return true;
+                if (/dzire|aura|sedan/.test(dbName) && /dzire|aura|sedan/.test(siteName)) return true;
+                if (/punch|brezza|compact suv/.test(dbName) && /punch|brezza|compact suv/.test(siteName)) return true;
+                if (/ertiga/.test(dbName) && /ertiga/.test(siteName)) return true;
+                if (/carens/.test(dbName) && /carens/.test(siteName)) return true;
+                if (/crysta/.test(dbName) && /crysta/.test(siteName)) return true;
+                if (/innova/.test(dbName) && !/crysta/.test(dbName) && /innova/.test(siteName) && !/crysta/.test(siteName)) return true;
+                return false;
+            });
+        }
+
+        async function loadWithDriverRatesPublic() {
+            if (!supabasePublic) return;
+            const { data, error } = await supabasePublic.from('with_driver_rates').select('*');
+            if (error || !data?.length) return;
+            data.forEach(rate => {
+                const car = matchWithDriverCar(rate);
+                if (!car) return;
+                const local8 = Number(rate.local_pkg_8hr_80km);
+                const extraHour = Number(rate.local_extra_hour_rate);
+                const extraKm = Number(rate.local_extra_km_rate);
+                const outstation = Number(rate.outstation_rate_per_km);
+                const allowance = Number(rate.driver_allowance_per_day);
+                if (Number.isFinite(local8)) car.rates.local['8hr_80km'] = local8;
+                if (Number.isFinite(extraHour)) {
+                    car.rates.local['10hr_100km'] = local8 + (extraHour * 2);
+                    car.rates.local['12hr_120km'] = local8 + (extraHour * 4);
+                }
+                if (Number.isFinite(extraKm)) car.rates.local.extraKm = extraKm;
+                if (Number.isFinite(outstation)) car.rates.outstationPerKm = outstation;
+                if (Number.isFinite(allowance)) car.rates.driverAllowance = allowance;
+            });
+            if (document.getElementById('fleet-container')) renderWDFleet();
+        }
+
+        document.addEventListener('DOMContentLoaded', loadWithDriverRatesPublic);
 
         // Supabase vehicles is the source of truth; never restore deleted cars from a fallback.
         let excelCarsData = [];

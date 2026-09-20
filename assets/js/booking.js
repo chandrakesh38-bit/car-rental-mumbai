@@ -1473,7 +1473,7 @@ async function handleBookingSubmit(e) {
                 ['Delivery Charge', currentDeliveryMode === 'home' ? text('sd-review-delivery-charge') : '0'],
                 ['Total Amount', text('disp-total-final-fare')],
             ].map(([label, v]) => label + ': ' + (v || 'Not provided')).join('\n');
-            await sendEmailNotification(e.target, bookingId, name, phone, email, details, closeSDModal, 'selfdrive');
+            await sendEmailNotification(e.target, bookingId, name, phone, email, details, closeSDModal, 'selfdrive', otpProof);
         }
 
 let lastPartnerForm = null;
@@ -2035,7 +2035,7 @@ showSuccessModal(result.application_number, result);
             return sendEmailNotification(...args);
         }
 
-        async function sendEmailNotification(form, bookingId, name, phone, email, details, closeBookingModal, serviceMode = 'withdriver') {
+        async function sendEmailNotification(form, bookingId, name, phone, email, details, closeBookingModal, serviceMode = 'withdriver', otpProof) {
             if (form.dataset.submitting === 'true') return;
             form.dataset.submitting = 'true';
             const button = form.querySelector('button[type="submit"]');

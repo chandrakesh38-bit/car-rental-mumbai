@@ -49,7 +49,7 @@ async function reconcile(record) {
   await syncBooking(record.booking_id);
   return { ...record, ...patch, razorpay_status: link.status };
 }
-export default async function handler(request) {
+async function handle(request) {
   if (!['GET','POST'].includes(request.method)) return json({success:false,message:'Method not allowed.'},405);
   try {
     await admin(request);
@@ -96,4 +96,13 @@ export default async function handler(request) {
     }
     return json({success:false,message:'Unknown action.'},400);
   } catch (error) { return json({success:false,message:error.message || 'Request failed.'}, error.status || 500); }
+}
+
+
+export function GET(request) {
+  return handle(request);
+}
+
+export function POST(request) {
+  return handle(request);
 }

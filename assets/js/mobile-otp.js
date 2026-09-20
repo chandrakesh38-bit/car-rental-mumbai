@@ -1,133 +1,269 @@
-const instances = new WeakMap();
-let sdkPromise, sdkBusy = false;
-const normalize = value => { const n = value.replace(/[\s()+-]/g, ''); return /^[6-9]\d{9}$/.test(n) ? '91' + n : /^91[6-9]\d{9}$/.test(n) ? n : ''; };
+const state = {
+  open: false, phone: null, purpose: '', proof: '', expiresAt: 0, mobile: '',
+  reqId: '', retryAt: 0, busy: false, resolve: null, reject: null, settings: null
+};
+let sdkPromise;
+
+const normalize = value => {
+  const n = String(value || '').replace(/[\s()+-]/g, '');
+  return /^[6-9]\d{9}$/.test(n) ? '91' + n : /^91[6-9]\d{9}$/.test(n) ? n : '';
+};
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
-async function loadSdk(captcha) {
-  if (!sdkPromise) sdkPromise = (async () => {
+
+function ensureCss() {
+  if (document.querySelector('link[data-mobile-otp]')) return;
+  const css = document.createElement('link');
+  css.rel = 'stylesheet';
+  css.href = '/assets/css/mobile-otp.css';
+  css.dataset.mobileOtp = '';
+  document.head.append(css);
+}
+
+function ensureModal() {
+  let modal = document.getElementById('mobile-otp-modal');
+  if (modal) return modal;
+  modal = document.createElement('div');
+  modal.id = 'mobile-otp-modal';
+  modal.className = 'mobile-otp-modal hidden';
+  modal.innerHTML = `
+    <div class="mobile-otp-dialog" role="dialog" aria-modal="true" aria-labelledby="mobile-otp-title">
+      <button type="button" class="mobile-otp-close" data-close aria-label="Close OTP verification">×</button>
+      <h3 id="mobile-otp-title">Verify Mobile Number</h3>
+      <p class="mobile-otp-subtitle">Enter the OTP sent to <strong data-phone></strong></p>
+      <div class="otp-captcha" data-captcha></div>
+      <div class="otp-digits" data-digits role="group" aria-label="OTP digits"></div>
+      <p class="otp-message" data-message role="status" aria-live="polite"></p>
+      <button type="button" class="otp-primary" data-verify>Verify &amp; Submit</button>
+      <button type="button" class="otp-secondary" data-resend>Resend OTP</button>
+      <button type="button" class="otp-cancel" data-cancel>Cancel</button>
+    </div>`;
+  document.body.append(modal);
+  modal.querySelector('[data-close]').onclick = cancelModal;
+  modal.querySelector('[data-cancel]').onclick = cancelModal;
+  modal.addEventListener('click', event => { if (event.target === modal) cancelModal(); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && state.open) cancelModal(); });
+  modal.querySelector('[data-verify]').onclick = verifyAndFinish;
+  modal.querySelector('[data-resend]').onclick = () => sendOtp(true);
+  return modal;
+}
+
+function message(text, error = false) {
+  const el = ensureModal().querySelector('[data-message]');
+  el.textContent = text;
+  el.className = 'otp-message' + (error ? ' otp-error' : '');
+}
+
+function render() {
+  const modal = ensureModal();
+  const resend = modal.querySelector('[data-resend]');
+  const verify = modal.querySelector('[data-verify]');
+  const seconds = Math.max(0, Math.ceil((state.retryAt - Date.now()) / 1000));
+  resend.disabled = state.busy || seconds > 0;
+  resend.textContent = seconds > 0 ? `Resend OTP in ${seconds}s` : 'Resend OTP';
+  verify.disabled = state.busy;
+  [...modal.querySelectorAll('[data-digits] input')].forEach(input => input.disabled = state.busy);
+  if (state.open && seconds > 0) requestAnimationFrame(() => setTimeout(render, 250));
+}
+
+function buildDigits(length) {
+  const digits = ensureModal().querySelector('[data-digits]');
+  digits.replaceChildren();
+  for (let i = 0; i < length; i++) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.inputMode = 'numeric';
+    input.maxLength = 1;
+    input.autocomplete = i === 0 ? 'one-time-code' : 'off';
+    input.setAttribute('aria-label', `OTP digit ${i + 1} of ${length}`);
+    input.oninput = () => {
+      const raw = input.value.replace(/\D/g, '');
+      input.value = raw.slice(0, 1);
+      if (raw.length > 1) {
+        for (let j = 1; j < raw.length && i + j < length; j++) digits.children[i + j].value = raw[j];
+      }
+      if (raw && i < length - 1) digits.children[Math.min(i + raw.length, length - 1)].focus();
+    };
+    input.onpaste = event => {
+      event.preventDefault();
+      const raw = event.clipboardData.getData('text').replace(/\D/g, '');
+      for (let j = 0; j < raw.length && i + j < length; j++) digits.children[i + j].value = raw[j];
+      digits.children[Math.min(i + Math.max(1, raw.length), length - 1)]?.focus();
+    };
+    input.onkeydown = event => {
+      if (event.key === 'Backspace' && !input.value && i > 0) digits.children[i - 1].focus();
+      if (event.key === 'Enter') { event.preventDefault(); verifyAndFinish(); }
+    };
+    digits.append(input);
+  }
+}
+
+async function loadSdk() {
+  if (sdkPromise) return sdkPromise;
+  sdkPromise = (async () => {
     const response = await fetch('/api/mobile-otp', { cache: 'no-store' });
     const config = await response.json();
-    if (!response.ok || !config.success) throw Error(config.message || 'Mobile verification is unavailable. Please retry.');
-    if (!window.initSendOTP) await new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      const timer = setTimeout(() => reject(Error('OTP service took too long to load. Please retry.')), 20000);
-      script.src = 'https://verify.msg91.com/otp-provider.js';
-      script.onload = () => { clearTimeout(timer); resolve(); };
-      script.onerror = () => { clearTimeout(timer); script.remove(); reject(Error('Could not load OTP service. Check your connection and retry.')); };
-      document.head.append(script);
-    });
+    if (!response.ok || !config.success) throw Error(config.message || 'Mobile verification is unavailable.');
+    if (typeof window.initSendOTP !== 'function') {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        const timer = setTimeout(() => reject(Error('OTP service took too long to load. Please retry.')), 20000);
+        script.src = 'https://verify.msg91.com/otp-provider.js';
+        script.onload = () => { clearTimeout(timer); resolve(); };
+        script.onerror = () => { clearTimeout(timer); script.remove(); reject(Error('Could not load OTP service. Please retry.')); };
+        document.head.append(script);
+      });
+    }
+    const captcha = ensureModal().querySelector('[data-captcha]');
+    if (!captcha.id) captcha.id = 'cwd-otp-captcha';
     window.initSendOTP({
-  widgetId: config.widgetId,
-  tokenAuth: config.tokenAuth,
-  exposeMethods: true,
-  captchaRenderId: captcha.id,
-  success: (data) => {
-    console.log('MSG91 success:', data);
-  },
-  failure: (error) => {
-    console.error('MSG91 failure:', error);
-  }
-});
-    for (let i = 0; i < 200; i++) {
-      const data = window.getWidgetData?.();
-      if (window.sendOtp && window.verifyOtp && data?.otpLength) return data;
+      widgetId: config.widgetId,
+      tokenAuth: config.tokenAuth,
+      exposeMethods: true,
+      captchaRenderId: captcha.id
+    });
+    for (let i = 0; i < 100; i++) {
+      const data = typeof window.getWidgetData === 'function' ? window.getWidgetData() : null;
+      if (typeof window.sendOtp === 'function' && typeof window.verifyOtp === 'function' && data?.otpLength) return data;
       await pause(100);
     }
-    const debug = {
-  initSendOTP: typeof window.initSendOTP,
-  sendOtp: typeof window.sendOtp,
-  verifyOtp: typeof window.verifyOtp,
-  getWidgetData: typeof window.getWidgetData,
-  widgetData: typeof window.getWidgetData === 'function'
-    ? window.getWidgetData()
-    : null
-};
-
-throw Error(
-  'OTP DEBUG: ' + JSON.stringify(debug)
-);
-
+    throw Error('OTP service is not ready. Please retry.');
   })().catch(error => { sdkPromise = null; throw error; });
   return sdkPromise;
 }
-function sdkCall(method, value, reqId) {
+
+function sdkCall(method, ...args) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(Error('OTP request timed out. Please retry.')), 30000);
-    const success = result => { clearTimeout(timer); result?.type === 'error' ? reject(Error('OTP request failed. Please retry.')) : resolve(result); };
-    const failure = () => { clearTimeout(timer); reject(Error(method === 'verifyOtp' ? 'Incorrect or expired OTP. Please try again or resend.' : 'Unable to send OTP. Complete the security check, wait a moment, and retry.')); };
-    try { window[method](value, success, failure, reqId); } catch { failure(); }
+    const ok = result => { clearTimeout(timer); result?.type === 'error' ? reject(Error(result.message || 'OTP request failed.')) : resolve(result); };
+    const fail = error => { clearTimeout(timer); reject(Error(error?.message || (method === 'verifyOtp' ? 'Incorrect or expired OTP.' : 'Unable to send OTP.'))); };
+    try { window[method](...args, ok, fail); } catch (error) { fail(error); }
   });
 }
-export function mountMobileOtp(phone, purpose) {
-  if (!phone || instances.has(phone)) return instances.get(phone);
-  if (!document.querySelector('link[data-mobile-otp]')) {
-    const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = '/assets/css/mobile-otp.css'; css.dataset.mobileOtp = ''; document.head.append(css);
-  }
-  const box = document.createElement('section'); box.className = 'mobile-otp'; box.setAttribute('aria-label', 'Mobile verification');
-  box.innerHTML = '<button type="button" data-send>Send OTP</button><div class="otp-captcha"></div><div data-code hidden><p>Enter the OTP sent to your mobile</p><div class="otp-digits" role="group" aria-label="OTP digits"></div><div class="otp-actions"><button type="button" data-verify>Verify OTP</button><button type="button" data-resend>Resend OTP</button></div></div><p class="otp-message" role="status" aria-live="polite">Verify your mobile number before submitting.</p>';
-  phone.insertAdjacentElement('afterend', box);
-  const send = box.querySelector('[data-send]'), verify = box.querySelector('[data-verify]'), resend = box.querySelector('[data-resend]'), code = box.querySelector('[data-code]'), digits = box.querySelector('.otp-digits'), message = box.querySelector('.otp-message');
-  let version = 0, busy = false, mobile = '', reqId = '', proof = '', expiresAt = 0, retryAt = 0, retrySeconds = 30;
-  const report = (text, error = false) => { message.textContent = text; message.className = 'otp-message' + (error ? ' otp-error' : proof ? ' otp-success' : ''); };
-  function render() {
-    send.disabled = busy; verify.disabled = busy; resend.disabled = busy || Date.now() < retryAt;
-    resend.textContent = Date.now() < retryAt ? `Resend in ${Math.ceil((retryAt - Date.now()) / 1000)}s` : 'Resend OTP';
-    send.hidden = Boolean(reqId || proof); code.hidden = !reqId || Boolean(proof);
-    for (const input of digits.children) input.disabled = busy;
-    box.setAttribute('aria-busy', String(busy));
-  }
-  function reset() { version++; mobile = ''; reqId = ''; proof = ''; expiresAt = 0; digits.replaceChildren(); report('Verify your mobile number before submitting.'); render(); }
-  phone.addEventListener('input', reset); phone.closest('form')?.addEventListener('reset', reset);
-  setInterval(() => { if (proof && Date.now() >= expiresAt) { reset(); report('Verification expired. Please verify your mobile again.'); } render(); }, 1000);
-  function buildDigits(length) {
-    digits.replaceChildren();
-    for (let i = 0; i < length; i++) {
-      const input = document.createElement('input'); input.type = 'text'; input.inputMode = 'numeric'; input.autocomplete = i === 0 ? 'one-time-code' : 'off'; input.setAttribute('aria-label', `OTP digit ${i + 1} of ${length}`);
-      input.oninput = () => { const text = input.value.replace(/\D/g, ''); input.value = text.slice(0, 1); for (let j = 1; j < text.length && i + j < length; j++) digits.children[i + j].value = text[j]; if (text) digits.children[Math.min(i + Math.max(1, text.length), length - 1)].focus(); };
-      input.onpaste = event => { event.preventDefault(); input.value = event.clipboardData.getData('text'); input.oninput(); };
-      input.onkeydown = event => { if (event.key === 'Backspace' && !input.value && i > 0) digits.children[i - 1].focus(); if (event.key === 'Enter') { event.preventDefault(); verify.click(); } };
-      digits.append(input);
+
+async function sendOtp(isRetry = false) {
+  if (state.busy) return;
+  state.busy = true; render(); message(isRetry ? 'Resending OTP…' : 'Sending OTP…');
+  try {
+    state.settings = await loadSdk();
+    const phone = normalize(state.phone.value);
+    if (!phone || phone !== state.mobile) throw Error('Mobile number changed. Please close and submit again.');
+    let result;
+    if (isRetry) {
+      const channel = state.settings.processes?.find(p => p.processVia?.value === '5' && ['11','12','4'].includes(p.channel?.value))?.channel?.value || '11';
+      result = await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(Error('OTP request timed out. Please retry.')), 30000);
+        const ok = r => { clearTimeout(timer); r?.type === 'error' ? reject(Error(r.message || 'Unable to resend OTP.')) : resolve(r); };
+        const fail = e => { clearTimeout(timer); reject(Error(e?.message || 'Unable to resend OTP.')); };
+        try { window.retryOtp(channel, ok, fail, state.reqId); } catch (e) { fail(e); }
+      });
+    } else {
+      result = await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(Error('OTP request timed out. Please retry.')), 30000);
+        const ok = r => { clearTimeout(timer); r?.type === 'error' ? reject(Error(r.message || 'Unable to send OTP.')) : resolve(r); };
+        const fail = e => { clearTimeout(timer); reject(Error(e?.message || 'Unable to send OTP.')); };
+        try { window.sendOtp(phone, ok, fail); } catch (e) { fail(e); }
+      });
+      state.reqId = result?.reqId || result?.message || '';
+      if (!state.reqId) throw Error('Unable to start OTP verification. Please retry.');
     }
+    const length = Number(state.settings.otpLength);
+    if (!Number.isInteger(length) || length < 4 || length > 8) throw Error('OTP service configuration is unavailable.');
+    buildDigits(length);
+    state.retryAt = Date.now() + Math.max(30, Number(state.settings.retryTime) || 30) * 1000;
+    message('OTP sent. Please enter it below.');
+    ensureModal().querySelector('[data-digits] input')?.focus();
+  } catch (error) {
+    message(error.message || 'Unable to send OTP. Please retry.', true);
+  } finally {
+    state.busy = false; render();
   }
-  async function run(action) {
-    if (busy || sdkBusy) return;
-    const currentMobile = normalize(phone.value);
-    if (!currentMobile) { report('Enter a valid 10-digit mobile number first.', true); phone.focus(); return; }
-    if (action !== 'send' && currentMobile !== mobile) { reset(); return; }
-    if (action === 'resend' && Date.now() < retryAt) return;
-    const currentVersion = version;
-    busy = true; sdkBusy = true; render(); report(action === 'verify' ? 'Verifying OTP…' : 'Sending OTP…');
-    try {
-      let captcha = document.getElementById('cwd-otp-captcha');
-      if (!captcha) { captcha = document.createElement('div'); captcha.id = 'cwd-otp-captcha'; }
-      box.querySelector('.otp-captcha').append(captcha);
-      const settings = await loadSdk(captcha);
-      if (version !== currentVersion) return;
-      if (action === 'verify') {
-        const otp = [...digits.children].map(input => input.value).join('');
-        if (otp.length !== digits.children.length || !/^\d+$/.test(otp)) throw Error('Enter every OTP digit.');
-        const result = await sdkCall('verifyOtp', otp, reqId);
-        if (version !== currentVersion) return;
-        const accessToken = result?.['access-token'] || result?.message;
-        const response = await fetch('/api/mobile-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(20000), body: JSON.stringify({ accessToken, phone: currentMobile, purpose }) });
-        const verified = await response.json();
-        if (version !== currentVersion) return;
-        if (!response.ok || !verified.success) throw Error(verified.message || 'Unable to verify mobile. Please retry.');
-        proof = verified.proof; expiresAt = verified.expiresAt; report('Mobile number verified ✓');
-      } else {
-        const retryChannel = settings.processes?.find(p => p.processVia?.value === '5' && ['11', '12', '4'].includes(p.channel?.value))?.channel.value || '11';
-        const result = await sdkCall(action === 'send' ? 'sendOtp' : 'retryOtp', action === 'send' ? currentMobile : retryChannel, reqId || undefined);
-        if (version !== currentVersion) return;
-        if (action === 'send') { reqId = result?.reqId || result?.message; if (typeof reqId !== 'string' || !reqId) throw Error('Unable to start OTP verification. Please retry.'); mobile = currentMobile; }
-        const length = Number(settings.otpLength); if (!Number.isInteger(length) || length < 4 || length > 8) throw Error('OTP service configuration is unavailable.');
-        retrySeconds = Math.max(30, Number(settings.retryTime) || 30); retryAt = Date.now() + retrySeconds * 1000;
-        buildDigits(length); report('OTP sent. Please check your mobile.');
-      }
-    } catch (error) { if (version === currentVersion) report(error.message || 'OTP service is unavailable. Please retry.', true); }
-    finally { busy = false; sdkBusy = false; render(); if (action !== 'verify' && reqId) digits.firstElementChild?.focus(); }
-  }
-  send.onclick = () => run('send'); verify.onclick = () => run('verify'); resend.onclick = () => run('resend');
-  const instance = { requireProof() { if (!proof || expiresAt <= Date.now() || mobile !== normalize(phone.value)) { report('Please verify your mobile number before submitting.', true); box.scrollIntoView({ block: 'center', behavior: 'smooth' }); throw Error('Please verify your mobile number before submitting.'); } return proof; }, reset };
-  instances.set(phone, instance); return instance;
 }
-export function requireFormOtp(form, phoneId, purpose) { return mountMobileOtp(form.querySelector('#' + phoneId), purpose).requireProof(); }
-for (const [id, purpose] of [['cust-phone', 'booking'], ['sd-cust-phone', 'booking'], ['part-phone', 'partner']]) mountMobileOtp(document.getElementById(id), purpose);
+
+async function verifyAndFinish() {
+  if (state.busy) return;
+  const digits = [...ensureModal().querySelectorAll('[data-digits] input')];
+  const otp = digits.map(input => input.value).join('');
+  if (!digits.length || otp.length !== digits.length || !/^\d+$/.test(otp)) return message('Enter every OTP digit.', true);
+  state.busy = true; render(); message('Verifying OTP…');
+  try {
+    const result = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(Error('OTP verification timed out. Please retry.')), 30000);
+      const ok = r => { clearTimeout(timer); r?.type === 'error' ? reject(Error(r.message || 'Incorrect or expired OTP.')) : resolve(r); };
+      const fail = e => { clearTimeout(timer); reject(Error(e?.message || 'Incorrect or expired OTP.')); };
+      try { window.verifyOtp(otp, ok, fail, state.reqId); } catch (e) { fail(e); }
+    });
+    const accessToken = result?.['access-token'] || result?.message;
+    if (!accessToken) throw Error('OTP verification failed. Please resend OTP.');
+    const response = await fetch('/api/mobile-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(20000),
+      body: JSON.stringify({ accessToken, phone: state.mobile, purpose: state.purpose })
+    });
+    const verified = await response.json();
+    if (!response.ok || !verified.success) throw Error(verified.message || 'Incorrect or expired OTP.');
+    state.proof = verified.proof;
+    state.expiresAt = verified.expiresAt;
+    const resolve = state.resolve;
+    closeModal(false);
+    resolve?.(state.proof);
+  } catch (error) {
+    message(error.message || 'Incorrect or expired OTP.', true);
+  } finally {
+    state.busy = false; render();
+  }
+}
+
+function closeModal(reject = false) {
+  const modal = ensureModal();
+  modal.classList.add('hidden');
+  document.body.classList.remove('otp-modal-open');
+  state.open = false;
+  if (reject) {
+    const rejectFn = state.reject;
+    state.resolve = null; state.reject = null;
+    rejectFn?.(Object.assign(new Error('OTP verification cancelled.'), { cancelled: true }));
+  } else {
+    state.resolve = null; state.reject = null;
+  }
+}
+
+function cancelModal() { closeModal(true); }
+
+export async function requestFormOtp(form, phoneId, purpose) {
+  const phone = form.querySelector('#' + phoneId);
+  if (!phone) throw Error('Mobile number field is unavailable.');
+  const mobile = normalize(phone.value);
+  if (!mobile) { phone.focus(); throw Error('Enter a valid 10-digit mobile number.'); }
+  if (state.proof && state.expiresAt > Date.now() && state.mobile === mobile && state.purpose === purpose) return state.proof;
+  if (state.open) throw Error('Mobile verification is already in progress.');
+
+  ensureCss();
+  const modal = ensureModal();
+  state.open = true;
+  state.phone = phone;
+  state.purpose = purpose;
+  state.mobile = mobile;
+  state.proof = '';
+  state.expiresAt = 0;
+  state.reqId = '';
+  state.retryAt = 0;
+  modal.querySelector('[data-phone]').textContent = '+' + mobile;
+  modal.querySelector('[data-digits]').replaceChildren();
+  modal.querySelector('[data-captcha]').replaceChildren();
+  message('Sending OTP…');
+  modal.classList.remove('hidden');
+  document.body.classList.add('otp-modal-open');
+
+  const promise = new Promise((resolve, reject) => { state.resolve = resolve; state.reject = reject; });
+  sendOtp(false);
+  return promise;
+}
+
+export function clearFormOtp(form) {
+  if (!form) return;
+  const phone = form.querySelector('#cust-phone, #sd-cust-phone, #part-phone');
+  if (phone && normalize(phone.value) === state.mobile) {
+    state.proof = ''; state.expiresAt = 0;
+  }
+}

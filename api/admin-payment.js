@@ -73,7 +73,8 @@ async function handle(request) {
       const contact = String(booking.customer_phone || '').replace(/\D/g,'').replace(/^0+/,'');
       const link = await razor('payment_links', {method:'POST',body:JSON.stringify({
         amount: Math.round(amount*100), currency:'INR', accept_partial:false,
-        reference_id:reference, description:'Car With Driver India booking ' + bookingId,
+        expire_by: Math.floor(Date.now()/1000) + (24 * 60 * 60),
+        reference_id:reference, description:'Booking ' + bookingId,
         customer:{name:booking.customer_name, contact: contact.length === 10 ? '+91'+contact : '+'+contact, email:booking.customer_email},
         notify:{sms:false,email:false}, reminder_enable:false,
         notes:{booking_id:bookingId,payment_type:type}

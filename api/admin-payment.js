@@ -62,6 +62,11 @@ async function handle(request) {
     const adminUser = await admin(request);
     if (request.method === 'GET') {
       const url = new URL(request.url), bookingId = url.searchParams.get('booking_id');
+      if (url.searchParams.get('dashboard') === '1') {
+        const bookings = await db('inquiries?booking_id=not.is.null&select=*&order=created_at.desc&limit=500');
+        const payments = await db('booking_payments?status=eq.paid&select=booking_id,amount,payment_type,payment_method,paid_at,created_at&order=created_at.desc&limit=100');
+        return json({success:true,bookings:bookings || [],payments:payments || []});
+      }
       if (!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId || '')) return json({success:false,message:'Invalid booking ID.'},400);
       let rows = await db('booking_payments?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&order=created_at.desc');
       // Webhooks remain primary. If one is delayed/missed, reconcile pending

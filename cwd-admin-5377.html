@@ -1078,7 +1078,13 @@
         async function renderBookingDetail() {
             const b=currentAdminBooking, body=document.getElementById('booking-detail-body'); if(!b)return;
             body.innerHTML='<p class="py-10 text-center text-slate-400">Loading booking...</p>';
-            let payments=[]; try { payments=(await adminApi('/api/admin-payment?booking_id='+encodeURIComponent(b.booking_id))).payments||[]; } catch(e) { body.innerHTML='<p class="text-rose-600">'+escapeAdminHtml(e.message)+'</p>'; return; }
+            let payments=[];
+            try {
+                const { data, error } = await supabaseClient.from('booking_payments').select('*').eq('booking_id', b.booking_id).order('created_at', { ascending: false });
+                if (!error && data) payments = data;
+            } catch (_) {
+                payments = [];
+            }
             const fare=Number(b.total_fare||b.fare_amount||0), paid=Number(b.paid_amount||0), balance=Math.max(0,fare-paid);
             body.innerHTML=`
                 <div class="grid md:grid-cols-2 gap-4 text-xs">

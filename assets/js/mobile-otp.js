@@ -240,6 +240,15 @@ export async function requestFormOtp(form, phoneId, purpose) {
   if (state.proof && state.expiresAt > Date.now() && state.mobile === mobile && state.purpose === purpose) return state.proof;
   if (state.open) throw Error('Mobile verification is already in progress.');
 
+  // A fresh modal session needs a fresh MSG91/hCaptcha instance. Reusing the
+  // previous widget leaves hCaptcha visually verified while its token is stale.
+  sdkPromise = null;
+  if (typeof window.initSendOTP === 'function') {
+    for (const method of ['sendOtp', 'retryOtp', 'verifyOtp', 'getWidgetData', 'isCaptchaVerified']) {
+      try { delete window[method]; } catch (_) { window[method] = undefined; }
+    }
+  }
+
   ensureCss();
   const modal = ensureModal();
   state.open = true;
@@ -252,6 +261,9 @@ export async function requestFormOtp(form, phoneId, purpose) {
   state.retryAt = 0;
   modal.querySelector('[data-phone]').textContent = '+' + mobile;
   modal.querySelector('[data-digits]').replaceChildren();
+  const captcha = modal.querySelector('[data-captcha]');
+  captcha.replaceChildren();
+  captcha.removeAttribute('data-hcaptcha-widget-id');
   message('Sending OTP…');
   modal.classList.remove('hidden');
   document.body.classList.add('otp-modal-open');

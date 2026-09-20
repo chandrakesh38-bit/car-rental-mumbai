@@ -4,23 +4,52 @@ import { sendNotifications, validEmail } from '../lib/notifications.mjs';
 
 export const config = { runtime: 'edge' };
 
-function extractInquiry({ name, phone, details, serviceMode }) {
-  const lines = String(details).split('\n').map(v => v.trim()).filter(Boolean);
+function extractInquiry({ bookingId, name, phone, email, details, serviceMode }) {
+  const text = String(details);
+  const lines = text.split('\n').map(v => v.trim()).filter(Boolean);
   const find = label => lines.find(line => line.toLowerCase().startsWith(label.toLowerCase() + ':'))?.split(':').slice(1).join(':').trim();
-  const car = serviceMode === 'selfdrive'
-    ? (find('Car') || 'Self Drive')
-    : (String(details).match(/🚗\s*([^|\n]+)/)?.[1]?.trim() || 'With Driver');
-  const fareText = serviceMode === 'selfdrive'
-    ? (find('Total Amount') || find('Base Rental Fare') || '')
-    : (String(details).match(/₹\s*([\d,]+)/)?.[1] || '');
+  const isSelfDrive = serviceMode === 'selfdrive';
+  const car = isSelfDrive ? (find('Car') || 'Self Drive') : (text.match(/🚗\s*([^|\n]+)/)?.[1]?.trim() || 'With Driver');
+  const fareText = isSelfDrive ? (find('Total Amount') || find('Base Rental Fare') || '') : (text.match(/🚗[^\n]*₹\s*([\d,]+)/)?.[1] || text.match(/₹\s*([\d,]+)/)?.[1] || '');
   const fare = Number(String(fareText).replace(/[^\d.]/g, '')) || 0;
-  let service = 'Self Drive';
-  if (serviceMode !== 'selfdrive') {
-    if (/AIRPORT/i.test(details)) service = 'With Driver · Airport';
-    else if (/OUTSTATION/i.test(details)) service = 'With Driver · Outstation';
-    else service = 'With Driver · Local';
+  let service = 'Self Drive', tripType = 'Self Drive', route = find('Delivery Location') || 'Self Pick-up';
+  if (!isSelfDrive) {
+    service = 'With Driver';
+    if (/AIRPORT DROP/i.test(text)) {
+      tripType = 'Airport';
+      const pickup = text.match(/📍\s*Pickup:\s*([^\n]+)/)?.[1]?.trim() || '';
+      const airport = text.match(/✈️\s*([^\n]+)/)?.[1]?.trim() || '';
+      route = [pickup, airport].filter(Boolean).join(' → ');
+    } else if (/AIRPORT PICKUP/i.test(text)) {
+      tripType = 'Airport';
+      const airport = text.match(/✈️\s*From:\s*([^\n]+)/)?.[1]?.trim() || '';
+      const drop = text.match(/📍\s*Drop:\s*([^\n]+)/)?.[1]?.trim() || '';
+      route = [airport, drop].filter(Boolean).join(' → ');
+    } else if (/OUTSTATION/i.test(text)) {
+      tripType = 'Outstation';
+      route = text.match(/📍\s*([^\n]+)/)?.[1]?.trim() || '';
+    } else {
+      tripType = 'Local';
+      route = text.match(/📍\s*([^\n]+)/)?.[1]?.trim() || '';
+    }
   }
-  return { customer_name: name.trim(), customer_phone: phone.trim(), service_type: service, car_name: car, fare_amount: fare, inquiry_status: 'Received' };
+  return {
+    booking_id: bookingId,
+    customer_name: name.trim(),
+    customer_phone: phone.trim(),
+    customer_email: email.trim(),
+    service_type: service,
+    trip_type: tripType,
+    car_name: car,
+    route,
+    booking_details: text,
+    fare_amount: fare,
+    total_fare: fare,
+    paid_amount: 0,
+    payment_status: 'pending',
+    booking_status: 'received',
+    inquiry_status: 'Received'
+  };
 }
 
 async function saveInquiry(payload) {
@@ -56,7 +85,7 @@ export default async function handler(request) {
     const uploadUrl = serviceMode === 'selfdrive'
       ? await createVerification({ bookingId, submissionKey, name, phone, email, details }, new URL(request.url).origin)
       : undefined;
-    await saveInquiry(extractInquiry({ name, phone, details, serviceMode }));
+    await saveInquiry(extractInquiry({ bookingId, name, phone, email, details, serviceMode }));
     const notifications = await sendNotifications({
       kind: 'booking', reference: bookingId, email, uploadUrl,
       details: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\n\n${details}`,

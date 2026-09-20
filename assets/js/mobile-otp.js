@@ -133,6 +133,18 @@ async function loadSdk() {
   return sdkPromise;
 }
 
+async function waitForCaptcha() {
+  if (typeof window.isCaptchaVerified !== 'function') return;
+  if (window.isCaptchaVerified()) return;
+
+  message('Complete the captcha to receive OTP.');
+  while (state.open) {
+    await pause(250);
+    if (typeof window.isCaptchaVerified === 'function' && window.isCaptchaVerified()) return;
+  }
+  throw Error('OTP verification cancelled.');
+}
+
 function sdkCall(method, ...args) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(Error('OTP request timed out. Please retry.')), 30000);
@@ -149,6 +161,16 @@ async function sendOtp(isRetry = false) {
     state.settings = await loadSdk();
     const phone = normalize(state.phone.value);
     if (!phone || phone !== state.mobile) throw Error('Mobile number changed. Please close and submit again.');
+
+    // MSG91 hCaptcha must be solved before sendOtp is invoked. Calling sendOtp
+    // immediately after rendering the captcha consumes/invalidates the token and
+    // can leave the SDK waiting until our request timeout.
+    if (!isRetry) {
+      await waitForCaptcha();
+      if (!state.open) throw Error('OTP verification cancelled.');
+      message('Sending OTP…');
+    }
+
     let result;
     if (isRetry) {
       const channel = state.settings.processes?.find(p => p.processVia?.value === '5' && ['11','12','4'].includes(p.channel?.value))?.channel?.value || '11';

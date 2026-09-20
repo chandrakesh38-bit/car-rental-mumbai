@@ -57,9 +57,21 @@ async function reconcile(record) {
   return { ...record, ...patch, razorpay_status: link.status };
 }
 async function handle(request) {
-  if (!['GET','POST'].includes(request.method)) return json({success:false,message:'Method not allowed.'},405);
+  if (!['GET','POST','DELETE'].includes(request.method)) return json({success:false,message:'Method not allowed.'},405);
   try {
     const adminUser = await admin(request);
+    if (request.method === 'DELETE') {
+      const body = await request.json();
+      const bookingId = String(body.booking_id || ''), confirmation = String(body.confirmation || '');
+      if (!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId) || confirmation !== bookingId) return json({success:false,message:'Type the exact Booking ID to confirm deletion.'},400);
+      const bookings = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=booking_id&limit=1');
+      if (!bookings?.length) return json({success:false,message:'Booking not found.'},404);
+      // Remove local payment audit rows first because the FK intentionally
+      // restricts deleting a booking that still has payment records.
+      await db('booking_payments?booking_id=eq.'+encodeURIComponent(bookingId),{method:'DELETE',headers:{Prefer:'return=minimal'}});
+      await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId),{method:'DELETE',headers:{Prefer:'return=minimal'}});
+      return json({success:true});
+    }
     if (request.method === 'GET') {
       const url = new URL(request.url), bookingId = url.searchParams.get('booking_id');
       if (url.searchParams.get('dashboard') === '1') {

@@ -14,6 +14,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        button { transition: transform .12s ease, filter .12s ease, box-shadow .12s ease, background-color .12s ease; }
+        button:active:not(:disabled) { transform: scale(.96); filter: brightness(.92); }
+        button:focus-visible { outline: 3px solid rgba(245,158,11,.35); outline-offset: 2px; }
+        button:disabled { cursor: wait; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
@@ -78,6 +82,9 @@
 
                 <!-- Navigation Tabs -->
                 <nav class="space-y-1 mt-6 text-xs font-bold" id="admin-nav-tabs">
+                    <button onclick="switchTab('dashboard')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white/10 text-white transition text-left" id="tab-btn-dashboard">
+                        <i class="fa-solid fa-chart-line w-4 text-amber-400"></i> Dashboard
+                    </button>
                     <button onclick="switchTab('vehicles')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white/10 text-white transition text-left" id="tab-btn-vehicles">
                         <i class="fa-solid fa-car-side w-4 text-amber-400"></i> Fleet Vehicles
                     </button>
@@ -118,9 +125,24 @@
 
         <!-- Main Workspace -->
         <main class="flex-1 p-6 md:p-8 overflow-y-auto max-h-screen">
+            <div id="section-dashboard" class="space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div><h2 class="text-2xl font-black text-slate-900">Operations Dashboard</h2><p class="text-xs text-slate-500 mt-1">Bookings, collections and trips at a glance.</p></div>
+                    <button id="dashboard-refresh-btn" onclick="loadDashboard()" class="bg-white border border-slate-200 shadow-sm px-4 py-2 rounded-xl text-xs font-bold text-indigo-950"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button>
+                </div>
+                <div id="dashboard-kpis" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+                <div class="grid xl:grid-cols-2 gap-5">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h3 class="font-black mb-4">Upcoming / Active Bookings</h3><div id="dashboard-upcoming" class="space-y-2 text-xs"></div></div>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h3 class="font-black mb-4">Needs Attention</h3><div id="dashboard-attention" class="space-y-2 text-xs"></div></div>
+                </div>
+                <div class="grid xl:grid-cols-2 gap-5">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h3 class="font-black mb-4">Last 6 Months</h3><div id="dashboard-months" class="space-y-3 text-xs"></div></div>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h3 class="font-black mb-4">Recent Payments</h3><div id="dashboard-payments" class="space-y-2 text-xs"></div></div>
+                </div>
+            </div>
             
             <!-- SECTION 1: VEHICLES MANAGEMENT -->
-            <div id="section-vehicles" class="space-y-6">
+            <div id="section-vehicles" class="hidden space-y-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Fleet Vehicles Management</h2>
@@ -409,7 +431,7 @@
                 <div class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl max-h-[92vh] overflow-y-auto">
                     <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
                         <div><h3 id="booking-detail-title" class="text-lg font-black text-slate-900">Booking</h3><p class="text-xs text-slate-500">Booking & payment management</p></div>
-                        <button onclick="closeBookingDetail()" class="text-slate-400 hover:text-slate-800 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                        <div class="flex items-center gap-2"><button id="booking-refresh-btn" onclick="refreshBookingDetail()" class="border border-slate-200 bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-xl text-xs font-bold text-indigo-950"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button><button onclick="closeBookingDetail()" class="text-slate-400 hover:text-slate-800 text-xl"><i class="fa-solid fa-xmark"></i></button></div>
                     </div>
                     <div id="booking-detail-body" class="p-6"></div>
                 </div>
@@ -570,7 +592,7 @@
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('dashboard-screen').classList.remove('hidden');
                 document.getElementById('admin-user-display').innerText = session.user.email;
-                loadVehicles();
+                switchTab('dashboard');
             } else {
                 document.getElementById('auth-screen').classList.remove('hidden');
                 document.getElementById('dashboard-screen').classList.add('hidden');
@@ -606,7 +628,7 @@
 
         // TABS SWITCHER
         function switchTab(tab) {
-            ['vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries'].forEach(t => {
+            ['dashboard', 'vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries'].forEach(t => {
                 const sec = document.getElementById(`section-${t}`);
                 const btn = document.getElementById(`tab-btn-${t}`);
                 if (t === tab) {
@@ -618,6 +640,7 @@
                 }
             });
 
+            if (tab === 'dashboard') loadDashboard();
             if (tab === 'vehicles') loadVehicles();
             if (tab === 'pricing') loadPricingRules();
             if (tab === 'locations') loadLocations();
@@ -1034,6 +1057,33 @@
             return '<span class="px-2 py-1 rounded-full text-[9px] font-bold '+cls+'">'+escapeAdminHtml(v.replaceAll('_',' '))+'</span>';
         }
 
+        function bookingDate(b){ const raw=b.pickup_date||b.trip_date||b.start_date||b.booking_date||b.created_at; const d=new Date(raw); return Number.isNaN(d.getTime())?new Date(b.created_at):d; }
+        async function loadDashboard(){
+            const btn=document.getElementById('dashboard-refresh-btn'); if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Refreshing…';}
+            try{
+                const result=await adminApi('/api/admin-payment?dashboard=1'), bookings=result.bookings||[], payments=result.payments||[];
+                const now=new Date(), monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+                const monthBookings=bookings.filter(b=>new Date(b.created_at)>=monthStart);
+                const revenue=payments.filter(p=>new Date(p.paid_at||p.created_at)>=monthStart).reduce((a,p)=>a+Number(p.amount||0),0);
+                const outstanding=bookings.filter(b=>!['cancelled','completed'].includes(String(b.booking_status))).reduce((a,b)=>a+Math.max(0,Number(b.total_fare||0)-Number(b.paid_amount||0)),0);
+                const today=bookings.filter(b=>bookingDate(b).toDateString()===now.toDateString()&&!['cancelled','completed'].includes(String(b.booking_status))).length;
+                const ongoing=bookings.filter(b=>b.booking_status==='ongoing').length;
+                const cards=[['This Month Bookings',monthBookings.length,'fa-calendar-check'],["Today's Trips",today,'fa-car-side'],['This Month Received',money(revenue),'fa-indian-rupee-sign'],['Outstanding',money(outstanding),'fa-wallet']];
+                document.getElementById('dashboard-kpis').innerHTML=cards.map(c=>'<div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm"><div class="flex justify-between"><div><p class="text-[10px] uppercase font-bold text-slate-400">'+c[0]+'</p><p class="text-2xl font-black mt-2 text-indigo-950">'+c[1]+'</p></div><i class="fa-solid '+c[2]+' text-amber-500 text-xl"></i></div></div>').join('');
+                const active=bookings.filter(b=>!['cancelled','completed'].includes(String(b.booking_status))).sort((a,b)=>bookingDate(a)-bookingDate(b)).slice(0,8);
+                const row=b=>'<button class="w-full text-left border rounded-xl p-3 hover:bg-slate-50" onclick="openBookingDetailById(\''+escapeAdminHtml(b.booking_id)+'\')"><b>'+escapeAdminHtml(b.booking_id)+'</b> • '+escapeAdminHtml(b.customer_name||'')+'<span class="float-right">'+statusBadge(b.booking_status)+'</span><div class="text-slate-500 mt-1">'+bookingDate(b).toLocaleDateString('en-IN')+' • '+escapeAdminHtml(b.car_name||'')+' • '+escapeAdminHtml(b.route||'—')+'</div></button>';
+                document.getElementById('dashboard-upcoming').innerHTML=active.length?active.map(row).join(''):'<p class="text-slate-400">No active bookings.</p>';
+                const attention=bookings.filter(b=>!['cancelled','completed'].includes(String(b.booking_status))&&(Number(b.total_fare||0)>Number(b.paid_amount||0)||['received','availability_confirmed'].includes(String(b.booking_status)))).slice(0,8);
+                document.getElementById('dashboard-attention').innerHTML=attention.length?attention.map(row).join(''):'<p class="text-emerald-700 font-bold">Nothing needs attention ✓</p>';
+                const months=[]; for(let n=5;n>=0;n--){const d=new Date(now.getFullYear(),now.getMonth()-n,1), e=new Date(d.getFullYear(),d.getMonth()+1,1);const bs=bookings.filter(b=>{const x=new Date(b.created_at);return x>=d&&x<e}).length;const rev=payments.filter(p=>{const x=new Date(p.paid_at||p.created_at);return x>=d&&x<e}).reduce((a,p)=>a+Number(p.amount||0),0);months.push({label:d.toLocaleDateString('en-IN',{month:'short',year:'2-digit'}),bs,rev});}
+                const max=Math.max(1,...months.map(x=>x.bs)); document.getElementById('dashboard-months').innerHTML=months.map(x=>'<div><div class="flex justify-between font-bold"><span>'+x.label+' • '+x.bs+' bookings</span><span>'+money(x.rev)+'</span></div><div class="h-2 bg-slate-100 rounded-full mt-1 overflow-hidden"><div class="h-full bg-indigo-900 rounded-full" style="width:'+Math.max(4,x.bs/max*100)+'%"></div></div></div>').join('');
+                document.getElementById('dashboard-payments').innerHTML=payments.slice(0,8).map(p=>'<div class="border-b py-2 flex justify-between gap-2"><span><b>'+escapeAdminHtml(p.booking_id)+'</b><br><span class="text-slate-400">'+escapeAdminHtml((p.payment_method||'razorpay').replaceAll('_',' '))+'</span></span><b class="text-emerald-700">'+money(p.amount)+'</b></div>').join('')||'<p class="text-slate-400">No payments yet.</p>';
+            }catch(e){document.getElementById('dashboard-kpis').innerHTML='<p class="text-rose-600 text-sm font-bold">'+escapeAdminHtml(e.message)+'</p>';}finally{if(btn){btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-rotate mr-1"></i> Refresh';}}
+        }
+        async function openBookingDetailById(id){try{const result=await adminApi('/api/admin-payment?dashboard=1');const b=(result.bookings||[]).find(x=>x.booking_id===id);if(b)openBookingDetail(b);}catch(e){alert(e.message)}}
+        async function refreshBookingDetail(){
+            if(!currentAdminBooking)return; const btn=document.getElementById('booking-refresh-btn');
+            try{if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Refreshing…';}const result=await adminApi('/api/admin-payment?dashboard=1');const fresh=(result.bookings||[]).find(x=>x.booking_id===currentAdminBooking.booking_id);if(fresh)currentAdminBooking=fresh;await renderBookingDetail();}catch(e){alert(e.message)}finally{const b=document.getElementById('booking-refresh-btn');if(b){b.disabled=false;b.innerHTML='<i class="fa-solid fa-check mr-1"></i> Updated';setTimeout(()=>{if(b)b.innerHTML='<i class="fa-solid fa-rotate mr-1"></i> Refresh'},900);}}}
         async function loadInquiries() {
             const tbody = document.getElementById('admin-inquiries-table-body');
             tbody.innerHTML = '<tr><td colspan="13" class="py-8 text-center text-slate-400">Loading bookings...</td></tr>';
@@ -1101,7 +1151,7 @@
                 </div>
                 <div class="mt-4 border rounded-2xl p-4">
                     <div class="flex flex-wrap gap-4 items-end">
-                        <label class="text-xs font-bold">Booking Status<select id="booking-status-select" class="block mt-1 border rounded-lg px-3 py-2"><option value="received">Received</option><option value="availability_confirmed">Availability Confirmed</option><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
+                        <label class="text-xs font-bold">Booking Status<select id="booking-status-select" class="block mt-1 border rounded-lg px-3 py-2"><option value="received">Received</option><option value="availability_confirmed">Availability Confirmed</option><option value="confirmed">Confirmed</option><option value="ongoing">Ongoing</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
                         <button onclick="saveBookingStatus()" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold">Save Status</button>
                     </div>
                 </div>

@@ -1190,7 +1190,7 @@
             if(typed.trim()!==id){alert('Booking ID did not match. Nothing was deleted.');return;}
             if(!confirm('Permanently delete '+id+' and its local payment history? This cannot be undone.'))return;
             try{
-                await adminApi('/api/admin-payment',{method:'DELETE',body:JSON.stringify({booking_id:id,confirmation:typed.trim()})});
+                await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'delete_booking',booking_id:id,confirmation:typed.trim()})});
                 closeBookingDetail(); await loadInquiries(); alert('Booking deleted.');
             }catch(e){alert(e.message||'Unable to delete booking.');}
         }

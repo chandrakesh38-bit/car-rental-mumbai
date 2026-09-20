@@ -262,14 +262,11 @@ export async function requestFormOtp(form, phoneId, purpose) {
   if (state.proof && state.expiresAt > Date.now() && state.mobile === mobile && state.purpose === purpose) return state.proof;
   if (state.open) throw Error('Mobile verification is already in progress.');
 
-  // A fresh modal session needs a fresh MSG91/hCaptcha instance. Reusing the
-  // previous widget leaves hCaptcha visually verified while its token is stale.
+  // Reuse the MSG91 SDK methods after the first successful initialization.
+  // Some SDK globals (including sendOtp) are exposed as read-only Window
+  // properties, so attempting to delete/reassign them breaks subsequent forms.
+  // hCaptcha itself is reset below by clearing its mount before the modal opens.
   sdkPromise = null;
-  if (typeof window.initSendOTP === 'function') {
-    for (const method of ['sendOtp', 'retryOtp', 'verifyOtp', 'getWidgetData', 'isCaptchaVerified']) {
-      try { delete window[method]; } catch (_) { window[method] = undefined; }
-    }
-  }
 
   ensureCss();
   const modal = ensureModal();

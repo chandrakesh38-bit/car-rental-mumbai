@@ -1103,12 +1103,15 @@
                     ${balance>0 ? `<div class="flex flex-wrap gap-2 items-end border-t pt-4">
                         <label class="text-xs font-bold">Amount<input id="payment-amount" type="number" min="1" max="${balance}" class="block mt-1 border rounded-lg px-3 py-2 w-36" placeholder="₹"></label>
                         <label class="text-xs font-bold">Payment Type<select id="payment-type" class="block mt-1 border rounded-lg px-3 py-2"><option value="advance">Advance</option><option value="full">Full Payment</option><option value="balance">Balance Payment</option></select></label>
-                        <button onclick="generatePaymentLink()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Generate Payment Link</button>
+                        <button type="button" id="generate-payment-link-btn" class="bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white px-4 py-2 rounded-lg text-xs font-bold">Generate Payment Link</button>
+                        <p id="payment-action-message" class="w-full text-xs font-semibold hidden"></p>
                     </div>` : '<p class="text-emerald-700 font-bold">Payment complete ✓</p>'}
                 </div>
                 <div class="mt-4"><h4 class="font-black text-sm mb-2">Payment History</h4><div class="space-y-2">${payments.length?payments.map(paymentCard).join(''):'<p class="text-xs text-slate-400">No payment requests yet.</p>'}</div></div>
                 <details class="mt-4 border rounded-xl p-3"><summary class="text-xs font-bold cursor-pointer">Full booking details</summary><pre class="mt-3 text-[11px] whitespace-pre-wrap text-slate-600">${escapeAdminHtml(b.booking_details||'No details')}</pre></details>`;
             document.getElementById('booking-status-select').value=b.booking_status||'received';
+            const paymentBtn = document.getElementById('generate-payment-link-btn');
+            if (paymentBtn) paymentBtn.addEventListener('click', generatePaymentLink);
         }
 
         function paymentCard(p) {
@@ -1118,7 +1121,24 @@
         }
 
         async function saveBookingStatus(){ const value=document.getElementById('booking-status-select').value; const {error}=await supabaseClient.from('inquiries').update({booking_status:value,updated_at:new Date().toISOString()}).eq('booking_id',currentAdminBooking.booking_id); if(error)return alert(error.message); currentAdminBooking.booking_status=value; await loadInquiries(); await renderBookingDetail(); }
-        async function generatePaymentLink(){ try{const amount=Number(document.getElementById('payment-amount').value),payment_type=document.getElementById('payment-type').value; await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'create',booking_id:currentAdminBooking.booking_id,amount,payment_type})}); await renderBookingDetail();}catch(e){alert(e.message)}}
+        async function generatePaymentLink(){
+            const amountEl=document.getElementById('payment-amount'), typeEl=document.getElementById('payment-type');
+            const btn=document.getElementById('generate-payment-link-btn'), msg=document.getElementById('payment-action-message');
+            const amount=Number(amountEl?.value), payment_type=typeEl?.value;
+            const fare=Number(currentAdminBooking?.total_fare||currentAdminBooking?.fare_amount||0), paid=Number(currentAdminBooking?.paid_amount||0), balance=Math.max(0,fare-paid);
+            const show=(text,error=false)=>{ if(!msg)return; msg.textContent=text; msg.className='w-full text-xs font-semibold '+(error?'text-rose-600':'text-indigo-700'); };
+            if(!Number.isFinite(amount)||amount<=0){ show('Enter a valid payment amount.',true); amountEl?.focus(); return; }
+            if(amount>balance){ show('Amount cannot exceed the booking balance.',true); amountEl?.focus(); return; }
+            try{
+                if(btn){btn.disabled=true;btn.textContent='Generating…';}
+                show('Creating secure Razorpay payment link…');
+                await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'create',booking_id:currentAdminBooking.booking_id,amount,payment_type})});
+                await renderBookingDetail();
+            }catch(e){
+                show(e.message||'Unable to generate payment link.',true);
+                if(btn){btn.disabled=false;btn.textContent='Generate Payment Link';}
+            }
+        }
         async function verifyPayment(id){try{await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'verify',booking_id:currentAdminBooking.booking_id,payment_id:id})});const {data}=await supabaseClient.from('inquiries').select('*').eq('booking_id',currentAdminBooking.booking_id).single();if(data)currentAdminBooking=data;await loadInquiries();await renderBookingDetail();}catch(e){alert(e.message)}}
         async function cancelPayment(id){if(!confirm('Cancel this payment link?'))return;try{await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'cancel',booking_id:currentAdminBooking.booking_id,payment_id:id})});await renderBookingDetail();}catch(e){alert(e.message)}}
         async function copyPaymentLink(link){try{await navigator.clipboard.writeText(link);alert('Payment link copied.');}catch{prompt('Copy payment link:',link)}}

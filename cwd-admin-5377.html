@@ -181,9 +181,29 @@
             <form id="with-driver-add-form" onsubmit="addWithDriverVehicle(event)" class="hidden mb-5 p-4 rounded-xl bg-slate-50 border border-slate-200">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <input id="wd-new-name" required placeholder="Vehicle name" class="border rounded-lg px-3 py-2">
-                    <input id="wd-new-segment" required placeholder="Category / Segment" class="border rounded-lg px-3 py-2">
-                    <input id="wd-new-seats" required type="number" min="1" placeholder="Seats" class="border rounded-lg px-3 py-2">
-                    <input id="wd-new-bags" required type="number" min="0" placeholder="Bags" class="border rounded-lg px-3 py-2">
+                    <div>
+                        <input id="wd-new-segment" required list="wd-segment-options" placeholder="Category / Segment" class="w-full border rounded-lg px-3 py-2">
+                        <datalist id="wd-segment-options">
+                            <option value="Sedan"></option>
+                            <option value="Compact SUV"></option>
+                            <option value="SUV"></option>
+                            <option value="MUV / 7-Seater"></option>
+                            <option value="Premium MUV"></option>
+                            <option value="Luxury MUV"></option>
+                            <option value="Tempo Traveller"></option>
+                        </datalist>
+                        <p class="text-[10px] text-slate-400 mt-1">Select suggestion or type your own.</p>
+                    </div>
+                    <div>
+                        <input id="wd-new-seats" required type="number" min="1" list="wd-seat-options" placeholder="Seats" class="w-full border rounded-lg px-3 py-2">
+                        <datalist id="wd-seat-options"><option value="4"></option><option value="6"></option><option value="7"></option><option value="12"></option><option value="17"></option><option value="20"></option></datalist>
+                        <p class="text-[10px] text-slate-400 mt-1">Choose common value or enter manually.</p>
+                    </div>
+                    <div>
+                        <input id="wd-new-bags" required type="number" min="0" list="wd-bag-options" placeholder="Bags" class="w-full border rounded-lg px-3 py-2">
+                        <datalist id="wd-bag-options"><option value="2"></option><option value="3"></option><option value="4"></option><option value="5"></option><option value="6"></option></datalist>
+                        <p class="text-[10px] text-slate-400 mt-1">Choose common value or enter manually.</p>
+                    </div>
                     <input id="wd-new-local" required type="number" min="0" placeholder="Local 8H/80KM" class="border rounded-lg px-3 py-2">
                     <input id="wd-new-ehr" required type="number" min="0" placeholder="Extra Hour" class="border rounded-lg px-3 py-2">
                     <input id="wd-new-ekm" required type="number" min="0" placeholder="Extra KM" class="border rounded-lg px-3 py-2">

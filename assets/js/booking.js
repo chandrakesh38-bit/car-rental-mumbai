@@ -2208,6 +2208,22 @@ showSuccessModal(result.application_number, result);
     }
 }
         
+        function showBookingSubmittingOverlay() {
+            let overlay = document.getElementById('booking-submitting-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'booking-submitting-overlay';
+                overlay.className = 'fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[10001] flex items-center justify-center px-4';
+                overlay.innerHTML = '<div class="bg-white rounded-2xl shadow-2xl px-6 py-5 text-center"><i class="fa-solid fa-spinner fa-spin text-indigo-700 text-2xl mb-3"></i><div class="font-extrabold text-slate-900">Confirming your booking...</div><div class="text-xs text-slate-500 mt-1">Please wait while we generate your Booking ID.</div></div>';
+                document.body.appendChild(overlay);
+            }
+            overlay.classList.remove('hidden');
+        }
+
+        function hideBookingSubmittingOverlay() {
+            document.getElementById('booking-submitting-overlay')?.classList.add('hidden');
+        }
+
         function sendWithDriverBookingEmail(...args) {
             return sendEmailNotification(...args);
         }
@@ -2217,6 +2233,7 @@ showSuccessModal(result.application_number, result);
             form.dataset.submitting = 'true';
             const button = form.querySelector('button[type="submit"]');
             button.disabled = true;
+            showBookingSubmittingOverlay();
             try {
                 if (!otpProof) throw new Error('Please verify your mobile number before submitting.');
                 const response = await fetch('/api/booking-enquiry', {
@@ -2231,9 +2248,11 @@ showSuccessModal(result.application_number, result);
                 if (!response.ok || !result.success) throw new Error(result.message || 'Unable to submit enquiry. Please try again.');
                 showSuccessModal(result.booking_id, result, true);
                 closeBookingModal();
+                hideBookingSubmittingOverlay();
                 delete form.dataset.bookingId;
                 delete form.dataset.submissionKey;
             } catch (error) {
+                hideBookingSubmittingOverlay();
                 showCustomAlert(error.message || 'Unable to submit enquiry. Please try again.');
             } finally {
                 form.dataset.submitting = 'false';

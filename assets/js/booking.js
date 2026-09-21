@@ -2232,7 +2232,9 @@ showSuccessModal(result.application_number, result);
             if (form.dataset.submitting === 'true') return;
             form.dataset.submitting = 'true';
             const button = form.querySelector('button[type="submit"]');
+            const originalButtonHtml = button.innerHTML;
             button.disabled = true;
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Confirming Booking...';
             showBookingSubmittingOverlay();
             try {
                 if (!otpProof) throw new Error('Please verify your mobile number before submitting.');

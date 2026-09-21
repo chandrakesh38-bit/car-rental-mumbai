@@ -1,10 +1,11 @@
-import { requireMobileOtp } from '../lib/mobile-otp.mjs';
+import { requireMobileOtp, consumeMobileOtp } from '../lib/mobile-otp.mjs';
+import { validateBookingData } from '../lib/booking-validation.mjs';
 import { createVerification } from '../lib/self-drive-documents.mjs';
 import { sendNotifications, validEmail } from '../lib/notifications.mjs';
 
 export const config = { runtime: 'edge' };
 
-function extractInquiry({ bookingId, name, phone, email, details, serviceMode }) {
+function extractInquiry({ bookingId, name, phone, email, details, serviceMode, validated }) {
   const text = String(details);
   const lines = text.split('\n').map(v => v.trim()).filter(Boolean);
   const find = label => lines.find(line => line.toLowerCase().startsWith(label.toLowerCase() + ':'))?.split(':').slice(1).join(':').trim();
@@ -40,11 +41,11 @@ function extractInquiry({ bookingId, name, phone, email, details, serviceMode })
     customer_email: email.trim(),
     service_type: service,
     trip_type: tripType,
-    car_name: car,
-    route,
+    car_name: validated?.carName || car,
+    route: validated?.route || route,
     booking_details: text,
-    fare_amount: fare,
-    total_fare: fare,
+    fare_amount: validated?.fare ?? fare,
+    total_fare: validated?.fare ?? fare,
     paid_amount: 0,
     payment_status: 'pending',
     booking_status: 'received',
@@ -74,7 +75,7 @@ export default async function handler(request) {
   try {
     const raw = await request.text();
     if (raw.length > 20000) return json({ success: false, message: 'Enquiry is too large.' }, 413);
-    const { bookingId, name, phone, email, details, serviceMode, submissionKey, otpProof } = JSON.parse(raw);
+    const { bookingId, name, phone, email, details, serviceMode, submissionKey, otpProof, bookingData } = JSON.parse(raw);
     if (!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId || '') ||
         typeof name !== 'string' || !name.trim() || name.length > 200 ||
         typeof phone !== 'string' || !/^[+\d\s()-]{7,30}$/.test(phone) ||
@@ -82,10 +83,12 @@ export default async function handler(request) {
       return json({ success: false, message: 'Please check your enquiry details and email address.' }, 400);
     }
     await requireMobileOtp(otpProof, phone, 'booking', new URL(request.url).origin);
+    const validated = await validateBookingData(serviceMode, bookingData);
+    await consumeMobileOtp(otpProof, phone, 'booking', new URL(request.url).origin);
     const uploadUrl = serviceMode === 'selfdrive'
       ? await createVerification({ bookingId, submissionKey, name, phone, email, details }, new URL(request.url).origin)
       : undefined;
-    await saveInquiry(extractInquiry({ bookingId, name, phone, email, details, serviceMode }));
+    await saveInquiry(extractInquiry({ bookingId, name, phone, email, details, serviceMode, validated }));
     const notifications = await sendNotifications({
       kind: 'booking', reference: bookingId, email, uploadUrl,
       details: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\n\n${details}`,

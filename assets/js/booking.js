@@ -803,7 +803,7 @@ function onPickupDateChange() {
                 const end = readDateTime(returnIds);
                 invalidIds = returnIds;
                 if (!Number.isFinite(end.getTime())) message = 'Please select a valid return date and time.';
-                else if (end < pickup) message = 'Return date and time cannot be earlier than pickup date and time.';
+                else if (end <= pickup) message = 'Return date and time must be later than pickup date and time.';
             }
             if (!message) return true;
             showCustomAlert(message);
@@ -1236,7 +1236,11 @@ function onPickupDateChange() {
             if (currentDeliveryMode === 'home') {
                 const locInput = document.getElementById('sd-delivery-location-input').value.trim().toLowerCase();
                 const found = mumbaiMetroLocations.find(l => l.name.toLowerCase() === locInput);
-                let oneWayKm = found ? found.km : 10;
+                if (!found || found.serviceable === false || !Number.isFinite(found.km)) {
+                    showCustomAlert('Sorry, this delivery location is currently outside our standard service zones. Please select from our listed Mumbai metro locations or contact support for custom outstation/delivery quotes.');
+                    return false;
+                }
+                let oneWayKm = found.km;
                 let totalDeliveryKm = oneWayKm * 2;
                 deliveryCharge = livePricingRules.baseDeliveryCharge +
                     Math.max(0, totalDeliveryKm - livePricingRules.freeThresholdKm) * livePricingRules.extraDeliveryChargePerKm;
@@ -1257,6 +1261,7 @@ function onPickupDateChange() {
             document.getElementById('sd-review-base-fare').innerText = `₹${baseFare.toLocaleString('en-IN')}`;
             document.getElementById('sd-review-deposit').innerText = `₹${deposit.toLocaleString('en-IN')}`;
             document.getElementById('disp-total-final-fare').innerText = `₹${total.toLocaleString('en-IN')}`;
+            return true;
         }
 
 function onDeliveryLocationSelect() {
@@ -1571,8 +1576,9 @@ async function handleBookingSubmit(e) {
         subject = `New booking assigned to your car – ${chosenCarName}`;
     }
 
+    const bookingData = {tripType: currentWDSubTab, carName: chosenCarName, pickupAt: startDateTime.toISOString(), pickupLocation: currentWDSubTab === 'outstation' ? document.getElementById('wd-out-pickup').value.trim() : currentWDSubTab === 'airport' ? document.getElementById('wd-airport-pickup').value.trim() : document.getElementById('wd-local-pickup').value.trim(), ...(currentWDSubTab === 'local' ? {localPackage: document.getElementById('wd-local-package').value} : {}), ...(currentWDSubTab === 'outstation' ? {returnAt: returnDateTime.toISOString(), destination: document.getElementById('wd-out-destination').value.trim()} : {}), ...(currentWDSubTab === 'airport' ? {airportTerminal: document.getElementById('wd-airport-terminal').value, airportType: currentAirportType} : {})};
     await sendWithDriverBookingEmail(e.target, bookingId, name, phone, email,
-        message + '\nCustomer address: ' + address, closeModal, 'withdriver', otpProof);
+        message + '\nCustomer address: ' + address, closeModal, 'withdriver', otpProof, bookingData);
 }
         async function handleSDBookingSubmit(e) {
             e.preventDefault();
@@ -1584,7 +1590,7 @@ async function handleBookingSubmit(e) {
                 if (!otp) throw new Error('Mobile verification could not load. Please refresh and retry.');
                 otpProof = await otp.requestFormOtp(e.target, 'sd-cust-phone', 'booking');
             } catch (error) { if (!error.cancelled) showCustomAlert(error.message); return; }
-            updateSDFareReview();
+            if (updateSDFareReview() === false) return;
             const name = document.getElementById('sd-cust-name').value.trim();
             const phone = document.getElementById('sd-cust-phone').value.trim();
             const email = document.getElementById('sd-cust-email').value.trim();
@@ -1606,7 +1612,8 @@ async function handleBookingSubmit(e) {
                 ['Delivery Charge', currentDeliveryMode === 'home' ? text('sd-review-delivery-charge') : '0'],
                 ['Total Amount', text('disp-total-final-fare')],
             ].map(([label, v]) => label + ': ' + (v || 'Not provided')).join('\n');
-            await sendEmailNotification(e.target, bookingId, name, phone, email, details, closeSDModal, 'selfdrive', otpProof);
+            const bookingData = {vehicleId:selectedCarObj.id,pickupAt:createLocalDateTime(value('sd-pdate'),Number(value('sd-phour')),value('sd-pampm')).toISOString(),returnAt:createLocalDateTime(value('sd-rdate'),Number(value('sd-rhour')),value('sd-rampm')).toISOString(),deliveryMode:currentDeliveryMode,deliveryLocation:currentDeliveryMode==='home'?value('sd-delivery-location-input'):'Self Pick-up'};
+            await sendEmailNotification(e.target, bookingId, name, phone, email, details, closeSDModal, 'selfdrive', otpProof, bookingData);
         }
 
 let lastPartnerForm = null;
@@ -2162,7 +2169,7 @@ showSuccessModal(result.application_number, result);
             return sendEmailNotification(...args);
         }
 
-        async function sendEmailNotification(form, bookingId, name, phone, email, details, closeBookingModal, serviceMode = 'withdriver', otpProof) {
+        async function sendEmailNotification(form, bookingId, name, phone, email, details, closeBookingModal, serviceMode = 'withdriver', otpProof, bookingData) {
             if (form.dataset.submitting === 'true') return;
             form.dataset.submitting = 'true';
             const button = form.querySelector('button[type="submit"]');
@@ -2172,7 +2179,7 @@ showSuccessModal(result.application_number, result);
                 const response = await fetch('/api/booking-enquiry', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bookingId, name, phone, email, details, serviceMode, otpProof,
+                    body: JSON.stringify({ bookingId, name, phone, email, details, serviceMode, otpProof, bookingData,
                         ...(serviceMode === 'selfdrive' ? { submissionKey: form.dataset.submissionKey || (form.dataset.submissionKey = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('')) } : {}),
                     }),
                 });

@@ -1,4 +1,5 @@
-import { requireMobileOtp } from '../lib/mobile-otp.mjs';
+import { requireMobileOtp, consumeMobileOtp, normalizeMobile } from '../lib/mobile-otp.mjs';
+import { validEmail } from '../lib/notifications.mjs';
 import { sendNotifications } from '../lib/notifications.mjs';
 
 // Car With Driver India
@@ -18,7 +19,7 @@ const BUCKET_NAME = "partner-documents";
 
 // Keep total website upload below Vercel request limit
 const MAX_TOTAL_SIZE = 4 * 1024 * 1024; // 4 MB
-const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3 MB per file
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB per file
 const MAX_VEHICLE_PHOTOS = 4;
 
 const ALLOWED_DOCUMENT_TYPES = [
@@ -45,6 +46,14 @@ function jsonResponse(data, status = 200) {
   });
 }
 
+function validSignature(type, bytes) {
+  const b=new Uint8Array(bytes);
+  if(type==='application/pdf') return b.length>=5 && String.fromCharCode(...b.slice(0,5))==='%PDF-';
+  if(type==='image/jpeg') return b.length>=3 && b[0]===0xff&&b[1]===0xd8&&b[2]===0xff;
+  if(type==='image/png') return b.length>=8 && [137,80,78,71,13,10,26,10].every((v,i)=>b[i]===v);
+  if(type==='image/webp') return b.length>=12 && String.fromCharCode(...b.slice(0,4))==='RIFF' && String.fromCharCode(...b.slice(8,12))==='WEBP';
+  return false;
+}
 function cleanFileName(name) {
   return String(name || "document")
     .replace(/[^a-zA-Z0-9._-]/g, "_")
@@ -58,9 +67,12 @@ async function uploadToSupabase(file, path) {
 
   if (file.size > MAX_FILE_SIZE) {
     throw new Error(
-      `${file.name || "File"} is larger than 3 MB.`
+      `${file.name || "File"} is larger than 5 MB.`
     );
   }
+
+  const bytes = await file.arrayBuffer();
+  if (!validSignature(file.type, bytes)) throw new Error(`${file.name || "File"} content does not match its file type.`);
 
   const response = await fetch(
     `${SUPABASE_URL}/storage/v1/object/${BUCKET_NAME}/${path}`,
@@ -74,7 +86,7 @@ async function uploadToSupabase(file, path) {
           file.type || "application/octet-stream",
         "x-upsert": "true",
       },
-      body: await file.arrayBuffer(),
+      body: bytes,
     }
   );
 
@@ -254,15 +266,13 @@ export default async function handler(request) {
     // REQUIRED DETAILS CHECK
     // ----------------------------------------
 
-    if (!name || !phone) {
-      return jsonResponse(
-        {
-          success: false,
-          message:
-            "Name and mobile number are required.",
-        },
-        400
-      );
+    const currentYear = new Date().getFullYear();
+    if (!name || name.length > 120 || !normalizeMobile(phone) ||
+        (email && (email.length > 254 || !validEmail(email))) ||
+        (alternatePhone && !normalizeMobile(alternatePhone)) ||
+        carBrand.length > 80 || carModel.length > 120 ||
+        (mfgYearRaw && (!/^\\d{4}$/.test(mfgYearRaw) || !Number.isInteger(mfgYear) || mfgYear < 1980 || mfgYear > currentYear + 1))) {
+      return jsonResponse({success:false,message:"Please check the partner details and enter valid contact and vehicle information."},400);
     }
 
     // ----------------------------------------
@@ -341,6 +351,9 @@ export default async function handler(request) {
       uploaded[databaseField] =
         uploadedPath;
     }
+
+    // Consume only after all text fields and OTP have passed validation. File validation remains server-side.
+    await consumeMobileOtp(formData.get('otpProof'), phone, 'partner', new URL(request.url).origin);
 
     // Required documents
     await processDocument(

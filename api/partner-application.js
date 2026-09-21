@@ -267,13 +267,14 @@ export default async function handler(request) {
     // ----------------------------------------
 
     const currentYear = new Date().getFullYear();
-    if (!name || name.length > 120 || !normalizeMobile(phone) ||
-        (email && (email.length > 254 || !validEmail(email))) ||
-        (alternatePhone && !normalizeMobile(alternatePhone)) ||
-        carBrand.length > 80 || carModel.length > 120 ||
-        (mfgYearRaw && (!/^\\d{4}$/.test(mfgYearRaw) || !Number.isInteger(mfgYear) || mfgYear < 1980 || mfgYear > currentYear + 1))) {
-      return jsonResponse({success:false,message:"Please check the partner details and enter valid contact and vehicle information."},400);
-    }
+    if (!name) return jsonResponse({success:false,message:"Full name is required."},400);
+    if (name.length > 120) return jsonResponse({success:false,message:"Full name is too long."},400);
+    if (!normalizeMobile(phone)) return jsonResponse({success:false,message:"Please enter a valid 10-digit mobile number."},400);
+    if (email && (email.length > 254 || !validEmail(email))) return jsonResponse({success:false,message:"Please enter a valid email address."},400);
+    if (alternatePhone && !normalizeMobile(alternatePhone)) return jsonResponse({success:false,message:"Please enter a valid 10-digit alternate mobile number."},400);
+    if (!carBrand || carBrand.length > 80) return jsonResponse({success:false,message:"Please select or enter a valid car brand."},400);
+    if (!carModel || carModel.length > 120) return jsonResponse({success:false,message:"Please enter a valid car model."},400);
+    if (!mfgYearRaw || !/^\d{4}$/.test(mfgYearRaw) || !Number.isInteger(mfgYear) || mfgYear < 1980 || mfgYear > currentYear + 1) return jsonResponse({success:false,message:"Please select a valid manufacturing year."},400);
 
     // ----------------------------------------
     // APPLICATION ID

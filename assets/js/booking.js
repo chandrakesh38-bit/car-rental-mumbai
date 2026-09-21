@@ -1232,14 +1232,19 @@ function onPickupDateChange() {
             const baseFare = billedRentalHours * selectedCarObj.rateVal;
             const deposit = selectedCarObj.depositVal;
             
-            let deliveryCharge = livePricingRules.baseDeliveryCharge;
+            let deliveryCharge = 0;
             if (currentDeliveryMode === 'home') {
                 const locInput = document.getElementById('sd-delivery-location-input').value.trim().toLowerCase();
                 const found = mumbaiMetroLocations.find(l => l.name.toLowerCase() === locInput);
+                // An empty/partial location is normal while the user is typing. Keep the
+                // rental + deposit visible; strict service-zone validation happens on submit.
                 if (!found || found.serviceable === false || !Number.isFinite(found.km)) {
-                    showCustomAlert('Sorry, this delivery location is currently outside our standard service zones. Please select from our listed Mumbai metro locations or contact support for custom outstation/delivery quotes.');
-                    return false;
-                }
+                    document.getElementById('sd-review-delivery-charge-row').style.display = 'flex';
+                    document.getElementById('sd-review-delivery-charge').innerText = '₹0';
+                    document.getElementById('sd-review-deliv-mode').innerText = 'Home Delivery';
+                    document.getElementById('sd-review-deliv-location-row').style.display = locInput ? 'block' : 'none';
+                    if (locInput) document.getElementById('sd-review-deliv-location').innerText = document.getElementById('sd-delivery-location-input').value;
+                } else {
                 let oneWayKm = found.km;
                 let totalDeliveryKm = oneWayKm * 2;
                 deliveryCharge = livePricingRules.baseDeliveryCharge +
@@ -1249,6 +1254,7 @@ function onPickupDateChange() {
                 document.getElementById('sd-review-deliv-mode').innerText = 'Home Delivery';
                 document.getElementById('sd-review-deliv-location-row').style.display = 'block';
                 document.getElementById('sd-review-deliv-location').innerText = document.getElementById('sd-delivery-location-input').value || 'Mumbai Hub Delivery';
+                }
             } else {
                 deliveryCharge = 0;
                 document.getElementById('sd-review-delivery-charge-row').style.display = 'none';
@@ -1593,7 +1599,17 @@ async function handleBookingSubmit(e) {
                 if (!otp) throw new Error('Mobile verification could not load. Please refresh and retry.');
                 otpProof = await otp.requestFormOtp(e.target, 'sd-cust-phone', 'booking');
             } catch (error) { if (!error.cancelled) showCustomAlert(error.message); return; }
-            if (updateSDFareReview() === false) return;
+            updateSDFareReview();
+            if (currentDeliveryMode === 'home') {
+                const deliveryInput = document.getElementById('sd-delivery-location-input');
+                const entered = deliveryInput.value.trim().toLowerCase();
+                const validLocation = mumbaiMetroLocations.find(l => l.name.toLowerCase() === entered && l.serviceable !== false && Number.isFinite(l.km));
+                if (!validLocation) {
+                    showCustomAlert('Sorry, this delivery location is currently outside our standard service zones. Please select from our listed Mumbai metro locations or contact support for custom outstation/delivery quotes.');
+                    deliveryInput.focus();
+                    return;
+                }
+            }
             const name = document.getElementById('sd-cust-name').value.trim();
             const phone = document.getElementById('sd-cust-phone').value.trim();
             const email = document.getElementById('sd-cust-email').value.trim();
@@ -2198,6 +2214,7 @@ showSuccessModal(result.application_number, result);
             } finally {
                 form.dataset.submitting = 'false';
                 button.disabled = false;
+                button.innerHTML = originalButtonHtml;
             }
         }
 

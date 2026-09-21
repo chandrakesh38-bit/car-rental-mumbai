@@ -1406,6 +1406,7 @@ async function handleBookingSubmit(e) {
 
     let message = '';
     let subject = '';
+    let bookingData = null;
 
     // =========================
     // LOCAL CITY
@@ -1457,6 +1458,7 @@ async function handleBookingSubmit(e) {
 `;
 
         subject = `New booking assigned to your car – ${chosenCarName}`;
+        bookingData = {tripType:'local',carName:chosenCarName,pickupAt:startDateTime.toISOString(),pickupLocation,localPackage:packageValue};
     }
 
     // =========================
@@ -1512,6 +1514,7 @@ async function handleBookingSubmit(e) {
 `;
 
         subject = `New booking assigned to your car – ${chosenCarName}`;
+        bookingData = {tripType:'outstation',carName:chosenCarName,pickupAt:startDateTime.toISOString(),returnAt:returnDateTime.toISOString(),pickupLocation,destination};
     }
 
     // =========================
@@ -1574,9 +1577,9 @@ async function handleBookingSubmit(e) {
         }
 
         subject = `New booking assigned to your car – ${chosenCarName}`;
+        bookingData = {tripType:'airport',carName:chosenCarName,pickupAt:journeyDateTime.toISOString(),pickupLocation:location,airportTerminal:airport,airportType:currentAirportType};
     }
 
-    const bookingData = {tripType: currentWDSubTab, carName: chosenCarName, pickupAt: startDateTime.toISOString(), pickupLocation: currentWDSubTab === 'outstation' ? document.getElementById('wd-out-pickup').value.trim() : currentWDSubTab === 'airport' ? document.getElementById('wd-airport-pickup').value.trim() : document.getElementById('wd-local-pickup').value.trim(), ...(currentWDSubTab === 'local' ? {localPackage: document.getElementById('wd-local-package').value} : {}), ...(currentWDSubTab === 'outstation' ? {returnAt: returnDateTime.toISOString(), destination: document.getElementById('wd-out-destination').value.trim()} : {}), ...(currentWDSubTab === 'airport' ? {airportTerminal: document.getElementById('wd-airport-terminal').value, airportType: currentAirportType} : {})};
     await sendWithDriverBookingEmail(e.target, bookingId, name, phone, email,
         message + '\nCustomer address: ' + address, closeModal, 'withdriver', otpProof, bookingData);
 }

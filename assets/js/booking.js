@@ -1593,12 +1593,13 @@ async function handleBookingSubmit(e) {
             e.preventDefault();
             if (!validateSelfDriveJourney()) return;
             if (!e.target.reportValidity()) return;
-            let otpProof;
-            try {
-                const otp = await mobileOtpReady;
-                if (!otp) throw new Error('Mobile verification could not load. Please refresh and retry.');
-                otpProof = await otp.requestFormOtp(e.target, 'sd-cust-phone', 'booking');
-            } catch (error) { if (!error.cancelled) showCustomAlert(error.message); return; }
+            const primaryPhone = document.getElementById('sd-cust-phone').value.trim().replace(/\D/g, '').slice(-10);
+            const alternatePhone = document.getElementById('sd-cust-alt-phone').value.trim().replace(/\D/g, '').slice(-10);
+            if (alternatePhone && primaryPhone === alternatePhone) {
+                showCustomAlert('Alternate mobile number must be different from the primary mobile number.');
+                document.getElementById('sd-cust-alt-phone').focus();
+                return;
+            }
             updateSDFareReview();
             if (currentDeliveryMode === 'home') {
                 const deliveryInput = document.getElementById('sd-delivery-location-input');
@@ -1610,6 +1611,12 @@ async function handleBookingSubmit(e) {
                     return;
                 }
             }
+            let otpProof;
+            try {
+                const otp = await mobileOtpReady;
+                if (!otp) throw new Error('Mobile verification could not load. Please refresh and retry.');
+                otpProof = await otp.requestFormOtp(e.target, 'sd-cust-phone', 'booking');
+            } catch (error) { if (!error.cancelled) showCustomAlert(error.message); return; }
             const name = document.getElementById('sd-cust-name').value.trim();
             const phone = document.getElementById('sd-cust-phone').value.trim();
             const email = document.getElementById('sd-cust-email').value.trim();
@@ -1825,6 +1832,23 @@ async function handlePartnerFormSubmit(e) {
     if (e.target.dataset.submitting === 'true') return;
     if (!e.target.reportValidity()) return;
     if (!window.preparePartnerFiles()) return;
+
+    const partnerPrimaryPhone = document.getElementById('part-phone').value.trim().replace(/\D/g, '').slice(-10);
+    const partnerAlternatePhone = document.getElementById('part-alt-phone').value.trim().replace(/\D/g, '').slice(-10);
+    if (partnerAlternatePhone && partnerPrimaryPhone === partnerAlternatePhone) {
+        showCustomAlert('Alternate mobile number must be different from the primary mobile number.');
+        document.getElementById('part-alt-phone').focus();
+        return;
+    }
+
+    const requiredPartnerDocs = (window.docFields || []).map(field => ({...field, file: document.getElementById(field.id)?.files?.[0]}));
+    const missingBeforeOtp = requiredPartnerDocs.filter(item => !item.file);
+    if (missingBeforeOtp.length) {
+        showPartnerErrorModal('Please upload the following mandatory document' + (missingBeforeOtp.length > 1 ? 's' : '') + ':\n\n' + missingBeforeOtp.map(item => item.label).join(', '));
+        document.getElementById(missingBeforeOtp[0].id)?.parentElement?.scrollIntoView({behavior:'smooth',block:'center'});
+        return;
+    }
+
     let otpProof;
     try {
         const otp = await mobileOtpReady;
@@ -2205,8 +2229,8 @@ showSuccessModal(result.application_number, result);
                 const result = await response.json();
                 if (response.status === 409) { delete form.dataset.bookingId; delete form.dataset.submissionKey; }
                 if (!response.ok || !result.success) throw new Error(result.message || 'Unable to submit enquiry. Please try again.');
-                closeBookingModal();
                 showSuccessModal(result.booking_id, result, true);
+                closeBookingModal();
                 delete form.dataset.bookingId;
                 delete form.dataset.submissionKey;
             } catch (error) {

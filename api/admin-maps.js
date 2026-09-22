@@ -61,6 +61,25 @@ async function autocomplete(input) {
   })).filter(p => p.placeId && p.mainText);
 }
 
+async function details(placeId) {
+  const data = await google('https://places.googleapis.com/v1/places/' + encodeURIComponent(placeId), {
+    method: 'GET',
+    headers: { 'X-Goog-FieldMask': 'id,displayName,formattedAddress,addressComponents' }
+  });
+  const components = Array.isArray(data.addressComponents) ? data.addressComponents : [];
+  const pick = types => {
+    const row = components.find(c => Array.isArray(c.types) && types.some(t => c.types.includes(t)));
+    return row?.longText || row?.shortText || '';
+  };
+  return {
+    placeId: data.id || placeId,
+    displayName: data.displayName?.text || '',
+    formattedAddress: data.formattedAddress || '',
+    city: pick(['locality','postal_town','administrative_area_level_3','administrative_area_level_2']),
+    state: pick(['administrative_area_level_1'])
+  };
+}
+
 async function distance(placeId) {
   const data = await google('https://routes.googleapis.com/directions/v2:computeRoutes', {
     method: 'POST',
@@ -100,6 +119,12 @@ export default async function handler(request) {
       const input = String(body.input || '').trim();
       if (input.length < 3 || input.length > 150) return json({ success: false, message: 'Enter at least 3 characters.' }, 400);
       return json({ success: true, suggestions: await autocomplete(input) });
+    }
+
+    if (action === 'details') {
+      const placeId = String(body.placeId || '').trim();
+      if (!placeId || placeId.length > 220) return json({ success: false, message: 'Invalid Google place.' }, 400);
+      return json({ success: true, ...(await details(placeId)) });
     }
 
     if (action === 'distance') {

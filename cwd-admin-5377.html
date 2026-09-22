@@ -267,33 +267,60 @@
         </div>
             </div>
 
-            <!-- SECTION 3: DELIVERY LOCATIONS -->
+            <!-- SECTION 3: BOOKING LOCATIONS -->
             <div id="section-locations" class="hidden space-y-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Service &amp; Delivery Locations</h2>
-                        <p class="text-xs text-slate-500 mt-0.5">Manage Vikhroli round-trip distance in kilometers for auto doorstep delivery fees.</p>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Booking Location Manager</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Manage the locations shown in Local, Outstation, Airport and Self Drive forms. Changes apply without a code deployment.</p>
                     </div>
                     <button onclick="openLocationModal()" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-sm whitespace-nowrap">
                         <i class="fa-solid fa-plus text-amber-400"></i> Add Location
                     </button>
                 </div>
 
+                <div id="location-config-status" class="hidden rounded-xl border px-4 py-3 text-xs font-semibold"></div>
+
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-200">
+                        <h3 class="font-black text-slate-900 text-sm">Mumbai / Metro Service Areas</h3>
+                        <p class="text-[11px] text-slate-500 mt-1">Choose exactly where each area appears. Distance is one-way from Vikhroli and is used for Self Drive delivery fee calculation.</p>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-extrabold tracking-wider">
                                 <tr>
-                                    <th class="py-3.5 px-4">Location Name</th>
-                                    <th class="py-3.5 px-4">City</th>
-                                    <th class="py-3.5 px-4">Vikhroli Round-Trip (KM)</th>
-                                    <th class="py-3.5 px-4">Calculated Fee</th>
-                                    <th class="py-3.5 px-4 text-right">Actions</th>
+                                    <th class="py-3 px-4">Location</th>
+                                    <th class="py-3 px-4">Distance</th>
+                                    <th class="py-3 px-4">Local</th>
+                                    <th class="py-3 px-4">Outstation Pickup</th>
+                                    <th class="py-3 px-4">Airport Area</th>
+                                    <th class="py-3 px-4">Self Drive Delivery</th>
+                                    <th class="py-3 px-4">Active</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-locations-table-body" class="divide-y divide-slate-100">
-                                <!-- Loaded dynamically from DB -->
-                            </tbody>
+                            <tbody id="admin-locations-table-body" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-200">
+                        <h3 class="font-black text-slate-900 text-sm">Outstation Destination Cities</h3>
+                        <p class="text-[11px] text-slate-500 mt-1">Round-trip KM is used for outstation fare calculation and server-side validation.</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-extrabold tracking-wider">
+                                <tr>
+                                    <th class="py-3 px-4">Destination</th>
+                                    <th class="py-3 px-4">Round-trip KM</th>
+                                    <th class="py-3 px-4">Active</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-destinations-table-body" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
                 </div>
@@ -549,29 +576,65 @@
         </div>
     </div>
 
-    <!-- LOCATION CREATE / EDIT MODAL -->
+    <!-- BOOKING LOCATION CREATE / EDIT MODAL -->
     <div id="location-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative">
-            <button onclick="closeLocationModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+        <div class="bg-white w-full max-w-lg rounded-3xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+            <button type="button" onclick="closeLocationModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <h3 class="text-lg font-bold text-slate-900">Add Service Location</h3>
+            <h3 id="location-modal-title" class="text-lg font-bold text-slate-900">Add Booking Location</h3>
 
-            <form onsubmit="handleSaveLocation(event)" class="mt-4 space-y-3">
+            <form onsubmit="handleSaveLocation(event)" class="mt-4 space-y-4">
                 <input type="hidden" id="loc-id">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Location / Area Name</label>
-                    <input type="text" id="loc-name" required placeholder="e.g. Borivali" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Location Type</label>
+                    <select id="loc-type" onchange="syncLocationModalType()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                        <option value="metro">Mumbai / Metro Service Area</option>
+                        <option value="destination">Outstation Destination</option>
+                    </select>
                 </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">City</label>
-                    <input type="text" id="loc-city" required placeholder="Mumbai / Thane / Navi Mumbai" value="Mumbai" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                <div class="relative">
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Location / City Name</label>
+                    <input type="hidden" id="loc-google-place-id">
+                    <input type="hidden" id="loc-google-address">
+                    <input type="text" id="loc-name" required maxlength="120" autocomplete="off" oninput="scheduleGooglePlaceSearch()" placeholder="Start typing, e.g. Borivali / Pune" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    <div id="loc-google-suggestions" class="hidden absolute z-[60] left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-56 overflow-y-auto"></div>
+                    <div id="loc-google-status" class="mt-1.5 text-[10px] text-slate-500">Type 3+ characters to search Google Places.</div>
                 </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Vikhroli Round-Trip (KM)</label>
-                    <input type="number" id="loc-km" required placeholder="e.g. 54" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+
+                <div id="loc-metro-fields" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">City</label>
+                            <input type="text" id="loc-city" maxlength="80" placeholder="Mumbai / Thane / Navi Mumbai" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">State</label>
+                            <input type="text" id="loc-state" maxlength="80" value="Maharashtra" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">One-way Distance from Vikhroli (KM)</label>
+                        <input type="number" min="0" step="1" id="loc-km" placeholder="e.g. 29" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <label class="flex items-center gap-2 rounded-lg border p-3"><input type="checkbox" id="loc-local" checked> With Driver — Local pickup</label>
+                        <label class="flex items-center gap-2 rounded-lg border p-3"><input type="checkbox" id="loc-outpickup" checked> Outstation pickup</label>
+                        <label class="flex items-center gap-2 rounded-lg border p-3"><input type="checkbox" id="loc-airport" checked> Airport pickup/drop area</label>
+                        <label class="flex items-center gap-2 rounded-lg border p-3"><input type="checkbox" id="loc-selfdrive" checked onchange="syncLocationModalType()"> Self Drive home delivery</label>
+                    </div>
                 </div>
-                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition">
+
+                <div id="loc-destination-fields" class="hidden">
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Round-trip Distance (KM)</label>
+                    <input type="number" min="1" step="1" id="loc-destination-km" placeholder="e.g. 300" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                </div>
+
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-700">
+                    <input type="checkbox" id="loc-active" checked> Active / visible on website
+                </label>
+
+                <button type="submit" id="btn-save-location" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition">
                     Save Location
                 </button>
             </form>
@@ -894,29 +957,219 @@
         }
 
         // 3. LOCATIONS
-        async function loadLocations() {
-            const tbody = document.getElementById('admin-locations-table-body');
-            tbody.innerHTML = '';
-            const { data: locs } = await supabaseClient.from('service_locations').select('*').order('round_trip_km', { ascending: true });
-            if (!locs) return;
+        let locationConfigState = { version: 1, metro: [], destinations: [] };
 
-            locs.forEach(l => {
-                const tr = document.createElement('tr');
-                const fee = l.round_trip_km <= 25 ? 500 : 500 + ((l.round_trip_km - 25) * 25);
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-bold text-slate-900">${l.location_name}</td>
-                    <td class="py-3 px-4 text-slate-600">${l.city}</td>
-                    <td class="py-3 px-4 text-slate-600">${l.round_trip_km} km</td>
-                    <td class="py-3 px-4 font-bold text-emerald-700">₹${fee}</td>
-                    <td class="py-3 px-4 text-right">
-                        <button onclick="deleteLocation('${l.id}')" class="text-rose-600 font-bold hover:underline">Delete</button>
+        function locationStatus(message, error = false) {
+            const el = document.getElementById('location-config-status');
+            if (!el) return;
+            if (!message) { el.classList.add('hidden'); return; }
+            el.textContent = message;
+            el.className = 'rounded-xl border px-4 py-3 text-xs font-semibold ' +
+                (error ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700');
+        }
+
+        function yesNoBadge(value) {
+            return '<span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ' +
+                (value ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500') + '">' +
+                (value ? 'Yes' : 'No') + '</span>';
+        }
+
+        async function loadLocations() {
+            const metroBody = document.getElementById('admin-locations-table-body');
+            const destBody = document.getElementById('admin-destinations-table-body');
+            if (!metroBody || !destBody) return;
+            metroBody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-slate-400">Loading locations...</td></tr>';
+            destBody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-slate-400">Loading destinations...</td></tr>';
+            locationStatus('');
+            try {
+                const response = await fetch('/api/location-config', { cache: 'no-store' });
+                const payload = await response.json();
+                if (!response.ok || !payload?.success || !payload?.config) throw new Error(payload?.message || 'Unable to load locations.');
+                locationConfigState = payload.config;
+                renderLocationManager();
+            } catch (error) {
+                metroBody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-rose-600">Unable to load location configuration.</td></tr>';
+                destBody.innerHTML = '';
+                locationStatus(error.message || 'Unable to load location configuration.', true);
+            }
+        }
+
+        function renderLocationManager() {
+            const metroBody = document.getElementById('admin-locations-table-body');
+            const destBody = document.getElementById('admin-destinations-table-body');
+            const metro = Array.isArray(locationConfigState.metro) ? [...locationConfigState.metro] : [];
+            const destinations = Array.isArray(locationConfigState.destinations) ? [...locationConfigState.destinations] : [];
+            metro.sort((a,b) => String(a.name).localeCompare(String(b.name)));
+            destinations.sort((a,b) => String(a.name).localeCompare(String(b.name)));
+
+            metroBody.innerHTML = metro.length ? metro.map(l => `
+                <tr>
+                    <td class="py-3 px-4">
+                        <div class="font-bold text-slate-900">${escapeAdminHtml(l.name || '')}</div>
+                        <div class="text-[10px] text-slate-400">${escapeAdminHtml([l.city,l.state].filter(Boolean).join(', '))}</div>
                     </td>
-                `;
-                tbody.appendChild(tr);
+                    <td class="py-3 px-4 text-slate-600">${Number.isFinite(Number(l.distanceKm)) ? Number(l.distanceKm) + ' km' : '—'}</td>
+                    <td class="py-3 px-4">${yesNoBadge(l.localPickup === true)}</td>
+                    <td class="py-3 px-4">${yesNoBadge(l.outstationPickup === true)}</td>
+                    <td class="py-3 px-4">${yesNoBadge(l.airportArea === true)}</td>
+                    <td class="py-3 px-4">${yesNoBadge(l.selfDriveDelivery === true)}</td>
+                    <td class="py-3 px-4">${yesNoBadge(l.active !== false)}</td>
+                    <td class="py-3 px-4 text-right whitespace-nowrap">
+                        <button type="button" onclick="editBookingLocation('metro','${escapeAdminHtml(l.id)}')" class="text-indigo-600 font-bold mr-3">Edit</button>
+                        <button type="button" onclick="deleteBookingLocation('metro','${escapeAdminHtml(l.id)}')" class="text-rose-600 font-bold">Delete</button>
+                    </td>
+                </tr>`).join('') : '<tr><td colspan="8" class="py-8 text-center text-slate-400">No metro locations configured.</td></tr>';
+
+            destBody.innerHTML = destinations.length ? destinations.map(l => `
+                <tr>
+                    <td class="py-3 px-4 font-bold text-slate-900">${escapeAdminHtml(l.name || '')}</td>
+                    <td class="py-3 px-4 text-slate-600">${Number(l.roundTripKm || 0).toLocaleString('en-IN')} km</td>
+                    <td class="py-3 px-4">${yesNoBadge(l.active !== false)}</td>
+                    <td class="py-3 px-4 text-right whitespace-nowrap">
+                        <button type="button" onclick="editBookingLocation('destination','${escapeAdminHtml(l.id)}')" class="text-indigo-600 font-bold mr-3">Edit</button>
+                        <button type="button" onclick="deleteBookingLocation('destination','${escapeAdminHtml(l.id)}')" class="text-rose-600 font-bold">Delete</button>
+                    </td>
+                </tr>`).join('') : '<tr><td colspan="4" class="py-8 text-center text-slate-400">No outstation destinations configured.</td></tr>';
+        }
+
+        let googlePlaceSearchTimer = null;
+        let googlePlaceSearchSequence = 0;
+
+        async function adminMapsRequest(action, extra = {}) {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session?.access_token) throw new Error('Admin session expired. Please sign in again.');
+            const response = await fetch('/api/admin-maps', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
+                body: JSON.stringify({ action, ...extra })
             });
+            const payload = await response.json();
+            if (!response.ok || !payload?.success) throw new Error(payload?.message || 'Google Maps request failed.');
+            return payload;
+        }
+
+        function hideGooglePlaceSuggestions() {
+            const box = document.getElementById('loc-google-suggestions');
+            if (!box) return;
+            box.classList.add('hidden');
+            box.innerHTML = '';
+        }
+
+        function scheduleGooglePlaceSearch() {
+            const input = document.getElementById('loc-name');
+            const placeId = document.getElementById('loc-google-place-id');
+            const address = document.getElementById('loc-google-address');
+            const status = document.getElementById('loc-google-status');
+            if (!input || !placeId || !address || !status) return;
+            placeId.value = '';
+            address.value = '';
+            clearTimeout(googlePlaceSearchTimer);
+            const query = input.value.trim();
+            if (query.length < 3) {
+                hideGooglePlaceSuggestions();
+                status.textContent = 'Type 3+ characters to search Google Places.';
+                return;
+            }
+            const seq = ++googlePlaceSearchSequence;
+            status.textContent = 'Searching Google Places…';
+            googlePlaceSearchTimer = setTimeout(async () => {
+                try {
+                    const payload = await adminMapsRequest('autocomplete', { input: query });
+                    if (seq !== googlePlaceSearchSequence) return;
+                    renderGooglePlaceSuggestions(payload.suggestions || []);
+                    status.textContent = payload.suggestions?.length ? 'Select the correct Google location below.' : 'No Google location found. You can still enter it manually.';
+                } catch (error) {
+                    if (seq !== googlePlaceSearchSequence) return;
+                    hideGooglePlaceSuggestions();
+                    status.textContent = error.message || 'Google location search failed.';
+                }
+            }, 350);
+        }
+
+        function renderGooglePlaceSuggestions(suggestions) {
+            const box = document.getElementById('loc-google-suggestions');
+            if (!box) return;
+            box.innerHTML = '';
+            if (!suggestions.length) { box.classList.add('hidden'); return; }
+            suggestions.forEach(place => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'w-full text-left px-3 py-2.5 border-b last:border-b-0 hover:bg-indigo-50';
+                const main = document.createElement('div');
+                main.className = 'text-xs font-bold text-slate-900';
+                main.textContent = place.mainText || place.text || '';
+                const secondary = document.createElement('div');
+                secondary.className = 'text-[10px] text-slate-500 mt-0.5';
+                secondary.textContent = place.secondaryText || place.text || '';
+                button.append(main, secondary);
+                button.addEventListener('click', () => selectGooglePlace(place));
+                box.appendChild(button);
+            });
+            box.classList.remove('hidden');
+        }
+
+        async function selectGooglePlace(place) {
+            const status = document.getElementById('loc-google-status');
+            hideGooglePlaceSuggestions();
+            document.getElementById('loc-name').value = place.mainText || place.text || '';
+            document.getElementById('loc-google-place-id').value = place.placeId || '';
+            document.getElementById('loc-google-address').value = place.text || '';
+            status.textContent = 'Calculating driving distance from Vikhroli…';
+            try {
+                const [details, route] = await Promise.all([
+                    adminMapsRequest('details', { placeId: place.placeId }),
+                    adminMapsRequest('distance', { placeId: place.placeId })
+                ]);
+                document.getElementById('loc-name').value = details.displayName || place.mainText || place.text || '';
+                document.getElementById('loc-google-address').value = details.formattedAddress || place.text || '';
+                const type = document.getElementById('loc-type').value;
+                if (type === 'destination') {
+                    document.getElementById('loc-destination-km').value = route.roundTripKm;
+                    status.textContent = 'Google selected • ' + route.oneWayKmRounded + ' km one-way • ' + route.roundTripKm + ' km round trip.';
+                } else {
+                    document.getElementById('loc-km').value = route.oneWayKmRounded;
+                    if (details.city) document.getElementById('loc-city').value = details.city;
+                    if (details.state) document.getElementById('loc-state').value = details.state;
+                    status.textContent = 'Google selected • ' + route.oneWayKmRounded + ' km driving distance from Vikhroli.';
+                }
+            } catch (error) {
+                status.textContent = (error.message || 'Distance lookup failed.') + ' You can enter the KM manually.';
+            }
+        }
+
+        function syncLocationModalType() {
+            const type = document.getElementById('loc-type').value;
+            document.getElementById('loc-metro-fields').classList.toggle('hidden', type !== 'metro');
+            document.getElementById('loc-destination-fields').classList.toggle('hidden', type !== 'destination');
+            document.getElementById('loc-km').required = type === 'metro' && document.getElementById('loc-selfdrive').checked;
+            document.getElementById('loc-destination-km').required = type === 'destination';
+        }
+
+        function resetLocationModal() {
+            document.getElementById('loc-id').value = '';
+            document.getElementById('loc-type').value = 'metro';
+            document.getElementById('loc-type').disabled = false;
+            document.getElementById('loc-name').value = '';
+            document.getElementById('loc-google-place-id').value = '';
+            document.getElementById('loc-google-address').value = '';
+            document.getElementById('loc-google-suggestions').classList.add('hidden');
+            document.getElementById('loc-google-suggestions').innerHTML = '';
+            document.getElementById('loc-google-status').textContent = 'Type 3+ characters to search Google Places.';
+            document.getElementById('loc-city').value = '';
+            document.getElementById('loc-state').value = 'Maharashtra';
+            document.getElementById('loc-km').value = '';
+            document.getElementById('loc-destination-km').value = '';
+            document.getElementById('loc-local').checked = true;
+            document.getElementById('loc-outpickup').checked = true;
+            document.getElementById('loc-airport').checked = true;
+            document.getElementById('loc-selfdrive').checked = true;
+            document.getElementById('loc-active').checked = true;
+            document.getElementById('location-modal-title').textContent = 'Add Booking Location';
+            syncLocationModalType();
         }
 
         function openLocationModal() {
+            resetLocationModal();
             document.getElementById('location-modal').classList.remove('hidden');
         }
 
@@ -924,25 +1177,132 @@
             document.getElementById('location-modal').classList.add('hidden');
         }
 
-        async function handleSaveLocation(e) {
-            e.preventDefault();
-            const name = document.getElementById('loc-name').value.trim();
-            const city = document.getElementById('loc-city').value.trim();
-            const km = parseInt(document.getElementById('loc-km').value);
-
-            await supabaseClient.from('service_locations').insert([{
-                location_name: name,
-                city: city,
-                round_trip_km: km
-            }]);
-            closeLocationModal();
-            loadLocations();
+        function editBookingLocation(type, id) {
+            const list = type === 'destination' ? locationConfigState.destinations : locationConfigState.metro;
+            const item = (list || []).find(x => x.id === id);
+            if (!item) return;
+            resetLocationModal();
+            document.getElementById('loc-id').value = item.id;
+            document.getElementById('loc-type').value = type;
+            document.getElementById('loc-type').disabled = true;
+            document.getElementById('loc-name').value = item.name || '';
+            document.getElementById('loc-google-place-id').value = item.googlePlaceId || '';
+            document.getElementById('loc-google-address').value = item.googleAddress || '';
+            document.getElementById('loc-google-status').textContent = item.googlePlaceId ? 'Google place linked. Type to search again if you want to replace it.' : 'This existing location is not linked to Google yet.';
+            document.getElementById('loc-active').checked = item.active !== false;
+            if (type === 'destination') {
+                document.getElementById('loc-destination-km').value = item.roundTripKm ?? '';
+            } else {
+                document.getElementById('loc-city').value = item.city || '';
+                document.getElementById('loc-state').value = item.state || 'Maharashtra';
+                document.getElementById('loc-km').value = item.distanceKm ?? '';
+                document.getElementById('loc-local').checked = item.localPickup === true;
+                document.getElementById('loc-outpickup').checked = item.outstationPickup === true;
+                document.getElementById('loc-airport').checked = item.airportArea === true;
+                document.getElementById('loc-selfdrive').checked = item.selfDriveDelivery === true;
+            }
+            document.getElementById('location-modal-title').textContent = 'Edit Booking Location';
+            syncLocationModalType();
+            document.getElementById('location-modal').classList.remove('hidden');
         }
 
-        async function deleteLocation(id) {
-            if (confirm("Delete this delivery location?")) {
-                await supabaseClient.from('service_locations').delete().eq('id', id);
-                loadLocations();
+        function newLocationId(prefix, name) {
+            const slug = String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0,60) || 'location';
+            return prefix + '-' + slug + '-' + Date.now().toString(36);
+        }
+
+        async function persistLocationConfig(successMessage) {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session?.access_token) throw new Error('Admin session expired. Please sign in again.');
+            const response = await fetch('/api/location-config', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
+                body: JSON.stringify({ config: locationConfigState })
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload?.success) throw new Error(payload?.message || 'Unable to save locations.');
+            locationConfigState = payload.config;
+            renderLocationManager();
+            locationStatus(successMessage || 'Location configuration saved.');
+        }
+
+        async function handleSaveLocation(e) {
+            e.preventDefault();
+            const button = document.getElementById('btn-save-location');
+            const original = button.textContent;
+            button.disabled = true;
+            button.textContent = 'Saving...';
+            try {
+                const type = document.getElementById('loc-type').value;
+                const id = document.getElementById('loc-id').value;
+                const name = document.getElementById('loc-name').value.trim();
+                if (!name) throw new Error('Location name is required.');
+                const list = type === 'destination' ? locationConfigState.destinations : locationConfigState.metro;
+                if ((list || []).some(x => x.id !== id && String(x.name || '').trim().toLowerCase() === name.toLowerCase())) {
+                    throw new Error('A location with this name already exists in this category.');
+                }
+
+                if (type === 'destination') {
+                    const km = Number(document.getElementById('loc-destination-km').value);
+                    if (!Number.isFinite(km) || km <= 0) throw new Error('Enter a valid round-trip KM.');
+                    const item = {
+                        id: id || newLocationId('dest', name),
+                        name,
+                        googlePlaceId: document.getElementById('loc-google-place-id').value.trim(),
+                        googleAddress: document.getElementById('loc-google-address').value.trim(),
+                        roundTripKm: km,
+                        active: document.getElementById('loc-active').checked
+                    };
+                    const index = locationConfigState.destinations.findIndex(x => x.id === id);
+                    if (index >= 0) locationConfigState.destinations[index] = item;
+                    else locationConfigState.destinations.push(item);
+                } else {
+                    const selfDrive = document.getElementById('loc-selfdrive').checked;
+                    const rawKm = document.getElementById('loc-km').value;
+                    const km = rawKm === '' ? null : Number(rawKm);
+                    if (selfDrive && (!Number.isFinite(km) || km < 0)) throw new Error('Self Drive delivery locations need a valid distance from Vikhroli.');
+                    const item = {
+                        id: id || newLocationId('metro', name),
+                        name,
+                        city: document.getElementById('loc-city').value.trim(),
+                        state: document.getElementById('loc-state').value.trim() || 'Maharashtra',
+                        googlePlaceId: document.getElementById('loc-google-place-id').value.trim(),
+                        googleAddress: document.getElementById('loc-google-address').value.trim(),
+                        distanceKm: Number.isFinite(km) && km >= 0 ? km : null,
+                        active: document.getElementById('loc-active').checked,
+                        localPickup: document.getElementById('loc-local').checked,
+                        outstationPickup: document.getElementById('loc-outpickup').checked,
+                        airportArea: document.getElementById('loc-airport').checked,
+                        selfDriveDelivery: selfDrive
+                    };
+                    const index = locationConfigState.metro.findIndex(x => x.id === id);
+                    if (index >= 0) locationConfigState.metro[index] = item;
+                    else locationConfigState.metro.push(item);
+                }
+                await persistLocationConfig('Location saved. Website forms will use the updated list immediately.');
+                closeLocationModal();
+            } catch (error) {
+                locationStatus(error.message || 'Unable to save location.', true);
+                alert(error.message || 'Unable to save location.');
+            } finally {
+                button.disabled = false;
+                button.textContent = original;
+            }
+        }
+
+        async function deleteBookingLocation(type, id) {
+            const list = type === 'destination' ? locationConfigState.destinations : locationConfigState.metro;
+            const item = (list || []).find(x => x.id === id);
+            if (!item || !confirm('Delete "' + item.name + '" from booking locations?')) return;
+            const backup = JSON.parse(JSON.stringify(locationConfigState));
+            if (type === 'destination') locationConfigState.destinations = locationConfigState.destinations.filter(x => x.id !== id);
+            else locationConfigState.metro = locationConfigState.metro.filter(x => x.id !== id);
+            try {
+                await persistLocationConfig('Location deleted.');
+            } catch (error) {
+                locationConfigState = backup;
+                renderLocationManager();
+                locationStatus(error.message || 'Unable to delete location.', true);
             }
         }
 

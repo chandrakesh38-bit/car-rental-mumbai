@@ -68,6 +68,8 @@ const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status, headers: { 'Content-Type': 'application/json' },
 });
 
+
+
 export default async function handler(request) {
   if (request.method !== 'POST') return json({ success: false, message: 'Only POST requests are allowed.' }, 405);
   const origin = request.headers.get('origin');
@@ -93,7 +95,12 @@ export default async function handler(request) {
       kind: 'booking', reference: bookingId, email, uploadUrl,
       details: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\n\n${details}`,
     });
-    return json({ success: true, booking_id: bookingId, ...(uploadUrl ? { upload_url: uploadUrl } : {}), ...notifications });
+    return json({
+      success: true,
+      booking_id: bookingId,
+      ...(uploadUrl ? { upload_url: uploadUrl } : {}),
+      ...notifications
+    });
   } catch (error) {
     return json({ success: false, message: error.status ? error.message : 'Unable to submit enquiry. Please try again.' }, error.status || 400);
   }

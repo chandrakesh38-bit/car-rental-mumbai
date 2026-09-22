@@ -1,11 +1,121 @@
 [
-  {"slug":"","label":"Home","icon":"fa-house","title":"Car with Driver India - Self Drive & With Driver Car Rental Mumbai","description":"Affordable self-drive cars and verified cabs with driver in Mumbai, Thane, and Navi Mumbai. Transparent pricing with doorstep delivery.","h1":"Experience Hassle-Free Travel Across Maharashtra","mode":"withdriver","tab":"outstation","sections":["quick-routes","fleet","services","reviews","partner-banner"]},
-  {"slug":"with-driver","label":"With Driver","icon":"fa-user-tie","title":"Car Rental with Driver in Mumbai | Car with Driver India","description":"Book a car with driver in Mumbai for local city travel, outstation journeys and airport transfers. Choose your package and compare existing cab fares.","h1":"Car Rental with Driver in Mumbai","mode":"withdriver","tab":"local","sections":["quick-routes","fleet"]},
-  {"slug":"self-drive","label":"Self Drive","icon":"fa-key","title":"Self Drive Car Rental Mumbai | Car with Driver India","description":"Explore self-drive cars in Mumbai. Filter by brand, fuel, transmission and seats, choose pickup and return dates, and review rental and delivery charges.","h1":"Self Drive Car Rental in Mumbai","mode":"selfdrive","tab":"outstation","sections":["quick-routes","fleet"]},
-  {"slug":"airport-transfer","label":"Airport Transfer","icon":"fa-plane","title":"Mumbai Airport Transfer & Pickup Cabs | Car with Driver India","description":"Book airport pickup or drop for Mumbai T1, Mumbai T2 and Navi Mumbai International Airport. Compare cab fares and enter your transfer details.","h1":"Mumbai Airport Transfers","mode":"withdriver","tab":"airport","sections":["quick-routes","fleet"]},
-  {"slug":"outstation","label":"Outstation","icon":"fa-route","title":"Outstation Cabs from Mumbai | Car with Driver India","description":"Plan an outstation trip from Mumbai with a driver. Select your destination and travel dates to review distance, billed days and available cab fares.","h1":"Outstation Car Rental from Mumbai","mode":"withdriver","tab":"outstation","sections":["quick-routes","fleet"]},
-  {"slug":"cars","label":"Cars","icon":"fa-car","title":"Rental Cars & Cab Fleet Mumbai | Car with Driver India","description":"Browse all available self-drive cars in Mumbai with brand, fuel, seating and transmission filters.","h1":"Explore Our Self-Drive Car Fleet","mode":"selfdrive","tab":"","sections":["quick-routes","fleet"]},
-  {"slug":"mumbai-car-rental","label":"Mumbai Car Rental","icon":"fa-city","title":"Mumbai Car Rental – With Driver & Self Drive | Car with Driver India","description":"Explore car rental in Mumbai, Thane and Navi Mumbai: with-driver cabs, self-drive cars, airport transfers and outstation trips. Check rates and plan your ride.","h1":"Mumbai Car Rental – With Driver & Self Drive","sections":[]},
-  {"slug":"faq","label":"FAQ","icon":"fa-circle-question","title":"Car Rental FAQs | Car with Driver India Mumbai","description":"Find answers to frequently asked questions about car rental, local and outstation cabs, airport transfers and self-drive bookings in Mumbai.","h1":"Car Rental Frequently Asked Questions","sections":["faq"]},
-  {"slug":"contact","label":"Contact","icon":"fa-phone","title":"Contact Car with Driver India | Mumbai Car Rental","description":"Contact Car with Driver India by phone, WhatsApp or email. Find our Mumbai operating hub in Vikhroli West and get help with your car rental inquiry.","h1":"Contact Car with Driver India","sections":["contact","partner-banner"]}
+  {
+    "slug": "",
+    "label": "Home",
+    "icon": "fa-house",
+    "title": "Car with Driver India - Self Drive & With Driver Car Rental Mumbai",
+    "description": "Affordable self-drive cars and verified cabs with driver in Mumbai, Thane, and Navi Mumbai. Transparent pricing with doorstep delivery.",
+    "h1": "Experience Hassle-Free Travel Across Maharashtra",
+    "mode": "withdriver",
+    "tab": "outstation",
+    "sections": [
+      "quick-routes",
+      "fleet",
+      "services",
+      "reviews",
+      "partner-banner"
+    ]
+  },
+  {
+    "slug": "with-driver",
+    "label": "With Driver",
+    "icon": "fa-user-tie",
+    "title": "Car Rental with Driver in Mumbai | Car with Driver India",
+    "description": "Book a car with driver in Mumbai for local city travel, outstation journeys and airport transfers. Choose your package and compare existing cab fares.",
+    "h1": "Car Rental with Driver in Mumbai",
+    "mode": "withdriver",
+    "tab": "local",
+    "sections": [
+      "quick-routes",
+      "fleet"
+    ]
+  },
+  {
+    "slug": "self-drive",
+    "label": "Self Drive",
+    "icon": "fa-key",
+    "title": "Self Drive Car Rental Mumbai | Car with Driver India",
+    "description": "Explore self-drive cars in Mumbai. Filter by brand, fuel, transmission and seats, choose pickup and return dates, and review rental and delivery charges.",
+    "h1": "Self Drive Car Rental in Mumbai",
+    "mode": "selfdrive",
+    "tab": "outstation",
+    "sections": [
+      "quick-routes",
+      "fleet"
+    ]
+  },
+  {
+    "slug": "airport-transfer",
+    "label": "Airport Transfer",
+    "icon": "fa-plane",
+    "title": "Mumbai Airport Transfer & Pickup Cabs | Car with Driver India",
+    "description": "Book airport pickup or drop for Mumbai T1, Mumbai T2 and Navi Mumbai International Airport. Compare cab fares and enter your transfer details.",
+    "h1": "Mumbai Airport Transfers",
+    "mode": "withdriver",
+    "tab": "airport",
+    "sections": [
+      "quick-routes",
+      "fleet"
+    ]
+  },
+  {
+    "slug": "outstation",
+    "label": "Outstation",
+    "icon": "fa-route",
+    "title": "Outstation Cabs from Mumbai | Car with Driver India",
+    "description": "Plan an outstation trip from Mumbai with a driver. Select your destination and travel dates to review distance, billed days and available cab fares.",
+    "h1": "Outstation Car Rental from Mumbai",
+    "mode": "withdriver",
+    "tab": "outstation",
+    "sections": [
+      "quick-routes",
+      "fleet"
+    ]
+  },
+  {
+    "slug": "cars",
+    "label": "Cars",
+    "icon": "fa-car",
+    "title": "Rental Cars & Cab Fleet Mumbai | Car with Driver India",
+    "description": "Browse all available self-drive cars in Mumbai with brand, fuel, seating and transmission filters.",
+    "h1": "Explore Our Self-Drive Car Fleet",
+    "mode": "selfdrive",
+    "tab": "",
+    "sections": [
+      "quick-routes",
+      "fleet"
+    ]
+  },
+  {
+    "slug": "mumbai-car-rental",
+    "label": "Mumbai Car Rental",
+    "icon": "fa-city",
+    "title": "Mumbai Car Rental – With Driver & Self Drive | Car with Driver India",
+    "description": "Explore car rental in Mumbai, Thane and Navi Mumbai: with-driver cabs, self-drive cars, airport transfers and outstation trips. Check rates and plan your ride.",
+    "h1": "Mumbai Car Rental – With Driver & Self Drive",
+    "sections": []
+  },
+  {
+    "slug": "faq",
+    "label": "FAQ",
+    "icon": "fa-circle-question",
+    "title": "Car Rental FAQs | Car with Driver India Mumbai",
+    "description": "Find answers to frequently asked questions about car rental, local and outstation cabs, airport transfers and self-drive bookings in Mumbai.",
+    "h1": "Car Rental Frequently Asked Questions",
+    "sections": [
+      "faq"
+    ]
+  },
+  {
+    "slug": "contact",
+    "label": "Contact",
+    "icon": "fa-phone",
+    "title": "Contact Car with Driver India | Mumbai Car Rental",
+    "description": "Contact Car with Driver India by phone, WhatsApp or email. Find our Mumbai operating hub in Vikhroli West and get help with your car rental inquiry.",
+    "h1": "Contact Car with Driver India",
+    "sections": [
+      "contact",
+      "partner-banner"
+    ]
+  }
 ]

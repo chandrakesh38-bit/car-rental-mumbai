@@ -452,6 +452,8 @@ let mumbaiMetroLocations = [
         let wdOutstationRouteQuote = null;
         let outstationRouteSequence = 0;
         let outstationStopSequence = 0;
+        let outstationRouteDecision = null;
+        let outstationSmartComparison = null;
         const outstationPlaceSelections = new Map();
         const outstationSearchTimers = new Map();
         let chosenCarName = '';
@@ -763,6 +765,8 @@ function onPickupDateChange() {
         function invalidateOutstationRoute(message = '') {
             wdOutstationRouteQuote = null;
             wdOutstationKm = 0;
+            outstationRouteDecision = null;
+            outstationSmartComparison = null;
             const km = document.getElementById('wd-metric-km');
             if (km) km.textContent = '—';
             const status = document.getElementById('wd-out-route-status');

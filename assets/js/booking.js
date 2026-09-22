@@ -1788,8 +1788,10 @@ async function handleBookingSubmit(e) {
     // =========================
     else if (currentWDSubTab === 'outstation') {
 
-        const pickupLocation = document.getElementById('wd-out-pickup').value.trim();
-        const destination = document.getElementById('wd-out-destination').value.trim();
+        const selections = collectOutstationRouteSelections(true);
+        const pickupLocation = selections.pickup.address || selections.pickup.name;
+        const destination = selections.finalDrop.address || selections.finalDrop.name;
+        const stopNames = selections.stops.map(stop => stop.address || stop.name);
 
         const pickupDate = document.getElementById('wd-out-pdate').value;
         const pickupHour = parseInt(document.getElementById('wd-out-phour').value);
@@ -1800,7 +1802,7 @@ async function handleBookingSubmit(e) {
         const returnAmPm = document.getElementById('wd-out-rampm').value;
 
         const extraKmRate = car?.rates?.outstationPerKm || 0;
-        const driverAllowance = car?.rates?.driverAllowance || 0;
+        const driverAllowance = OUTSTATION_DRIVER_ALLOWANCE_PER_DAY;
 
         const startDateTime = createLocalDateTime(
             pickupDate,
@@ -1818,25 +1820,47 @@ async function handleBookingSubmit(e) {
             wdOutstationKm,
             wdOutstationDays * livePricingRules.minimumOutstationKmPerDay
         );
-
+        const routeText = [
+            'Vikhroli Base',
+            selections.pickup.name,
+            ...selections.stops.map(stop => stop.name),
+            selections.finalDrop.name,
+            'Vikhroli Base'
+        ].join(' → ');
 
         message = `
 🚨 OUTSTATION | ${bookingId}
 
 👤 ${name} | ${phone}
 🚗 ${chosenCarName} | ₹${chosenFareAmount.toLocaleString('en-IN')}
-📍 ${pickupLocation} → ${destination}
+📍 Vehicle Route: ${routeText}
 📅 Start: ${formatBookingDateTime(startDateTime)}
-📅 Return: ${formatBookingDateTime(returnDateTime)}
-⏱ ${wdOutstationDays} Day${wdOutstationDays > 1 ? 's' : ''} | ${billableKm} KM
+📅 Final Drop: ${formatBookingDateTime(returnDateTime)}
+⏱ ${wdOutstationDays} Day${wdOutstationDays > 1 ? 's' : ''} | Google ${wdOutstationRouteQuote?.distanceKmExact || wdOutstationKm} KM | Billable ${billableKm} KM
 💰 ₹${extraKmRate}/KM | Driver ₹${driverAllowance}/Day
+🌙 Night: ₹400 Hatchback/Sedan · ₹600 SUV/MUV when 10 PM–5 AM applies
 
 ✓ Incl: Fuel, Driver
-✕ Excl: Toll, Parking, State Tax
+✕ Excl: Toll, Parking, State Tax (as per actual)
 `;
 
         subject = `New booking assigned to your car – ${chosenCarName}`;
-        bookingData = {tripType:'outstation',carName:chosenCarName,pickupAt:startDateTime.toISOString(),returnAt:returnDateTime.toISOString(),pickupLocation,destination};
+        bookingData = {
+            tripType: 'outstation',
+            carName: chosenCarName,
+            pickupAt: startDateTime.toISOString(),
+            returnAt: returnDateTime.toISOString(),
+            pickupLocation,
+            pickupPlaceId: selections.pickup.placeId,
+            destination,
+            destinationPlaceId: selections.finalDrop.placeId,
+            stops: selections.stops.map(stop => ({
+                name: stop.name,
+                address: stop.address,
+                placeId: stop.placeId
+            })),
+            clientRouteKm: wdOutstationRouteQuote?.distanceKmExact || wdOutstationKm
+        };
     }
 
     // =========================

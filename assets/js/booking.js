@@ -947,6 +947,227 @@ function onPickupDateChange() {
             invalidateOutstationRoute('');
         }
 
+        function currentOutstationRouteSignature() {
+            const route = collectOutstationRouteSelections(false);
+            if (!route) return '';
+            return [
+                route.pickup.placeId,
+                ...route.stops.map(stop => stop.placeId),
+                route.finalDrop.placeId
+            ].join('|');
+        }
+
+        function secondsLabel(seconds) {
+            const total = Math.max(0, Math.round(Number(seconds) || 0));
+            const hours = Math.floor(total / 3600);
+            const minutes = Math.round((total % 3600) / 60);
+            if (hours && minutes) return hours + ' hr ' + minutes + ' min';
+            if (hours) return hours + ' hr';
+            return minutes + ' min';
+        }
+
+        function smartRouteSavings(currentQuote, smartQuote) {
+            const currentKm = Number(currentQuote?.billableRouteKm || 0);
+            const smartKm = Number(smartQuote?.billableRouteKm || 0);
+            const minimumKm = wdOutstationDays * livePricingRules.minimumOutstationKmPerDay;
+            const currentBillableKm = Math.max(currentKm, minimumKm);
+            const smartBillableKm = Math.max(smartKm, minimumKm);
+            const savedBillableKm = Math.max(0, currentBillableKm - smartBillableKm);
+            const routeKmSaved = Math.max(0, currentKm - smartKm);
+            const timeSavedSeconds = Math.max(0, Number(currentQuote?.durationSeconds || 0) - Number(smartQuote?.durationSeconds || 0));
+            const rates = wdFleet.map(car => Number(car?.rates?.outstationPerKm)).filter(rate => Number.isFinite(rate) && rate > 0);
+            const minRate = rates.length ? Math.min(...rates) : 0;
+            const maxRate = rates.length ? Math.max(...rates) : minRate;
+            return {
+                routeKmSaved,
+                currentBillableKm,
+                smartBillableKm,
+                savedBillableKm,
+                timeSavedSeconds,
+                minFareSaving: Math.round(savedBillableKm * minRate),
+                maxFareSaving: Math.round(savedBillableKm * maxRate)
+            };
+        }
+
+        function removeSmartRouteModal() {
+            const modal = document.getElementById('smart-route-modal');
+            if (modal) modal.remove();
+        }
+
+        function smartRouteNameSequence(route) {
+            return [
+                route.pickup.name,
+                ...route.stops.map(stop => stop.name),
+                route.finalDrop.name
+            ].join(' → ');
+        }
+
+        function showSmartRouteModal(comparison) {
+            removeSmartRouteModal();
+            const modal = document.createElement('div');
+            modal.id = 'smart-route-modal';
+            modal.className = 'fixed inset-0 z-[10020] bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-4';
+            const savings = comparison.savings;
+            const fareSavingText = savings.maxFareSaving > savings.minFareSaving
+                ? '₹' + savings.minFareSaving.toLocaleString('en-IN') + '–₹' + savings.maxFareSaving.toLocaleString('en-IN')
+                : '₹' + savings.minFareSaving.toLocaleString('en-IN');
+            const timeSavingText = savings.timeSavedSeconds > 0 ? secondsLabel(savings.timeSavedSeconds) : 'No meaningful time change';
+
+            const panel = document.createElement('div');
+            panel.className = 'w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden';
+            panel.innerHTML = `
+                <div class="p-5 sm:p-6 border-b border-slate-100">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-route"></i></div>
+                        <div>
+                            <h3 class="text-lg font-black text-slate-900">Smart Route can save time and money</h3>
+                            <p class="text-xs text-slate-500 mt-1">We found a more efficient order for your selected destinations. Your pickup stays the same.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 sm:p-6 space-y-4">
+                    <div class="grid sm:grid-cols-2 gap-3">
+                        <div class="rounded-xl border border-slate-200 p-4">
+                            <p class="text-[10px] uppercase tracking-wide font-bold text-slate-400">Your Route</p>
+                            <p id="smart-current-route" class="text-xs font-bold text-slate-800 mt-1 leading-relaxed"></p>
+                            <div class="mt-3 text-sm font-black text-slate-900">${Number(comparison.current.distanceKmExact).toLocaleString('en-IN')} KM</div>
+                            <div class="text-[11px] text-slate-500">${secondsLabel(comparison.current.durationSeconds)}</div>
+                        </div>
+                        <div class="rounded-xl border-2 border-emerald-300 bg-emerald-50/50 p-4">
+                            <p class="text-[10px] uppercase tracking-wide font-bold text-emerald-700">Smart Route</p>
+                            <p id="smart-optimized-route" class="text-xs font-bold text-slate-800 mt-1 leading-relaxed"></p>
+                            <div class="mt-3 text-sm font-black text-emerald-800">${Number(comparison.smart.distanceKmExact).toLocaleString('en-IN')} KM</div>
+                            <div class="text-[11px] text-emerald-700">${secondsLabel(comparison.smart.durationSeconds)}</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center">
+                            <div class="text-[10px] text-slate-500">Distance saved</div>
+                            <div class="font-black text-slate-900 mt-1">${savings.routeKmSaved.toLocaleString('en-IN')} KM</div>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center">
+                            <div class="text-[10px] text-slate-500">Fare saving</div>
+                            <div class="font-black text-slate-900 mt-1">${fareSavingText}</div>
+                            <div class="text-[9px] text-slate-400">depends on car</div>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center">
+                            <div class="text-[10px] text-slate-500">Time saved</div>
+                            <div class="font-black text-slate-900 mt-1">${timeSavingText}</div>
+                        </div>
+                    </div>
+                    ${savings.routeKmSaved > 0 && savings.savedBillableKm === 0 ? '<div class="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-[10px] text-amber-900">This route is shorter, but your fare remains the same because the 300 KM/day minimum billing rule still applies.</div>' : ''}
+                    <div class="grid sm:grid-cols-2 gap-3 pt-1">
+                        <button type="button" id="choose-smart-route-btn" class="rounded-xl bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 text-sm">Choose Smart Route</button>
+                        <button type="button" id="keep-my-route-btn" class="rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold py-3 text-sm">Keep My Route</button>
+                    </div>
+                </div>
+            `;
+            modal.appendChild(panel);
+            document.body.appendChild(modal);
+            panel.querySelector('#smart-current-route').textContent = smartRouteNameSequence(comparison.originalRoute);
+            panel.querySelector('#smart-optimized-route').textContent = comparison.smartSequence.map(place => place.name).join(' → ');
+            panel.querySelector('#choose-smart-route-btn').addEventListener('click', () => chooseSmartRoute(comparison));
+            panel.querySelector('#keep-my-route-btn').addEventListener('click', () => keepMyRoute(comparison));
+        }
+
+        function setOutstationStopsAndFinal(sequence) {
+            const container = document.getElementById('wd-out-stops');
+            if (!container || sequence.length < 1) return;
+            container.innerHTML = '';
+            for (const key of [...outstationPlaceSelections.keys()]) {
+                if (key.startsWith('wd-out-stop-')) outstationPlaceSelections.delete(key);
+            }
+
+            const finalDrop = sequence[sequence.length - 1];
+            const destinationInput = document.getElementById('wd-out-destination');
+            destinationInput.value = finalDrop.address || finalDrop.name;
+            outstationPlaceSelections.set('wd-out-destination', finalDrop);
+
+            sequence.slice(0, -1).forEach(place => {
+                addOutstationStop();
+                const input = container.querySelector('[data-outstation-stop-input="true"]:last-of-type');
+                if (!input) return;
+                input.value = place.address || place.name;
+                outstationPlaceSelections.set(input.id, place);
+            });
+        }
+
+        async function chooseSmartRoute(comparison) {
+            removeSmartRouteModal();
+            const pickup = comparison.originalRoute.pickup;
+            setOutstationStopsAndFinal(comparison.smartSequence);
+            outstationPlaceSelections.set('wd-out-pickup', pickup);
+            document.getElementById('wd-out-pickup').value = pickup.address || pickup.name;
+            wdOutstationRouteQuote = {
+                ...comparison.smart,
+                selectedMode: 'smart'
+            };
+            wdOutstationKm = Number(comparison.smart.billableRouteKm) || 0;
+            outstationRouteDecision = {
+                signature: currentOutstationRouteSignature(),
+                mode: 'smart'
+            };
+            outstationSmartComparison = comparison;
+            const km = document.getElementById('wd-metric-km');
+            if (km) km.textContent = Number(comparison.smart.distanceKmExact).toLocaleString('en-IN');
+            const status = document.getElementById('wd-out-route-status');
+            if (status) {
+                status.textContent = 'Smart Route selected. Stops were reordered to reduce travel.';
+                status.classList.remove('hidden');
+            }
+            calculateDriverFare();
+            document.getElementById('fleet').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function keepMyRoute(comparison) {
+            removeSmartRouteModal();
+            outstationRouteDecision = {
+                signature: currentOutstationRouteSignature(),
+                mode: 'original'
+            };
+            outstationSmartComparison = comparison;
+            calculateDriverFare();
+            document.getElementById('fleet').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function maybeOfferSmartRoute() {
+            const route = collectOutstationRouteSelections(true);
+            const signature = currentOutstationRouteSignature();
+            if (outstationRouteDecision?.signature === signature) return false;
+            if (route.stops.length < 2) {
+                outstationRouteDecision = { signature, mode: 'original' };
+                return false;
+            }
+
+            const smart = await publicMapsRequest('smart-route', {
+                pickupPlaceId: route.pickup.placeId,
+                stopPlaceIds: route.stops.map(stop => stop.placeId),
+                finalDropPlaceId: route.finalDrop.placeId
+            });
+            const allDestinations = [...route.stops, route.finalDrop];
+            const smartSequence = smart.optimizedDestinationOrder.map(index => allDestinations[index]).filter(Boolean);
+            if (smartSequence.length !== allDestinations.length) return false;
+
+            const savings = smartRouteSavings(wdOutstationRouteQuote, smart);
+            const meaningful = savings.routeKmSaved >= 5 || savings.timeSavedSeconds >= 600 || savings.minFareSaving >= 100;
+            if (!meaningful) {
+                outstationRouteDecision = { signature, mode: 'original' };
+                return false;
+            }
+
+            const comparison = {
+                signature,
+                current: wdOutstationRouteQuote,
+                smart,
+                originalRoute: route,
+                smartSequence,
+                savings
+            };
+            outstationSmartComparison = comparison;
+            showSmartRouteModal(comparison);
+            return true;
+        }
+
         function to24Hour(hour, ampm) {
             let h = Number(hour) % 12;
             if (ampm === 'PM') h += 12;
@@ -1246,9 +1467,25 @@ function onPickupDateChange() {
             openModal(carName, fare);
         }
 
-        function triggerFareSearch() {
+        async function triggerFareSearch() {
             if (currentMainMode === 'withdriver' && !validateJourneyAndOpenBooking()) return;
             calculateDriverFare();
+            if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation') {
+                const button = document.querySelector('button[onclick="triggerFareSearch()"]');
+                const textEl = document.getElementById('search-btn-text');
+                const originalText = textEl?.textContent || 'Explore Cabs';
+                if (button) button.disabled = true;
+                if (textEl) textEl.textContent = 'Checking Smart Route…';
+                try {
+                    const shown = await maybeOfferSmartRoute();
+                    if (shown) return;
+                } catch (error) {
+                    showCustomAlert(error.message || 'Smart Route comparison could not be completed. Showing your route.');
+                } finally {
+                    if (button) button.disabled = false;
+                    if (textEl) textEl.textContent = originalText;
+                }
+            }
             document.getElementById('fleet').scrollIntoView({ behavior: 'smooth' });
         }
 

@@ -992,6 +992,7 @@ function onPickupDateChange() {
         function removeSmartRouteModal() {
             const modal = document.getElementById('smart-route-modal');
             if (modal) modal.remove();
+            document.body.classList.remove('overflow-hidden');
         }
 
         function smartRouteNameSequence(route) {
@@ -1064,6 +1065,7 @@ function onPickupDateChange() {
             `;
             modal.appendChild(panel);
             document.body.appendChild(modal);
+            document.body.classList.add('overflow-hidden');
             panel.querySelector('#smart-current-route').textContent = smartRouteNameSequence(comparison.originalRoute);
             panel.querySelector('#smart-optimized-route').textContent = comparison.smartSequence.map(place => place.name).join(' → ');
             panel.querySelector('#choose-smart-route-btn').addEventListener('click', () => chooseSmartRoute(comparison));

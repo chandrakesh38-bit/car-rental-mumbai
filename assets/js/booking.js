@@ -1528,7 +1528,10 @@ function onPickupDateChange() {
                         return false;
                     }
                     if (!wdOutstationRouteQuote || !wdOutstationKm) {
-                        showCustomAlert('Please wait for the Google route distance to finish calculating.');
+                        const routeStatus = document.getElementById('wd-out-route-status')?.textContent?.trim();
+                        showCustomAlert(routeStatus && !/^Calculating/i.test(routeStatus)
+                            ? routeStatus
+                            : 'Please wait for the Google route distance to finish calculating.');
                         return false;
                     }
                 }
@@ -1571,6 +1574,9 @@ function onPickupDateChange() {
         }
 
         async function triggerFareSearch() {
+            if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !wdOutstationRouteQuote) {
+                await updateOutstationRouteEstimate();
+            }
             if (currentMainMode === 'withdriver' && !validateJourneyAndOpenBooking()) return;
             calculateDriverFare();
             if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation') {

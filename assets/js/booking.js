@@ -462,6 +462,7 @@ let mumbaiMetroLocations = [
         let currentDeliveryMode = 'home';
         let withDriverCurrentLocation = null;
         let selfDriveCurrentLocation = null;
+        let selfDriveDeliverySelection = null;
         let bookingPaymentContext = null;
         let calculatedRentalHours = 0;
         let currentSDPage = 1;
@@ -827,6 +828,9 @@ function onPickupDateChange() {
                             input.dataset.googlePlaceId = place.placeId || '';
                             dropdown.classList.add('hidden');
                             input.classList.remove('border-red-500');
+                            if (inputId === 'sd-delivery-location-input') {
+                                onSelfDriveGooglePlaceSelected(place);
+                            }
                         });
                         dropdown.appendChild(option);
                     });
@@ -1269,13 +1273,17 @@ function onPickupDateChange() {
             return h;
         }
 
-        function qualifyingNightKey(dateValue, hourValue, ampmValue) {
+        function qualifyingNightKey(dateValue, hourValue, ampmValue, minuteValue = 0) {
             if (!dateValue) return null;
             const hour = to24Hour(hourValue, ampmValue);
-            if (!(hour >= 22 || hour < 5)) return null;
+            const minute = Number(minuteValue) || 0;
+            const totalMinutes = hour * 60 + minute;
+            // Night charge starts after 10:00 PM and ends at 5:00 AM.
+            // 10:00 PM itself is not charged; 10:01 PM is. 5:00 AM is charged; 5:01 AM is not.
+            if (!(totalMinutes > 22 * 60 || totalMinutes <= 5 * 60)) return null;
             const date = new Date(dateValue + 'T12:00:00');
             if (!Number.isFinite(date.getTime())) return null;
-            if (hour < 5) date.setDate(date.getDate() - 1);
+            if (totalMinutes <= 5 * 60) date.setDate(date.getDate() - 1);
             return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
         }
 
@@ -1762,13 +1770,12 @@ function onPickupDateChange() {
         }
 
         function openFareBreakdownModal() {
-            if (!validateJourneyAndOpenBooking()) return;
             const contentBox = document.getElementById('fare-breakdown-content');
             if (!contentBox) return;
             const outstationExtra = currentWDSubTab === 'outstation'
                 ? `<li><strong>Outstation:</strong> Minimum billing is ${livePricingRules.minimumOutstationKmPerDay} KM per booked day.</li>
                    <li><strong>Driver allowance:</strong> ₹${OUTSTATION_DRIVER_ALLOWANCE_PER_DAY} per booked day.</li>
-                   <li><strong>Night service:</strong> Charged only if the pickup or final drop falls between 10 PM and 5 AM — ₹400 for Hatchback/Sedan or ₹600 for SUV/MUV per qualifying night.</li>`
+                   <li><strong>Night service:</strong> Charged only if the pickup or final drop falls after 10:00 PM and up to 5:00 AM — ₹400 for Hatchback/Sedan or ₹600 for SUV/MUV per qualifying night.</li>`
                 : '';
             contentBox.innerHTML = `
                 <p class="font-bold text-slate-900">Transparent Fare & Inclusions Details:</p>
@@ -1872,6 +1879,23 @@ function onPickupDateChange() {
                     if (city && result.city) city.value = result.city;
                     if (state && result.state) state.value = result.state;
                     if (pin && result.postalCode) pin.value = result.postalCode;
+                    const deliveryInput = document.getElementById('sd-delivery-location-input');
+                    if (deliveryInput && result.placeId) {
+                        const route = await publicMapsRequest('delivery-route', { placeId: result.placeId });
+                        const oneWayKm = Number(route.oneWayDistanceKm);
+                        if (!Number.isFinite(oneWayKm) || oneWayKm > 50) throw new Error('Your current location is outside our Self Drive home-delivery service area.');
+                        deliveryInput.value = result.address || '';
+                        deliveryInput.dataset.googlePlaceId = result.placeId;
+                        selfDriveDeliverySelection = {
+                            placeId: result.placeId,
+                            address: result.address || '',
+                            city: result.city || '',
+                            state: result.state || '',
+                            postalCode: result.postalCode || '',
+                            oneWayKm
+                        };
+                        updateSDFareReview();
+                    }
                 } else {
                     withDriverCurrentLocation = result;
                     const address = document.getElementById('cust-address');
@@ -1952,6 +1976,7 @@ function onPickupDateChange() {
         function openSDModal(car) {
             selectedCarObj = car;
             selfDriveCurrentLocation = null;
+            selfDriveDeliverySelection = null;
             const locationStatus = document.getElementById('sd-current-location-status');
             if (locationStatus) locationStatus.textContent = '';
             document.getElementById('sd-modal-car-brand').innerText = car.brand;
@@ -2142,26 +2167,23 @@ function onPickupDateChange() {
             
             let deliveryCharge = 0;
             if (currentDeliveryMode === 'home') {
-                const locInput = document.getElementById('sd-delivery-location-input').value.trim().toLowerCase();
-                const found = mumbaiMetroLocations.find(l => l.active !== false && l.selfDriveDelivery === true && l.name.toLowerCase() === locInput);
-                // An empty/partial location is normal while the user is typing. Keep the
-                // rental + deposit visible; strict service-zone validation happens on submit.
-                if (!found || found.serviceable === false || !Number.isFinite(found.km)) {
+                const locInput = document.getElementById('sd-delivery-location-input').value.trim();
+                const oneWayKm = Number(selfDriveDeliverySelection?.oneWayKm);
+                if (!selfDriveDeliverySelection || !Number.isFinite(oneWayKm)) {
                     document.getElementById('sd-review-delivery-charge-row').style.display = 'flex';
                     document.getElementById('sd-review-delivery-charge').innerText = '₹0';
                     document.getElementById('sd-review-deliv-mode').innerText = 'Home Delivery';
                     document.getElementById('sd-review-deliv-location-row').style.display = locInput ? 'block' : 'none';
-                    if (locInput) document.getElementById('sd-review-deliv-location').innerText = document.getElementById('sd-delivery-location-input').value;
+                    if (locInput) document.getElementById('sd-review-deliv-location').innerText = locInput;
                 } else {
-                let oneWayKm = found.km;
-                let totalDeliveryKm = oneWayKm * 2;
-                deliveryCharge = livePricingRules.baseDeliveryCharge +
-                    Math.max(0, totalDeliveryKm - livePricingRules.freeThresholdKm) * livePricingRules.extraDeliveryChargePerKm;
-                document.getElementById('sd-review-delivery-charge-row').style.display = 'flex';
-                document.getElementById('sd-review-delivery-charge').innerText = `₹${deliveryCharge.toLocaleString('en-IN')}`;
-                document.getElementById('sd-review-deliv-mode').innerText = 'Home Delivery';
-                document.getElementById('sd-review-deliv-location-row').style.display = 'block';
-                document.getElementById('sd-review-deliv-location').innerText = document.getElementById('sd-delivery-location-input').value || 'Mumbai Hub Delivery';
+                    const totalDeliveryKm = oneWayKm * 2;
+                    deliveryCharge = livePricingRules.baseDeliveryCharge +
+                        Math.max(0, totalDeliveryKm - livePricingRules.freeThresholdKm) * livePricingRules.extraDeliveryChargePerKm;
+                    document.getElementById('sd-review-delivery-charge-row').style.display = 'flex';
+                    document.getElementById('sd-review-delivery-charge').innerText = `₹${deliveryCharge.toLocaleString('en-IN')}`;
+                    document.getElementById('sd-review-deliv-mode').innerText = 'Home Delivery';
+                    document.getElementById('sd-review-deliv-location-row').style.display = 'block';
+                    document.getElementById('sd-review-deliv-location').innerText = selfDriveDeliverySelection.address || locInput;
                 }
             } else {
                 deliveryCharge = 0;
@@ -2178,34 +2200,59 @@ function onPickupDateChange() {
             return true;
         }
 
+async function onSelfDriveGooglePlaceSelected(place) {
+    const input = document.getElementById('sd-delivery-location-input');
+    if (!input || !place?.placeId) return;
+    const status = document.getElementById('sd-current-location-status');
+    try {
+        if (status) {
+            status.textContent = 'Checking delivery location…';
+            status.className = 'text-[10px] text-slate-500 mt-1';
+        }
+        const [details, route] = await Promise.all([
+            publicMapsRequest('place-details', { placeId: place.placeId }),
+            publicMapsRequest('delivery-route', { placeId: place.placeId })
+        ]);
+        const oneWayKm = Number(route.oneWayDistanceKm);
+        if (!Number.isFinite(oneWayKm) || oneWayKm > 50) {
+            selfDriveDeliverySelection = null;
+            input.dataset.googlePlaceId = '';
+            showCustomAlert('Sorry, this delivery location is outside our current Self Drive home-delivery service area.');
+            return;
+        }
+        selfDriveDeliverySelection = {
+            placeId: place.placeId,
+            address: details.address || place.text || place.mainText || '',
+            city: details.city || '',
+            state: details.state || '',
+            postalCode: details.postalCode || '',
+            oneWayKm
+        };
+        input.value = details.address || place.text || place.mainText || '';
+        document.getElementById('sd-cust-address').value = details.address || '';
+        document.getElementById('sd-cust-city').value = details.city || '';
+        document.getElementById('sd-cust-state').value = details.state || '';
+        document.getElementById('sd-cust-pincode').value = details.postalCode || '';
+        if (status) {
+            status.textContent = '✓ Delivery location selected from Google';
+            status.className = 'text-[10px] text-emerald-700 font-semibold mt-1';
+        }
+        updateSDFareReview();
+    } catch (error) {
+        selfDriveDeliverySelection = null;
+        if (status) {
+            status.textContent = error.message || 'Unable to verify this delivery location.';
+            status.className = 'text-[10px] text-rose-600 mt-1';
+        }
+    }
+}
+
 function onDeliveryLocationSelect() {
     const input = document.getElementById('sd-delivery-location-input');
-    const locInput = input.value.trim().toLowerCase();
-
-    const found = mumbaiMetroLocations.find(
-        l => l.active !== false && l.selfDriveDelivery === true && l.name.toLowerCase() === locInput
-    );
-
-    if (!found) return;
-
-    // Not serviceable location
-    if (found.serviceable === false) {
-        input.value = '';
-
-        document.getElementById('sd-cust-city').value = '';
-        document.getElementById('sd-cust-state').value = '';
-
-        document.getElementById('sd-serviceability-modal').classList.remove('hidden'); syncModalState(document.getElementById('sd-serviceability-modal'), true);
-        document.getElementById('sd-serviceability-modal').classList.add('flex');
-
-        updateSDFareReview();
-        return;
-    }
-
-    // Serviceable location
-    document.getElementById('sd-cust-city').value = found.city || '';
-    document.getElementById('sd-cust-state').value = found.state || '';
-
+    if (!input) return;
+    if (input.dataset.googlePlaceId && selfDriveDeliverySelection?.placeId === input.dataset.googlePlaceId) return;
+    selfDriveDeliverySelection = null;
+    input.dataset.googlePlaceId = '';
     updateSDFareReview();
 }
 
@@ -2548,10 +2595,8 @@ async function handleBookingSubmit(e) {
             updateSDFareReview();
             if (currentDeliveryMode === 'home') {
                 const deliveryInput = document.getElementById('sd-delivery-location-input');
-                const entered = deliveryInput.value.trim().toLowerCase();
-                const validLocation = mumbaiMetroLocations.find(l => l.name.toLowerCase() === entered && l.serviceable !== false && Number.isFinite(l.km));
-                if (!validLocation) {
-                    showCustomAlert('Sorry, this delivery location is currently outside our standard service zones. Please select from our listed Mumbai metro locations or contact support for custom outstation/delivery quotes.');
+                if (!selfDriveDeliverySelection?.placeId || deliveryInput.dataset.googlePlaceId !== selfDriveDeliverySelection.placeId) {
+                    showCustomAlert('Please select the delivery location from Google suggestions.');
                     deliveryInput.focus();
                     return;
                 }
@@ -2584,7 +2629,7 @@ async function handleBookingSubmit(e) {
                 ['Delivery Charge', currentDeliveryMode === 'home' ? text('sd-review-delivery-charge') : '0'],
                 ['Total Amount', text('disp-total-final-fare')],
             ].map(([label, v]) => label + ': ' + (v || 'Not provided')).join('\n');
-            const bookingData = {vehicleId:selectedCarObj.id,pickupAt:createLocalDateTime(value('sd-pdate'),Number(value('sd-phour')),value('sd-pampm')).toISOString(),returnAt:createLocalDateTime(value('sd-rdate'),Number(value('sd-rhour')),value('sd-rampm')).toISOString(),deliveryMode:currentDeliveryMode,deliveryLocation:currentDeliveryMode==='home'?value('sd-delivery-location-input'):'Self Pick-up',currentLocation:currentDeliveryMode==='home'&&selfDriveCurrentLocation?{latitude:selfDriveCurrentLocation.latitude,longitude:selfDriveCurrentLocation.longitude,address:selfDriveCurrentLocation.address,mapUrl:selfDriveCurrentLocation.mapUrl}:null};
+            const bookingData = {vehicleId:selectedCarObj.id,pickupAt:createLocalDateTime(value('sd-pdate'),Number(value('sd-phour')),value('sd-pampm')).toISOString(),returnAt:createLocalDateTime(value('sd-rdate'),Number(value('sd-rhour')),value('sd-rampm')).toISOString(),deliveryMode:currentDeliveryMode,deliveryLocation:currentDeliveryMode==='home'?value('sd-delivery-location-input'):'Self Pick-up',deliveryPlaceId:currentDeliveryMode==='home'?selfDriveDeliverySelection?.placeId:null,deliveryDistanceKm:currentDeliveryMode==='home'?selfDriveDeliverySelection?.oneWayKm:null,currentLocation:currentDeliveryMode==='home'&&selfDriveCurrentLocation?{latitude:selfDriveCurrentLocation.latitude,longitude:selfDriveCurrentLocation.longitude,address:selfDriveCurrentLocation.address,mapUrl:selfDriveCurrentLocation.mapUrl}:null};
             await sendEmailNotification(e.target, bookingId, name, phone, email, details, closeSDModal, 'selfdrive', otpProof, bookingData);
         }
 

@@ -1167,6 +1167,19 @@ function onPickupDateChange() {
                     missing = true; 
                 } else { outRDateInput.classList.remove('border-red-500'); }
 
+                if (!missing) {
+                    try {
+                        collectOutstationRouteSelections(true);
+                    } catch (error) {
+                        showCustomAlert(error.message);
+                        return false;
+                    }
+                    if (!wdOutstationRouteQuote || !wdOutstationKm) {
+                        showCustomAlert('Please wait for the Google route distance to finish calculating.');
+                        return false;
+                    }
+                }
+
             } else if (currentWDSubTab === 'airport') {
                 const airportPickupInput = document.getElementById('wd-airport-pickup');
                 const airportDateInput = document.getElementById('wd-airport-date');

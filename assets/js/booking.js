@@ -462,6 +462,7 @@ let mumbaiMetroLocations = [
         let currentDeliveryMode = 'home';
         let withDriverCurrentLocation = null;
         let selfDriveCurrentLocation = null;
+        let bookingPaymentContext = null;
         let calculatedRentalHours = 0;
         let currentSDPage = 1;
         const carsPerPage = 6;
@@ -1975,41 +1976,140 @@ function onPickupDateChange() {
         function openPartnerModal() { document.getElementById('partner-modal').classList.remove('hidden'); syncModalState(document.getElementById('partner-modal'), true); }
         function closePartnerModal() { document.getElementById('partner-modal').classList.add('hidden'); syncModalState(document.getElementById('partner-modal'), false); }
 
+        function removeSuccessPaymentActions() {
+            document.querySelector('[data-success-payment-actions]')?.remove();
+        }
+
+        async function payBookingAdvanceNow() {
+            const context = bookingPaymentContext;
+            if (!context?.bookingId || !context?.paymentToken) {
+                showCustomAlert('Payment is not available for this booking yet. Please choose Pay Later.');
+                return;
+            }
+            const button = document.getElementById('success-pay-advance-btn');
+            const status = document.getElementById('success-payment-status');
+            const original = button?.innerHTML || '';
+            const paymentWindow = window.open('', '_blank');
+            if (paymentWindow) {
+                paymentWindow.document.write('<title>Preparing secure payment...</title><p style="font-family:Arial,sans-serif;padding:24px">Preparing secure Razorpay payment…</p>');
+            }
+            try {
+                if (button) {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Preparing Payment…';
+                }
+                if (status) {
+                    status.textContent = 'Creating your secure Razorpay payment link…';
+                    status.className = 'text-[10px] text-indigo-700 mt-2 font-semibold';
+                }
+                const response = await fetch('/api/booking-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        booking_id: context.bookingId,
+                        payment_token: context.paymentToken
+                    })
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || !result.success) throw new Error(result.message || 'Unable to start payment.');
+                if (result.already_paid) {
+                    if (paymentWindow) paymentWindow.close();
+                    if (status) {
+                        status.textContent = 'Advance payment is already recorded for this booking.';
+                        status.className = 'text-[10px] text-emerald-700 mt-2 font-semibold';
+                    }
+                    return;
+                }
+                if (!result.payment_url) throw new Error('Secure payment link was not returned.');
+                if (paymentWindow) paymentWindow.location.href = result.payment_url;
+                else window.location.href = result.payment_url;
+                if (status) {
+                    status.textContent = 'Secure Razorpay payment opened in a new tab.';
+                    status.className = 'text-[10px] text-emerald-700 mt-2 font-semibold';
+                }
+            } catch (error) {
+                if (paymentWindow) paymentWindow.close();
+                if (status) {
+                    status.textContent = error.message || 'Unable to start payment. You can choose Pay Later.';
+                    status.className = 'text-[10px] text-rose-600 mt-2 font-semibold';
+                }
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = original;
+                }
+            }
+        }
+
+        function payBookingLater() {
+            closeSuccessModal();
+        }
+
         window.showSuccessModal = function(applicationNumber, notifications = {}, isBooking = false) {
-    const modal = document.getElementById('success-confirmation-modal');
-    const idBox = document.getElementById('success-application-id');
-    const idText = document.getElementById('success-application-number');
-    const message = modal.querySelector('h3 + p');
-    message.textContent = notifications.customer_email_sent
-        ? 'Thank you! An acknowledgement has been sent to your email. Our team will connect with you shortly.'
-        : 'Thank you! Your details have been submitted. An email acknowledgement could not be sent. Please keep your reference number.';
-    if (isBooking && !notifications.admin_email_sent) {
-        message.textContent = 'Your enquiry was submitted, but the team email could not be sent. Please contact us at carwithdriver.vikhroli@gmail.com with your Booking ID.';
-    }
-    idBox.querySelector('div').textContent = isBooking ? 'Booking ID' : 'Application ID';
-    // Reuse the existing success popup; document UI is Self Drive only.
-    modal.querySelector('h3').textContent = notifications.upload_url ? 'Booking Request Received' : 'Enquiry Successfully Submitted!';
-    modal.querySelector('[data-document-upload]')?.remove();
-    if (notifications.upload_url) {
-        message.textContent = 'Your Self Drive booking request has been received. Please upload your documents for manual verification. Uploading documents does not confirm your booking. Our team will verify them and contact you.' + (notifications.customer_email_sent ? ' A secure upload link has been sent to your email.' : ' Please save the upload link below; the email acknowledgement could not be sent.');
-        const link = document.createElement('a');
-        link.dataset.documentUpload = 'true';
-        link.href = notifications.upload_url;
-        link.textContent = 'Upload Documents';
-        link.className = 'block w-full bg-indigo-950 text-white font-bold rounded-xl px-4 py-3 text-sm';
-        idBox.after(link);
-    }
+            const modal = document.getElementById('success-confirmation-modal');
+            const idBox = document.getElementById('success-application-id');
+            const idText = document.getElementById('success-application-number');
+            const message = modal.querySelector('h3 + p');
+            removeSuccessPaymentActions();
+            bookingPaymentContext = null;
 
-    if (applicationNumber) {
-        idText.textContent = applicationNumber;
-        idBox.classList.remove('hidden');
-    } else {
-        idBox.classList.add('hidden');
-    }
+            message.textContent = notifications.customer_email_sent
+                ? 'Thank you! An acknowledgement has been sent to your email. Our team will connect with you shortly.'
+                : 'Thank you! Your details have been submitted. An email acknowledgement could not be sent. Please keep your reference number.';
 
-    modal.classList.remove('hidden');
-    syncModalState(modal, true);
-};
+            if (isBooking && !notifications.admin_email_sent) {
+                message.textContent = 'Your booking request was submitted, but the team email could not be sent. Please contact us at carwithdriver.vikhroli@gmail.com with your Booking ID.';
+            }
+
+            idBox.querySelector('div').textContent = isBooking ? 'Booking ID' : 'Application ID';
+            modal.querySelector('h3').textContent = notifications.upload_url ? 'Booking Request Received' : (isBooking ? 'Booking Request Received' : 'Enquiry Successfully Submitted!');
+            modal.querySelector('[data-document-upload]')?.remove();
+
+            if (notifications.upload_url) {
+                message.textContent = 'Your Self Drive booking request has been received. Please upload your documents for manual verification. Uploading documents does not confirm your booking. Our team will verify them and contact you.' + (notifications.customer_email_sent ? ' A secure upload link has been sent to your email.' : ' Please save the upload link below; the email acknowledgement could not be sent.');
+                const link = document.createElement('a');
+                link.dataset.documentUpload = 'true';
+                link.href = notifications.upload_url;
+                link.textContent = 'Upload Documents';
+                link.className = 'block w-full bg-indigo-950 text-white font-bold rounded-xl px-4 py-3 text-sm';
+                idBox.after(link);
+            } else if (isBooking && notifications.payment_token) {
+                message.textContent = 'No payment is required right now. Your booking request has been received. Pay 20% advance now to confirm it, or choose Pay Later and complete the advance after our team reviews your booking.';
+                bookingPaymentContext = {
+                    bookingId: applicationNumber,
+                    paymentToken: notifications.payment_token
+                };
+
+                const actions = document.createElement('div');
+                actions.dataset.successPaymentActions = 'true';
+                actions.className = 'rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 text-left';
+                actions.innerHTML = `
+                    <div class="text-xs font-black text-indigo-950">Confirm with 20% advance</div>
+                    <div class="text-[11px] text-slate-600 mt-1">You can pay now or later. The remaining 80% can be paid anytime before the trip ends.</div>
+                    <div class="text-[10px] text-slate-500 mt-2"><strong>Payment options:</strong> UPI, Debit Card, Credit Card, Net Banking & Wallets via Razorpay.</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                        <button type="button" id="success-pay-advance-btn" onclick="payBookingAdvanceNow()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs">
+                            Pay 20% Advance Now
+                        </button>
+                        <button type="button" onclick="payBookingLater()" class="w-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold py-2.5 px-3 rounded-xl text-xs">
+                            Pay Later
+                        </button>
+                    </div>
+                    <p id="success-payment-status" class="text-[10px] text-slate-500 mt-2"></p>
+                `;
+                idBox.after(actions);
+            }
+
+            if (applicationNumber) {
+                idText.textContent = applicationNumber;
+                idBox.classList.remove('hidden');
+            } else {
+                idBox.classList.add('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            syncModalState(modal, true);
+        };
         
         function closeSuccessModal() { document.getElementById('success-confirmation-modal').classList.add('hidden'); syncModalState(document.getElementById('success-confirmation-modal'), false); }
 
@@ -3060,7 +3160,7 @@ showSuccessModal(result.application_number, result);
                 overlay = document.createElement('div');
                 overlay.id = 'booking-submitting-overlay';
                 overlay.className = 'fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[10001] flex items-center justify-center px-4';
-                overlay.innerHTML = '<div class="bg-white rounded-2xl shadow-2xl px-6 py-5 text-center"><i class="fa-solid fa-spinner fa-spin text-indigo-700 text-2xl mb-3"></i><div class="font-extrabold text-slate-900">Confirming your booking...</div><div class="text-xs text-slate-500 mt-1">Please wait while we generate your Booking ID.</div></div>';
+                overlay.innerHTML = '<div class="bg-white rounded-2xl shadow-2xl px-6 py-5 text-center"><i class="fa-solid fa-spinner fa-spin text-indigo-700 text-2xl mb-3"></i><div class="font-extrabold text-slate-900">Submitting your booking request...</div><div class="text-xs text-slate-500 mt-1">Please wait while we generate your Booking ID.</div></div>';
                 document.body.appendChild(overlay);
             }
             overlay.classList.remove('hidden');
@@ -3080,7 +3180,7 @@ showSuccessModal(result.application_number, result);
             const button = form.querySelector('button[type="submit"]');
             const originalButtonHtml = button.innerHTML;
             button.disabled = true;
-            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Confirming Booking...';
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Submitting Booking...';
             showBookingSubmittingOverlay();
             try {
                 if (!otpProof) throw new Error('Please verify your mobile number before submitting.');

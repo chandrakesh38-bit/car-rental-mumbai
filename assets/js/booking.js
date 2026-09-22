@@ -1278,9 +1278,8 @@ function onPickupDateChange() {
             const hour = to24Hour(hourValue, ampmValue);
             const minute = Number(minuteValue) || 0;
             const totalMinutes = hour * 60 + minute;
-            // Night charge starts after 10:00 PM and ends at 5:00 AM.
-            // 10:00 PM itself is not charged; 10:01 PM is. 5:00 AM is charged; 5:01 AM is not.
-            if (!(totalMinutes > 22 * 60 || totalMinutes <= 5 * 60)) return null;
+            // Night charge applies from 11:00 PM through 4:00 AM.
+            if (!(totalMinutes >= 23 * 60 || totalMinutes <= 4 * 60)) return null;
             const date = new Date(dateValue + 'T12:00:00');
             if (!Number.isFinite(date.getTime())) return null;
             if (totalMinutes <= 5 * 60) date.setDate(date.getDate() - 1);
@@ -1781,7 +1780,7 @@ function onPickupDateChange() {
             const outstationExtra = currentWDSubTab === 'outstation'
                 ? `<li><strong>Outstation:</strong> Minimum billing is ${livePricingRules.minimumOutstationKmPerDay} KM per booked day.</li>
                    <li><strong>Driver allowance:</strong> ₹${OUTSTATION_DRIVER_ALLOWANCE_PER_DAY} per booked day.</li>
-                   <li><strong>Night service:</strong> Charged only if the pickup or final drop falls after 10:00 PM and up to 5:00 AM — ₹400 for Hatchback/Sedan or ₹600 for SUV/MUV per qualifying night.</li>`
+                   <li><strong>Night service:</strong> Charged only if the pickup or final drop falls between 11 PM and 4 AM — ₹400 for Hatchback/Sedan or ₹600 for SUV/MUV per qualifying night.</li>`
                 : '';
             contentBox.innerHTML = `
                 <p class="font-bold text-slate-900">Transparent Fare & Inclusions Details:</p>

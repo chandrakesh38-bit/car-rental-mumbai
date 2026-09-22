@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CWD Admin Portal - Car with Driver India</title>
+    <title>CWD Admin Portal - Car with Driver Mobility LLP</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -14,6 +14,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        button { transition: transform .12s ease, filter .12s ease, box-shadow .12s ease, background-color .12s ease; }
+        button:active:not(:disabled) { transform: scale(.96); filter: brightness(.92); }
+        button:focus-visible { outline: 3px solid rgba(245,158,11,.35); outline-offset: 2px; }
+        button:disabled { cursor: wait; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
@@ -28,7 +32,7 @@
                     <i class="fa-solid fa-car-tunnel"></i>
                 </div>
                 <h1 class="text-2xl font-black text-indigo-950 tracking-tight">Admin Console</h1>
-                <p class="text-xs text-slate-500 font-semibold mt-1">Car with Driver India • Operations Portal</p>
+                <p class="text-xs text-slate-500 font-semibold mt-1">Car with Driver Mobility LLP • Operations Portal</p>
             </div>
 
             <!-- Credentials Input Form -->
@@ -78,6 +82,9 @@
 
                 <!-- Navigation Tabs -->
                 <nav class="space-y-1 mt-6 text-xs font-bold" id="admin-nav-tabs">
+                    <button onclick="switchTab('dashboard')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white/10 text-white transition text-left" id="tab-btn-dashboard">
+                        <i class="fa-solid fa-chart-line w-4 text-amber-400"></i> Dashboard
+                    </button>
                     <button onclick="switchTab('vehicles')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white/10 text-white transition text-left" id="tab-btn-vehicles">
                         <i class="fa-solid fa-car-side w-4 text-amber-400"></i> Fleet Vehicles
                     </button>
@@ -97,8 +104,11 @@
                         <i class="fa-solid fa-circle-question w-4 text-amber-300"></i> FAQs
                     </button>
                     <button onclick="switchTab('inquiries')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-inquiries">
-                        <i class="fa-solid fa-inbox w-4 text-rose-400"></i> Lead Inquiries
+                        <i class="fa-solid fa-calendar-check w-4 text-rose-400"></i> Bookings
                     </button>
+                    <a href="/self-drive-review" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left">
+                        <i class="fa-solid fa-id-card w-4 text-cyan-300"></i> Self Drive Documents
+                    </a>
                 </nav>
             </div>
 
@@ -118,9 +128,24 @@
 
         <!-- Main Workspace -->
         <main class="flex-1 p-6 md:p-8 overflow-y-auto max-h-screen">
+            <div id="section-dashboard" class="space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div><h2 class="text-2xl font-black text-slate-900">Operations Dashboard</h2><p class="text-xs text-slate-500 mt-1">Bookings, collections and trips at a glance.</p></div>
+                    <button id="dashboard-refresh-btn" onclick="loadDashboard()" class="bg-white border border-slate-200 shadow-sm px-4 py-2 rounded-xl text-xs font-bold text-indigo-950"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button>
+                </div>
+                <div id="dashboard-kpis" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+                <div class="grid xl:grid-cols-2 gap-5">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h3 class="font-black mb-4">Upcoming / Active Bookings</h3><div id="dashboard-upcoming" class="space-y-2 text-xs"></div></div>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h3 class="font-black mb-4">Needs Attention</h3><div id="dashboard-attention" class="space-y-2 text-xs"></div></div>
+                </div>
+                <div class="grid xl:grid-cols-2 gap-5">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h3 class="font-black mb-4">Last 6 Months</h3><div id="dashboard-months" class="space-y-3 text-xs"></div></div>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><h3 class="font-black mb-4">Recent Payments</h3><div id="dashboard-payments" class="space-y-2 text-xs"></div></div>
+                </div>
+            </div>
             
             <!-- SECTION 1: VEHICLES MANAGEMENT -->
-            <div id="section-vehicles" class="space-y-6">
+            <div id="section-vehicles" class="hidden space-y-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Fleet Vehicles Management</h2>
@@ -173,8 +198,52 @@
                     <h3 class="text-lg font-bold text-slate-900">With-Driver Fleet Rates</h3>
                     <p class="text-xs text-slate-500">Live vendor rates + 25% markup for Outstation, Local & Driver Allowance.</p>
                 </div>
-                <button type="button" onclick="loadWithDriverRates()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg">⟳ Refresh</button>
+                <div class="flex gap-2">
+<button type="button" onclick="toggleWithDriverAddForm()" class="px-3 py-1.5 bg-indigo-950 hover:bg-indigo-900 text-white text-xs font-semibold rounded-lg">+ Add Vehicle</button>
+<button type="button" onclick="loadWithDriverRates()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg">⟳ Refresh</button>
+</div>
             </div>
+            <form id="with-driver-add-form" onsubmit="addWithDriverVehicle(event)" class="hidden mb-5 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <input id="wd-new-name" required placeholder="Vehicle name" class="border rounded-lg px-3 py-2">
+                    <div>
+                        <input id="wd-new-segment" required list="wd-segment-options" placeholder="Category / Segment" class="w-full border rounded-lg px-3 py-2">
+                        <datalist id="wd-segment-options">
+                            <option value="Sedan"></option>
+                            <option value="Compact SUV"></option>
+                            <option value="SUV"></option>
+                            <option value="MUV / 7-Seater"></option>
+                            <option value="Premium MUV"></option>
+                            <option value="Luxury MUV"></option>
+                            <option value="Tempo Traveller"></option>
+                        </datalist>
+                        <p class="text-[10px] text-slate-400 mt-1">Select suggestion or type your own.</p>
+                    </div>
+                    <div>
+                        <input id="wd-new-seats" required type="number" min="1" list="wd-seat-options" placeholder="Seats" class="w-full border rounded-lg px-3 py-2">
+                        <datalist id="wd-seat-options"><option value="4"></option><option value="6"></option><option value="7"></option><option value="12"></option><option value="17"></option><option value="20"></option></datalist>
+                        <p class="text-[10px] text-slate-400 mt-1">Choose common value or enter manually.</p>
+                    </div>
+                    <div>
+                        <input id="wd-new-bags" required type="number" min="0" list="wd-bag-options" placeholder="Bags" class="w-full border rounded-lg px-3 py-2">
+                        <datalist id="wd-bag-options"><option value="2"></option><option value="3"></option><option value="4"></option><option value="5"></option><option value="6"></option></datalist>
+                        <p class="text-[10px] text-slate-400 mt-1">Choose common value or enter manually.</p>
+                    </div>
+                    <input id="wd-new-local" required type="number" min="0" placeholder="Local 8H/80KM" class="border rounded-lg px-3 py-2">
+                    <input id="wd-new-ehr" required type="number" min="0" placeholder="Extra Hour" class="border rounded-lg px-3 py-2">
+                    <input id="wd-new-ekm" required type="number" min="0" placeholder="Extra KM" class="border rounded-lg px-3 py-2">
+                    <input id="wd-new-outstation" required type="number" min="0" placeholder="Outstation / KM" class="border rounded-lg px-3 py-2">
+                    <input id="wd-new-allowance" required type="number" min="0" placeholder="Driver Allowance" class="border rounded-lg px-3 py-2">
+                    <input id="wd-new-t1" required type="number" min="0" placeholder="Airport T1" class="border rounded-lg px-3 py-2">
+                    <input id="wd-new-t2" required type="number" min="0" placeholder="Airport T2" class="border rounded-lg px-3 py-2">
+                    <input id="wd-new-nmia" required type="number" min="0" placeholder="Airport NMIA" class="border rounded-lg px-3 py-2">
+                    <input id="wd-new-order" type="number" min="0" placeholder="Display order" class="border rounded-lg px-3 py-2">
+                </div>
+                <div class="mt-3 flex gap-2">
+                    <button class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-lg text-xs">Save Vehicle</button>
+                    <button type="button" onclick="toggleWithDriverAddForm(false)" class="bg-white border px-4 py-2 rounded-lg text-xs font-bold">Cancel</button>
+                </div>
+            </form>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs text-slate-600">
                     <thead class="bg-slate-50 text-slate-700 uppercase font-bold border-b">
@@ -185,6 +254,8 @@
                             <th class="py-2.5 px-3">Extra Hr</th>
                             <th class="py-2.5 px-3">Extra KM</th>
                             <th class="py-2.5 px-3">Allowance</th>
+                            <th class="py-2.5 px-3">Airport T1/T2/NMIA</th>
+                            <th class="py-2.5 px-3">Active</th>
                             <th class="py-2.5 px-3 text-right">Action</th>
                         </tr>
                     </thead>
@@ -319,36 +390,54 @@
                     <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">FAQ Manager</h2>
                     <p class="text-xs text-slate-500 mt-0.5">Control questions and answers showcased in the website FAQ accordion.</p>
                 </div>
+
+                <form onsubmit="createFaq(event)" class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm max-w-3xl space-y-3">
+                    <h3 class="font-bold text-sm text-slate-900">Add FAQ</h3>
+                    <input id="faq-new-question" required maxlength="500" placeholder="Question" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs">
+                    <textarea id="faq-new-answer" required maxlength="5000" rows="3" placeholder="Answer" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs"></textarea>
+                    <div class="flex gap-3 items-center">
+                        <label class="text-xs font-semibold">Display order <input id="faq-new-order" type="number" min="0" value="1" class="w-20 border rounded px-2 py-1 ml-1"></label>
+                        <label class="text-xs font-semibold"><input id="faq-new-active" type="checkbox" checked> Active</label>
+                        <button class="ml-auto bg-indigo-950 text-white font-bold px-4 py-2 rounded-lg text-xs">Add FAQ</button>
+                    </div>
+                </form>
                 <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm max-w-3xl space-y-3" id="faqs-admin-list">
                     <!-- Populated dynamically -->
                 </div>
             </div>
 
-            <!-- SECTION 7: INQUIRIES ARCHIVE -->
+            <!-- SECTION 7: BOOKINGS -->
             <div id="section-inquiries" class="hidden space-y-6">
                 <div>
-                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Booking Leads &amp; Inquiries</h2>
-                    <p class="text-xs text-slate-500 mt-0.5">Archive of incoming customer rental requests.</p>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Bookings</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Booking operations, payment collection and status tracking.</p>
+                    <p class="text-[10px] text-emerald-700 font-bold mt-1"><i class="fa-solid fa-arrows-rotate mr-1"></i>Live • auto-refreshes every 10 seconds</p>
                 </div>
-
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-extrabold tracking-wider">
+                        <table class="w-full text-left text-[11px] whitespace-nowrap">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[9px] font-extrabold tracking-wider">
                                 <tr>
-                                    <th class="py-3.5 px-4">Date</th>
-                                    <th class="py-3.5 px-4">Customer</th>
-                                    <th class="py-3.5 px-4">Service</th>
-                                    <th class="py-3.5 px-4">Vehicle</th>
-                                    <th class="py-3.5 px-4">Fare</th>
-                                    <th class="py-3.5 px-4">Status</th>
+                                    <th class="py-3 px-3">Booking ID</th><th class="py-3 px-3">Date</th><th class="py-3 px-3">Customer</th>
+                                    <th class="py-3 px-3">Service</th><th class="py-3 px-3">Trip Type</th><th class="py-3 px-3">Vehicle</th>
+                                    <th class="py-3 px-3">Route</th><th class="py-3 px-3">Fare</th><th class="py-3 px-3">Paid</th>
+                                    <th class="py-3 px-3">Balance</th><th class="py-3 px-3">Payment Status</th><th class="py-3 px-3">Booking Status</th>
+                                    <th class="py-3 px-3 text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-inquiries-table-body" class="divide-y divide-slate-100">
-                                <!-- Loaded dynamically -->
-                            </tbody>
+                            <tbody id="admin-inquiries-table-body" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <div id="booking-detail-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[70] hidden items-center justify-center p-4">
+                <div class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl max-h-[92vh] overflow-y-auto">
+                    <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                        <div><h3 id="booking-detail-title" class="text-lg font-black text-slate-900">Booking</h3><p class="text-xs text-slate-500">Booking & payment management</p></div>
+                        <div class="flex items-center gap-2"><button id="booking-refresh-btn" onclick="refreshBookingDetail()" class="border border-slate-200 bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-xl text-xs font-bold text-indigo-950"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button><button onclick="closeBookingDetail()" class="text-slate-400 hover:text-slate-800 text-xl"><i class="fa-solid fa-xmark"></i></button></div>
+                    </div>
+                    <div id="booking-detail-body" class="p-6"></div>
                 </div>
             </div>
 
@@ -507,7 +596,7 @@
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('dashboard-screen').classList.remove('hidden');
                 document.getElementById('admin-user-display').innerText = session.user.email;
-                loadVehicles();
+                switchTab('dashboard');
             } else {
                 document.getElementById('auth-screen').classList.remove('hidden');
                 document.getElementById('dashboard-screen').classList.add('hidden');
@@ -543,7 +632,7 @@
 
         // TABS SWITCHER
         function switchTab(tab) {
-            ['vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries'].forEach(t => {
+            ['dashboard', 'vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries'].forEach(t => {
                 const sec = document.getElementById(`section-${t}`);
                 const btn = document.getElementById(`tab-btn-${t}`);
                 if (t === tab) {
@@ -555,12 +644,14 @@
                 }
             });
 
+            if (tab === 'dashboard') loadDashboard();
             if (tab === 'vehicles') loadVehicles();
             if (tab === 'pricing') loadPricingRules();
             if (tab === 'locations') loadLocations();
             if (tab === 'cms') loadCmsSettings();
             if (tab === 'whatsapp') loadWhatsAppTemplate();
             if (tab === 'faqs') loadFaqs();
+            setBookingsAutoRefresh(tab === 'inquiries');
             if (tab === 'inquiries') loadInquiries();
         }
 
@@ -795,8 +886,11 @@
 
         async function updateRule(id) {
             const val = parseFloat(document.getElementById(`rule-${id}`).value);
-            await supabaseClient.from('pricing_rules').update({ rule_value: val }).eq('id', id);
-            alert("Pricing rule updated successfully!");
+            if (!Number.isFinite(val) || val < 0) return alert('Enter a valid pricing value.');
+            const { data, error } = await supabaseClient.from('pricing_rules').update({ rule_value: val }).eq('id', id).select('id,rule_value');
+            if (error || !data?.length) return alert('Pricing update failed: ' + (error?.message || 'No row updated.'));
+            await loadPricingRules();
+            alert('Pricing rule updated. The public website now reads this value from the database.');
         }
 
         // 3. LOCATIONS
@@ -899,129 +993,370 @@
         }
 
         // 6. FAQS & INQUIRIES
-        async function loadFaqs() {
-            const list = document.getElementById('faqs-admin-list');
-            list.innerHTML = '';
-            const { data: faqs } = await supabaseClient.from('faqs').select('*').order('display_order', { ascending: true });
-            if (!faqs) return;
-            faqs.forEach(f => {
-                const div = document.createElement('div');
-                div.className = "p-3 rounded-xl border border-slate-200 text-xs";
-                div.innerHTML = `<strong>${f.question}</strong><p class="text-slate-600 mt-1">${f.answer}</p>`;
-                list.appendChild(div);
-            });
+        function escapeAdminHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         }
 
-        async function loadInquiries() {
+        async function loadFaqs() {
+            const list = document.getElementById('faqs-admin-list');
+            list.innerHTML = '<p class="text-xs text-slate-400">Loading FAQs...</p>';
+            const { data: faqs, error } = await supabaseClient.from('faqs').select('*').order('display_order', { ascending: true });
+            if (error) { list.innerHTML = '<p class="text-xs text-rose-600">Unable to load FAQs: '+escapeAdminHtml(error.message)+'</p>'; return; }
+            if (!faqs?.length) { list.innerHTML = '<p class="text-xs text-slate-400">No FAQs yet.</p>'; return; }
+            list.innerHTML = faqs.map(f => `
+                <div class="p-4 rounded-xl border border-slate-200 text-xs space-y-2" data-faq-id="${f.id}">
+                    <input data-field="question" maxlength="500" value="${escapeAdminHtml(f.question)}" class="w-full border rounded-lg px-3 py-2 font-bold">
+                    <textarea data-field="answer" maxlength="5000" rows="3" class="w-full border rounded-lg px-3 py-2">${escapeAdminHtml(f.answer)}</textarea>
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <label>Order <input data-field="display_order" type="number" min="0" value="${Number(f.display_order)||0}" class="w-20 border rounded px-2 py-1"></label>
+                        <label><input data-field="is_active" type="checkbox" ${f.is_active ? 'checked' : ''}> Active</label>
+                        <button type="button" onclick="saveFaq('${f.id}')" class="ml-auto bg-indigo-950 text-white px-3 py-1.5 rounded font-bold">Save</button>
+                        <button type="button" onclick="deleteFaq('${f.id}')" class="text-rose-600 font-bold px-2 py-1.5">Delete</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function createFaq(event) {
+            event.preventDefault();
+            const payload = {
+                question: document.getElementById('faq-new-question').value.trim(),
+                answer: document.getElementById('faq-new-answer').value.trim(),
+                display_order: Number(document.getElementById('faq-new-order').value) || 0,
+                is_active: document.getElementById('faq-new-active').checked,
+            };
+            const { error } = await supabaseClient.from('faqs').insert(payload);
+            if (error) return alert('Unable to add FAQ: ' + error.message);
+            event.target.reset();
+            document.getElementById('faq-new-order').value = 1;
+            document.getElementById('faq-new-active').checked = true;
+            await loadFaqs();
+        }
+
+        async function saveFaq(id) {
+            const row = document.querySelector('[data-faq-id="'+id+'"]');
+            const payload = {
+                question: row.querySelector('[data-field="question"]').value.trim(),
+                answer: row.querySelector('[data-field="answer"]').value.trim(),
+                display_order: Number(row.querySelector('[data-field="display_order"]').value) || 0,
+                is_active: row.querySelector('[data-field="is_active"]').checked,
+            };
+            if (!payload.question || !payload.answer) return alert('Question and answer are required.');
+            const { error } = await supabaseClient.from('faqs').update(payload).eq('id', id);
+            if (error) return alert('Unable to update FAQ: ' + error.message);
+            await loadFaqs();
+        }
+
+        async function deleteFaq(id) {
+            if (!confirm('Delete this FAQ permanently?')) return;
+            const { error } = await supabaseClient.from('faqs').delete().eq('id', id);
+            if (error) return alert('Unable to delete FAQ: ' + error.message);
+            await loadFaqs();
+        }
+
+        let currentAdminBooking = null;
+
+        function money(value) { return '₹' + Number(value || 0).toLocaleString('en-IN'); }
+        function statusBadge(value) {
+            const v = String(value || 'pending').toLowerCase();
+            const cls = v === 'paid' || v === 'confirmed' || v === 'completed' ? 'bg-emerald-100 text-emerald-800' : v === 'cancelled' || v === 'failed' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-900';
+            return '<span class="px-2 py-1 rounded-full text-[9px] font-bold '+cls+'">'+escapeAdminHtml(v.replaceAll('_',' '))+'</span>';
+        }
+
+        function bookingDate(b){ const raw=b.pickup_date||b.trip_date||b.start_date||b.booking_date||b.created_at; const d=new Date(raw); return Number.isNaN(d.getTime())?new Date(b.created_at):d; }
+        async function loadDashboard(){
+            const btn=document.getElementById('dashboard-refresh-btn'); if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Refreshing…';}
+            try{
+                const result=await adminApi('/api/admin-payment?dashboard=1'), bookings=result.bookings||[], payments=result.payments||[];
+                const now=new Date(), monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+                const monthBookings=bookings.filter(b=>new Date(b.created_at)>=monthStart);
+                const revenue=payments.filter(p=>new Date(p.paid_at||p.created_at)>=monthStart).reduce((a,p)=>a+Number(p.amount||0),0);
+                const outstanding=bookings.filter(b=>!['cancelled','completed'].includes(String(b.booking_status))).reduce((a,b)=>a+Math.max(0,Number(b.total_fare||0)-Number(b.paid_amount||0)),0);
+                const today=bookings.filter(b=>bookingDate(b).toDateString()===now.toDateString()&&!['cancelled','completed'].includes(String(b.booking_status))).length;
+                const ongoing=bookings.filter(b=>b.booking_status==='ongoing').length;
+                const cards=[['This Month Bookings',monthBookings.length,'fa-calendar-check'],["Today's Trips",today,'fa-car-side'],['This Month Received',money(revenue),'fa-indian-rupee-sign'],['Outstanding',money(outstanding),'fa-wallet']];
+                document.getElementById('dashboard-kpis').innerHTML=cards.map(c=>'<div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm"><div class="flex justify-between"><div><p class="text-[10px] uppercase font-bold text-slate-400">'+c[0]+'</p><p class="text-2xl font-black mt-2 text-indigo-950">'+c[1]+'</p></div><i class="fa-solid '+c[2]+' text-amber-500 text-xl"></i></div></div>').join('');
+                const active=bookings.filter(b=>!['cancelled','completed'].includes(String(b.booking_status))).sort((a,b)=>bookingDate(a)-bookingDate(b)).slice(0,8);
+                const row=b=>'<button class="w-full text-left border rounded-xl p-3 hover:bg-slate-50" onclick="openBookingDetailById(\''+escapeAdminHtml(b.booking_id)+'\')"><b>'+escapeAdminHtml(b.booking_id)+'</b> • '+escapeAdminHtml(b.customer_name||'')+'<span class="float-right">'+statusBadge(b.booking_status)+'</span><div class="text-slate-500 mt-1">'+bookingDate(b).toLocaleDateString('en-IN')+' • '+escapeAdminHtml(b.car_name||'')+' • '+escapeAdminHtml(b.route||'—')+'</div></button>';
+                document.getElementById('dashboard-upcoming').innerHTML=active.length?active.map(row).join(''):'<p class="text-slate-400">No active bookings.</p>';
+                const attention=bookings.filter(b=>!['cancelled','completed'].includes(String(b.booking_status))&&(Number(b.total_fare||0)>Number(b.paid_amount||0)||['received','availability_confirmed'].includes(String(b.booking_status)))).slice(0,8);
+                document.getElementById('dashboard-attention').innerHTML=attention.length?attention.map(row).join(''):'<p class="text-emerald-700 font-bold">Nothing needs attention ✓</p>';
+                const months=[]; for(let n=5;n>=0;n--){const d=new Date(now.getFullYear(),now.getMonth()-n,1), e=new Date(d.getFullYear(),d.getMonth()+1,1);const bs=bookings.filter(b=>{const x=new Date(b.created_at);return x>=d&&x<e}).length;const rev=payments.filter(p=>{const x=new Date(p.paid_at||p.created_at);return x>=d&&x<e}).reduce((a,p)=>a+Number(p.amount||0),0);months.push({label:d.toLocaleDateString('en-IN',{month:'short',year:'2-digit'}),bs,rev});}
+                const max=Math.max(1,...months.map(x=>x.bs)); document.getElementById('dashboard-months').innerHTML=months.map(x=>'<div><div class="flex justify-between font-bold"><span>'+x.label+' • '+x.bs+' bookings</span><span>'+money(x.rev)+'</span></div><div class="h-2 bg-slate-100 rounded-full mt-1 overflow-hidden"><div class="h-full bg-indigo-900 rounded-full" style="width:'+Math.max(4,x.bs/max*100)+'%"></div></div></div>').join('');
+                document.getElementById('dashboard-payments').innerHTML=payments.slice(0,8).map(p=>'<div class="border-b py-2 flex justify-between gap-2"><span><b>'+escapeAdminHtml(p.booking_id)+'</b><br><span class="text-slate-400">'+escapeAdminHtml((p.payment_method||'razorpay').replaceAll('_',' '))+'</span></span><b class="text-emerald-700">'+money(p.amount)+'</b></div>').join('')||'<p class="text-slate-400">No payments yet.</p>';
+            }catch(e){document.getElementById('dashboard-kpis').innerHTML='<p class="text-rose-600 text-sm font-bold">'+escapeAdminHtml(e.message)+'</p>';}finally{if(btn){btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-rotate mr-1"></i> Refresh';}}
+        }
+        async function openBookingDetailById(id){try{const result=await adminApi('/api/admin-payment?dashboard=1');const b=(result.bookings||[]).find(x=>x.booking_id===id);if(b)openBookingDetail(b);}catch(e){alert(e.message)}}
+        async function refreshBookingDetail(){
+            if(!currentAdminBooking)return; const btn=document.getElementById('booking-refresh-btn');
+            try{if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Refreshing…';}const result=await adminApi('/api/admin-payment?dashboard=1');const fresh=(result.bookings||[]).find(x=>x.booking_id===currentAdminBooking.booking_id);if(fresh)currentAdminBooking=fresh;await renderBookingDetail();}catch(e){alert(e.message)}finally{const b=document.getElementById('booking-refresh-btn');if(b){b.disabled=false;b.innerHTML='<i class="fa-solid fa-check mr-1"></i> Updated';setTimeout(()=>{if(b)b.innerHTML='<i class="fa-solid fa-rotate mr-1"></i> Refresh'},900);}}}
+        let bookingsAutoRefreshTimer = null;
+        function setBookingsAutoRefresh(enabled) {
+            if (bookingsAutoRefreshTimer) { clearInterval(bookingsAutoRefreshTimer); bookingsAutoRefreshTimer = null; }
+            if (enabled) bookingsAutoRefreshTimer = setInterval(() => {
+                const section = document.getElementById('section-inquiries');
+                const modal = document.getElementById('booking-detail-modal');
+                if (section && !section.classList.contains('hidden') && (!modal || modal.classList.contains('hidden'))) loadInquiries(true);
+            }, 10000);
+        }
+
+        async function loadInquiries(silent=false) {
             const tbody = document.getElementById('admin-inquiries-table-body');
+            if (!silent) tbody.innerHTML = '<tr><td colspan="13" class="py-8 text-center text-slate-400">Loading bookings...</td></tr>';
+            const { data: inqs, error } = await supabaseClient.from('inquiries').select('*').not('booking_id','is',null).order('created_at', { ascending: false }).limit(200);
+            if (error) { tbody.innerHTML = '<tr><td colspan="13" class="py-6 text-center text-rose-600">Unable to load bookings: '+escapeAdminHtml(error.message)+'</td></tr>'; return; }
+            if (!inqs?.length) { tbody.innerHTML = '<tr><td colspan="13" class="py-8 text-center text-slate-400">No structured bookings yet. New verified bookings will appear here.</td></tr>'; return; }
             tbody.innerHTML = '';
-            const { data: inqs } = await supabaseClient.from('inquiries').select('*').order('created_at', { ascending: false }).limit(25);
-            if (!inqs || inqs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">No leads recorded yet.</td></tr>';
-                return;
-            }
             inqs.forEach(i => {
-                const tr = document.createElement('tr');
+                const fare = Number(i.total_fare || i.fare_amount || 0), paid = Number(i.paid_amount || 0), balance = Math.max(0,fare-paid);
+                const tr = document.createElement('tr'); tr.className='hover:bg-slate-50';
                 tr.innerHTML = `
-                    <td class="py-3 px-4 text-slate-500">${new Date(i.created_at).toLocaleDateString()}</td>
-                    <td class="py-3 px-4 font-bold text-slate-800">${i.customer_name}<br><span class="font-normal text-slate-400">${i.customer_phone}</span></td>
-                    <td class="py-3 px-4">${i.service_type}</td>
-                    <td class="py-3 px-4 font-semibold text-indigo-950">${i.car_name}</td>
-                    <td class="py-3 px-4 font-bold text-emerald-700">₹${i.fare_amount}</td>
-                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900">${i.inquiry_status}</span></td>
-                `;
+                    <td class="py-3 px-3 font-bold text-indigo-950">${escapeAdminHtml(i.booking_id)}</td>
+                    <td class="py-3 px-3 text-slate-500">${new Date(i.created_at).toLocaleDateString('en-IN')}</td>
+                    <td class="py-3 px-3 font-bold">${escapeAdminHtml(i.customer_name)}<br><span class="font-normal text-slate-400">${escapeAdminHtml(i.customer_phone)}</span></td>
+                    <td class="py-3 px-3">${escapeAdminHtml(i.service_type || '')}</td><td class="py-3 px-3">${escapeAdminHtml(i.trip_type || '')}</td>
+                    <td class="py-3 px-3 font-semibold">${escapeAdminHtml(i.car_name || '')}</td><td class="py-3 px-3 max-w-[220px] truncate" title="${escapeAdminHtml(i.route || '')}">${escapeAdminHtml(i.route || '—')}</td>
+                    <td class="py-3 px-3 font-bold">${money(fare)}</td><td class="py-3 px-3 text-emerald-700 font-bold">${money(paid)}</td><td class="py-3 px-3 font-bold">${money(balance)}</td>
+                    <td class="py-3 px-3">${statusBadge(i.payment_status)}</td><td class="py-3 px-3">${statusBadge(i.booking_status)}</td>
+                    <td class="py-3 px-3 text-right"><button class="bg-indigo-950 text-white px-3 py-1.5 rounded-lg font-bold" data-view-booking>View</button></td>`;
+                tr.querySelector('[data-view-booking]').onclick=()=>openBookingDetail(i);
                 tbody.appendChild(tr);
             });
         }
+
+        async function adminApi(path, options={}) {
+            const { data:{ session } } = await supabaseClient.auth.getSession();
+            if (!session?.access_token) throw new Error('Admin session expired. Please log in again.');
+            const response = await fetch(path,{...options,headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,...(options.headers||{})}});
+            const data = await response.json().catch(()=>({}));
+            if (!response.ok || !data.success) throw new Error(data.message || 'Request failed.');
+            return data;
+        }
+
+        async function openBookingDetail(booking) {
+            currentAdminBooking = booking;
+            document.getElementById('booking-detail-title').textContent = booking.booking_id;
+            const modal=document.getElementById('booking-detail-modal'); modal.classList.remove('hidden'); modal.classList.add('flex');
+            await renderBookingDetail();
+        }
+        function closeBookingDetail(){ const m=document.getElementById('booking-detail-modal');m.classList.add('hidden');m.classList.remove('flex');currentAdminBooking=null; }
+
+        async function renderBookingDetail() {
+            const b=currentAdminBooking, body=document.getElementById('booking-detail-body'); if(!b)return;
+            body.innerHTML='<p class="py-10 text-center text-slate-400">Loading booking...</p>';
+            let payments=[], paymentLoadError='';
+            try {
+                const result = await adminApi('/api/admin-payment?booking_id='+encodeURIComponent(b.booking_id));
+                payments = result.payments || [];
+                // Reconciliation may have updated the booking totals server-side.
+                // Refresh this booking so the summary uses the same fresh data.
+                const { data: freshBooking } = await supabaseClient.from('inquiries').select('*').eq('booking_id', b.booking_id).single();
+                if (freshBooking) {
+                    currentAdminBooking = freshBooking;
+                    Object.assign(b, freshBooking);
+                }
+            } catch (error) {
+                console.error('Unable to load payment history:', error);
+                paymentLoadError = error?.message || 'Unable to load payment history.';
+            }
+            const fare=Number(b.total_fare||b.fare_amount||0), paid=Number(b.paid_amount||0), balance=Math.max(0,fare-paid);
+            body.innerHTML=`
+                <div class="grid md:grid-cols-2 gap-4 text-xs">
+                    <div class="border rounded-2xl p-4 space-y-2"><h4 class="font-black text-sm">Customer</h4><p><b>${escapeAdminHtml(b.customer_name)}</b></p><p>${escapeAdminHtml(b.customer_phone)}</p><p>${escapeAdminHtml(b.customer_email||'—')}</p></div>
+                    <div class="border rounded-2xl p-4 space-y-2"><h4 class="font-black text-sm">Trip</h4><p>${escapeAdminHtml(b.service_type||'')} • ${escapeAdminHtml(b.trip_type||'')}</p><p><b>${escapeAdminHtml(b.car_name||'')}</b></p><p>${escapeAdminHtml(b.route||'—')}</p></div>
+                </div>
+                <div class="mt-4 border rounded-2xl p-4">
+                    <div class="flex flex-wrap gap-4 items-end">
+                        <label class="text-xs font-bold">Booking Status<select id="booking-status-select" class="block mt-1 border rounded-lg px-3 py-2"><option value="received">Received</option><option value="availability_confirmed">Availability Confirmed</option><option value="confirmed">Confirmed</option><option value="ongoing">Ongoing</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
+                        <button onclick="saveBookingStatus()" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold">Save Status</button>
+                    </div>
+                </div>
+                <div class="mt-4 bg-slate-50 border rounded-2xl p-4">
+                    <h4 class="font-black text-sm mb-3">Payment</h4>
+                    <div class="grid grid-cols-3 gap-3 mb-4"><div><span class="text-[10px] text-slate-500">TOTAL FARE</span><b class="block">${money(fare)}</b></div><div><span class="text-[10px] text-slate-500">PAID</span><b class="block text-emerald-700">${money(paid)}</b></div><div><span class="text-[10px] text-slate-500">BALANCE</span><b class="block">${money(balance)}</b></div></div>
+                    ${balance>0 ? `<div class="flex flex-wrap gap-2 items-end border-t pt-4">
+                        <label class="text-xs font-bold">Amount<input id="payment-amount" type="number" min="1" max="${balance}" class="block mt-1 border rounded-lg px-3 py-2 w-36" placeholder="₹"></label>
+                        <label class="text-xs font-bold">Payment Type<select id="payment-type" class="block mt-1 border rounded-lg px-3 py-2"><option value="advance">Advance</option><option value="full">Full Payment</option><option value="balance">Balance Payment</option></select></label>
+                        <button type="button" id="generate-payment-link-btn" class="bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white px-4 py-2 rounded-lg text-xs font-bold">Generate Payment Link</button>
+                        <select id="offline-payment-method" class="border rounded-lg px-3 py-2 text-xs font-bold"><option value="cash">Cash</option><option value="bank_transfer">Bank Transfer</option><option value="offline_upi">Offline UPI</option></select>
+                        <button type="button" id="record-offline-payment-btn" class="bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 text-white px-4 py-2 rounded-lg text-xs font-bold">Record Offline Payment</button>
+                        <p id="payment-action-message" class="w-full text-xs font-semibold hidden"></p>
+                    </div>` : '<p class="text-emerald-700 font-bold">Payment complete ✓</p>'}
+                </div>
+                <div class="mt-4"><h4 class="font-black text-sm mb-2">Payment History</h4><div class="space-y-2">${paymentLoadError?'<p class="text-xs font-semibold text-rose-600">Payment history could not load: '+escapeAdminHtml(paymentLoadError)+'</p>':payments.length?payments.map(paymentCard).join(''):'<p class="text-xs text-slate-400">No payment requests yet.</p>'}</div></div>
+                <details class="mt-4 border rounded-xl p-3"><summary class="text-xs font-bold cursor-pointer">Full booking details</summary><pre class="mt-3 text-[11px] whitespace-pre-wrap text-slate-600">${escapeAdminHtml(b.booking_details||'No details')}</pre></details>
+                <details class="mt-4 border border-rose-200 bg-rose-50/40 rounded-xl p-3"><summary class="text-xs font-black text-rose-700 cursor-pointer">Danger Zone</summary><div class="mt-3"><p class="text-xs text-slate-600 mb-2">Permanently delete this booking and its local payment history. Razorpay transactions are not deleted or refunded.</p><button type="button" onclick="deleteCurrentBooking()" class="bg-rose-700 hover:bg-rose-800 text-white px-3 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-trash mr-1"></i> Delete Booking</button></div></details>`;
+            document.getElementById('booking-status-select').value=b.booking_status||'received';
+            const paymentBtn = document.getElementById('generate-payment-link-btn');
+            if (paymentBtn) paymentBtn.addEventListener('click', generatePaymentLink);
+            const offlineBtn = document.getElementById('record-offline-payment-btn');
+            if (offlineBtn) offlineBtn.addEventListener('click', recordOfflinePayment);
+        }
+
+        function paymentCard(p) {
+            const link=escapeAdminHtml(p.razorpay_payment_link_url||'');
+            return `<div class="border rounded-xl p-3 text-xs"><div class="flex justify-between gap-3"><div><b>${money(p.amount)} • ${escapeAdminHtml(p.payment_method ? p.payment_method.replaceAll('_',' ') : p.payment_type)}</b><div class="mt-1">${statusBadge(p.status)}</div></div><div class="text-right text-[10px] text-slate-400">${new Date(p.created_at).toLocaleString('en-IN')}</div></div>
+            <div class="mt-3 flex flex-wrap gap-2">${p.status==='pending'?`<button onclick="copyPaymentLink('${link}')" class="border px-2 py-1 rounded font-bold">Copy Link</button><button onclick="sharePaymentWhatsApp('${link}',${Number(p.amount)})" class="border px-2 py-1 rounded font-bold text-emerald-700">WhatsApp</button><button onclick="verifyPayment('${p.id}')" class="border px-2 py-1 rounded font-bold text-indigo-700">Verify Payment</button><button onclick="cancelPayment('${p.id}')" class="border px-2 py-1 rounded font-bold text-rose-700">Cancel Link</button>`:''}${p.razorpay_payment_id?'<span class="text-slate-500">Payment ID: '+escapeAdminHtml(p.razorpay_payment_id)+'</span>':''}</div></div>`;
+        }
+
+        async function deleteCurrentBooking(){
+            const id=currentAdminBooking?.booking_id; if(!id)return;
+            const typed=prompt('Permanent deletion. Type the exact Booking ID to continue:\n\n'+id);
+            if(typed===null)return;
+            if(typed.trim()!==id){alert('Booking ID did not match. Nothing was deleted.');return;}
+            if(!confirm('Permanently delete '+id+' and its local payment history? This cannot be undone.'))return;
+            try{
+                await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'delete_booking',booking_id:id,confirmation:typed.trim()})});
+                closeBookingDetail(); await loadInquiries(); alert('Booking deleted.');
+            }catch(e){alert(e.message||'Unable to delete booking.');}
+        }
+        async function saveBookingStatus(){ const value=document.getElementById('booking-status-select').value; const {error}=await supabaseClient.from('inquiries').update({booking_status:value,updated_at:new Date().toISOString()}).eq('booking_id',currentAdminBooking.booking_id); if(error)return alert(error.message); currentAdminBooking.booking_status=value; await loadInquiries(); await renderBookingDetail(); }
+        async function generatePaymentLink(){
+            const amountEl=document.getElementById('payment-amount'), typeEl=document.getElementById('payment-type');
+            const btn=document.getElementById('generate-payment-link-btn'), msg=document.getElementById('payment-action-message');
+            const amount=Number(amountEl?.value), payment_type=typeEl?.value;
+            const fare=Number(currentAdminBooking?.total_fare||currentAdminBooking?.fare_amount||0), paid=Number(currentAdminBooking?.paid_amount||0), balance=Math.max(0,fare-paid);
+            const show=(text,error=false)=>{ if(!msg)return; msg.textContent=text; msg.className='w-full text-xs font-semibold '+(error?'text-rose-600':'text-indigo-700'); };
+            if(!Number.isFinite(amount)||amount<=0){ show('Enter a valid payment amount.',true); amountEl?.focus(); return; }
+            if(amount>balance){ show('Amount cannot exceed the booking balance.',true); amountEl?.focus(); return; }
+            try{
+                if(btn){btn.disabled=true;btn.textContent='Generating…';}
+                show('Creating secure Razorpay payment link…');
+                const result = await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'create',booking_id:currentAdminBooking.booking_id,amount,payment_type})});
+                if (!result.payment?.razorpay_payment_link_url) throw new Error('Payment link was created but its URL was not returned.');
+                await renderBookingDetail();
+            }catch(e){
+                show(e.message||'Unable to generate payment link.',true);
+                if(btn){btn.disabled=false;btn.textContent='Generate Payment Link';}
+            }
+        }
+        async function recordOfflinePayment(){
+            const amount=Number(document.getElementById('payment-amount')?.value);
+            const method=document.getElementById('offline-payment-method')?.value;
+            const balance=Math.max(0,Number(currentAdminBooking?.total_fare||0)-Number(currentAdminBooking?.paid_amount||0));
+            if(!Number.isFinite(amount)||amount<=0)return alert('Enter a valid amount.');
+            if(amount>balance)return alert('Amount cannot exceed the booking balance.');
+            const label=method==='cash'?'Cash':method==='bank_transfer'?'Bank Transfer':'Offline UPI';
+            if(!confirm('Record '+money(amount)+' received via '+label+'? This will count as paid.'))return;
+            try{
+                const btn=document.getElementById('record-offline-payment-btn'); if(btn){btn.disabled=true;btn.textContent='Recording…';}
+                await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'record_offline',booking_id:currentAdminBooking.booking_id,amount,payment_method:method})});
+                const {data}=await supabaseClient.from('inquiries').select('*').eq('booking_id',currentAdminBooking.booking_id).single();
+                if(data)currentAdminBooking=data;
+                await loadInquiries(); await renderBookingDetail();
+            }catch(e){alert(e.message); await renderBookingDetail();}
+        }
+        async function verifyPayment(id){try{await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'verify',booking_id:currentAdminBooking.booking_id,payment_id:id})});const {data}=await supabaseClient.from('inquiries').select('*').eq('booking_id',currentAdminBooking.booking_id).single();if(data)currentAdminBooking=data;await loadInquiries();await renderBookingDetail();}catch(e){alert(e.message)}}
+        async function cancelPayment(id){if(!confirm('Cancel this payment link?'))return;try{await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'cancel',booking_id:currentAdminBooking.booking_id,payment_id:id})});await renderBookingDetail();}catch(e){alert(e.message)}}
+        async function copyPaymentLink(link){try{await navigator.clipboard.writeText(link);alert('Payment link copied.');}catch{prompt('Copy payment link:',link)}}
+        function sharePaymentWhatsApp(link,amount){const b=currentAdminBooking,phone=String(b.customer_phone||'').replace(/\D/g,'').replace(/^0+/,'');const mobile=phone.length===10?'91'+phone:phone;const msg=`Hello ${b.customer_name},\n\nPlease find the payment link for your booking with Car With Driver India.\n\nBooking ID: ${b.booking_id}\nTotal Booking Amount: ${money(b.total_fare)}\nAmount to Pay: ${money(amount)}\n\nPay Now: ${link}\n\nThank you,\nCar With Driver India`;window.open('https://wa.me/'+mobile+'?text='+encodeURIComponent(msg),'_blank','noopener');}
+
 
         // Initialize state on page load
         window.addEventListener('DOMContentLoaded', () => {
             checkAuthState();
         });
 
-        // LEAD INQUIRIES FETCH & DISPLAY
-async function loadInquiries() {
-    const tableBody = document.getElementById('inquiries-table-body') || document.querySelector('#section-inquiries tbody');
-    if (!tableBody || !supabaseClient) return;
-
-    tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">Loading inquiries...</td></tr>`;
-
-    const { data, error } = await supabaseClient
-        .from('inquiries')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-    if (error || !data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">No leads recorded yet.</td></tr>`;
-        return;
-    }
-
-    tableBody.innerHTML = data.map(lead => `
-        <tr class="border-b border-slate-100 hover:bg-slate-50 text-sm">
-            <td class="py-3 px-4">${new Date(lead.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
-            <td class="py-3 px-4 font-medium text-slate-800">${lead.customer_name || 'Guest'}<br><span class="text-xs text-slate-500">${lead.customer_phone || '-'}</span></td>
-            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-xs bg-indigo-50 text-indigo-600 font-semibold">${lead.service_type || 'Self-Drive'}</span></td>
-            <td class="py-3 px-4">${lead.car_name || '-'}</td>
-            <td class="py-3 px-4 font-semibold text-slate-800">₹${lead.total_fare || 0}</td>
-            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700 font-medium">Received</span></td>
-        </tr>
-    `).join('');
+ // Load With-Driver Rates
+function toggleWithDriverAddForm(force) {
+    const form = document.getElementById('with-driver-add-form');
+    if (!form) return;
+    const show = typeof force === 'boolean' ? force : form.classList.contains('hidden');
+    form.classList.toggle('hidden', !show);
 }
 
-// Jab switchTab('inquiries') chale, tab call ho:
-const origSwitchTab = switchTab;
-switchTab = function(tab) {
-    origSwitchTab(tab);
-    if (tab === 'inquiries') loadInquiries();
-};
+function wdNumber(id) {
+    const value = Number(document.getElementById(id)?.value);
+    if (!Number.isFinite(value) || value < 0) throw new Error('All rates must be valid non-negative numbers.');
+    return value;
+}
 
- // Load With-Driver Rates
 async function loadWithDriverRates() {
     const tbody = document.getElementById('with-driver-rates-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-slate-400">Loading rates...</td></tr>';
-    
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-slate-400">Loading rates...</td></tr>';
     const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
-    const { data, error } = await client.from('with_driver_rates').select('*').order('outstation_rate_per_km', { ascending: true });
-    
+    const { data, error } = await client.from('with_driver_rates').select('*').order('display_order', { ascending: true }).order('full_name', { ascending: true });
     if (error || !data) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">Failed to load rates</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-red-500">Failed to load rates</td></tr>';
         return;
     }
-    
     tbody.innerHTML = data.map(car => `
         <tr class="border-b hover:bg-slate-50">
-            <td class="py-2 px-3 font-semibold text-slate-800">${car.full_name}<span class="text-[10px] text-slate-400 block">${car.segment}</span></td>
-            <td class="py-2 px-3">₹<input type="number" id="wd_outstation_${car.id}" value="${car.outstation_rate_per_km}" class="w-16 border rounded px-1 py-0.5 font-bold text-slate-900"></td>
-            <td class="py-2 px-3">₹<input type="number" id="wd_local_${car.id}" value="${car.local_pkg_8hr_80km}" class="w-20 border rounded px-1 py-0.5 font-bold text-slate-900"></td>
-            <td class="py-2 px-3">₹<input type="number" id="wd_ehr_${car.id}" value="${car.local_extra_hour_rate}" class="w-16 border rounded px-1 py-0.5 font-bold text-slate-900"></td>
-            <td class="py-2 px-3">₹<input type="number" id="wd_ekm_${car.id}" value="${car.local_extra_km_rate}" class="w-16 border rounded px-1 py-0.5 font-bold text-slate-900"></td>
-            <td class="py-2 px-3">₹<input type="number" id="wd_allowance_${car.id}" value="${car.driver_allowance_per_day}" class="w-16 border rounded px-1 py-0.5 font-bold text-slate-900"></td>
-            <td class="py-2 px-3 text-right">
-                <button type="button" onclick="saveWithDriverRate('${car.id}')" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded text-xs">Save</button>
+            <td class="py-2 px-3 font-semibold text-slate-800"><input id="wd_name_${car.id}" value="${escapeAdminHtml(car.full_name || '')}" class="w-36 border rounded px-1 py-0.5 font-bold"><input id="wd_segment_${car.id}" value="${escapeAdminHtml(car.segment || '')}" class="w-36 border rounded px-1 py-0.5 text-[10px] text-slate-500 block mt-1"></td>
+            <td class="py-2 px-3">₹<input type="number" id="wd_outstation_${car.id}" value="${car.outstation_rate_per_km}" class="w-16 border rounded px-1 py-0.5"></td>
+            <td class="py-2 px-3">₹<input type="number" id="wd_local_${car.id}" value="${car.local_pkg_8hr_80km}" class="w-20 border rounded px-1 py-0.5"></td>
+            <td class="py-2 px-3">₹<input type="number" id="wd_ehr_${car.id}" value="${car.local_extra_hour_rate}" class="w-16 border rounded px-1 py-0.5"></td>
+            <td class="py-2 px-3">₹<input type="number" id="wd_ekm_${car.id}" value="${car.local_extra_km_rate}" class="w-16 border rounded px-1 py-0.5"></td>
+            <td class="py-2 px-3">₹<input type="number" id="wd_allowance_${car.id}" value="${car.driver_allowance_per_day}" class="w-16 border rounded px-1 py-0.5"></td>
+            <td class="py-2 px-3 whitespace-nowrap">₹<input type="number" id="wd_t1_${car.id}" value="${car.airport_t1_rate || 0}" class="w-16 border rounded px-1 py-0.5"> / ₹<input type="number" id="wd_t2_${car.id}" value="${car.airport_t2_rate || 0}" class="w-16 border rounded px-1 py-0.5"> / ₹<input type="number" id="wd_nmia_${car.id}" value="${car.airport_nmia_rate || 0}" class="w-16 border rounded px-1 py-0.5"></td>
+            <td class="py-2 px-3"><input type="checkbox" id="wd_active_${car.id}" ${car.is_active !== false ? 'checked' : ''}></td>
+            <td class="py-2 px-3 text-right whitespace-nowrap">
+                <button type="button" onclick="saveWithDriverRate('${car.id}')" class="px-2.5 py-1 bg-amber-500 text-white font-semibold rounded text-xs">Save</button>
+                <button type="button" onclick="deleteWithDriverVehicle('${car.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-700 font-semibold rounded text-xs ml-1">Delete</button>
             </td>
-        </tr>
-    `).join('');
+        </tr>`).join('');
 }
 
-// Save Single Car Rate
 async function saveWithDriverRate(id) {
     const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
-    const payload = {
-        outstation_rate_per_km: Number(document.getElementById(`wd_outstation_${id}`).value),
-        local_pkg_8hr_80km: Number(document.getElementById(`wd_local_${id}`).value),
-        local_extra_hour_rate: Number(document.getElementById(`wd_ehr_${id}`).value),
-        local_extra_km_rate: Number(document.getElementById(`wd_ekm_${id}`).value),
-        driver_allowance_per_day: Number(document.getElementById(`wd_allowance_${id}`).value)
-    };
-    
-    const { error } = await client.from('with_driver_rates').update(payload).eq('id', id);
-    if (error) {
-        alert('Update failed: ' + error.message);
-    } else {
-        alert('Rates updated successfully!');
-    }
-}      
+    try {
+        const payload = {
+            full_name: document.getElementById(`wd_name_${id}`).value.trim(),
+            segment: document.getElementById(`wd_segment_${id}`).value.trim(),
+            outstation_rate_per_km: wdNumber(`wd_outstation_${id}`),
+            local_pkg_8hr_80km: wdNumber(`wd_local_${id}`),
+            local_extra_hour_rate: wdNumber(`wd_ehr_${id}`),
+            local_extra_km_rate: wdNumber(`wd_ekm_${id}`),
+            driver_allowance_per_day: wdNumber(`wd_allowance_${id}`),
+            airport_t1_rate: wdNumber(`wd_t1_${id}`),
+            airport_t2_rate: wdNumber(`wd_t2_${id}`),
+            airport_nmia_rate: wdNumber(`wd_nmia_${id}`),
+            is_active: document.getElementById(`wd_active_${id}`).checked
+        };
+        if (!payload.full_name || !payload.segment) throw new Error('Vehicle name and category are required.');
+        const { data, error } = await client.from('with_driver_rates').update(payload).eq('id', id).select('id');
+        if (error || !data?.length) throw new Error(error?.message || 'No row updated.');
+        await loadWithDriverRates();
+        alert('Vehicle updated. Website will use the new values.');
+    } catch (error) { alert(error.message); }
+}
+
+async function addWithDriverVehicle(event) {
+    event.preventDefault();
+    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
+    try {
+        const payload = {
+            full_name: document.getElementById('wd-new-name').value.trim(),
+            segment: document.getElementById('wd-new-segment').value.trim(),
+            seating_capacity: wdNumber('wd-new-seats'),
+            bag_capacity: wdNumber('wd-new-bags'),
+            local_pkg_8hr_80km: wdNumber('wd-new-local'),
+            local_extra_hour_rate: wdNumber('wd-new-ehr'),
+            local_extra_km_rate: wdNumber('wd-new-ekm'),
+            outstation_rate_per_km: wdNumber('wd-new-outstation'),
+            driver_allowance_per_day: wdNumber('wd-new-allowance'),
+            airport_t1_rate: wdNumber('wd-new-t1'),
+            airport_t2_rate: wdNumber('wd-new-t2'),
+            airport_nmia_rate: wdNumber('wd-new-nmia'),
+            display_order: Number(document.getElementById('wd-new-order').value) || 999,
+            is_active: true
+        };
+        const { data, error } = await client.from('with_driver_rates').insert(payload).select('id');
+        if (error || !data?.length) throw new Error(error?.message || 'Vehicle was not added.');
+        event.target.reset();
+        toggleWithDriverAddForm(false);
+        await loadWithDriverRates();
+        alert('Vehicle added. It will now appear on the website.');
+    } catch (error) { alert(error.message); }
+}
+
+async function deleteWithDriverVehicle(id) {
+    if (!confirm('Delete this With-Driver vehicle? It will disappear from the website.')) return;
+    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
+    const { data, error } = await client.from('with_driver_rates').delete().eq('id', id).select('id');
+    if (error || !data?.length) return alert('Delete failed: ' + (error?.message || 'No row deleted.'));
+    await loadWithDriverRates();
+}
    window.addEventListener('DOMContentLoaded', () => {
     loadWithDriverRates();
 });

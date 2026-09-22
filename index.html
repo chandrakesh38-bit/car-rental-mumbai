@@ -6,13 +6,13 @@
     <script src="/assets/js/analytics.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car with Driver India - Self Drive &amp; With Driver Car Rental Mumbai</title>
+    <title>Car with Driver Mobility LLP - Self Drive &amp; With Driver Car Rental Mumbai</title>
     <!-- Search Engine & Social Meta Tags -->
     <meta name="description" content="Affordable self-drive cars and verified cabs with driver in Mumbai, Thane, and Navi Mumbai. Transparent pricing with doorstep delivery.">
     <link rel="canonical" href="https://carswithdriverindia.com/">
     
     <!-- Open Graph (WhatsApp / Social Preview) -->
-    <meta property="og:title" content="Car with Driver India - Self Drive &amp; With Driver Car Rental Mumbai">
+    <meta property="og:title" content="Car with Driver Mobility LLP - Self Drive &amp; With Driver Car Rental Mumbai">
     <meta property="og:description" content="Affordable self-drive cars and verified cabs with driver in Mumbai, Thane, and Navi Mumbai. Transparent pricing with doorstep delivery.">
     <meta property="og:url" content="https://carswithdriverindia.com/">
     <meta property="og:type" content="website">
@@ -42,10 +42,10 @@
                     <div id="default-brand-icon" class="hidden w-10 h-10 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-xl shadow-inner">
                         <i class="fa-solid fa-car"></i>
                     </div>
-                    <img id="dynamic-brand-logo" src="/logo.png" alt="Car with Driver India" class="h-9 sm:h-11 w-auto max-w-[180px] object-contain" onerror="this.classList.add('hidden'); document.getElementById('default-brand-icon').classList.remove('hidden');">
+                    <img id="dynamic-brand-logo" src="/logo.png" alt="Car with Driver Mobility LLP" class="h-9 sm:h-11 w-auto max-w-[180px] object-contain" onerror="this.classList.add('hidden'); document.getElementById('default-brand-icon').classList.remove('hidden');">
                 </div>
                 <div>
-                    <span class="text-xl font-black text-indigo-950 tracking-tight block leading-none">Car with Driver India</span>
+                    <span class="text-xl font-black text-indigo-950 tracking-tight block leading-none">Car with Driver Mobility LLP</span>
                     <span class="text-[10px] text-slate-400 font-semibold tracking-wider block mt-1">Car with Driver Mobility LLP</span>
                 </div>
             </a>
@@ -70,7 +70,7 @@
                     <div class="w-8 h-8 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-sm">
                         <i class="fa-solid fa-car"></i>
                     </div>
-                    <span class="font-extrabold text-sm text-indigo-950">Car with Driver India</span>
+                    <span class="font-extrabold text-sm text-indigo-950">Car with Driver Mobility LLP</span>
                 </div>
                 <button type="button" aria-label="Close navigation" onclick="closeNavDrawer()" class="p-2 text-slate-400 hover:text-slate-700 text-lg">
                     <i class="fa-solid fa-xmark"></i>
@@ -99,7 +99,7 @@
                 <i class="fa-brands fa-whatsapp text-sm"></i>
                 <span>WhatsApp: +91 9702988465</span>
             </a>
-            <p class="text-[10px] text-slate-400 text-center">Car with Driver LLP • Mumbai, Maharashtra</p>
+            <p class="text-[10px] text-slate-400 text-center">Car with Driver Mobility LLP • Mumbai, Maharashtra</p>
         </div>
     </div>
 
@@ -108,7 +108,7 @@
     <header class="bg-gradient-to-b from-indigo-950 via-indigo-900 to-slate-900 text-white pt-10 pb-16 px-4">
         <div class="max-w-5xl mx-auto text-center">
             <span class="bg-indigo-800/80 border border-indigo-700 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full inline-block mb-3">
-                Car with Driver India
+                Car with Driver Mobility LLP
             </span>
             <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">Experience Hassle-Free Travel Across Maharashtra</h1>
             <p class="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto mb-8">
@@ -148,25 +148,27 @@
                     <div id="wd-local-fields" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="relative">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address *</label>
+                                <label for="wd-local-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address *</label>
                                 <input type="text" id="wd-local-pickup" autocomplete="off" oninput="showSuggestions('wd-local-pickup', 'mumbai-places', 'wd-local-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search area (e.g. Kalyan, Thane, Dadar)">
                                 <div id="wd-local-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
-                                <div class="grid grid-cols-3 gap-1.5">
+                                <label for="wd-local-date" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-1.5 booking-datetime">
                                     <div class="relative">
     <input type="date" id="wd-local-date" onclick="this.showPicker()" class="date-input-custom w-full bg-slate-50 border border-slate-300 rounded-lg px-1 py-2 text-xs font-medium outline-none cursor-pointer">
-    <span id="wd-local-date-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">
+    <span aria-hidden="true" id="wd-local-date-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">
         DD/MM/YY
     </span>
 </div>
-                                    <select id="wd-local-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                    <label for="wd-local-hour" class="sr-only">Local pickup hour</label>
+<select id="wd-local-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                                         <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
-                                    <select id="wd-local-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                    <label for="wd-local-ampm" class="sr-only">Local pickup AM or PM</label>
+<select id="wd-local-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
                                         <option value="AM" selected>AM</option>
                                         <option value="PM">PM</option>
                                     </select>
@@ -176,7 +178,7 @@
 
                         <!-- Local Packages Selection -->
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-2"><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> Select Rental Package</label>
+                            <label for="wd-local-package" class="block text-xs font-bold text-slate-700 uppercase mb-2"><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> Select Rental Package</label>
                             <div class="grid grid-cols-2 gap-3">
                                 <button type="button" id="pkg-card-8hr" onclick="selectLocalPackage('8hr_80km')" class="p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/50 text-left transition flex items-center justify-between">
                                     <div>
@@ -204,13 +206,13 @@
                     <div id="wd-outstation-fields" class="space-y-4 hidden">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-center">
                             <div class="relative">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-train text-indigo-600 mr-1"></i> From (Pickup Location) *</label>
+                                <label for="wd-out-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-train text-indigo-600 mr-1"></i> From (Pickup Location) *</label>
                                 <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter pickup location" value="">
                                 <div id="wd-out-pickup-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
 
                             <div class="relative">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> To (Destination City) *</label>
+                                <label for="wd-out-destination" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> To (Destination City) *</label>
                                 <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'maharashtra-destinations', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter drop city" value="">
                                 <div id="wd-out-dest-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
@@ -219,40 +221,44 @@
                         <!-- Date & Time Pickers -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
-                                <div class="grid grid-cols-3 gap-2">
+                                <label for="wd-out-pdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
     <input type="date" id="wd-out-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-1 py-2 text-xs font-medium outline-none cursor-pointer" onchange="onPickupDateChange()">
-    <span id="wd-out-pdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">
+    <span aria-hidden="true" id="wd-out-pdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">
         DD/MM/YY
     </span>
 </div>
-                                    <select id="wd-out-phour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
+                                    <label for="wd-out-phour" class="sr-only">Outstation pickup hour</label>
+<select id="wd-out-phour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6" selected>06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                                         <option value="9">09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
-                                    <select id="wd-out-pampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
+                                    <label for="wd-out-pampm" class="sr-only">Outstation pickup AM or PM</label>
+<select id="wd-out-pampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
                                         <option value="AM" selected>AM</option>
                                         <option value="PM">PM</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Return Date & Time *</label>
-                                <div class="grid grid-cols-3 gap-2">
+                                <label for="wd-out-rdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Return Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
     <input type="date" id="wd-out-rdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-1 py-2 text-xs font-medium outline-none cursor-pointer" onchange="calculateDriverFare()">
-    <span id="wd-out-rdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">
+    <span aria-hidden="true" id="wd-out-rdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">
         DD/MM/YY
     </span>
 </div>
-                                    <select id="wd-out-rhour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
+                                    <label for="wd-out-rhour" class="sr-only">Outstation return hour</label>
+<select id="wd-out-rhour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                                         <option value="9">09:00</option><option value="10" selected>10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
-                                    <select id="wd-out-rampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
+                                    <label for="wd-out-rampm" class="sr-only">Outstation return AM or PM</label>
+<select id="wd-out-rampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
                                         <option value="AM">AM</option>
                                         <option value="PM" selected>PM</option>
                                     </select>
@@ -310,40 +316,44 @@
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Choose Pickup Date & Time *</label>
-                                <div class="grid grid-cols-3 gap-2">
+                                <label for="sd-pdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Choose Pickup Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
     <input type="date" id="sd-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-1 py-2 text-xs font-medium outline-none cursor-pointer">
-    <span id="sd-pdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">
+    <span aria-hidden="true" id="sd-pdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">
         DD/MM/YY
     </span>
 </div>
-                                    <select id="sd-phour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                    <label for="sd-phour" class="sr-only">Self-drive pickup hour</label>
+<select id="sd-phour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                                         <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
-                                    <select id="sd-pampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                    <label for="sd-pampm" class="sr-only">Self-drive pickup AM or PM</label>
+<select id="sd-pampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
                                         <option value="AM">AM</option>
                                         <option value="PM">PM</option>
                                     </select>
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Choose Return Date & Time *</label>
-                                <div class="grid grid-cols-3 gap-2">
+                                <label for="sd-rdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Choose Return Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
     <input type="date" id="sd-rdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
-    <span id="sd-rdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+    <span aria-hidden="true" id="sd-rdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
         DD/MM/YY
     </span>
 </div>
-                                    <select id="sd-rhour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                    <label for="sd-rhour" class="sr-only">Self-drive return hour</label>
+<select id="sd-rhour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                                         <option value="9">09:00</option><option value="10" selected>10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
-                                    <select id="sd-rampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                    <label for="sd-rampm" class="sr-only">Self-drive return AM or PM</label>
+<select id="sd-rampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
                                         <option value="AM">AM</option>
                                         <option value="PM" selected>PM</option>
                                     </select>
@@ -364,7 +374,8 @@
                         <div class="flex items-center justify-between">
                             <div class="relative flex-1 mr-3">
                                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
-                                <input type="text" id="sd-search-box" oninput="applyAllSDFilters()" placeholder="Search car (e.g. Nexon, Punch, Thar, Creta)..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-600 outline-none">
+                                <label for="sd-search-box" class="sr-only">Search self-drive cars</label>
+<input type="text" id="sd-search-box" oninput="applyAllSDFilters()" placeholder="Search car (e.g. Nexon, Punch, Thar, Creta)..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-600 outline-none">
                             </div>
                             <button type="button" onclick="toggleSDFiltersPanel()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-950 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition whitespace-nowrap">
                                 <i class="fa-solid fa-sliders"></i> <span id="filter-toggle-text">Sort &amp; Filter</span>
@@ -378,7 +389,7 @@
                                 <button onclick="resetSDFilters()" class="text-xs font-semibold text-indigo-600 hover:underline">Reset All</button>
                             </div>
                             <div class="flex items-center gap-2 pb-2">
-                                <label class="text-xs font-bold text-slate-600 whitespace-nowrap">Sort By:</label>
+                                <label for="sd-sort-by" class="text-xs font-bold text-slate-600 whitespace-nowrap">Sort By:</label>
                                 <select id="sd-sort-by" onchange="applyAllSDFilters()" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 outline-none flex-1">
                                     <option value="default">Featured / Priority</option>
                                     <option value="best-selling">Best Selling</option>
@@ -388,7 +399,7 @@
                             </div>
                             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fuel Type</label>
+                                    <label for="sd-filter-fuel" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fuel Type</label>
                                     <select id="sd-filter-fuel" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
                                         <option value="All">All Fuels</option>
                                         <option value="Petrol">Petrol</option>
@@ -397,7 +408,7 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Transmission</label>
+                                    <label for="sd-filter-transmission" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Transmission</label>
                                     <select id="sd-filter-transmission" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
                                         <option value="All">All Transmissions</option>
                                         <option value="Manual">Manual</option>
@@ -405,7 +416,7 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Seats</label>
+                                    <label for="sd-filter-seats" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Seats</label>
                                     <select id="sd-filter-seats" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
                                         <option value="All">All Capacities</option>
                                         <option value="4">4 Seats</option>
@@ -415,7 +426,7 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Segment</label>
+                                    <label for="sd-filter-segment" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Segment</label>
                                     <select id="sd-filter-segment" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
                                         <option value="All">All Segments</option>
                                         <option value="Hatchback">Hatchback</option>
@@ -427,7 +438,7 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Brand</label>
+                                    <label for="sd-filter-brand" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Brand</label>
                                     <select id="sd-filter-brand" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
                                         <option value="All">All Brands</option>
                                         <option value="Tata">Tata</option>
@@ -667,7 +678,7 @@
                         </div>
                         <span class="text-xs font-bold text-slate-400">(500+ Verified Reviews)</span>
                     </div>
-                    <h3 class="text-sm font-bold text-slate-700 mt-0.5">Car with Driver India - Google Business Profile</h3>
+                    <h3 class="text-sm font-bold text-slate-700 mt-0.5">Car with Driver Mobility LLP - Google Business Profile</h3>
                 </div>
             </div>
             <a href="https://maps.google.com/?q=Car+With+Driver+India+Vikhroli+Mumbai" target="_blank" class="bg-slate-900 hover:bg-indigo-950 text-white font-bold px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition shadow-sm whitespace-nowrap">
@@ -755,7 +766,7 @@
                 <span class="bg-amber-400 text-indigo-950 font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wider">Partner With Us</span>
                 <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">List Your Car. Grow With Us.</h2>
                 <p class="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
-                    Partner with <strong>Car with Driver India</strong> and put your car to work with a growing rental network in Mumbai. Submit your car details, complete quick verification, and start earning.
+                    Partner with <strong>Car with Driver Mobility LLP</strong> and put your car to work with a growing rental network in Mumbai. Submit your car details, complete quick verification, and start earning.
                 </p>
             </div>
             <div>
@@ -797,9 +808,9 @@
 <a href="/mumbai-car-rental" class="hover:text-amber-400 transition"><span>Mumbai Car Rental</span></a>
 <a href="/faq" class="hover:text-amber-400 transition"><span>FAQ</span></a>
 <a href="/contact" class="hover:text-amber-400 transition"><span>Contact</span></a></nav>
-        <p class="font-semibold text-slate-300">Car with Driver India • Car with Driver LLP</p>
+        <p class="font-semibold text-slate-300">Car with Driver Mobility LLP</p>
         <p class="mt-1 text-slate-400">Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai 400079</p>
-        <p class="mt-2 text-slate-500">Phone / WhatsApp: +91 9702988465 • &copy; 2026 Car with Driver India. All rights reserved.</p>
+        <p class="mt-2 text-slate-500">Phone / WhatsApp: +91 9702988465 • &copy; 2026 Car with Driver Mobility LLP. All rights reserved.</p>
     </footer>
 
 <!-- WHY CHOOSE US DETAILS MODAL -->
@@ -809,7 +820,7 @@
     <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto animate-fade-in">
 
         <!-- Close Button -->
-        <button type="button"
+        <button aria-label="Close service details" type="button"
             onclick="closeWhyChooseModal()"
             class="absolute right-4 top-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition z-10">
             <i class="fa-solid fa-xmark"></i>
@@ -833,7 +844,7 @@
                     </h3>
 
                     <p class="text-[11px] text-slate-500 mt-1">
-                        Car with Driver India
+                        Car with Driver Mobility LLP
                     </p>
                 </div>
 
@@ -886,7 +897,7 @@
             </div>
             <div>
                 <h3 class="text-lg font-black text-slate-900">Enquiry Successfully Submitted!</h3>
-                <p class="text-xs text-slate-500 mt-1">Thank you! Our team has received your details and sent confirmation to your email. We will connect with you shortly.</p>
+                <p class="text-xs text-slate-500 mt-1">Thank you! Your details have been submitted. Please keep your reference number.</p>
 
 <div id="success-application-id" class="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-200 hidden">
                   <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -916,7 +927,7 @@
     <!-- FARE BREAKDOWN INFO MODAL -->
     <div id="fare-breakdown-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-fade-in">
-            <button type="button" onclick="closeFareBreakdownModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+            <button aria-label="Close fare breakdown" type="button" onclick="closeFareBreakdownModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <h3 class="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
@@ -934,7 +945,7 @@
     <!-- WITH DRIVER BOOKING SUMMARY / REVIEW MODAL -->
     <div id="booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
-            <button type="button" onclick="closeModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+            <button aria-label="Close booking review" type="button" onclick="closeModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <h3 class="text-lg font-bold text-slate-900 mb-2">Review Travel Details &amp; Fare Summary</h3>
@@ -967,19 +978,19 @@
             
             <form id="wd-booking-form" onsubmit="handleBookingSubmit(event)" class="mt-4 space-y-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Your Full Name *</label>
+                    <label for="cust-name" class="block text-xs font-semibold text-slate-600 mb-1">Your Full Name *</label>
                     <input type="text" id="cust-name" required placeholder="Enter full name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number (WhatsApp) *</label>
+                    <label for="cust-phone" class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number (WhatsApp) *</label>
                     <input type="tel" id="cust-phone" maxlength="10" required placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address *</label>
+                    <label for="cust-email" class="block text-xs font-semibold text-slate-600 mb-1">Email Address *</label>
                     <input type="email" id="cust-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Exact Pickup Address / Landmark *</label>
+                    <label for="cust-address" class="block text-xs font-semibold text-slate-600 mb-1">Exact Pickup Address / Landmark *</label>
                     <textarea id="cust-address" rows="2" required placeholder="Building, Lane, Area in Mumbai/Thane" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
                 </div>
 
@@ -994,7 +1005,7 @@
     <!-- SELF DRIVE BOOKING REVIEW MODAL -->
     <div id="sd-booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
-            <button type="button" onclick="closeSDModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+            <button aria-label="Close self-drive booking review" type="button" onclick="closeSDModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <h3 class="text-lg font-bold text-slate-900">Self-Drive Booking Review &amp; Checkout</h3>
@@ -1058,48 +1069,48 @@
 
                 <div class="space-y-2.5 pt-1">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name *</label>
+                        <label for="sd-cust-name" class="block text-xs font-semibold text-slate-600 mb-1">Full Name *</label>
                         <input type="text" id="sd-cust-name" required placeholder="Full Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number *</label>
+                            <label for="sd-cust-phone" class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number *</label>
                             <input type="tel" id="sd-cust-phone" maxlength="10" required placeholder="10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Alternate Mobile Number</label>
+                            <label for="sd-cust-alt-phone" class="block text-xs font-semibold text-slate-600 mb-1">Alternate Mobile Number</label>
                             <input type="tel" id="sd-cust-alt-phone" maxlength="10" placeholder="Optional alternate number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address *</label>
+                        <label for="sd-cust-email" class="block text-xs font-semibold text-slate-600 mb-1">Email Address *</label>
                         <input type="email" id="sd-cust-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                     </div>
                 </div>
 
                 <div id="sd-home-delivery-box" class="space-y-3 p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl relative">
                     <div class="relative">
-                        <label class="block text-xs font-bold text-indigo-950 mb-1">Delivery Location *</label>
+                        <label for="sd-delivery-location-input" class="block text-xs font-bold text-indigo-950 mb-1">Delivery Location *</label>
                         <input type="text" id="sd-delivery-location-input" autocomplete="off" oninput="showSuggestions('sd-delivery-location-input', 'mumbai-metro-locations', 'sd-delivery-dropdown'); updateSDFareReview(); onDeliveryLocationSelect();" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-800 font-medium focus:ring-2 focus:ring-indigo-600 outline-none" placeholder="Search area, railway station or landmark (e.g. Kalyan, Thane, Vikhroli)">
                         <div id="sd-delivery-dropdown" class="autocomplete-dropdown hidden"></div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Delivery Address *</label>
+                        <label for="sd-cust-address" class="block text-xs font-semibold text-slate-600 mb-1">Delivery Address *</label>
                         <textarea id="sd-cust-address" rows="2" placeholder="Flat / House No., Building Name, Street / Locality" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">City *</label>
+                            <label for="sd-cust-city" class="block text-xs font-semibold text-slate-600 mb-1">City *</label>
                             <input type="text" id="sd-cust-city" required placeholder="City" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">State *</label>
+                            <label for="sd-cust-state" class="block text-xs font-semibold text-slate-600 mb-1">State *</label>
                             <input type="text" id="sd-cust-state" required placeholder="State" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Pincode *</label>
+                            <label for="sd-cust-pincode" class="block text-xs font-semibold text-slate-600 mb-1">Pincode *</label>
                             <input type="text" id="sd-cust-pincode" maxlength="6" placeholder="Pincode" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
                         </div>
                     </div>
@@ -1116,7 +1127,7 @@
     <!-- BECOME A PARTNER MODAL -->
     <div id="partner-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
-            <button type="button" onclick="closePartnerModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+            <button aria-label="Close partner application" type="button" onclick="closePartnerModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <div class="mb-4">
@@ -1127,27 +1138,27 @@
             <form onsubmit="handlePartnerFormSubmit(event)" class="space-y-3">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
+                        <label for="part-name" class="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
                         <input type="text" id="part-name" required placeholder="Owner Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mobile Number *</label>
+                        <label for="part-phone" class="block text-xs font-semibold text-slate-700 mb-1">Mobile Number *</label>
                         <input type="tel" id="part-phone" maxlength="10" required placeholder="10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
                     </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Email Address *</label>
+                        <label for="part-email" class="block text-xs font-semibold text-slate-700 mb-1">Email Address *</label>
                         <input type="email" id="part-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Alternate Number *</label>
+                        <label for="part-alt-phone" class="block text-xs font-semibold text-slate-700 mb-1">Alternate Number *</label>
                         <input type="tel" id="part-alt-phone" maxlength="10" required placeholder="10-digit alternate number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
                     </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Car Brand *</label>
+                        <label for="part-car-brand-select" class="block text-xs font-semibold text-slate-700 mb-1">Car Brand *</label>
                         <select id="part-car-brand-select" onchange="handleBrandDropdownChange(this.value)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none bg-white font-medium">
                             <option value="Tata" selected>Tata</option>
                             <option value="Maruti Suzuki">Maruti Suzuki</option>
@@ -1157,14 +1168,15 @@
                             <option value="Kia">Kia</option>
                             <option value="Brand Not Listed">Brand Not Listed</option>
                         </select>
-                        <input type="text" id="part-car-brand-custom" placeholder="Enter Custom Brand" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none mt-1.5 hidden">
+                        <label for="part-car-brand-custom" class="sr-only">Car brand not listed</label>
+<input type="text" id="part-car-brand-custom" placeholder="Enter Custom Brand" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none mt-1.5 hidden">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Car Model *</label>
+                        <label for="part-car-model" class="block text-xs font-semibold text-slate-700 mb-1">Car Model *</label>
                         <input type="text" id="part-car-model" required placeholder="e.g. Nexon, Ertiga" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mfg Year *</label>
+                        <label for="part-car-year" class="block text-xs font-semibold text-slate-700 mb-1">Mfg Year *</label>
                         <select id="part-car-year" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none bg-white font-medium">
                             <option value="2026" selected>2026</option>
                             <option value="2025">2025</option>
@@ -1195,7 +1207,7 @@
 
     <!-- RC -->
     <div>
-        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+        <label for="part-rc" class="block text-[11px] font-semibold text-slate-700 mb-1">
             RC Copy *
         </label>
         <input
@@ -1209,7 +1221,7 @@
 
     <!-- Insurance -->
     <div>
-        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+        <label for="part-insurance" class="block text-[11px] font-semibold text-slate-700 mb-1">
             Valid Insurance *
         </label>
         <input
@@ -1223,7 +1235,7 @@
 
     <!-- PUC -->
     <div>
-        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+        <label for="part-puc" class="block text-[11px] font-semibold text-slate-700 mb-1">
             PUC *
         </label>
         <input
@@ -1237,7 +1249,7 @@
 
     <!-- Driving Licence -->
     <div>
-        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+        <label for="part-dl" class="block text-[11px] font-semibold text-slate-700 mb-1">
             Owner Driving Licence *
         </label>
         <input
@@ -1251,7 +1263,7 @@
 
     <!-- Aadhaar -->
     <div>
-        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+        <label for="part-aadhaar" class="block text-[11px] font-semibold text-slate-700 mb-1">
             Aadhaar Card *
         </label>
         <input
@@ -1265,7 +1277,7 @@
 
     <!-- PAN -->
     <div>
-        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+        <label for="part-pan" class="block text-[11px] font-semibold text-slate-700 mb-1">
             PAN Card *
         </label>
         <input
@@ -1279,7 +1291,7 @@
 
     <!-- Vehicle Photos -->
     <div>
-        <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+        <label for="part-vehicle-photos" class="block text-[11px] font-semibold text-slate-700 mb-1">
             Vehicle Photos
         </label>
         <input

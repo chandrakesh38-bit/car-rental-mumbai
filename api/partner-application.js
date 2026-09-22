@@ -1,3 +1,7 @@
+import { requireMobileOtp, consumeMobileOtp, normalizeMobile } from '../lib/mobile-otp.mjs';
+import { validEmail } from '../lib/notifications.mjs';
+import { sendNotifications } from '../lib/notifications.mjs';
+
 // Car With Driver India
 // Secure Partner Application API
 // Private Supabase Storage
@@ -15,7 +19,7 @@ const BUCKET_NAME = "partner-documents";
 
 // Keep total website upload below Vercel request limit
 const MAX_TOTAL_SIZE = 4 * 1024 * 1024; // 4 MB
-const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3 MB per file
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB per file
 const MAX_VEHICLE_PHOTOS = 4;
 
 const ALLOWED_DOCUMENT_TYPES = [
@@ -42,6 +46,14 @@ function jsonResponse(data, status = 200) {
   });
 }
 
+function validSignature(type, bytes) {
+  const b=new Uint8Array(bytes);
+  if(type==='application/pdf') return b.length>=5 && String.fromCharCode(...b.slice(0,5))==='%PDF-';
+  if(type==='image/jpeg') return b.length>=3 && b[0]===0xff&&b[1]===0xd8&&b[2]===0xff;
+  if(type==='image/png') return b.length>=8 && [137,80,78,71,13,10,26,10].every((v,i)=>b[i]===v);
+  if(type==='image/webp') return b.length>=12 && String.fromCharCode(...b.slice(0,4))==='RIFF' && String.fromCharCode(...b.slice(8,12))==='WEBP';
+  return false;
+}
 function cleanFileName(name) {
   return String(name || "document")
     .replace(/[^a-zA-Z0-9._-]/g, "_")
@@ -55,9 +67,12 @@ async function uploadToSupabase(file, path) {
 
   if (file.size > MAX_FILE_SIZE) {
     throw new Error(
-      `${file.name || "File"} is larger than 3 MB.`
+      `${file.name || "File"} is larger than 5 MB.`
     );
   }
+
+  const bytes = await file.arrayBuffer();
+  if (!validSignature(file.type, bytes)) throw new Error(`${file.name || "File"} content does not match its file type.`);
 
   const response = await fetch(
     `${SUPABASE_URL}/storage/v1/object/${BUCKET_NAME}/${path}`,
@@ -71,7 +86,7 @@ async function uploadToSupabase(file, path) {
           file.type || "application/octet-stream",
         "x-upsert": "true",
       },
-      body: await file.arrayBuffer(),
+      body: bytes,
     }
   );
 
@@ -141,75 +156,19 @@ async function saveApplication(application) {
 }
 
 async function sendNotificationEmail(application) {
-  const accessKey =
-    process.env.WEB3FORMS_ACCESS_KEY;
-
-  if (!accessKey) {
-    console.error(
-      "WEB3FORMS_ACCESS_KEY is missing."
-    );
-    return;
-  }
-
-const message = `
-New Partner Application
-
-Application ID: ${application.application_number || "Not available"}
-Name: ${application.name}
-Mobile: ${application.phone}
-Email: ${application.email || "Not provided"}
-Alternate Number: ${
-    application.alternate_phone || "Not provided"
-  }
-
-Vehicle Details
-Brand: ${application.car_brand || "Not provided"}
-Model: ${application.car_model || "Not provided"}
-Manufacturing Year: ${
-    application.mfg_year || "Not provided"
-  }
-
-Documents:
-All required documents have been uploaded successfully.
-
-Storage:
-Private Supabase Storage
-
-IMPORTANT:
-No documents are attached to this email.
-`;
-
-  try {
-    const response = await fetch(
-      "https://api.web3forms.com/submit",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          access_key: accessKey,
-          subject:
-            `New Partner Application - ${application.name}`,
-          from_name: "CWD Partner System",
-          message,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      console.error(
-        "Web3Forms email failed:",
-        await response.text()
-      );
-    }
-  } catch (error) {
-    console.error(
-      "Email notification error:",
-      error
-    );
-  }
+  // Explicit text fields only: never email private storage paths or signed URLs.
+  const details = [
+    ['Application Number', application.application_number || application.id],
+    ['Name', application.name], ['Mobile', application.phone],
+    ['Email', application.email || 'Not provided'],
+    ['Alternate Number', application.alternate_phone || 'Not provided'],
+    ['Brand', application.car_brand || 'Not provided'],
+    ['Model', application.car_model || 'Not provided'],
+    ['Manufacturing Year', application.mfg_year || 'Not provided'],
+    ['Documents', 'RC, Insurance, PUC, Driving Licence, Aadhaar and PAN uploaded to private storage'],
+    ['Vehicle Photos', application.vehicle_photo_paths.length + ' uploaded to private storage'],
+  ].map(([label, value]) => label + ': ' + value).join('\n');
+  return sendNotifications({ kind: 'partner', reference: application.application_number || application.id, email: application.email, details });
 }
 
 export default async function handler(request) {
@@ -307,20 +266,21 @@ export default async function handler(request) {
     // REQUIRED DETAILS CHECK
     // ----------------------------------------
 
-    if (!name || !phone) {
-      return jsonResponse(
-        {
-          success: false,
-          message:
-            "Name and mobile number are required.",
-        },
-        400
-      );
-    }
+    const currentYear = new Date().getFullYear();
+    if (!name) return jsonResponse({success:false,message:"Full name is required."},400);
+    if (name.length > 120) return jsonResponse({success:false,message:"Full name is too long."},400);
+    if (!normalizeMobile(phone)) return jsonResponse({success:false,message:"Please enter a valid 10-digit mobile number."},400);
+    if (email && (email.length > 254 || !validEmail(email))) return jsonResponse({success:false,message:"Please enter a valid email address."},400);
+    if (alternatePhone && !normalizeMobile(alternatePhone)) return jsonResponse({success:false,message:"Please enter a valid 10-digit alternate mobile number."},400);
+    if (!carBrand || carBrand.length > 80) return jsonResponse({success:false,message:"Please select or enter a valid car brand."},400);
+    if (!carModel || carModel.length > 120) return jsonResponse({success:false,message:"Please enter a valid car model."},400);
+    if (!mfgYearRaw || !/^\d{4}$/.test(mfgYearRaw) || !Number.isInteger(mfgYear) || mfgYear < 1980 || mfgYear > currentYear + 1) return jsonResponse({success:false,message:"Please select a valid manufacturing year."},400);
 
     // ----------------------------------------
     // APPLICATION ID
     // ----------------------------------------
+
+    await requireMobileOtp(formData.get('otpProof'), phone, 'partner', new URL(request.url).origin);
 
     const applicationId =
       crypto.randomUUID();
@@ -392,6 +352,9 @@ export default async function handler(request) {
       uploaded[databaseField] =
         uploadedPath;
     }
+
+    // Consume only after all text fields and OTP have passed validation. File validation remains server-side.
+    await consumeMobileOtp(formData.get('otpProof'), phone, 'partner', new URL(request.url).origin);
 
     // Required documents
     await processDocument(
@@ -556,7 +519,7 @@ if (savedRow?.application_number) {
     // EMAIL NOTIFICATION
     // ----------------------------------------
 
-    await sendNotificationEmail(
+    const notifications = await sendNotificationEmail(
       application
     );
 
@@ -569,6 +532,8 @@ return jsonResponse({
 
   message:
     "Partner application submitted successfully.",
+
+  ...notifications,
 
   application_id:
     applicationId,
@@ -604,7 +569,7 @@ return jsonResponse({
           error.message ||
           "Unable to submit partner application.",
       },
-      500
+      error.status || 500
     );
   }
 }

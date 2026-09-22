@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Self Drive Document Review | Admin</title><link rel="stylesheet" href="/assets/css/self-drive-documents.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="/assets/js/self-drive-review.js"></script></head>
+<body><header><a href="/cwd-admin-5377"><img src="/logo.png" alt="" width="44" height="44"><span>Car with Driver Mobility LLP · Admin</span></a></header><main>
+<h1>Self Drive Document Review</h1>
+<div id="review-login" class="notice" hidden><p>Use your existing Supabase admin account. Only authorized reviewers can access documents.</p><a href="/cwd-admin-5377" target="_blank" rel="noopener noreferrer">Sign in to Admin Panel</a><p><button id="check-session" type="button">Check Sign-in</button></p></div>
+<form id="find-booking"><label for="review-booking-id">Booking ID</label><input id="review-booking-id" required pattern="CWD-WD-[0-9]{6}-[0-9]{4}" placeholder="CWD-WD-260919-1234"><p><button type="submit">Load Review</button></p></form>
+<p id="review-message" role="status" aria-live="polite"></p>
+<section id="review-content" hidden><h2 id="review-status"></h2><p id="review-customer"></p><pre id="review-details" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre><p>Preview links expire in 60 seconds. Document verification never confirms a booking.</p><div id="review-cards"></div>
+<p><button id="save-review" type="button">Save Review &amp; Notify</button></p><p><button id="verify-documents" type="button">Verify Documents</button></p><p><button id="retry-notification" type="button" hidden>Retry Notification Email</button></p></section>
+</main></body></html>

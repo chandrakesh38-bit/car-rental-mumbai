@@ -151,12 +151,18 @@ async function waitForCaptcha() {
   // Some widget configurations may have CAPTCHA disabled. In that case
   // MSG91 does not expose isCaptchaVerified, so sending can proceed normally.
   if (typeof window.isCaptchaVerified !== 'function') return;
-  if (window.isCaptchaVerified()) return;
+  if (window.isCaptchaVerified()) {
+    await pause(500);
+    return;
+  }
 
   message('Complete the captcha to receive OTP.');
   while (state.open) {
     await pause(250);
-    if (typeof window.isCaptchaVerified === 'function' && window.isCaptchaVerified()) return;
+    if (typeof window.isCaptchaVerified === 'function' && window.isCaptchaVerified()) {
+      await pause(500);
+      return;
+    }
   }
   throw Error('OTP verification cancelled.');
 }
@@ -203,7 +209,7 @@ async function sendOtp(isRetry = false) {
         const fail = e => { clearTimeout(timer); reject(Error(e?.message || 'Unable to send OTP.')); };
         try { window.sendOtp(phone, ok, fail); } catch (e) { fail(e); }
       });
-      state.reqId = result?.reqId || result?.message || '';
+      state.reqId = result?.reqId || result?.requestId || result?.request_id || result?.message || (typeof result === 'string' ? result : '');
       if (!state.reqId) throw Error('Unable to start OTP verification. Please retry.');
     }
     const length = Number(state.settings.otpLength);

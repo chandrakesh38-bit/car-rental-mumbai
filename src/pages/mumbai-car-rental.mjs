@@ -50,7 +50,7 @@ export default async function renderMumbaiPage({ root, component, escape, page }
   const schema = {
     '@context':'https://schema.org',
     '@graph':[
-      {'@type':'AutoRental','@id':site+'/#business',name:'Car with Driver Mobility LLP',url:site+'/',telephone:'+919702988465',logo:site+'/logo.png',
+      {'@type':'AutoRental','@id':site+'/#business',name:'Car with Driver India',legalName:'Car with Driver Mobility LLP',url:site+'/',telephone:'+919702988465',logo:site+'/logo.png',
         address:{'@type':'PostalAddress',streetAddress:'Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West',addressLocality:'Mumbai',addressRegion:'Maharashtra',postalCode:'400079',addressCountry:'IN'}},
       {'@type':'Service','@id':url+'#service',name:'Mumbai car rental with driver and self drive',serviceType:['Chauffeur-driven car rental','Self-drive car rental'],url,
         provider:{'@id':site+'/#business'},areaServed:['Mumbai','Thane','Navi Mumbai'].map(name=>({'@type':'City',name}))},

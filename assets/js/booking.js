@@ -1404,11 +1404,17 @@ function onPickupDateChange() {
             if (!validateJourneyAndOpenBooking()) return;
             const contentBox = document.getElementById('fare-breakdown-content');
             if (!contentBox) return;
+            const outstationExtra = currentWDSubTab === 'outstation'
+                ? `<li><strong>Outstation distance:</strong> Full vehicle movement is calculated from our Vikhroli base to pickup, all stops, final drop, and back to Vikhroli. Minimum billing is ${livePricingRules.minimumOutstationKmPerDay} KM per booked day.</li>
+                   <li><strong>Driver allowance:</strong> ₹${OUTSTATION_DRIVER_ALLOWANCE_PER_DAY} per booked day.</li>
+                   <li><strong>Night service:</strong> 10 PM–5 AM; ₹400 Hatchback/Sedan or ₹600 SUV/MUV per qualifying night.</li>`
+                : '';
             contentBox.innerHTML = `
                 <p class="font-bold text-slate-900">Transparent Fare & Inclusions Details:</p>
                 <ul class="list-disc pl-4 space-y-1.5 pt-1">
-                    <li><strong>Fuel & Driver:</strong> Fully included.</li>
-                    <li><strong>Tolls & Parking:</strong> Extra as per actual receipts.</li>
+                    <li><strong>Fuel & Driver:</strong> Included in the displayed fare.</li>
+                    ${outstationExtra}
+                    <li><strong>Toll, Parking & State Tax:</strong> Extra as per actual.</li>
                 </ul>
             `;
             document.getElementById('fare-breakdown-modal').classList.remove('hidden'); syncModalState(document.getElementById('fare-breakdown-modal'), true);
@@ -1432,16 +1438,19 @@ function onPickupDateChange() {
                 dateTimeStr = (document.getElementById('wd-local-date').value || 'Today') + ' @ ' + document.getElementById('wd-local-hour').value + ':00 ' + document.getElementById('wd-local-ampm').value;
                 pkgStr = document.getElementById('wd-local-package').value.replace('8hr_80km', '8 Hours / 80 Km');
             } else if (currentWDSubTab === 'outstation') {
-                pickupLoc = document.getElementById('wd-out-pickup').value || 'Mumbai';
-                destLoc = document.getElementById('wd-out-destination').value || 'Maharashtra';
+                const route = collectOutstationRouteSelections(false);
+                pickupLoc = route?.pickup?.name || document.getElementById('wd-out-pickup').value || 'Pickup';
+                const stopSummary = route?.stops?.length ? ' via ' + route.stops.map(stop => stop.name).join(' → ') : '';
+                destLoc = (route?.finalDrop?.name || document.getElementById('wd-out-destination').value || 'Final Drop') + stopSummary;
                 const formatReviewTime = prefix => {
                     const hour = document.getElementById(prefix + 'hour').value;
                     const ampm = document.getElementById(prefix + 'ampm').value;
                     const date = createLocalDateTime(document.getElementById(prefix + 'date').value, Number(hour), ampm);
                     return `${date.getDate()} ${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}, ${Number(hour)}:00 ${ampm}`;
                 };
-                dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nReturn: ${formatReviewTime('wd-out-r')}`;
-                pkgStr = `Outstation (${wdOutstationKm} KM, ${wdOutstationDays} Days)`;
+                dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nFinal Drop: ${formatReviewTime('wd-out-r')}`;
+                const billable = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
+                pkgStr = `Outstation · Google route ${wdOutstationRouteQuote?.distanceKmExact || wdOutstationKm} KM · Billable ${billable} KM · ${wdOutstationDays} Day(s)`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
                 destLoc = document.getElementById('wd-airport-terminal').value.toUpperCase() + ' Airport';

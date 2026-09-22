@@ -962,12 +962,24 @@ function onPickupDateChange() {
                 if (p) nights.add(p);
                 if (r) nights.add(r);
             } else if (currentWDSubTab === 'local') {
-                const p = qualifyingNightKey(
-                    document.getElementById('wd-local-date')?.value,
-                    document.getElementById('wd-local-hour')?.value,
-                    document.getElementById('wd-local-ampm')?.value
-                );
+                const dateValue = document.getElementById('wd-local-date')?.value;
+                const hourValue = document.getElementById('wd-local-hour')?.value;
+                const ampmValue = document.getElementById('wd-local-ampm')?.value;
+                const p = qualifyingNightKey(dateValue, hourValue, ampmValue);
                 if (p) nights.add(p);
+                if (dateValue) {
+                    const parts = dateValue.split('-').map(Number);
+                    const startHour = to24Hour(hourValue, ampmValue);
+                    const pkg = document.getElementById('wd-local-package')?.value;
+                    const packageHours = pkg === '12hr_120km' ? 12 : pkg === '10hr_100km' ? 10 : 8;
+                    const end = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], startHour) + packageHours * 3600000);
+                    const endDate = end.getUTCFullYear() + '-' + String(end.getUTCMonth() + 1).padStart(2, '0') + '-' + String(end.getUTCDate()).padStart(2, '0');
+                    const endHour24 = end.getUTCHours();
+                    const endHour12 = endHour24 % 12 || 12;
+                    const endAmpm = endHour24 >= 12 ? 'PM' : 'AM';
+                    const endNight = qualifyingNightKey(endDate, endHour12, endAmpm);
+                    if (endNight) nights.add(endNight);
+                }
             } else if (currentWDSubTab === 'airport') {
                 const p = qualifyingNightKey(
                     document.getElementById('wd-airport-date')?.value,

@@ -1085,7 +1085,8 @@ function onPickupDateChange() {
 
             sequence.slice(0, -1).forEach(place => {
                 addOutstationStop();
-                const input = container.querySelector('[data-outstation-stop-input="true"]:last-of-type');
+                const inputs = [...container.querySelectorAll('[data-outstation-stop-input="true"]')];
+                const input = inputs[inputs.length - 1];
                 if (!input) return;
                 input.value = place.address || place.name;
                 outstationPlaceSelections.set(input.id, place);

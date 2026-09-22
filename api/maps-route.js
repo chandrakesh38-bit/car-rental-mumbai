@@ -228,6 +228,50 @@ export default async function handler(request) {
     const body = JSON.parse(raw || '{}');
     const action = String(body.action || '');
 
+async function reverseGeocode(lat, lng) {
+  const latitude = Number(lat);
+  const longitude = Number(lng);
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+      !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+    throw Object.assign(new Error('Invalid location coordinates.'), { status: 400 });
+  }
+  const key = mapsKey();
+  if (!key) throw Object.assign(new Error('Google Maps integration is not configured.'), { status: 503 });
+  const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
+  url.searchParams.set('latlng', latitude + ',' + longitude);
+  url.searchParams.set('key', key);
+  url.searchParams.set('language', 'en');
+  url.searchParams.set('region', 'in');
+  const response = await fetch(url);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !['OK','ZERO_RESULTS'].includes(payload.status)) {
+    throw Object.assign(new Error(payload.error_message || 'Unable to identify this location.'), { status: 502 });
+  }
+  const result = payload.results?.[0];
+  const components = {};
+  for (const part of result?.address_components || []) {
+    for (const type of part.types || []) if (!components[type]) components[type] = part.long_name;
+  }
+  const city = components.locality || components.sublocality || components.administrative_area_level_2 || '';
+  const state = components.administrative_area_level_1 || '';
+  const postalCode = components.postal_code || '';
+  return {
+    latitude,
+    longitude,
+    address: String(result?.formatted_address || ''),
+    placeId: String(result?.place_id || ''),
+    city,
+    state,
+    postalCode,
+    mapUrl: 'https://www.google.com/maps?q=' + encodeURIComponent(latitude + ',' + longitude)
+  };
+}
+
+    if (action === 'reverse-geocode') {
+      const result = await reverseGeocode(body.latitude, body.longitude);
+      return json({ success: true, ...result });
+    }
+
     if (action === 'autocomplete') {
       const input = String(body.input || '').trim();
       if (input.length < 3 || input.length > 150) {

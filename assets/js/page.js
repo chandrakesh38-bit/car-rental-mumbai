@@ -10,7 +10,7 @@
         initializeBooking.call(window);
         const { bookingMode, bookingTab } = document.body.dataset;
         setServiceMode(bookingMode);
-        if (bookingTab !== 'outstation') setWDSubTab(bookingTab);
+        if (bookingMode === 'withdriver' && bookingTab) setWDSubTab(bookingTab);
     });
 
     let previousFocus;

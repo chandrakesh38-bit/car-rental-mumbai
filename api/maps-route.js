@@ -89,6 +89,82 @@ function cleanPlaceId(value) {
   return id;
 }
 
+function durationSeconds(value) {
+  const match = String(value || '').match(/^([0-9]+(?:\.[0-9]+)?)s$/);
+  return match ? Math.round(Number(match[1])) : 0;
+}
+
+async function computeSmartRoute(pickupPlaceId, stopPlaceIds, finalDropPlaceId) {
+  const pickup = cleanPlaceId(pickupPlaceId);
+  const destinations = [
+    ...(Array.isArray(stopPlaceIds) ? stopPlaceIds.map(cleanPlaceId) : []),
+    cleanPlaceId(finalDropPlaceId)
+  ];
+  if (destinations.length < 2) {
+    throw Object.assign(new Error('Smart Route needs at least two destinations after pickup.'), { status: 400 });
+  }
+  if (destinations.length > MAX_STOPS + 1) {
+    throw Object.assign(new Error('Too many route locations.'), { status: 400 });
+  }
+
+  const baseToPickupPayload = await google('https://routes.googleapis.com/directions/v2:computeRoutes', {
+    method: 'POST',
+    headers: { 'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration' },
+    body: JSON.stringify({
+      origin: { address: BASE_ADDRESS },
+      destination: { placeId: pickup },
+      travelMode: 'DRIVE',
+      routingPreference: 'TRAFFIC_UNAWARE',
+      computeAlternativeRoutes: false,
+      languageCode: 'en-US',
+      units: 'METRIC'
+    })
+  });
+
+  const optimizedPayload = await google('https://routes.googleapis.com/directions/v2:computeRoutes', {
+    method: 'POST',
+    headers: {
+      'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration,routes.optimizedIntermediateWaypointIndex'
+    },
+    body: JSON.stringify({
+      origin: { placeId: pickup },
+      destination: { address: BASE_ADDRESS },
+      intermediates: destinations.map(placeId => ({ placeId })),
+      travelMode: 'DRIVE',
+      routingPreference: 'TRAFFIC_UNAWARE',
+      optimizeWaypointOrder: true,
+      computeAlternativeRoutes: false,
+      languageCode: 'en-US',
+      units: 'METRIC'
+    })
+  });
+
+  const first = baseToPickupPayload.routes?.[0];
+  const second = optimizedPayload.routes?.[0];
+  const firstMeters = Number(first?.distanceMeters);
+  const secondMeters = Number(second?.distanceMeters);
+  if (!Number.isFinite(firstMeters) || firstMeters <= 0 || !Number.isFinite(secondMeters) || secondMeters <= 0) {
+    throw Object.assign(new Error('Smart Route distance could not be calculated.'), { status: 422 });
+  }
+  const order = Array.isArray(second.optimizedIntermediateWaypointIndex)
+    ? second.optimizedIntermediateWaypointIndex.map(Number)
+    : [];
+  if (order.length !== destinations.length || order.some(i => !Number.isInteger(i) || i < 0 || i >= destinations.length)) {
+    throw Object.assign(new Error('Smart Route order could not be calculated.'), { status: 422 });
+  }
+
+  const totalMeters = firstMeters + secondMeters;
+  const totalDurationSeconds = durationSeconds(first?.duration) + durationSeconds(second?.duration);
+  return {
+    baseAddress: BASE_ADDRESS,
+    distanceMeters: totalMeters,
+    distanceKmExact: Math.round((totalMeters / 1000) * 10) / 10,
+    billableRouteKm: Math.ceil(totalMeters / 1000),
+    durationSeconds: totalDurationSeconds,
+    optimizedDestinationOrder: order
+  };
+}
+
 async function computeRoute(pickupPlaceId, stopPlaceIds, finalDropPlaceId) {
   const pickup = cleanPlaceId(pickupPlaceId);
   const finalDrop = cleanPlaceId(finalDropPlaceId);
@@ -162,6 +238,11 @@ export default async function handler(request) {
 
     if (action === 'route') {
       const result = await computeRoute(body.pickupPlaceId, body.stopPlaceIds, body.finalDropPlaceId);
+      return json({ success: true, ...result, durationSeconds: durationSeconds(result.duration) });
+    }
+
+    if (action === 'smart-route') {
+      const result = await computeSmartRoute(body.pickupPlaceId, body.stopPlaceIds, body.finalDropPlaceId);
       return json({ success: true, ...result });
     }
 

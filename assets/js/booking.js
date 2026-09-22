@@ -453,7 +453,7 @@ let mumbaiMetroLocations = [
         let outstationRouteSequence = 0;
         let outstationStopSequence = 0;
         let airportRouteQuote = null;
-        const AIRPORT_MAX_KM = 30;
+        const AIRPORT_MAX_METERS = 30000;
         const outstationPlaceSelections = new Map();
         const outstationSearchTimers = new Map();
         let chosenCarName = '';
@@ -809,7 +809,7 @@ function onPickupDateChange() {
                     airportType: currentAirportType
                 });
                 airportRouteQuote = result;
-                if (Number(result.distanceKmExact) > AIRPORT_MAX_KM) {
+                if (Number(result.distanceMeters) > AIRPORT_MAX_METERS) {
                     if (status) {
                         status.textContent = 'This location is outside our Airport Transfer service area. Please use Outstation booking for this trip.';
                         status.className = 'text-[10px] text-rose-600 font-semibold mt-1';
@@ -1454,7 +1454,7 @@ function onPickupDateChange() {
                 } else if (!airportRouteQuote) {
                     showCustomAlert('Please wait while we check Airport Transfer availability.');
                     return false;
-                } else if (Number(airportRouteQuote.distanceKmExact) > AIRPORT_MAX_KM) {
+                } else if (Number(airportRouteQuote.distanceMeters) > AIRPORT_MAX_METERS) {
                     airportPickupInput.classList.add('border-red-500');
                     showCustomAlert('This location is outside our Airport Transfer service area. Please use Outstation booking for this trip.');
                     return false;

@@ -87,19 +87,39 @@
 
                     <!-- OUTSTATION FIELDS -->
                     <div id="wd-outstation-fields" class="space-y-4 hidden">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-center">
+                        <div class="rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 text-[11px] text-indigo-950">
+                            <strong>Fare route:</strong> Our Vikhroli business base → your pickup → all stops in the same order → final drop → Vikhroli base.
+                            Toll, parking and state tax remain extra as per actual.
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-start">
                             <div class="relative">
-                                <label for="wd-out-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-train text-indigo-600 mr-1"></i> From (Pickup Location) *</label>
-                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="showSuggestions('wd-out-pickup', 'mumbai-places', 'wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter pickup location" value="">
+                                <label for="wd-out-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Customer Pickup *</label>
+                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="scheduleOutstationPlaceSearch('wd-out-pickup','wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search pickup on Google">
                                 <div id="wd-out-pickup-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
 
                             <div class="relative">
-                                <label for="wd-out-destination" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> To (Destination City) *</label>
-                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="showSuggestions('wd-out-destination', 'maharashtra-destinations', 'wd-out-dest-dropdown'); onWDDestinationInput();" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Enter drop city" value="">
+                                <label for="wd-out-destination" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> Final Customer Drop *</label>
+                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="scheduleOutstationPlaceSearch('wd-out-destination','wd-out-dest-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search final drop on Google">
                                 <div id="wd-out-dest-dropdown" class="autocomplete-dropdown hidden"></div>
                             </div>
                         </div>
+
+                        <div class="rounded-xl border border-slate-200 bg-white p-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">Intermediate Stops</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">Optional. Stops are calculated in the order you add them.</p>
+                                </div>
+                                <button type="button" onclick="addOutstationStop()" class="shrink-0 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">
+                                    <i class="fa-solid fa-plus mr-1"></i> Add Stop
+                                </button>
+                            </div>
+                            <div id="wd-out-stops" class="mt-3 space-y-2"></div>
+                        </div>
+
+                        <div id="wd-out-route-status" class="hidden rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-600"></div>
 
                         <!-- Date & Time Pickers -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
@@ -107,54 +127,50 @@
                                 <label for="wd-out-pdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
                                 <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
-    <input type="date" id="wd-out-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer" onchange="onPickupDateChange()">
-    <span aria-hidden="true" id="wd-out-pdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
-        DD/MM/YY
-    </span>
-</div>
+                                        <input type="date" id="wd-out-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-1 py-2 text-xs font-medium outline-none cursor-pointer" onchange="calculateDriverFare()">
+                                        <span aria-hidden="true" id="wd-out-pdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">DD/MM/YY</span>
+                                    </div>
                                     <label for="wd-out-phour" class="sr-only">Outstation pickup hour</label>
-<select id="wd-out-phour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
+                                    <select id="wd-out-phour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6" selected>06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                                         <option value="9">09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
                                     <label for="wd-out-pampm" class="sr-only">Outstation pickup AM or PM</label>
-<select id="wd-out-pampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
-                                        <option value="AM" selected>AM</option>
-                                        <option value="PM">PM</option>
+                                    <select id="wd-out-pampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
+                                        <option value="AM" selected>AM</option><option value="PM">PM</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                                <label for="wd-out-rdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Return Date & Time *</label>
+                                <label for="wd-out-rdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Final Drop Date & Time *</label>
                                 <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
-    <input type="date" id="wd-out-rdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer" onchange="calculateDriverFare()">
-    <span aria-hidden="true" id="wd-out-rdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
-        DD/MM/YY
-    </span>
-</div>
-                                    <label for="wd-out-rhour" class="sr-only">Outstation return hour</label>
-<select id="wd-out-rhour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
+                                        <input type="date" id="wd-out-rdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-1 py-2 text-xs font-medium outline-none cursor-pointer" onchange="calculateDriverFare()">
+                                        <span aria-hidden="true" id="wd-out-rdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">DD/MM/YY</span>
+                                    </div>
+                                    <label for="wd-out-rhour" class="sr-only">Outstation final drop hour</label>
+                                    <select id="wd-out-rhour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
                                         <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
                                         <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
                                         <option value="9">09:00</option><option value="10" selected>10:00</option><option value="11">11:00</option><option value="12">12:00</option>
                                     </select>
-                                    <label for="wd-out-rampm" class="sr-only">Outstation return AM or PM</label>
-<select id="wd-out-rampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
-                                        <option value="AM">AM</option>
-                                        <option value="PM" selected>PM</option>
+                                    <label for="wd-out-rampm" class="sr-only">Outstation final drop AM or PM</label>
+                                    <select id="wd-out-rampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
+                                        <option value="AM">AM</option><option value="PM" selected>PM</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Outstation Calculation Strip -->
-                        <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 flex flex-wrap items-center justify-between text-xs sm:text-sm text-indigo-950 gap-2">
-                            <div>Est. Distance: <strong id="wd-metric-km">300</strong> KM (Round Trip)</div>
-                            <div>Billed Days: <strong id="wd-metric-days">1</strong> Day(s) (Min Billed: <strong id="wd-metric-billable-km">300</strong> KM)</div>
-                            <div id="wd-metric-night-badge" class="hidden bg-amber-200 border border-amber-300 text-amber-950 font-bold px-2.5 py-0.5 rounded text-xs flex items-center gap-1">
-                                <i class="fa-solid fa-moon"></i> Night Allowance Added (+₹700)
+                        <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-3 text-xs sm:text-sm text-indigo-950 gap-2">
+                            <div>Google Vehicle Route: <strong id="wd-metric-km">—</strong> KM</div>
+                            <div>Billed Days: <strong id="wd-metric-days">1</strong> Day(s)</div>
+                            <div>Billable Distance: <strong id="wd-metric-billable-km">300</strong> KM</div>
+                            <div id="wd-metric-minimum" class="sm:col-span-2 text-[10px] text-indigo-700">Minimum: 300 KM/day</div>
+                            <div id="wd-metric-night-badge" class="hidden bg-amber-200 border border-amber-300 text-amber-950 font-bold px-2.5 py-1 rounded text-[10px]">
+                                <i class="fa-solid fa-moon mr-1"></i> Night service charge applies: ₹400 Hatchback/Sedan · ₹600 SUV/MUV
                             </div>
                         </div>
                     </div>

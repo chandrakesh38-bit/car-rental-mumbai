@@ -171,7 +171,7 @@
                             <div>Billable Distance: <strong id="wd-metric-billable-km">300</strong> KM</div>
                             <div id="wd-metric-minimum" class="sm:col-span-2 text-[10px] text-indigo-700">Minimum billing: 300 KM/day</div>
                             <div id="wd-metric-night-badge" class="hidden sm:col-span-2 bg-amber-200 border border-amber-300 text-amber-950 font-bold px-2.5 py-1 rounded text-[10px]">
-                                <i class="fa-solid fa-moon mr-1"></i> Night service charge applies only when pickup or final drop falls between 10 PM and 5 AM.
+                                <i class="fa-solid fa-moon mr-1"></i> Night service charge applies only when pickup or final drop falls after 10:00 PM and up to 5:00 AM.
                             </div>
                             <strong id="wd-metric-km" class="hidden">0</strong>
                         </div>

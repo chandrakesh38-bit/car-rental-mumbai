@@ -63,7 +63,6 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            ensurePickupServiceHints();
             loadPublicPricingRules();
             loadPublicLocationConfig();
             loadPublicFaqs();
@@ -464,7 +463,6 @@ let mumbaiMetroLocations = [
         let withDriverCurrentLocation = null;
         let selfDriveCurrentLocation = null;
         let selfDriveDeliverySelection = null;
-        let bookingPaymentContext = null;
         let calculatedRentalHours = 0;
         let currentSDPage = 1;
         const carsPerPage = 6;
@@ -633,7 +631,6 @@ function showCustomAlert(message) {
                                 <i class="fa-solid fa-location-crosshairs"></i> Use My Current Location
                             </button>
                             <p id="wd-airport-location-status" class="text-[10px] text-slate-500 mt-1"></p>
-                            <p class="text-[10px] text-slate-500 mt-1">We currently provide pickups exclusively across Mumbai, Thane, and Navi Mumbai. However, your drop location can be anywhere you need</p>
                         </div>
                         <div>
                             <label for="wd-airport-terminal" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
@@ -774,19 +771,6 @@ function onPickupDateChange() {
             if (inputId === 'wd-out-pickup') return document.getElementById('wd-out-location-status');
             if (inputId === 'wd-airport-pickup' && currentAirportType === 'drop') return document.getElementById('wd-airport-location-status');
             return null;
-        }
-
-        function ensurePickupServiceHints() {
-            const text = 'We currently provide pickups exclusively across Mumbai, Thane, and Navi Mumbai. However, your drop location can be anywhere you need';
-            for (const id of ['wd-local-location-status','wd-out-location-status']) {
-                const status = document.getElementById(id);
-                if (!status || status.parentElement?.querySelector('[data-pickup-service-hint]')) continue;
-                const hint = document.createElement('p');
-                hint.dataset.pickupServiceHint = 'true';
-                hint.className = 'text-[10px] text-slate-500 mt-1';
-                hint.textContent = text;
-                status.after(hint);
-            }
         }
 
         async function publicMapsRequest(action, extra = {}) {
@@ -1089,10 +1073,8 @@ function onPickupDateChange() {
                 const km = document.getElementById('wd-metric-km');
                 if (km) km.textContent = Number(payload.distanceKmExact || wdOutstationKm).toLocaleString('en-IN');
                 if (status) {
-                    status.textContent = 'Route calculated: Vikhroli base → pickup' +
-                        (selections.stops.length ? ' → ' + selections.stops.length + ' stop' + (selections.stops.length > 1 ? 's' : '') : '') +
-                        ' → final drop → Vikhroli base.';
-                    status.classList.remove('hidden');
+                    status.textContent = '';
+                    status.classList.add('hidden');
                 }
                 calculateDriverFare();
             } catch (error) {
@@ -2088,93 +2070,28 @@ function onPickupDateChange() {
         function openPartnerModal() { document.getElementById('partner-modal').classList.remove('hidden'); syncModalState(document.getElementById('partner-modal'), true); }
         function closePartnerModal() { document.getElementById('partner-modal').classList.add('hidden'); syncModalState(document.getElementById('partner-modal'), false); }
 
-        function removeSuccessPaymentActions() {
-            document.querySelector('[data-success-payment-actions]')?.remove();
-        }
-
-        async function payBookingAdvanceNow() {
-            const context = bookingPaymentContext;
-            if (!context?.bookingId || !context?.paymentToken) {
-                showCustomAlert('Payment is not available for this booking yet. Please choose Pay Later.');
-                return;
-            }
-            const button = document.getElementById('success-pay-advance-btn');
-            const status = document.getElementById('success-payment-status');
-            const original = button?.innerHTML || '';
-            const paymentWindow = window.open('', '_blank');
-            if (paymentWindow) {
-                paymentWindow.document.write('<title>Preparing secure payment...</title><p style="font-family:Arial,sans-serif;padding:24px">Preparing secure Razorpay payment…</p>');
-            }
-            try {
-                if (button) {
-                    button.disabled = true;
-                    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Preparing Payment…';
-                }
-                if (status) {
-                    status.textContent = 'Creating your secure Razorpay payment link…';
-                    status.className = 'text-[10px] text-indigo-700 mt-2 font-semibold';
-                }
-                const response = await fetch('/api/booking-payment', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        booking_id: context.bookingId,
-                        payment_token: context.paymentToken
-                    })
-                });
-                const result = await response.json().catch(() => ({}));
-                if (!response.ok || !result.success) throw new Error(result.message || 'Unable to start payment.');
-                if (result.already_paid) {
-                    if (paymentWindow) paymentWindow.close();
-                    if (status) {
-                        status.textContent = 'Advance payment is already recorded for this booking.';
-                        status.className = 'text-[10px] text-emerald-700 mt-2 font-semibold';
-                    }
-                    return;
-                }
-                if (!result.payment_url) throw new Error('Secure payment link was not returned.');
-                if (paymentWindow) paymentWindow.location.href = result.payment_url;
-                else window.location.href = result.payment_url;
-                if (status) {
-                    status.textContent = 'Secure Razorpay payment opened in a new tab.';
-                    status.className = 'text-[10px] text-emerald-700 mt-2 font-semibold';
-                }
-            } catch (error) {
-                if (paymentWindow) paymentWindow.close();
-                if (status) {
-                    status.textContent = error.message || 'Unable to start payment. You can choose Pay Later.';
-                    status.className = 'text-[10px] text-rose-600 mt-2 font-semibold';
-                }
-            } finally {
-                if (button) {
-                    button.disabled = false;
-                    button.innerHTML = original;
-                }
-            }
-        }
-
-        function payBookingLater() {
-            closeSuccessModal();
-        }
-
         window.showSuccessModal = function(applicationNumber, notifications = {}, isBooking = false) {
             const modal = document.getElementById('success-confirmation-modal');
             const idBox = document.getElementById('success-application-id');
             const idText = document.getElementById('success-application-number');
             const message = modal.querySelector('h3 + p');
-            removeSuccessPaymentActions();
-            bookingPaymentContext = null;
 
             message.textContent = notifications.customer_email_sent
                 ? 'Thank you! An acknowledgement has been sent to your email. Our team will connect with you shortly.'
                 : 'Thank you! Your details have been submitted. An email acknowledgement could not be sent. Please keep your reference number.';
 
+            if (isBooking && !notifications.upload_url) {
+                modal.querySelector('h3').textContent = 'Booking Request Received!';
+                message.textContent = 'No payment is required right now. Our team will verify car availability and contact you shortly.';
+            } else {
+                modal.querySelector('h3').textContent = notifications.upload_url ? 'Booking Request Received' : 'Enquiry Successfully Submitted!';
+            }
+
             if (isBooking && !notifications.admin_email_sent) {
-                message.textContent = 'Your booking request was submitted, but the team email could not be sent. Please contact us at carwithdriver.vikhroli@gmail.com with your Booking ID.';
+                message.textContent += ' If you do not hear from us shortly, please contact carwithdriver.vikhroli@gmail.com with your Booking ID.';
             }
 
             idBox.querySelector('div').textContent = isBooking ? 'Booking ID' : 'Application ID';
-            modal.querySelector('h3').textContent = notifications.upload_url ? 'Booking Request Received' : (isBooking ? 'Booking Request Received' : 'Enquiry Successfully Submitted!');
             modal.querySelector('[data-document-upload]')?.remove();
 
             if (notifications.upload_url) {
@@ -2185,31 +2102,6 @@ function onPickupDateChange() {
                 link.textContent = 'Upload Documents';
                 link.className = 'block w-full bg-indigo-950 text-white font-bold rounded-xl px-4 py-3 text-sm';
                 idBox.after(link);
-            } else if (isBooking && notifications.payment_token) {
-                message.textContent = 'No payment is required right now. Your booking request has been received. Pay 20% advance now to confirm it, or choose Pay Later and complete the advance after our team reviews your booking.';
-                bookingPaymentContext = {
-                    bookingId: applicationNumber,
-                    paymentToken: notifications.payment_token
-                };
-
-                const actions = document.createElement('div');
-                actions.dataset.successPaymentActions = 'true';
-                actions.className = 'rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 text-left';
-                actions.innerHTML = `
-                    <div class="text-xs font-black text-indigo-950">Confirm with 20% advance</div>
-                    <div class="text-[11px] text-slate-600 mt-1">You can pay now or later. The remaining 80% can be paid anytime before the trip ends.</div>
-                    <div class="text-[10px] text-slate-500 mt-2"><strong>Payment options:</strong> UPI, Debit Card, Credit Card, Net Banking & Wallets via Razorpay.</div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
-                        <button type="button" id="success-pay-advance-btn" onclick="payBookingAdvanceNow()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs">
-                            Pay 20% Advance Now
-                        </button>
-                        <button type="button" onclick="payBookingLater()" class="w-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold py-2.5 px-3 rounded-xl text-xs">
-                            Pay Later
-                        </button>
-                    </div>
-                    <p id="success-payment-status" class="text-[10px] text-slate-500 mt-2"></p>
-                `;
-                idBox.after(actions);
             }
 
             if (applicationNumber) {

@@ -68,20 +68,7 @@ const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status, headers: { 'Content-Type': 'application/json' },
 });
 
-async function bookingPaymentToken(bookingId) {
-  const secret = String(process.env.RAZORPAY_KEY_SECRET || '').trim();
-  if (!secret) return '';
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode('booking-payment:' + bookingId));
-  return Array.from(new Uint8Array(signature), byte => byte.toString(16).padStart(2, '0')).join('');
-}
+
 
 export default async function handler(request) {
   if (request.method !== 'POST') return json({ success: false, message: 'Only POST requests are allowed.' }, 405);
@@ -108,11 +95,9 @@ export default async function handler(request) {
       kind: 'booking', reference: bookingId, email, uploadUrl,
       details: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\n\n${details}`,
     });
-    const paymentToken = await bookingPaymentToken(bookingId);
     return json({
       success: true,
       booking_id: bookingId,
-      ...(paymentToken ? { payment_token: paymentToken } : {}),
       ...(uploadUrl ? { upload_url: uploadUrl } : {}),
       ...notifications
     });

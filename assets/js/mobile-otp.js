@@ -140,6 +140,16 @@ async function loadSdk() {
 }
 
 async function waitForCaptcha() {
+  // MSG91 exposes isCaptchaVerified for custom UI, but on a fresh SDK mount
+  // it can appear slightly after sendOtp/verifyOtp. Do not race ahead and
+  // consume the OTP request before CAPTCHA is actually ready.
+  for (let i = 0; i < 40 && state.open; i++) {
+    if (typeof window.isCaptchaVerified === 'function') break;
+    await pause(250);
+  }
+
+  // Some widget configurations may have CAPTCHA disabled. In that case
+  // MSG91 does not expose isCaptchaVerified, so sending can proceed normally.
   if (typeof window.isCaptchaVerified !== 'function') return;
   if (window.isCaptchaVerified()) return;
 

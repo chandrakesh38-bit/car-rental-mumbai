@@ -445,8 +445,15 @@ let mumbaiMetroLocations = [
         let currentMainMode = 'withdriver';
         let currentWDSubTab = 'outstation';
         let currentAirportType = 'drop';
-        let wdOutstationKm = 300;
+        const OUTSTATION_BASE_ADDRESS = 'Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai, Maharashtra 400079';
+        const OUTSTATION_DRIVER_ALLOWANCE_PER_DAY = 500;
+        let wdOutstationKm = 0;
         let wdOutstationDays = 1;
+        let wdOutstationRouteQuote = null;
+        let outstationRouteSequence = 0;
+        let outstationStopSequence = 0;
+        const outstationPlaceSelections = new Map();
+        const outstationSearchTimers = new Map();
         let chosenCarName = '';
         let chosenFareAmount = 0;
         let selectedCarObj = null;
@@ -729,58 +736,295 @@ function onPickupDateChange() {
             });
         });
 
-        function onWDDestinationInput() {
-            const inputVal = document.getElementById('wd-out-destination').value.trim().toLowerCase();
-            let foundKm = null;
-            for (let c of destinationCities) {
-                if (c.name.toLowerCase() === inputVal) { foundKm = c.km; break; }
+        async function publicMapsRequest(action, extra = {}) {
+            const response = await fetch('/api/maps-route', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, ...extra })
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok || !payload?.success) throw new Error(payload?.message || 'Unable to calculate this route.');
+            return payload;
+        }
+
+        function invalidateOutstationRoute(message = '') {
+            wdOutstationRouteQuote = null;
+            wdOutstationKm = 0;
+            const km = document.getElementById('wd-metric-km');
+            if (km) km.textContent = '—';
+            const status = document.getElementById('wd-out-route-status');
+            if (status) {
+                status.textContent = message;
+                status.classList.toggle('hidden', !message);
             }
-            wdOutstationKm = foundKm ? foundKm : 300;
-            document.getElementById('wd-metric-km').innerText = wdOutstationKm;
             calculateDriverFare();
+        }
+
+        function scheduleOutstationPlaceSearch(inputId, dropdownId) {
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+            if (!input || !dropdown) return;
+            outstationPlaceSelections.delete(inputId);
+            invalidateOutstationRoute('');
+            const existing = outstationSearchTimers.get(inputId);
+            if (existing) clearTimeout(existing);
+            const query = input.value.trim();
+            if (query.length < 3) {
+                dropdown.innerHTML = '';
+                dropdown.classList.add('hidden');
+                return;
+            }
+            const timer = setTimeout(async () => {
+                try {
+                    const payload = await publicMapsRequest('autocomplete', { input: query });
+                    if (input.value.trim() !== query) return;
+                    dropdown.innerHTML = '';
+                    const suggestions = payload.suggestions || [];
+                    if (!suggestions.length) {
+                        dropdown.classList.add('hidden');
+                        return;
+                    }
+                    suggestions.forEach(place => {
+                        const option = document.createElement('button');
+                        option.type = 'button';
+                        option.className = 'autocomplete-item w-full text-left';
+                        const icon = document.createElement('i');
+                        icon.className = 'fa-solid fa-location-dot text-slate-400 text-xs';
+                        const textWrap = document.createElement('span');
+                        const main = document.createElement('span');
+                        main.className = 'block font-semibold';
+                        main.textContent = place.mainText || place.text || '';
+                        const secondary = document.createElement('span');
+                        secondary.className = 'block text-[10px] text-slate-400 mt-0.5';
+                        secondary.textContent = place.secondaryText || '';
+                        textWrap.append(main, secondary);
+                        option.append(icon, textWrap);
+                        option.addEventListener('mousedown', event => {
+                            event.preventDefault();
+                            input.value = place.text || place.mainText || '';
+                            outstationPlaceSelections.set(inputId, {
+                                placeId: place.placeId,
+                                name: place.mainText || place.text || '',
+                                address: place.text || ''
+                            });
+                            input.classList.remove('border-red-500');
+                            dropdown.classList.add('hidden');
+                            updateOutstationRouteEstimate();
+                        });
+                        dropdown.appendChild(option);
+                    });
+                    dropdown.classList.remove('hidden');
+                } catch (error) {
+                    dropdown.innerHTML = '';
+                    dropdown.classList.add('hidden');
+                    const status = document.getElementById('wd-out-route-status');
+                    if (status) {
+                        status.textContent = error.message || 'Google location search failed.';
+                        status.classList.remove('hidden');
+                    }
+                }
+            }, 350);
+            outstationSearchTimers.set(inputId, timer);
+        }
+
+        function addOutstationStop() {
+            const container = document.getElementById('wd-out-stops');
+            if (!container) return;
+            const existing = container.querySelectorAll('[data-outstation-stop-row]').length;
+            if (existing >= 8) {
+                showCustomAlert('You can add up to 8 intermediate stops.');
+                return;
+            }
+            const seq = ++outstationStopSequence;
+            const inputId = 'wd-out-stop-' + seq;
+            const dropdownId = inputId + '-dropdown';
+            const row = document.createElement('div');
+            row.dataset.outstationStopRow = 'true';
+            row.className = 'flex items-start gap-2';
+            const relative = document.createElement('div');
+            relative.className = 'relative flex-1';
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = inputId;
+            input.autocomplete = 'off';
+            input.dataset.outstationStopInput = 'true';
+            input.className = 'w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium';
+            input.placeholder = 'Search stop ' + (existing + 1) + ' on Google';
+            input.addEventListener('input', () => scheduleOutstationPlaceSearch(inputId, dropdownId));
+            const dropdown = document.createElement('div');
+            dropdown.id = dropdownId;
+            dropdown.className = 'autocomplete-dropdown hidden';
+            relative.append(input, dropdown);
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'mt-1 h-9 w-9 shrink-0 rounded-lg border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100';
+            remove.setAttribute('aria-label', 'Remove stop');
+            remove.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            remove.addEventListener('click', () => {
+                outstationPlaceSelections.delete(inputId);
+                row.remove();
+                invalidateOutstationRoute('');
+                updateOutstationRouteEstimate();
+            });
+            row.append(relative, remove);
+            container.appendChild(row);
+            input.focus();
+        }
+
+        function collectOutstationRouteSelections(strict = false) {
+            const pickupInput = document.getElementById('wd-out-pickup');
+            const finalInput = document.getElementById('wd-out-destination');
+            const pickup = outstationPlaceSelections.get('wd-out-pickup');
+            const finalDrop = outstationPlaceSelections.get('wd-out-destination');
+            if (strict && (!pickupInput?.value.trim() || !pickup)) throw new Error('Please select the pickup location from Google suggestions.');
+            if (strict && (!finalInput?.value.trim() || !finalDrop)) throw new Error('Please select the final drop from Google suggestions.');
+            if (!pickup || !finalDrop) return null;
+
+            const stops = [];
+            for (const input of document.querySelectorAll('[data-outstation-stop-input="true"]')) {
+                const typed = input.value.trim();
+                if (!typed) continue;
+                const selected = outstationPlaceSelections.get(input.id);
+                if (strict && !selected) throw new Error('Please select every intermediate stop from Google suggestions.');
+                if (!selected) return null;
+                stops.push(selected);
+            }
+            return { pickup, stops, finalDrop };
+        }
+
+        async function updateOutstationRouteEstimate() {
+            const selections = collectOutstationRouteSelections(false);
+            if (!selections) return;
+            const sequence = ++outstationRouteSequence;
+            const status = document.getElementById('wd-out-route-status');
+            if (status) {
+                status.textContent = 'Calculating complete vehicle route from Vikhroli base…';
+                status.classList.remove('hidden');
+            }
+            try {
+                const payload = await publicMapsRequest('route', {
+                    pickupPlaceId: selections.pickup.placeId,
+                    stopPlaceIds: selections.stops.map(stop => stop.placeId),
+                    finalDropPlaceId: selections.finalDrop.placeId
+                });
+                if (sequence !== outstationRouteSequence) return;
+                wdOutstationRouteQuote = payload;
+                wdOutstationKm = Number(payload.billableRouteKm) || 0;
+                const km = document.getElementById('wd-metric-km');
+                if (km) km.textContent = Number(payload.distanceKmExact || wdOutstationKm).toLocaleString('en-IN');
+                if (status) {
+                    status.textContent = 'Route calculated: Vikhroli base → pickup' +
+                        (selections.stops.length ? ' → ' + selections.stops.length + ' stop' + (selections.stops.length > 1 ? 's' : '') : '') +
+                        ' → final drop → Vikhroli base.';
+                    status.classList.remove('hidden');
+                }
+                calculateDriverFare();
+            } catch (error) {
+                if (sequence !== outstationRouteSequence) return;
+                invalidateOutstationRoute(error.message || 'Unable to calculate route distance.');
+            }
+        }
+
+        function onWDDestinationInput() {
+            // Kept for older generated links. Google selection now drives route distance.
+            invalidateOutstationRoute('');
+        }
+
+        function to24Hour(hour, ampm) {
+            let h = Number(hour) % 12;
+            if (ampm === 'PM') h += 12;
+            return h;
+        }
+
+        function qualifyingNightKey(dateValue, hourValue, ampmValue) {
+            if (!dateValue) return null;
+            const hour = to24Hour(hourValue, ampmValue);
+            if (!(hour >= 22 || hour < 5)) return null;
+            const date = new Date(dateValue + 'T12:00:00');
+            if (!Number.isFinite(date.getTime())) return null;
+            if (hour < 5) date.setDate(date.getDate() - 1);
+            return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+        }
+
+        function currentQualifyingNightCount() {
+            const nights = new Set();
+            if (currentWDSubTab === 'outstation') {
+                const p = qualifyingNightKey(
+                    document.getElementById('wd-out-pdate')?.value,
+                    document.getElementById('wd-out-phour')?.value,
+                    document.getElementById('wd-out-pampm')?.value
+                );
+                const r = qualifyingNightKey(
+                    document.getElementById('wd-out-rdate')?.value,
+                    document.getElementById('wd-out-rhour')?.value,
+                    document.getElementById('wd-out-rampm')?.value
+                );
+                if (p) nights.add(p);
+                if (r) nights.add(r);
+            } else if (currentWDSubTab === 'local') {
+                const p = qualifyingNightKey(
+                    document.getElementById('wd-local-date')?.value,
+                    document.getElementById('wd-local-hour')?.value,
+                    document.getElementById('wd-local-ampm')?.value
+                );
+                if (p) nights.add(p);
+            } else if (currentWDSubTab === 'airport') {
+                const p = qualifyingNightKey(
+                    document.getElementById('wd-airport-date')?.value,
+                    document.getElementById('wd-airport-hour')?.value,
+                    document.getElementById('wd-airport-ampm')?.value
+                );
+                if (p) nights.add(p);
+            }
+            return nights.size;
+        }
+
+        function nightRateForCar(car) {
+            return /hatchback|sedan/i.test(String(car?.category || '')) ? 400 : 600;
+        }
+
+        function currentDriverNightCharge(car) {
+            return currentQualifyingNightCount() * nightRateForCar(car);
         }
 
         function calculateDriverFare() {
             if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation') {
-                const pDate = document.getElementById('wd-out-pdate').value;
-                const rDate = document.getElementById('wd-out-rdate').value;
+                const pDate = document.getElementById('wd-out-pdate')?.value;
+                const rDate = document.getElementById('wd-out-rdate')?.value;
                 if (pDate && rDate) {
-                    const pDT = new Date(pDate);
-                    const rDT = new Date(rDate);
-                    const diffDays = Math.max(1, Math.ceil((rDT - pDT) / (1000 * 60 * 60 * 24)) + 1);
+                    const pDay = new Date(pDate + 'T12:00:00');
+                    const rDay = new Date(rDate + 'T12:00:00');
+                    const diffDays = Math.max(1, Math.round((rDay - pDay) / 86400000) + 1);
                     wdOutstationDays = diffDays;
-                    document.getElementById('wd-metric-days').innerText = wdOutstationDays;
-                    document.getElementById('wd-metric-billable-km').innerText = Math.max(wdOutstationKm, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
+                } else {
+                    wdOutstationDays = 1;
                 }
+                const minimumKm = wdOutstationDays * livePricingRules.minimumOutstationKmPerDay;
+                const billableKm = Math.max(wdOutstationKm || 0, minimumKm);
+                const daysEl = document.getElementById('wd-metric-days');
+                const billableEl = document.getElementById('wd-metric-billable-km');
+                const minimumEl = document.getElementById('wd-metric-minimum');
+                if (daysEl) daysEl.textContent = wdOutstationDays;
+                if (billableEl) billableEl.textContent = billableKm.toLocaleString('en-IN');
+                if (minimumEl) minimumEl.textContent = 'Minimum: ' + wdOutstationDays + ' × ' + livePricingRules.minimumOutstationKmPerDay + ' KM = ' + minimumKm.toLocaleString('en-IN') + ' KM';
+                const nightBadge = document.getElementById('wd-metric-night-badge');
+                if (nightBadge) nightBadge.classList.toggle('hidden', currentQualifyingNightCount() === 0);
             }
             renderWDFleet();
         }
 
-        function currentDriverNightAllowance() {
-            let hourId = '';
-            let ampmId = '';
-            if (currentWDSubTab === 'local') { hourId = 'wd-local-hour'; ampmId = 'wd-local-ampm'; }
-            else if (currentWDSubTab === 'outstation') { hourId = 'wd-out-phour'; ampmId = 'wd-out-pampm'; }
-            else if (currentWDSubTab === 'airport') { hourId = 'wd-airport-hour'; ampmId = 'wd-airport-ampm'; }
-            const hourEl = document.getElementById(hourId);
-            const ampmEl = document.getElementById(ampmId);
-            if (!hourEl || !ampmEl) return 0;
-            let hour = Number(hourEl.value) % 12;
-            if (ampmEl.value === 'PM') hour += 12;
-            return (hour >= 22 || hour < 6) ? livePricingRules.driverNightAllowance : 0;
-        }
-
         function getCarCost(car) {
+            const nightCharge = currentDriverNightCharge(car);
             if (currentWDSubTab === 'local') {
                 const pkg = document.getElementById('wd-local-package').value;
-                return (car.rates.local[pkg] || 3000) + currentDriverNightAllowance();
+                return (car.rates.local[pkg] || 3000) + nightCharge;
             } else if (currentWDSubTab === 'outstation') {
-                const billableKm = Math.max(wdOutstationKm, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                return (billableKm * car.rates.outstationPerKm) + (wdOutstationDays * car.rates.driverAllowance) + currentDriverNightAllowance();
+                const billableKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
+                return (billableKm * car.rates.outstationPerKm) + (wdOutstationDays * OUTSTATION_DRIVER_ALLOWANCE_PER_DAY) + nightCharge;
             } else if (currentWDSubTab === 'airport') {
                 const termInput = document.getElementById('wd-airport-terminal');
                 const term = termInput ? termInput.value : 't2';
-                return (car.rates.airport[term] || car.rates.airport.t2) + currentDriverNightAllowance();
+                return (car.rates.airport[term] || car.rates.airport.t2) + nightCharge;
             }
             return 3000;
         }

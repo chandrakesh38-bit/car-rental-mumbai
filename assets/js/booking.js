@@ -460,6 +460,8 @@ let mumbaiMetroLocations = [
         let chosenFareAmount = 0;
         let selectedCarObj = null;
         let currentDeliveryMode = 'home';
+        let withDriverCurrentLocation = null;
+        let selfDriveCurrentLocation = null;
         let calculatedRentalHours = 0;
         let currentSDPage = 1;
         const carsPerPage = 6;
@@ -872,6 +874,13 @@ function onPickupDateChange() {
             dropdown.id = dropdownId;
             dropdown.className = 'autocomplete-dropdown hidden';
             relative.append(input, dropdown);
+            const add = document.createElement('button');
+            add.type = 'button';
+            add.className = 'mt-1 h-9 w-9 shrink-0 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100';
+            add.setAttribute('aria-label', 'Add another stop');
+            add.innerHTML = '<i class="fa-solid fa-plus"></i>';
+            add.addEventListener('click', () => addOutstationStopAfter(row));
+
             const remove = document.createElement('button');
             remove.type = 'button';
             remove.className = 'mt-1 h-9 w-9 shrink-0 rounded-lg border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100';
@@ -883,9 +892,22 @@ function onPickupDateChange() {
                 invalidateOutstationRoute('');
                 updateOutstationRouteEstimate();
             });
-            row.append(relative, remove);
+            row.append(relative, add, remove);
             container.appendChild(row);
             input.focus();
+        }
+
+        function addOutstationStopAfter(referenceRow) {
+            const container = document.getElementById('wd-out-stops');
+            if (!container) return;
+            const before = [...container.children].indexOf(referenceRow);
+            addOutstationStop();
+            const rows = [...container.querySelectorAll('[data-outstation-stop-row]')];
+            const created = rows[rows.length - 1];
+            if (created && before >= 0) {
+                container.insertBefore(created, referenceRow.nextSibling);
+                created.querySelector('input')?.focus();
+            }
         }
 
         function collectOutstationRouteSelections(strict = false) {
@@ -1009,10 +1031,20 @@ function onPickupDateChange() {
             modal.id = 'smart-route-modal';
             modal.className = 'fixed inset-0 z-[10020] bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-4';
             const savings = comparison.savings;
+            const hasFareSaving = savings.maxFareSaving > 0;
+            const hasTimeSaving = savings.timeSavedSeconds > 0;
             const fareSavingText = savings.maxFareSaving > savings.minFareSaving
                 ? '₹' + savings.minFareSaving.toLocaleString('en-IN') + '–₹' + savings.maxFareSaving.toLocaleString('en-IN')
                 : '₹' + savings.minFareSaving.toLocaleString('en-IN');
-            const timeSavingText = savings.timeSavedSeconds > 0 ? secondsLabel(savings.timeSavedSeconds) : 'No meaningful time change';
+            const timeSavingText = secondsLabel(savings.timeSavedSeconds);
+            const headline = hasFareSaving && hasTimeSaving
+                ? 'Smart Route saves you time & money'
+                : hasTimeSaving
+                    ? 'Smart Route saves you ' + timeSavingText
+                    : 'Smart Route gives you a shorter drive';
+            const subtext = hasFareSaving
+                ? 'A more efficient route can reduce your driving distance and estimated fare.'
+                : 'A shorter, more efficient route with ' + savings.routeKmSaved.toLocaleString('en-IN') + ' KM less driving.';
 
             const panel = document.createElement('div');
             panel.className = 'w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden';
@@ -1021,8 +1053,8 @@ function onPickupDateChange() {
                     <div class="flex items-start gap-3">
                         <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-route"></i></div>
                         <div>
-                            <h3 class="text-lg font-black text-slate-900">Smart Route can save time and money</h3>
-                            <p class="text-xs text-slate-500 mt-1">We found a more efficient order for your selected destinations. Your pickup stays the same.</p>
+                            <h3 class="text-lg font-black text-slate-900">${headline}</h3>
+                            <p class="text-xs text-slate-500 mt-1">${subtext}</p>
                         </div>
                     </div>
                 </div>
@@ -1041,22 +1073,21 @@ function onPickupDateChange() {
                             <div class="text-[11px] text-emerald-700">${secondsLabel(comparison.smart.durationSeconds)}</div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-3 gap-2">
+                    <div class="grid ${hasFareSaving ? 'grid-cols-3' : 'grid-cols-2'} gap-2">
                         <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center">
-                            <div class="text-[10px] text-slate-500">Distance saved</div>
+                            <div class="text-[10px] text-slate-500">Less driving</div>
                             <div class="font-black text-slate-900 mt-1">${savings.routeKmSaved.toLocaleString('en-IN')} KM</div>
                         </div>
-                        <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center">
-                            <div class="text-[10px] text-slate-500">Fare saving</div>
+                        ${hasFareSaving ? `<div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center">
+                            <div class="text-[10px] text-slate-500">Estimated fare saving</div>
                             <div class="font-black text-slate-900 mt-1">${fareSavingText}</div>
-                            <div class="text-[9px] text-slate-400">depends on car</div>
-                        </div>
+                            <div class="text-[9px] text-slate-400">depends on selected car</div>
+                        </div>` : ''}
                         <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center">
-                            <div class="text-[10px] text-slate-500">Time saved</div>
-                            <div class="font-black text-slate-900 mt-1">${timeSavingText}</div>
+                            <div class="text-[10px] text-slate-500">Faster by</div>
+                            <div class="font-black text-slate-900 mt-1">${hasTimeSaving ? timeSavingText : '—'}</div>
                         </div>
                     </div>
-                    ${savings.routeKmSaved > 0 && savings.savedBillableKm === 0 ? '<div class="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-[10px] text-amber-900">This route is shorter, but your fare remains the same because the 300 KM/day minimum billing rule still applies.</div>' : ''}
                     <div class="grid sm:grid-cols-2 gap-3 pt-1">
                         <button type="button" id="choose-smart-route-btn" class="rounded-xl bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 text-sm">Choose Smart Route</button>
                         <button type="button" id="keep-my-route-btn" class="rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold py-3 text-sm">Keep My Route</button>
@@ -1674,9 +1705,9 @@ function onPickupDateChange() {
             const contentBox = document.getElementById('fare-breakdown-content');
             if (!contentBox) return;
             const outstationExtra = currentWDSubTab === 'outstation'
-                ? `<li><strong>Outstation distance:</strong> Full vehicle movement is calculated from our Vikhroli base to pickup, all stops, final drop, and back to Vikhroli. Minimum billing is ${livePricingRules.minimumOutstationKmPerDay} KM per booked day.</li>
+                ? `<li><strong>Outstation:</strong> Minimum billing is ${livePricingRules.minimumOutstationKmPerDay} KM per booked day.</li>
                    <li><strong>Driver allowance:</strong> ₹${OUTSTATION_DRIVER_ALLOWANCE_PER_DAY} per booked day.</li>
-                   <li><strong>Night service:</strong> 10 PM–5 AM; ₹400 Hatchback/Sedan or ₹600 SUV/MUV per qualifying night.</li>`
+                   <li><strong>Night service:</strong> Charged only if the pickup or final drop falls between 10 PM and 5 AM — ₹400 for Hatchback/Sedan or ₹600 for SUV/MUV per qualifying night.</li>`
                 : '';
             contentBox.innerHTML = `
                 <p class="font-bold text-slate-900">Transparent Fare & Inclusions Details:</p>
@@ -1690,8 +1721,89 @@ function onPickupDateChange() {
         }
         function closeFareBreakdownModal() { document.getElementById('fare-breakdown-modal').classList.add('hidden'); syncModalState(document.getElementById('fare-breakdown-modal'), false); }
 
+        function geolocationErrorMessage(error) {
+            if (error?.code === 1) return 'Location permission was not allowed. You can enter the address manually.';
+            if (error?.code === 2) return 'Your current location could not be detected. Please try again or enter the address manually.';
+            if (error?.code === 3) return 'Location request timed out. Please try again.';
+            return 'Unable to get your current location. Please enter the address manually.';
+        }
+
+        async function reverseGeocodeCurrentPosition(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            return publicMapsRequest('reverse-geocode', { latitude, longitude });
+        }
+
+        function requestBrowserLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) return reject(new Error('Location is not supported on this device.'));
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 12000,
+                    maximumAge: 30000
+                });
+            });
+        }
+
+        async function useCurrentLocation(target) {
+            const buttonId = target === 'selfdrive' ? 'sd-use-current-location' : 'wd-use-current-location';
+            const statusId = target === 'selfdrive' ? 'sd-current-location-status' : 'wd-current-location-status';
+            const button = document.getElementById(buttonId);
+            const status = document.getElementById(statusId);
+            const original = button?.innerHTML;
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Detecting…';
+            }
+            if (status) {
+                status.textContent = 'Waiting for location permission…';
+                status.className = 'text-[10px] text-slate-500 mt-1';
+            }
+            try {
+                const position = await requestBrowserLocation();
+                const result = await reverseGeocodeCurrentPosition(position);
+                if (target === 'selfdrive') {
+                    selfDriveCurrentLocation = result;
+                    const address = document.getElementById('sd-cust-address');
+                    const city = document.getElementById('sd-cust-city');
+                    const state = document.getElementById('sd-cust-state');
+                    const pin = document.getElementById('sd-cust-pincode');
+                    if (address && result.address) address.value = result.address;
+                    if (city && result.city) city.value = result.city;
+                    if (state && result.state) state.value = result.state;
+                    if (pin && result.postalCode) pin.value = result.postalCode;
+                } else {
+                    withDriverCurrentLocation = result;
+                    const address = document.getElementById('cust-address');
+                    if (address && result.address) address.value = result.address;
+                }
+                if (status) {
+                    status.textContent = '✓ Current location captured. You can edit the address or add a landmark.';
+                    status.className = 'text-[10px] text-emerald-700 font-semibold mt-1';
+                }
+            } catch (error) {
+                if (status) {
+                    status.textContent = geolocationErrorMessage(error);
+                    status.className = 'text-[10px] text-rose-600 mt-1';
+                }
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = original;
+                }
+            }
+        }
+
         function openModal(name, fare) {
             chosenCarName = name;
+            withDriverCurrentLocation = null;
+            const locationButtonWrap = document.getElementById('wd-current-location-wrap');
+            if (locationButtonWrap) {
+                const applicable = currentWDSubTab === 'local' || currentWDSubTab === 'outstation' || (currentWDSubTab === 'airport' && currentAirportType === 'drop');
+                locationButtonWrap.classList.toggle('hidden', !applicable);
+            }
+            const locationStatus = document.getElementById('wd-current-location-status');
+            if (locationStatus) locationStatus.textContent = '';
             chosenFareAmount = fare;
             document.getElementById('modal-car-name').innerText = name;
             document.getElementById('modal-fare').innerText = '₹' + fare.toLocaleString('en-IN');
@@ -1719,7 +1831,7 @@ function onPickupDateChange() {
                 };
                 dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nFinal Drop: ${formatReviewTime('wd-out-r')}`;
                 const billable = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                pkgStr = `Outstation · Google route ${wdOutstationRouteQuote?.distanceKmExact || wdOutstationKm} KM · Billable ${billable} KM · ${wdOutstationDays} Day(s)`;
+                pkgStr = `Outstation · Billable ${billable} KM · ${wdOutstationDays} Day(s)`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
                 destLoc = document.getElementById('wd-airport-terminal').value.toUpperCase() + ' Airport';
@@ -1739,6 +1851,9 @@ function onPickupDateChange() {
 
         function openSDModal(car) {
             selectedCarObj = car;
+            selfDriveCurrentLocation = null;
+            const locationStatus = document.getElementById('sd-current-location-status');
+            if (locationStatus) locationStatus.textContent = '';
             document.getElementById('sd-modal-car-brand').innerText = car.brand;
             document.getElementById('sd-modal-car-name').innerText = car.fullName;
             document.getElementById('sd-modal-car-rate').innerText = car.rateHour;
@@ -2000,6 +2115,9 @@ async function handleBookingSubmit(e) {
     const phone = document.getElementById('cust-phone').value.trim();
     const email = document.getElementById('cust-email').value.trim();
     const address = document.getElementById('cust-address').value.trim();
+    const currentLocationText = withDriverCurrentLocation
+        ? `\n📍 Exact GPS: ${withDriverCurrentLocation.mapUrl}\nGPS Address: ${withDriverCurrentLocation.address || 'Captured'}`
+        : '';
 
     const car = wdFleet.find(c => c.name === chosenCarName);
     const bookingId = e.target.dataset.bookingId || (e.target.dataset.bookingId = generateBookingId());
@@ -2204,8 +2322,18 @@ async function handleBookingSubmit(e) {
         bookingData = {tripType:'airport',carName:chosenCarName,pickupAt:journeyDateTime.toISOString(),pickupLocation:location,airportTerminal:airport,airportType:currentAirportType};
     }
 
+    bookingData = {
+        ...bookingData,
+        customerAddress: address,
+        currentLocation: withDriverCurrentLocation ? {
+            latitude: withDriverCurrentLocation.latitude,
+            longitude: withDriverCurrentLocation.longitude,
+            address: withDriverCurrentLocation.address,
+            mapUrl: withDriverCurrentLocation.mapUrl
+        } : null
+    };
     await sendWithDriverBookingEmail(e.target, bookingId, name, phone, email,
-        message + '\nCustomer address: ' + address, closeModal, 'withdriver', otpProof, bookingData);
+        message + '\nCustomer address: ' + address + currentLocationText, closeModal, 'withdriver', otpProof, bookingData);
 }
         async function handleSDBookingSubmit(e) {
             e.preventDefault();
@@ -2251,12 +2379,13 @@ async function handleBookingSubmit(e) {
                 ['Delivery Location', currentDeliveryMode === 'home' ? value('sd-delivery-location-input') : 'Self Pick-up'],
                 ['Alternate Mobile', value('sd-cust-alt-phone')],
                 ['Address', currentDeliveryMode === 'home' ? [value('sd-cust-address'), value('sd-cust-city'), value('sd-cust-state'), value('sd-cust-pincode')].join(', ') : 'Self Pick-up'],
+                ['Exact GPS', currentDeliveryMode === 'home' && selfDriveCurrentLocation ? selfDriveCurrentLocation.mapUrl : 'Not provided'],
                 ['Base Rental Fare', text('sd-review-base-fare')],
                 ['Security Deposit', text('sd-review-deposit')],
                 ['Delivery Charge', currentDeliveryMode === 'home' ? text('sd-review-delivery-charge') : '0'],
                 ['Total Amount', text('disp-total-final-fare')],
             ].map(([label, v]) => label + ': ' + (v || 'Not provided')).join('\n');
-            const bookingData = {vehicleId:selectedCarObj.id,pickupAt:createLocalDateTime(value('sd-pdate'),Number(value('sd-phour')),value('sd-pampm')).toISOString(),returnAt:createLocalDateTime(value('sd-rdate'),Number(value('sd-rhour')),value('sd-rampm')).toISOString(),deliveryMode:currentDeliveryMode,deliveryLocation:currentDeliveryMode==='home'?value('sd-delivery-location-input'):'Self Pick-up'};
+            const bookingData = {vehicleId:selectedCarObj.id,pickupAt:createLocalDateTime(value('sd-pdate'),Number(value('sd-phour')),value('sd-pampm')).toISOString(),returnAt:createLocalDateTime(value('sd-rdate'),Number(value('sd-rhour')),value('sd-rampm')).toISOString(),deliveryMode:currentDeliveryMode,deliveryLocation:currentDeliveryMode==='home'?value('sd-delivery-location-input'):'Self Pick-up',currentLocation:currentDeliveryMode==='home'&&selfDriveCurrentLocation?{latitude:selfDriveCurrentLocation.latitude,longitude:selfDriveCurrentLocation.longitude,address:selfDriveCurrentLocation.address,mapUrl:selfDriveCurrentLocation.mapUrl}:null};
             await sendEmailNotification(e.target, bookingId, name, phone, email, details, closeSDModal, 'selfdrive', otpProof, bookingData);
         }
 

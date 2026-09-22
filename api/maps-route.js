@@ -173,21 +173,18 @@ async function computeRoute(pickupPlaceId, stopPlaceIds, finalDropPlaceId) {
     throw Object.assign(new Error('A maximum of 8 intermediate stops is supported.'), { status: 400 });
   }
 
-  const intermediates = [
-    { placeId: pickup },
-    ...stops.map(placeId => ({ placeId })),
-    { placeId: finalDrop }
-  ];
-
-  const payload = await google('https://routes.googleapis.com/directions/v2:computeRoutes', {
+  // Google Routes can return no route when the same address is used as both
+  // origin and destination in a round trip. Split the journey into two legs:
+  // base -> customer route -> final drop, then final drop -> base.
+  const outbound = await google('https://routes.googleapis.com/directions/v2:computeRoutes', {
     method: 'POST',
     headers: {
       'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration,routes.legs.distanceMeters,routes.legs.duration'
     },
     body: JSON.stringify({
       origin: { address: BASE_ADDRESS },
-      destination: { address: BASE_ADDRESS },
-      intermediates,
+      destination: { placeId: finalDrop },
+      intermediates: [{ placeId: pickup }, ...stops.map(placeId => ({ placeId }))],
       travelMode: 'DRIVE',
       routingPreference: 'TRAFFIC_UNAWARE',
       computeAlternativeRoutes: false,
@@ -196,13 +193,32 @@ async function computeRoute(pickupPlaceId, stopPlaceIds, finalDropPlaceId) {
     })
   });
 
-  const route = payload.routes?.[0];
-  const distanceMeters = Number(route?.distanceMeters);
-  if (!Number.isFinite(distanceMeters) || distanceMeters <= 0) {
+  const back = await google('https://routes.googleapis.com/directions/v2:computeRoutes', {
+    method: 'POST',
+    headers: {
+      'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration,routes.legs.distanceMeters,routes.legs.duration'
+    },
+    body: JSON.stringify({
+      origin: { placeId: finalDrop },
+      destination: { address: BASE_ADDRESS },
+      travelMode: 'DRIVE',
+      routingPreference: 'TRAFFIC_UNAWARE',
+      computeAlternativeRoutes: false,
+      languageCode: 'en-US',
+      units: 'METRIC'
+    })
+  });
+
+  const first = outbound.routes?.[0];
+  const second = back.routes?.[0];
+  const firstMeters = Number(first?.distanceMeters);
+  const secondMeters = Number(second?.distanceMeters);
+  if (!Number.isFinite(firstMeters) || firstMeters <= 0 || !Number.isFinite(secondMeters) || secondMeters <= 0) {
     throw Object.assign(new Error('Driving distance could not be calculated for this route.'), { status: 422 });
   }
 
-  const legs = (route.legs || []).map((leg, index) => ({
+  const distanceMeters = firstMeters + secondMeters;
+  const legs = [...(first.legs || []), ...(second.legs || [])].map((leg, index) => ({
     index,
     distanceMeters: Number(leg.distanceMeters) || 0,
     distanceKm: Math.round(((Number(leg.distanceMeters) || 0) / 1000) * 10) / 10,
@@ -214,8 +230,63 @@ async function computeRoute(pickupPlaceId, stopPlaceIds, finalDropPlaceId) {
     distanceMeters,
     distanceKmExact: Math.round((distanceMeters / 1000) * 10) / 10,
     billableRouteKm: Math.ceil(distanceMeters / 1000),
-    duration: String(route.duration || ''),
+    durationSeconds: durationSeconds(first?.duration) + durationSeconds(second?.duration),
     legs
+  };
+}
+
+async function placeDetails(placeId) {
+  const id = cleanPlaceId(placeId);
+  const key = mapsKey();
+  const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
+  url.searchParams.set('place_id', id);
+  url.searchParams.set('key', key);
+  url.searchParams.set('language', 'en');
+  url.searchParams.set('region', 'in');
+  const response = await fetch(url);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !['OK', 'ZERO_RESULTS'].includes(payload.status)) {
+    throw Object.assign(new Error(payload.error_message || 'Unable to identify this location.'), { status: 502 });
+  }
+  const result = payload.results?.[0];
+  if (!result) throw Object.assign(new Error('Location details could not be found.'), { status: 422 });
+  const components = {};
+  for (const part of result.address_components || []) {
+    for (const type of part.types || []) if (!components[type]) components[type] = part.long_name;
+  }
+  return {
+    placeId: id,
+    address: String(result.formatted_address || ''),
+    city: String(components.locality || components.sublocality || components.administrative_area_level_2 || ''),
+    state: String(components.administrative_area_level_1 || ''),
+    postalCode: String(components.postal_code || '')
+  };
+}
+
+async function deliveryRoute(placeId) {
+  const id = cleanPlaceId(placeId);
+  const payload = await google('https://routes.googleapis.com/directions/v2:computeRoutes', {
+    method: 'POST',
+    headers: { 'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration' },
+    body: JSON.stringify({
+      origin: { address: BASE_ADDRESS },
+      destination: { placeId: id },
+      travelMode: 'DRIVE',
+      routingPreference: 'TRAFFIC_UNAWARE',
+      computeAlternativeRoutes: false,
+      languageCode: 'en-US',
+      units: 'METRIC'
+    })
+  });
+  const route = payload.routes?.[0];
+  const meters = Number(route?.distanceMeters);
+  if (!Number.isFinite(meters) || meters <= 0) {
+    throw Object.assign(new Error('Delivery distance could not be calculated for this location.'), { status: 422 });
+  }
+  return {
+    oneWayDistanceMeters: meters,
+    oneWayDistanceKm: Math.round((meters / 1000) * 10) / 10,
+    durationSeconds: durationSeconds(route?.duration)
   };
 }
 
@@ -272,6 +343,14 @@ async function reverseGeocode(lat, lng) {
       return json({ success: true, ...result });
     }
 
+    if (action === 'place-details') {
+      return json({ success: true, ...(await placeDetails(body.placeId)) });
+    }
+
+    if (action === 'delivery-route') {
+      return json({ success: true, ...(await deliveryRoute(body.placeId)) });
+    }
+
     if (action === 'autocomplete') {
       const input = String(body.input || '').trim();
       if (input.length < 3 || input.length > 150) {
@@ -282,7 +361,7 @@ async function reverseGeocode(lat, lng) {
 
     if (action === 'route') {
       const result = await computeRoute(body.pickupPlaceId, body.stopPlaceIds, body.finalDropPlaceId);
-      return json({ success: true, ...result, durationSeconds: durationSeconds(result.duration) });
+      return json({ success: true, ...result });
     }
 
     if (action === 'smart-route') {

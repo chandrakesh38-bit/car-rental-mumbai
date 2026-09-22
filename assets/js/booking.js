@@ -624,8 +624,12 @@ function showCustomAlert(message) {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="relative">
                             <label for="wd-airport-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address *</label>
-                            <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Enter pickup area">
+                            <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="scheduleGooglePlaceSearch('wd-airport-pickup', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Search pickup on Google">
                             <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
+                            <button type="button" onclick="useBookingPickupCurrentLocation('airport')" class="mt-2 inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">
+                                <i class="fa-solid fa-location-crosshairs"></i> Use My Current Location
+                            </button>
+                            <p id="wd-airport-location-status" class="text-[10px] text-slate-500 mt-1"></p>
                         </div>
                         <div>
                             <label for="wd-airport-terminal" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
@@ -653,7 +657,7 @@ function showCustomAlert(message) {
                         </div>
                         <div class="relative">
                             <label for="wd-airport-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Drop Area / Address *</label>
-                            <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="showSuggestions('wd-airport-pickup', 'mumbai-places', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Enter drop area">
+                            <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="scheduleGooglePlaceSearch('wd-airport-pickup', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Search drop on Google">
                             <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
                         </div>
                     </div>
@@ -777,6 +781,62 @@ function onPickupDateChange() {
                 status.classList.toggle('hidden', !message);
             }
             calculateDriverFare();
+        }
+
+        function scheduleGooglePlaceSearch(inputId, dropdownId) {
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+            if (!input || !dropdown) return;
+            const existing = outstationSearchTimers.get('google:' + inputId);
+            if (existing) clearTimeout(existing);
+            const query = input.value.trim();
+            if (query.length < 3) {
+                dropdown.innerHTML = '';
+                dropdown.classList.add('hidden');
+                return;
+            }
+            const timer = setTimeout(async () => {
+                try {
+                    const payload = await publicMapsRequest('autocomplete', { input: query });
+                    if (input.value.trim() !== query) return;
+                    dropdown.innerHTML = '';
+                    const suggestions = payload.suggestions || [];
+                    if (!suggestions.length) {
+                        dropdown.classList.add('hidden');
+                        return;
+                    }
+                    suggestions.forEach(place => {
+                        const option = document.createElement('button');
+                        option.type = 'button';
+                        option.className = 'autocomplete-item w-full text-left';
+                        const icon = document.createElement('i');
+                        icon.className = 'fa-solid fa-location-dot text-slate-400 text-xs';
+                        const wrap = document.createElement('span');
+                        const main = document.createElement('span');
+                        main.className = 'block font-semibold';
+                        main.textContent = place.mainText || place.text || '';
+                        const secondary = document.createElement('span');
+                        secondary.className = 'block text-[10px] text-slate-400 mt-0.5';
+                        secondary.textContent = place.secondaryText || '';
+                        wrap.append(main, secondary);
+                        option.append(icon, wrap);
+                        option.addEventListener('mousedown', event => {
+                            event.preventDefault();
+                            input.value = place.text || place.mainText || '';
+                            input.dataset.googlePlaceId = place.placeId || '';
+                            dropdown.classList.add('hidden');
+                            input.classList.remove('border-red-500');
+                        });
+                        dropdown.appendChild(option);
+                    });
+                    dropdown.classList.remove('hidden');
+                } catch (error) {
+                    dropdown.innerHTML = '';
+                    dropdown.classList.add('hidden');
+                    showCustomAlert(error.message || 'Google location search failed.');
+                }
+            }, 350);
+            outstationSearchTimers.set('google:' + inputId, timer);
         }
 
         function scheduleOutstationPlaceSearch(inputId, dropdownId) {
@@ -1721,8 +1781,47 @@ function onPickupDateChange() {
         }
         function closeFareBreakdownModal() { document.getElementById('fare-breakdown-modal').classList.add('hidden'); syncModalState(document.getElementById('fare-breakdown-modal'), false); }
 
+        async function useBookingPickupCurrentLocation(mode) {
+            const config = mode === 'local'
+                ? { inputId: 'wd-local-pickup', statusId: 'wd-local-location-status' }
+                : mode === 'outstation'
+                    ? { inputId: 'wd-out-pickup', statusId: 'wd-out-location-status' }
+                    : { inputId: 'wd-airport-pickup', statusId: 'wd-airport-location-status' };
+            const input = document.getElementById(config.inputId);
+            const status = document.getElementById(config.statusId);
+            if (!input) return;
+            if (status) {
+                status.textContent = 'Waiting for location permission…';
+                status.className = 'text-[10px] text-slate-500 mt-1';
+            }
+            try {
+                const position = await requestBrowserLocation();
+                const result = await reverseGeocodeCurrentPosition(position);
+                input.value = result.address || (result.latitude + ', ' + result.longitude);
+                input.dataset.googlePlaceId = result.placeId || '';
+                if (mode === 'outstation') {
+                    outstationPlaceSelections.set('wd-out-pickup', {
+                        placeId: result.placeId,
+                        name: result.address || 'Current Location',
+                        address: result.address || ''
+                    });
+                    invalidateOutstationRoute('');
+                    await updateOutstationRouteEstimate();
+                }
+                if (status) {
+                    status.textContent = '✓ Current location selected';
+                    status.className = 'text-[10px] text-emerald-700 font-semibold mt-1';
+                }
+            } catch (error) {
+                if (status) {
+                    status.textContent = geolocationErrorMessage(error);
+                    status.className = 'text-[10px] text-rose-600 mt-1';
+                }
+            }
+        }
+
         function geolocationErrorMessage(error) {
-            if (error?.code === 1) return 'Location permission was not allowed. You can enter the address manually.';
+            if (error?.code === 1) return 'Location is blocked for this site. Allow Location from your browser site settings, then try again. You can also enter the address manually.';
             if (error?.code === 2) return 'Your current location could not be detected. Please try again or enter the address manually.';
             if (error?.code === 3) return 'Location request timed out. Please try again.';
             return 'Unable to get your current location. Please enter the address manually.';

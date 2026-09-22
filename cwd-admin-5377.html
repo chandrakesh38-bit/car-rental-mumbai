@@ -593,9 +593,13 @@
                         <option value="destination">Outstation Destination</option>
                     </select>
                 </div>
-                <div>
+                <div class="relative">
                     <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Location / City Name</label>
-                    <input type="text" id="loc-name" required maxlength="120" placeholder="e.g. Borivali / Pune" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    <input type="hidden" id="loc-google-place-id">
+                    <input type="hidden" id="loc-google-address">
+                    <input type="text" id="loc-name" required maxlength="120" autocomplete="off" oninput="scheduleGooglePlaceSearch()" placeholder="Start typing, e.g. Borivali / Pune" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    <div id="loc-google-suggestions" class="hidden absolute z-[60] left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-56 overflow-y-auto"></div>
+                    <div id="loc-google-status" class="mt-1.5 text-[10px] text-slate-500">Type 3+ characters to search Google Places.</div>
                 </div>
 
                 <div id="loc-metro-fields" class="space-y-4">
@@ -1028,6 +1032,111 @@
                 </tr>`).join('') : '<tr><td colspan="4" class="py-8 text-center text-slate-400">No outstation destinations configured.</td></tr>';
         }
 
+        let googlePlaceSearchTimer = null;
+        let googlePlaceSearchSequence = 0;
+
+        async function adminMapsRequest(action, extra = {}) {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session?.access_token) throw new Error('Admin session expired. Please sign in again.');
+            const response = await fetch('/api/admin-maps', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
+                body: JSON.stringify({ action, ...extra })
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload?.success) throw new Error(payload?.message || 'Google Maps request failed.');
+            return payload;
+        }
+
+        function hideGooglePlaceSuggestions() {
+            const box = document.getElementById('loc-google-suggestions');
+            if (!box) return;
+            box.classList.add('hidden');
+            box.innerHTML = '';
+        }
+
+        function scheduleGooglePlaceSearch() {
+            const input = document.getElementById('loc-name');
+            const placeId = document.getElementById('loc-google-place-id');
+            const address = document.getElementById('loc-google-address');
+            const status = document.getElementById('loc-google-status');
+            if (!input || !placeId || !address || !status) return;
+            placeId.value = '';
+            address.value = '';
+            clearTimeout(googlePlaceSearchTimer);
+            const query = input.value.trim();
+            if (query.length < 3) {
+                hideGooglePlaceSuggestions();
+                status.textContent = 'Type 3+ characters to search Google Places.';
+                return;
+            }
+            const seq = ++googlePlaceSearchSequence;
+            status.textContent = 'Searching Google Places…';
+            googlePlaceSearchTimer = setTimeout(async () => {
+                try {
+                    const payload = await adminMapsRequest('autocomplete', { input: query });
+                    if (seq !== googlePlaceSearchSequence) return;
+                    renderGooglePlaceSuggestions(payload.suggestions || []);
+                    status.textContent = payload.suggestions?.length ? 'Select the correct Google location below.' : 'No Google location found. You can still enter it manually.';
+                } catch (error) {
+                    if (seq !== googlePlaceSearchSequence) return;
+                    hideGooglePlaceSuggestions();
+                    status.textContent = error.message || 'Google location search failed.';
+                }
+            }, 350);
+        }
+
+        function renderGooglePlaceSuggestions(suggestions) {
+            const box = document.getElementById('loc-google-suggestions');
+            if (!box) return;
+            box.innerHTML = '';
+            if (!suggestions.length) { box.classList.add('hidden'); return; }
+            suggestions.forEach(place => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'w-full text-left px-3 py-2.5 border-b last:border-b-0 hover:bg-indigo-50';
+                const main = document.createElement('div');
+                main.className = 'text-xs font-bold text-slate-900';
+                main.textContent = place.mainText || place.text || '';
+                const secondary = document.createElement('div');
+                secondary.className = 'text-[10px] text-slate-500 mt-0.5';
+                secondary.textContent = place.secondaryText || place.text || '';
+                button.append(main, secondary);
+                button.addEventListener('click', () => selectGooglePlace(place));
+                box.appendChild(button);
+            });
+            box.classList.remove('hidden');
+        }
+
+        async function selectGooglePlace(place) {
+            const status = document.getElementById('loc-google-status');
+            hideGooglePlaceSuggestions();
+            document.getElementById('loc-name').value = place.mainText || place.text || '';
+            document.getElementById('loc-google-place-id').value = place.placeId || '';
+            document.getElementById('loc-google-address').value = place.text || '';
+            status.textContent = 'Calculating driving distance from Vikhroli…';
+            try {
+                const [details, route] = await Promise.all([
+                    adminMapsRequest('details', { placeId: place.placeId }),
+                    adminMapsRequest('distance', { placeId: place.placeId })
+                ]);
+                document.getElementById('loc-name').value = details.displayName || place.mainText || place.text || '';
+                document.getElementById('loc-google-address').value = details.formattedAddress || place.text || '';
+                const type = document.getElementById('loc-type').value;
+                if (type === 'destination') {
+                    document.getElementById('loc-destination-km').value = route.roundTripKm;
+                    status.textContent = 'Google selected • ' + route.oneWayKmRounded + ' km one-way • ' + route.roundTripKm + ' km round trip.';
+                } else {
+                    document.getElementById('loc-km').value = route.oneWayKmRounded;
+                    if (details.city) document.getElementById('loc-city').value = details.city;
+                    if (details.state) document.getElementById('loc-state').value = details.state;
+                    status.textContent = 'Google selected • ' + route.oneWayKmRounded + ' km driving distance from Vikhroli.';
+                }
+            } catch (error) {
+                status.textContent = (error.message || 'Distance lookup failed.') + ' You can enter the KM manually.';
+            }
+        }
+
         function syncLocationModalType() {
             const type = document.getElementById('loc-type').value;
             document.getElementById('loc-metro-fields').classList.toggle('hidden', type !== 'metro');
@@ -1041,6 +1150,11 @@
             document.getElementById('loc-type').value = 'metro';
             document.getElementById('loc-type').disabled = false;
             document.getElementById('loc-name').value = '';
+            document.getElementById('loc-google-place-id').value = '';
+            document.getElementById('loc-google-address').value = '';
+            document.getElementById('loc-google-suggestions').classList.add('hidden');
+            document.getElementById('loc-google-suggestions').innerHTML = '';
+            document.getElementById('loc-google-status').textContent = 'Type 3+ characters to search Google Places.';
             document.getElementById('loc-city').value = '';
             document.getElementById('loc-state').value = 'Maharashtra';
             document.getElementById('loc-km').value = '';
@@ -1072,6 +1186,9 @@
             document.getElementById('loc-type').value = type;
             document.getElementById('loc-type').disabled = true;
             document.getElementById('loc-name').value = item.name || '';
+            document.getElementById('loc-google-place-id').value = item.googlePlaceId || '';
+            document.getElementById('loc-google-address').value = item.googleAddress || '';
+            document.getElementById('loc-google-status').textContent = item.googlePlaceId ? 'Google place linked. Type to search again if you want to replace it.' : 'This existing location is not linked to Google yet.';
             document.getElementById('loc-active').checked = item.active !== false;
             if (type === 'destination') {
                 document.getElementById('loc-destination-km').value = item.roundTripKm ?? '';
@@ -1128,7 +1245,14 @@
                 if (type === 'destination') {
                     const km = Number(document.getElementById('loc-destination-km').value);
                     if (!Number.isFinite(km) || km <= 0) throw new Error('Enter a valid round-trip KM.');
-                    const item = { id: id || newLocationId('dest', name), name, roundTripKm: km, active: document.getElementById('loc-active').checked };
+                    const item = {
+                        id: id || newLocationId('dest', name),
+                        name,
+                        googlePlaceId: document.getElementById('loc-google-place-id').value.trim(),
+                        googleAddress: document.getElementById('loc-google-address').value.trim(),
+                        roundTripKm: km,
+                        active: document.getElementById('loc-active').checked
+                    };
                     const index = locationConfigState.destinations.findIndex(x => x.id === id);
                     if (index >= 0) locationConfigState.destinations[index] = item;
                     else locationConfigState.destinations.push(item);
@@ -1142,6 +1266,8 @@
                         name,
                         city: document.getElementById('loc-city').value.trim(),
                         state: document.getElementById('loc-state').value.trim() || 'Maharashtra',
+                        googlePlaceId: document.getElementById('loc-google-place-id').value.trim(),
+                        googleAddress: document.getElementById('loc-google-address').value.trim(),
                         distanceKm: Number.isFinite(km) && km >= 0 ? km : null,
                         active: document.getElementById('loc-active').checked,
                         localPickup: document.getElementById('loc-local').checked,

@@ -1743,6 +1743,7 @@ function onPickupDateChange() {
             if (error?.code === 1) return 'Location is blocked for this site. Allow Location from your browser site settings, then try again. You can also enter the address manually.';
             if (error?.code === 2) return 'Your current location could not be detected. Please try again or enter the address manually.';
             if (error?.code === 3) return 'Location request timed out. Please try again.';
+            if (error?.message) return error.message;
             return 'Unable to get your current location. Please enter the address manually.';
         }
 

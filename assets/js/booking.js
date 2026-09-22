@@ -674,21 +674,34 @@ function onPickupDateChange() {
     calculateDriverFare();
 }
 
-        function selectQuickRoute(destName) {
+        async function selectQuickRoute(destName) {
             const card = [...document.querySelectorAll('#quick-plan-routes button')].find(button =>
                 button.firstElementChild?.textContent.split('➔').pop().trim() === destName);
             const route = card?.firstElementChild?.textContent.split('➔').map(value => value.trim());
             if (currentMainMode !== 'withdriver') setServiceMode('withdriver');
             setWDSubTab('outstation');
-            document.getElementById('wd-out-pickup').value = route?.[0] || 'Mumbai';
+            const pickupInput = document.getElementById('wd-out-pickup');
             const destInput = document.getElementById('wd-out-destination');
-            if (destInput) destInput.value = route?.[1] || destName;
-            onWDDestinationInput();
-            const distance = card?.textContent.match(/([\d,]+(?:\.\d+)?)\s*KM\b/i);
-            if (distance) {
-                wdOutstationKm = Number(distance[1].replace(/,/g, ''));
-                document.getElementById('wd-metric-km').innerText = wdOutstationKm;
-                calculateDriverFare();
+            const pickupText = route?.[0] || 'Mumbai';
+            const destinationText = route?.[1] || destName;
+            if (pickupInput) pickupInput.value = pickupText;
+            if (destInput) destInput.value = destinationText;
+            invalidateOutstationRoute('Finding the selected quick route on Google…');
+            try {
+                const [pickupResults, destinationResults] = await Promise.all([
+                    publicMapsRequest('autocomplete', { input: pickupText }),
+                    publicMapsRequest('autocomplete', { input: destinationText })
+                ]);
+                const pickup = pickupResults.suggestions?.[0];
+                const destination = destinationResults.suggestions?.[0];
+                if (!pickup || !destination) throw new Error('Please select the pickup and final drop from Google suggestions.');
+                outstationPlaceSelections.set('wd-out-pickup', { placeId: pickup.placeId, name: pickup.mainText || pickup.text, address: pickup.text || pickup.mainText });
+                outstationPlaceSelections.set('wd-out-destination', { placeId: destination.placeId, name: destination.mainText || destination.text, address: destination.text || destination.mainText });
+                if (pickupInput) pickupInput.value = pickup.text || pickup.mainText;
+                if (destInput) destInput.value = destination.text || destination.mainText;
+                await updateOutstationRouteEstimate();
+            } catch (error) {
+                invalidateOutstationRoute(error.message || 'Please select the route from Google suggestions.');
             }
             document.getElementById('booking-widget').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }

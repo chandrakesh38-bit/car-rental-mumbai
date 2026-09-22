@@ -97,12 +97,24 @@ function buildDigits(length) {
   }
 }
 
+function otpDiagnostic(stage, detail = '', reqIdPresent = false) {
+  try {
+    fetch('/api/mobile-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
+      body: JSON.stringify({ action: 'diagnostic', stage, purpose: state.purpose || '', detail: String(detail || '').slice(0, 180), reqIdPresent: Boolean(reqIdPresent) })
+    }).catch(() => {});
+  } catch {}
+}
+
 async function loadSdk() {
   if (sdkPromise) return sdkPromise;
   sdkPromise = (async () => {
     const response = await fetch('/api/mobile-otp', { cache: 'no-store' });
     const config = await response.json();
     if (!response.ok || !config.success) throw Error(config.message || 'Mobile verification is unavailable.');
+    otpDiagnostic('sdk_config_loaded');
     if (typeof window.initSendOTP !== 'function') {
       await new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -130,6 +142,7 @@ async function loadSdk() {
     for (let i = 0; i < 200; i++) {
       const data = typeof window.getWidgetData === 'function' ? window.getWidgetData() : null;
       if (typeof window.sendOtp === 'function' && typeof window.verifyOtp === 'function') {
+        otpDiagnostic('sdk_ready');
         return data || state.settings || { otpLength: 6, retryTime: 30, processes: [] };
       }
       await pause(100);
@@ -207,9 +220,10 @@ async function sendOtp(isRetry = false) {
         const timer = setTimeout(() => reject(Error('OTP request timed out. Please retry.')), 30000);
         const ok = r => { clearTimeout(timer); r?.type === 'error' ? reject(Error(r.message || 'Unable to send OTP.')) : resolve(r); };
         const fail = e => { clearTimeout(timer); reject(Error(e?.message || 'Unable to send OTP.')); };
-        try { window.sendOtp(phone, ok, fail); } catch (e) { fail(e); }
+        try { otpDiagnostic('send_invoked'); window.sendOtp(phone, ok, fail); } catch (e) { fail(e); }
       });
       state.reqId = result?.reqId || result?.requestId || result?.request_id || result?.message || (typeof result === 'string' ? result : '');
+      otpDiagnostic('send_success', '', Boolean(state.reqId));
       if (!state.reqId) throw Error('Unable to start OTP verification. Please retry.');
     }
     const length = Number(state.settings.otpLength);
@@ -219,6 +233,7 @@ async function sendOtp(isRetry = false) {
     message('OTP sent. Please enter it below.');
     ensureModal().querySelector('[data-digits] input')?.focus();
   } catch (error) {
+    otpDiagnostic('send_error', error?.message || 'Unable to send OTP.', Boolean(state.reqId));
     message(error.message || 'Unable to send OTP. Please retry.', true);
   } finally {
     state.busy = false; render();
@@ -236,9 +251,10 @@ async function verifyAndFinish() {
       const timer = setTimeout(() => reject(Error('OTP verification timed out. Please retry.')), 30000);
       const ok = r => { clearTimeout(timer); r?.type === 'error' ? reject(Error(r.message || 'Incorrect or expired OTP.')) : resolve(r); };
       const fail = e => { clearTimeout(timer); reject(Error(e?.message || 'Incorrect or expired OTP.')); };
-      try { window.verifyOtp(otp, ok, fail, state.reqId); } catch (e) { fail(e); }
+      try { otpDiagnostic('verify_invoked', '', Boolean(state.reqId)); window.verifyOtp(otp, ok, fail, state.reqId); } catch (e) { fail(e); }
     });
     const accessToken = result?.['access-token'] || result?.message;
+    otpDiagnostic('verify_sdk_success', '', Boolean(state.reqId));
     if (!accessToken) throw Error('OTP verification failed. Please resend OTP.');
     const response = await fetch('/api/mobile-otp', {
       method: 'POST',
@@ -248,12 +264,14 @@ async function verifyAndFinish() {
     });
     const verified = await response.json();
     if (!response.ok || !verified.success) throw Error(verified.message || 'Incorrect or expired OTP.');
+    otpDiagnostic('verify_server_success', '', Boolean(state.reqId));
     state.proof = verified.proof;
     state.expiresAt = verified.expiresAt;
     const resolve = state.resolve;
     closeModal(false);
     resolve?.(state.proof);
   } catch (error) {
+    otpDiagnostic('verify_error', error?.message || 'OTP verification failed.', Boolean(state.reqId));
     message(error.message || 'Incorrect or expired OTP.', true);
   } finally {
     state.busy = false; render();

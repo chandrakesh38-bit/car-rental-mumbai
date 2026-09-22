@@ -63,6 +63,7 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            ensurePickupServiceHints();
             loadPublicPricingRules();
             loadPublicLocationConfig();
             loadPublicFaqs();
@@ -632,6 +633,7 @@ function showCustomAlert(message) {
                                 <i class="fa-solid fa-location-crosshairs"></i> Use My Current Location
                             </button>
                             <p id="wd-airport-location-status" class="text-[10px] text-slate-500 mt-1"></p>
+                            <p class="text-[10px] text-slate-500 mt-1">We currently provide pickups exclusively across Mumbai, Thane, and Navi Mumbai. However, your drop location can be anywhere you need</p>
                         </div>
                         <div>
                             <label for="wd-airport-terminal" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
@@ -705,6 +707,7 @@ function onPickupDateChange() {
                 const pickup = pickupResults.suggestions?.[0];
                 const destination = destinationResults.suggestions?.[0];
                 if (!pickup || !destination) throw new Error('Please select the pickup and final drop from Google suggestions.');
+                await validatePickupPlaceId(pickup.placeId);
                 outstationPlaceSelections.set('wd-out-pickup', { placeId: pickup.placeId, name: pickup.mainText || pickup.text, address: pickup.text || pickup.mainText });
                 outstationPlaceSelections.set('wd-out-destination', { placeId: destination.placeId, name: destination.mainText || destination.text, address: destination.text || destination.mainText });
                 if (pickupInput) pickupInput.value = pickup.text || pickup.mainText;
@@ -758,6 +761,33 @@ function onPickupDateChange() {
                 if (!dd.contains(e.target) && !e.target.matches('input')) dd.classList.add('hidden');
             });
         });
+
+        async function validatePickupPlaceId(placeId) {
+            if (!placeId) throw new Error('Please select the pickup location from Google suggestions.');
+            const result = await publicMapsRequest('validate-pickup', { placeId });
+            if (!result.allowed) throw new Error(result.message || 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.');
+            return result;
+        }
+
+        function pickupStatusElement(inputId) {
+            if (inputId === 'wd-local-pickup') return document.getElementById('wd-local-location-status');
+            if (inputId === 'wd-out-pickup') return document.getElementById('wd-out-location-status');
+            if (inputId === 'wd-airport-pickup' && currentAirportType === 'drop') return document.getElementById('wd-airport-location-status');
+            return null;
+        }
+
+        function ensurePickupServiceHints() {
+            const text = 'We currently provide pickups exclusively across Mumbai, Thane, and Navi Mumbai. However, your drop location can be anywhere you need';
+            for (const id of ['wd-local-location-status','wd-out-location-status']) {
+                const status = document.getElementById(id);
+                if (!status || status.parentElement?.querySelector('[data-pickup-service-hint]')) continue;
+                const hint = document.createElement('p');
+                hint.dataset.pickupServiceHint = 'true';
+                hint.className = 'text-[10px] text-slate-500 mt-1';
+                hint.textContent = text;
+                status.after(hint);
+            }
+        }
 
         async function publicMapsRequest(action, extra = {}) {
             const response = await fetch('/api/maps-route', {
@@ -822,14 +852,35 @@ function onPickupDateChange() {
                         secondary.textContent = place.secondaryText || '';
                         wrap.append(main, secondary);
                         option.append(icon, wrap);
-                        option.addEventListener('mousedown', event => {
+                        option.addEventListener('mousedown', async event => {
                             event.preventDefault();
                             input.value = place.text || place.mainText || '';
                             input.dataset.googlePlaceId = place.placeId || '';
+                            input.dataset.pickupAllowed = '';
                             dropdown.classList.add('hidden');
                             input.classList.remove('border-red-500');
                             if (inputId === 'sd-delivery-location-input') {
                                 onSelfDriveGooglePlaceSelected(place);
+                                return;
+                            }
+                            const needsPickupCheck = inputId === 'wd-local-pickup' || (inputId === 'wd-airport-pickup' && currentAirportType === 'drop');
+                            if (needsPickupCheck) {
+                                const status = pickupStatusElement(inputId);
+                                try {
+                                    const check = await validatePickupPlaceId(place.placeId);
+                                    input.dataset.pickupAllowed = 'true';
+                                    if (status) {
+                                        status.textContent = '✓ Pickup available in ' + check.serviceArea;
+                                        status.className = 'text-[10px] text-emerald-700 font-semibold mt-1';
+                                    }
+                                } catch (error) {
+                                    input.dataset.pickupAllowed = 'false';
+                                    input.classList.add('border-red-500');
+                                    if (status) {
+                                        status.textContent = error.message;
+                                        status.className = 'text-[10px] text-rose-600 font-semibold mt-1';
+                                    }
+                                }
                             }
                         });
                         dropdown.appendChild(option);
@@ -883,16 +934,37 @@ function onPickupDateChange() {
                         secondary.textContent = place.secondaryText || '';
                         textWrap.append(main, secondary);
                         option.append(icon, textWrap);
-                        option.addEventListener('mousedown', event => {
+                        option.addEventListener('mousedown', async event => {
                             event.preventDefault();
                             input.value = place.text || place.mainText || '';
+                            dropdown.classList.add('hidden');
+                            if (inputId === 'wd-out-pickup') {
+                                const status = pickupStatusElement(inputId);
+                                try {
+                                    const check = await validatePickupPlaceId(place.placeId);
+                                    input.dataset.pickupAllowed = 'true';
+                                    if (status) {
+                                        status.textContent = '✓ Pickup available in ' + check.serviceArea;
+                                        status.className = 'text-[10px] text-emerald-700 font-semibold mt-1';
+                                    }
+                                } catch (error) {
+                                    input.dataset.pickupAllowed = 'false';
+                                    input.classList.add('border-red-500');
+                                    outstationPlaceSelections.delete(inputId);
+                                    invalidateOutstationRoute(error.message);
+                                    if (status) {
+                                        status.textContent = error.message;
+                                        status.className = 'text-[10px] text-rose-600 font-semibold mt-1';
+                                    }
+                                    return;
+                                }
+                            }
                             outstationPlaceSelections.set(inputId, {
                                 placeId: place.placeId,
                                 name: place.mainText || place.text || '',
                                 address: place.text || ''
                             });
                             input.classList.remove('border-red-500');
-                            dropdown.classList.add('hidden');
                             updateOutstationRouteEstimate();
                         });
                         dropdown.appendChild(option);
@@ -1479,6 +1551,10 @@ function onPickupDateChange() {
                     if(localPickupInput) localPickupInput.classList.add('border-red-500'); 
                     firstMissingField = localPickupInput; 
                     missing = true; 
+                } else if (!localPickupInput.dataset.googlePlaceId || localPickupInput.dataset.pickupAllowed !== 'true') {
+                    localPickupInput.classList.add('border-red-500');
+                    showCustomAlert('Please select a pickup in Mumbai, Thane, or Navi Mumbai from Google suggestions.');
+                    return false;
                 } else {
                     localPickupInput.classList.remove('border-red-500');
                 }
@@ -1543,6 +1619,10 @@ function onPickupDateChange() {
                     if(airportPickupInput) airportPickupInput.classList.add('border-red-500'); 
                     firstMissingField = airportPickupInput; 
                     missing = true; 
+                } else if (currentAirportType === 'drop' && (!airportPickupInput.dataset.googlePlaceId || airportPickupInput.dataset.pickupAllowed !== 'true')) {
+                    airportPickupInput.classList.add('border-red-500');
+                    showCustomAlert('Please select a pickup in Mumbai, Thane, or Navi Mumbai from Google suggestions.');
+                    return false;
                 } else {
                     airportPickupInput.classList.remove('border-red-500');
                 }
@@ -1812,6 +1892,8 @@ function onPickupDateChange() {
                 const result = await reverseGeocodeCurrentPosition(position);
                 input.value = result.address || (result.latitude + ', ' + result.longitude);
                 input.dataset.googlePlaceId = result.placeId || '';
+                const check = await validatePickupPlaceId(result.placeId);
+                input.dataset.pickupAllowed = 'true';
                 if (mode === 'outstation') {
                     outstationPlaceSelections.set('wd-out-pickup', {
                         placeId: result.placeId,
@@ -1822,7 +1904,7 @@ function onPickupDateChange() {
                     await updateOutstationRouteEstimate();
                 }
                 if (status) {
-                    status.textContent = '✓ Current location selected';
+                    status.textContent = '✓ Current location selected · Pickup available in ' + check.serviceArea;
                     status.className = 'text-[10px] text-emerald-700 font-semibold mt-1';
                 }
             } catch (error) {
@@ -2427,7 +2509,7 @@ async function handleBookingSubmit(e) {
 `;
 
         subject = `New booking assigned to your car – ${chosenCarName}`;
-        bookingData = {tripType:'local',carName:chosenCarName,pickupAt:startDateTime.toISOString(),pickupLocation,localPackage:packageValue};
+        bookingData = {tripType:'local',carName:chosenCarName,pickupAt:startDateTime.toISOString(),pickupLocation,pickupPlaceId:document.getElementById('wd-local-pickup').dataset.googlePlaceId||'',localPackage:packageValue};
     }
 
     // =========================
@@ -2485,7 +2567,7 @@ async function handleBookingSubmit(e) {
 📅 Final Drop: ${formatBookingDateTime(returnDateTime)}
 ⏱ ${wdOutstationDays} Day${wdOutstationDays > 1 ? 's' : ''} | Google ${wdOutstationRouteQuote?.distanceKmExact || wdOutstationKm} KM | Billable ${billableKm} KM
 💰 ₹${extraKmRate}/KM | Driver ₹${driverAllowance}/Day
-🌙 Night: ₹400 Hatchback/Sedan · ₹600 SUV/MUV when 10 PM–5 AM applies
+🌙 Night: ₹400 Hatchback/Sedan · ₹600 SUV/MUV when 11 PM–4 AM applies
 
 ✓ Incl: Fuel, Driver
 ✕ Excl: Toll, Parking, State Tax (as per actual)
@@ -2570,7 +2652,7 @@ async function handleBookingSubmit(e) {
         }
 
         subject = `New booking assigned to your car – ${chosenCarName}`;
-        bookingData = {tripType:'airport',carName:chosenCarName,pickupAt:journeyDateTime.toISOString(),pickupLocation:location,airportTerminal:airport,airportType:currentAirportType};
+        bookingData = {tripType:'airport',carName:chosenCarName,pickupAt:journeyDateTime.toISOString(),pickupLocation:location,pickupPlaceId:currentAirportType==='drop'?(document.getElementById('wd-airport-pickup').dataset.googlePlaceId||''):'',airportTerminal:airport,airportType:currentAirportType};
     }
 
     bookingData = {

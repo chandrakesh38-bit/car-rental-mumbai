@@ -235,6 +235,26 @@ async function computeRoute(pickupPlaceId, stopPlaceIds, finalDropPlaceId) {
   };
 }
 
+function pickupServiceArea(components, formattedAddress = '') {
+  const norm = value => String(value || '').trim().toLowerCase();
+  const state = norm(components.administrative_area_level_1);
+  const locality = norm(components.locality);
+  const postalTown = norm(components.postal_town);
+  const admin2 = norm(components.administrative_area_level_2);
+  const formatted = norm(formattedAddress);
+  if (state && !state.includes('maharashtra')) return null;
+  if (['mumbai','bombay'].includes(locality) || ['mumbai','bombay'].includes(postalTown) || ['mumbai suburban','mumbai city'].includes(admin2)) return 'Mumbai';
+  if (locality === 'thane' || postalTown === 'thane') return 'Thane';
+  if (locality === 'navi mumbai' || postalTown === 'navi mumbai' || formatted.includes(', navi mumbai,') || formatted.startsWith('navi mumbai,')) return 'Navi Mumbai';
+  return null;
+}
+
+async function validatePickupPlace(placeId) {
+  const details = await placeDetails(placeId);
+  const area = pickupServiceArea(details.components || {}, details.address);
+  return { ...details, allowed: Boolean(area), serviceArea: area || '' };
+}
+
 async function placeDetails(placeId) {
   const id = cleanPlaceId(placeId);
   const key = mapsKey();
@@ -259,7 +279,8 @@ async function placeDetails(placeId) {
     address: String(result.formatted_address || ''),
     city: String(components.locality || components.sublocality || components.administrative_area_level_2 || ''),
     state: String(components.administrative_area_level_1 || ''),
-    postalCode: String(components.postal_code || '')
+    postalCode: String(components.postal_code || ''),
+    components
   };
 }
 
@@ -344,7 +365,19 @@ async function reverseGeocode(lat, lng) {
     }
 
     if (action === 'place-details') {
-      return json({ success: true, ...(await placeDetails(body.placeId)) });
+      const details = await placeDetails(body.placeId);
+      const { components, ...safe } = details;
+      return json({ success: true, ...safe });
+    }
+
+    if (action === 'validate-pickup') {
+      const result = await validatePickupPlace(body.placeId);
+      const { components, ...safe } = result;
+      return json({
+        success: true,
+        ...safe,
+        message: safe.allowed ? 'Pickup location is serviceable.' : 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.'
+      });
     }
 
     if (action === 'delivery-route') {

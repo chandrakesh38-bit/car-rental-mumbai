@@ -452,8 +452,8 @@ let mumbaiMetroLocations = [
         let wdOutstationRouteQuote = null;
         let outstationRouteSequence = 0;
         let outstationStopSequence = 0;
-        let outstationRouteDecision = null;
-        let outstationSmartComparison = null;
+        let airportRouteQuote = null;
+        const AIRPORT_MAX_KM = 30;
         const outstationPlaceSelections = new Map();
         const outstationSearchTimers = new Map();
         let chosenCarName = '';
@@ -589,6 +589,7 @@ function showCustomAlert(message) {
 
         function setAirportTransferType(type) {
             currentAirportType = type;
+            airportRouteQuote = null;
             const btnDrop = document.getElementById('btn-airport-drop');
             const btnPickup = document.getElementById('btn-airport-pickup');
             const formBox = document.getElementById('airport-dynamic-form');
@@ -634,7 +635,7 @@ function showCustomAlert(message) {
                         </div>
                         <div>
                             <label for="wd-airport-terminal" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
-                            <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="calculateDriverFare()">
+                            <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="updateAirportRouteEstimate()">
                                 <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
                                 <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
                                 <option value="nmia">Navi Mumbai International Airport (NMIA)</option>
@@ -650,7 +651,7 @@ function showCustomAlert(message) {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="wd-airport-terminal" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-plane text-indigo-600 mr-1"></i> Airport / Terminal *</label>
-                            <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="calculateDriverFare()">
+                            <select id="wd-airport-terminal" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" onchange="updateAirportRouteEstimate()">
                                 <option value="t2" selected>Mumbai Airport T2 (International / Domestic)</option>
                                 <option value="t1">Mumbai Airport T1 (Santacruz Domestic)</option>
                                 <option value="nmia">Navi Mumbai International Airport (NMIA)</option>
@@ -660,6 +661,7 @@ function showCustomAlert(message) {
                             <label for="wd-airport-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Drop Area / Address *</label>
                             <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="scheduleGooglePlaceSearch('wd-airport-pickup', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Search drop on Google">
                             <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
+                            <p id="wd-airport-location-status" class="text-[10px] text-slate-500 mt-1"></p>
                         </div>
                     </div>
                     ${dateTimeHTML}
@@ -784,11 +786,58 @@ function onPickupDateChange() {
             return payload;
         }
 
+        async function updateAirportRouteEstimate() {
+            if (currentWDSubTab !== 'airport') return null;
+            const input = document.getElementById('wd-airport-pickup');
+            const terminal = document.getElementById('wd-airport-terminal')?.value;
+            const status = document.getElementById('wd-airport-location-status');
+            const placeId = input?.dataset.googlePlaceId || '';
+            airportRouteQuote = null;
+            if (!input?.value.trim() || !placeId || !terminal) {
+                if (status && currentAirportType === 'pickup') status.textContent = '';
+                calculateDriverFare();
+                return null;
+            }
+            if (status) {
+                status.textContent = 'Checking Airport Transfer availability…';
+                status.className = 'text-[10px] text-slate-500 mt-1';
+            }
+            try {
+                const result = await publicMapsRequest('airport-route', {
+                    terminal,
+                    customerPlaceId: placeId,
+                    airportType: currentAirportType
+                });
+                airportRouteQuote = result;
+                if (Number(result.distanceKmExact) > AIRPORT_MAX_KM) {
+                    if (status) {
+                        status.textContent = 'This location is outside our Airport Transfer service area. Please use Outstation booking for this trip.';
+                        status.className = 'text-[10px] text-rose-600 font-semibold mt-1';
+                    }
+                    input.classList.add('border-red-500');
+                    return result;
+                }
+                input.classList.remove('border-red-500');
+                if (status) {
+                    status.textContent = '✓ Airport Transfer available for this location.';
+                    status.className = 'text-[10px] text-emerald-700 font-semibold mt-1';
+                }
+                return result;
+            } catch (error) {
+                if (status) {
+                    status.textContent = error.message || 'Unable to check Airport Transfer availability.';
+                    status.className = 'text-[10px] text-rose-600 font-semibold mt-1';
+                }
+                input.classList.add('border-red-500');
+                return null;
+            } finally {
+                calculateDriverFare();
+            }
+        }
+
         function invalidateOutstationRoute(message = '') {
             wdOutstationRouteQuote = null;
             wdOutstationKm = 0;
-            outstationRouteDecision = null;
-            outstationSmartComparison = null;
             const km = document.getElementById('wd-metric-km');
             if (km) km.textContent = '—';
             const status = document.getElementById('wd-out-route-status');
@@ -803,6 +852,10 @@ function onPickupDateChange() {
             const input = document.getElementById(inputId);
             const dropdown = document.getElementById(dropdownId);
             if (!input || !dropdown) return;
+            if (inputId === 'wd-airport-pickup') {
+                input.dataset.googlePlaceId = '';
+                airportRouteQuote = null;
+            }
             const existing = outstationSearchTimers.get('google:' + inputId);
             if (existing) clearTimeout(existing);
             const query = input.value.trim();
@@ -865,6 +918,9 @@ function onPickupDateChange() {
                                         status.className = 'text-[10px] text-rose-600 font-semibold mt-1';
                                     }
                                 }
+                            }
+                            if (inputId === 'wd-airport-pickup') {
+                                await updateAirportRouteEstimate();
                             }
                         });
                         dropdown.appendChild(option);
@@ -1105,220 +1161,6 @@ function onPickupDateChange() {
             if (hours && minutes) return hours + ' hr ' + minutes + ' min';
             if (hours) return hours + ' hr';
             return minutes + ' min';
-        }
-
-        function smartRouteSavings(currentQuote, smartQuote) {
-            const currentKm = Number(currentQuote?.billableRouteKm || 0);
-            const smartKm = Number(smartQuote?.billableRouteKm || 0);
-            const minimumKm = wdOutstationDays * livePricingRules.minimumOutstationKmPerDay;
-            const currentBillableKm = Math.max(currentKm, minimumKm);
-            const smartBillableKm = Math.max(smartKm, minimumKm);
-            const savedBillableKm = Math.max(0, currentBillableKm - smartBillableKm);
-            const routeKmSaved = Math.max(0, currentKm - smartKm);
-            const timeSavedSeconds = Math.max(0, Number(currentQuote?.durationSeconds || 0) - Number(smartQuote?.durationSeconds || 0));
-            const rates = wdFleet.map(car => Number(car?.rates?.outstationPerKm)).filter(rate => Number.isFinite(rate) && rate > 0);
-            const minRate = rates.length ? Math.min(...rates) : 0;
-            const maxRate = rates.length ? Math.max(...rates) : minRate;
-            return {
-                routeKmSaved,
-                currentBillableKm,
-                smartBillableKm,
-                savedBillableKm,
-                timeSavedSeconds,
-                minFareSaving: Math.round(savedBillableKm * minRate),
-                maxFareSaving: Math.round(savedBillableKm * maxRate)
-            };
-        }
-
-        function removeSmartRouteModal() {
-            const modal = document.getElementById('smart-route-modal');
-            if (modal) modal.remove();
-            document.body.classList.remove('overflow-hidden');
-        }
-
-        function smartRouteNameSequence(route) {
-            return [
-                route.pickup.name,
-                ...route.stops.map(stop => stop.name),
-                route.finalDrop.name
-            ].join(' → ');
-        }
-
-        function showSmartRouteModal(comparison) {
-            removeSmartRouteModal();
-            const modal = document.createElement('div');
-            modal.id = 'smart-route-modal';
-            modal.className = 'fixed inset-0 z-[10020] bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-4';
-            const savings = comparison.savings;
-            const hasFareSaving = savings.maxFareSaving > 0;
-            const hasTimeSaving = savings.timeSavedSeconds > 0;
-            const fareSavingText = savings.maxFareSaving > savings.minFareSaving
-                ? '₹' + savings.minFareSaving.toLocaleString('en-IN') + '–₹' + savings.maxFareSaving.toLocaleString('en-IN')
-                : '₹' + savings.minFareSaving.toLocaleString('en-IN');
-            const timeSavingText = secondsLabel(savings.timeSavedSeconds);
-            const headline = hasFareSaving && hasTimeSaving
-                ? 'Smart Route saves you time & money'
-                : hasTimeSaving
-                    ? 'Smart Route saves you ' + timeSavingText
-                    : 'Smart Route gives you a shorter drive';
-            const subtext = hasFareSaving
-                ? 'A more efficient route can reduce your driving distance and estimated fare.'
-                : 'A shorter, more efficient route with ' + savings.routeKmSaved.toLocaleString('en-IN') + ' KM less driving.';
-
-            const panel = document.createElement('div');
-            panel.className = 'w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden';
-            panel.innerHTML = `
-                <div class="p-5 sm:p-6 border-b border-slate-100">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-route"></i></div>
-                        <div>
-                            <h3 class="text-lg font-black text-slate-900">${headline}</h3>
-                            <p class="text-xs text-slate-500 mt-1">${subtext}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-5 sm:p-6 space-y-4">
-                    <div class="grid sm:grid-cols-2 gap-3">
-                        <div class="rounded-xl border border-slate-200 p-4">
-                            <p class="text-[10px] uppercase tracking-wide font-bold text-slate-400">Your Route</p>
-                            <p id="smart-current-route" class="text-xs font-bold text-slate-800 mt-1 leading-relaxed"></p>
-                            <div class="mt-3 text-sm font-black text-slate-900">${Number(comparison.current.distanceKmExact).toLocaleString('en-IN')} KM</div>
-                            <div class="text-[11px] text-slate-500">${secondsLabel(comparison.current.durationSeconds)}</div>
-                        </div>
-                        <div class="rounded-xl border-2 border-emerald-300 bg-emerald-50/50 p-4">
-                            <p class="text-[10px] uppercase tracking-wide font-bold text-emerald-700">Smart Route</p>
-                            <p id="smart-optimized-route" class="text-xs font-bold text-slate-800 mt-1 leading-relaxed"></p>
-                            <div class="mt-3 text-sm font-black text-emerald-800">${Number(comparison.smart.distanceKmExact).toLocaleString('en-IN')} KM</div>
-                            <div class="text-[11px] text-emerald-700">${secondsLabel(comparison.smart.durationSeconds)}</div>
-                        </div>
-                    </div>
-                    <div class="grid ${hasFareSaving ? 'grid-cols-3' : 'grid-cols-2'} gap-2">
-                        <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center">
-                            <div class="text-[10px] text-slate-500">Less driving</div>
-                            <div class="font-black text-slate-900 mt-1">${savings.routeKmSaved.toLocaleString('en-IN')} KM</div>
-                        </div>
-                        ${hasFareSaving ? `<div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center">
-                            <div class="text-[10px] text-slate-500">Estimated fare saving</div>
-                            <div class="font-black text-slate-900 mt-1">${fareSavingText}</div>
-                            <div class="text-[9px] text-slate-400">depends on selected car</div>
-                        </div>` : ''}
-                        <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center">
-                            <div class="text-[10px] text-slate-500">Faster by</div>
-                            <div class="font-black text-slate-900 mt-1">${hasTimeSaving ? timeSavingText : '—'}</div>
-                        </div>
-                    </div>
-                    <div class="grid sm:grid-cols-2 gap-3 pt-1">
-                        <button type="button" id="choose-smart-route-btn" class="rounded-xl bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 text-sm">Choose Smart Route</button>
-                        <button type="button" id="keep-my-route-btn" class="rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold py-3 text-sm">Keep My Route</button>
-                    </div>
-                </div>
-            `;
-            modal.appendChild(panel);
-            document.body.appendChild(modal);
-            document.body.classList.add('overflow-hidden');
-            panel.querySelector('#smart-current-route').textContent = smartRouteNameSequence(comparison.originalRoute);
-            panel.querySelector('#smart-optimized-route').textContent = comparison.smartSequence.map(place => place.name).join(' → ');
-            panel.querySelector('#choose-smart-route-btn').addEventListener('click', () => chooseSmartRoute(comparison));
-            panel.querySelector('#keep-my-route-btn').addEventListener('click', () => keepMyRoute(comparison));
-        }
-
-        function setOutstationStopsAndFinal(sequence) {
-            const container = document.getElementById('wd-out-stops');
-            if (!container || sequence.length < 1) return;
-            container.innerHTML = '';
-            for (const key of [...outstationPlaceSelections.keys()]) {
-                if (key.startsWith('wd-out-stop-')) outstationPlaceSelections.delete(key);
-            }
-
-            const finalDrop = sequence[sequence.length - 1];
-            const destinationInput = document.getElementById('wd-out-destination');
-            destinationInput.value = finalDrop.address || finalDrop.name;
-            outstationPlaceSelections.set('wd-out-destination', finalDrop);
-
-            sequence.slice(0, -1).forEach(place => {
-                addOutstationStop();
-                const inputs = [...container.querySelectorAll('[data-outstation-stop-input="true"]')];
-                const input = inputs[inputs.length - 1];
-                if (!input) return;
-                input.value = place.address || place.name;
-                outstationPlaceSelections.set(input.id, place);
-            });
-        }
-
-        async function chooseSmartRoute(comparison) {
-            removeSmartRouteModal();
-            const pickup = comparison.originalRoute.pickup;
-            setOutstationStopsAndFinal(comparison.smartSequence);
-            outstationPlaceSelections.set('wd-out-pickup', pickup);
-            document.getElementById('wd-out-pickup').value = pickup.address || pickup.name;
-            wdOutstationRouteQuote = {
-                ...comparison.smart,
-                selectedMode: 'smart'
-            };
-            wdOutstationKm = Number(comparison.smart.billableRouteKm) || 0;
-            outstationRouteDecision = {
-                signature: currentOutstationRouteSignature(),
-                mode: 'smart'
-            };
-            outstationSmartComparison = comparison;
-            const km = document.getElementById('wd-metric-km');
-            if (km) km.textContent = Number(comparison.smart.distanceKmExact).toLocaleString('en-IN');
-            const status = document.getElementById('wd-out-route-status');
-            if (status) {
-                status.textContent = 'Smart Route selected. Stops were reordered to reduce travel.';
-                status.classList.remove('hidden');
-            }
-            calculateDriverFare();
-            document.getElementById('fleet').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function keepMyRoute(comparison) {
-            removeSmartRouteModal();
-            outstationRouteDecision = {
-                signature: currentOutstationRouteSignature(),
-                mode: 'original'
-            };
-            outstationSmartComparison = comparison;
-            calculateDriverFare();
-            document.getElementById('fleet').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        async function maybeOfferSmartRoute() {
-            const route = collectOutstationRouteSelections(true);
-            const signature = currentOutstationRouteSignature();
-            if (outstationRouteDecision?.signature === signature) return false;
-            if (route.stops.length < 2) {
-                outstationRouteDecision = { signature, mode: 'original' };
-                return false;
-            }
-
-            const smart = await publicMapsRequest('smart-route', {
-                pickupPlaceId: route.pickup.placeId,
-                stopPlaceIds: route.stops.map(stop => stop.placeId),
-                finalDropPlaceId: route.finalDrop.placeId
-            });
-            const allDestinations = [...route.stops, route.finalDrop];
-            const smartSequence = smart.optimizedDestinationOrder.map(index => allDestinations[index]).filter(Boolean);
-            if (smartSequence.length !== allDestinations.length) return false;
-
-            const savings = smartRouteSavings(wdOutstationRouteQuote, smart);
-            const meaningful = savings.routeKmSaved >= 5 || savings.timeSavedSeconds >= 600 || savings.minFareSaving >= 100;
-            if (!meaningful) {
-                outstationRouteDecision = { signature, mode: 'original' };
-                return false;
-            }
-
-            const comparison = {
-                signature,
-                current: wdOutstationRouteQuote,
-                smart,
-                originalRoute: route,
-                smartSequence,
-                savings
-            };
-            outstationSmartComparison = comparison;
-            showSmartRouteModal(comparison);
-            return true;
         }
 
         function to24Hour(hour, ampm) {
@@ -1601,9 +1443,20 @@ function onPickupDateChange() {
                     if(airportPickupInput) airportPickupInput.classList.add('border-red-500'); 
                     firstMissingField = airportPickupInput; 
                     missing = true; 
-                } else if (currentAirportType === 'drop' && (!airportPickupInput.dataset.googlePlaceId || airportPickupInput.dataset.pickupAllowed !== 'true')) {
+                } else if (!airportPickupInput.dataset.googlePlaceId) {
+                    airportPickupInput.classList.add('border-red-500');
+                    showCustomAlert('Please select the location from Google suggestions.');
+                    return false;
+                } else if (currentAirportType === 'drop' && airportPickupInput.dataset.pickupAllowed !== 'true') {
                     airportPickupInput.classList.add('border-red-500');
                     showCustomAlert('Please select a pickup in Mumbai, Thane, or Navi Mumbai from Google suggestions.');
+                    return false;
+                } else if (!airportRouteQuote) {
+                    showCustomAlert('Please wait while we check Airport Transfer availability.');
+                    return false;
+                } else if (Number(airportRouteQuote.distanceKmExact) > AIRPORT_MAX_KM) {
+                    airportPickupInput.classList.add('border-red-500');
+                    showCustomAlert('This location is outside our Airport Transfer service area. Please use Outstation booking for this trip.');
                     return false;
                 } else {
                     airportPickupInput.classList.remove('border-red-500');
@@ -1638,24 +1491,11 @@ function onPickupDateChange() {
             if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !wdOutstationRouteQuote) {
                 await updateOutstationRouteEstimate();
             }
+            if (currentMainMode === 'withdriver' && currentWDSubTab === 'airport' && !airportRouteQuote) {
+                await updateAirportRouteEstimate();
+            }
             if (currentMainMode === 'withdriver' && !validateJourneyAndOpenBooking()) return;
             calculateDriverFare();
-            if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation') {
-                const button = document.querySelector('button[onclick="triggerFareSearch()"]');
-                const textEl = document.getElementById('search-btn-text');
-                const originalText = textEl?.textContent || 'Explore Cabs';
-                if (button) button.disabled = true;
-                if (textEl) textEl.textContent = 'Checking Smart Route…';
-                try {
-                    const shown = await maybeOfferSmartRoute();
-                    if (shown) return;
-                } catch (error) {
-                    showCustomAlert(error.message || 'Smart Route comparison could not be completed. Showing your route.');
-                } finally {
-                    if (button) button.disabled = false;
-                    if (textEl) textEl.textContent = originalText;
-                }
-            }
             document.getElementById('fleet').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -1884,8 +1724,10 @@ function onPickupDateChange() {
                     });
                     invalidateOutstationRoute('');
                     await updateOutstationRouteEstimate();
+                } else if (mode === 'airport') {
+                    await updateAirportRouteEstimate();
                 }
-                if (status) {
+                if (status && mode !== 'airport') {
                     status.textContent = '✓ Current location selected · Pickup available in ' + check.serviceArea;
                     status.className = 'text-[10px] text-emerald-700 font-semibold mt-1';
                 }
@@ -2544,7 +2386,7 @@ async function handleBookingSubmit(e) {
         }
 
         subject = `New booking assigned to your car – ${chosenCarName}`;
-        bookingData = {tripType:'airport',carName:chosenCarName,pickupAt:journeyDateTime.toISOString(),pickupLocation:location,pickupPlaceId:currentAirportType==='drop'?(document.getElementById('wd-airport-pickup').dataset.googlePlaceId||''):'',airportTerminal:airport,airportType:currentAirportType};
+        bookingData = {tripType:'airport',carName:chosenCarName,pickupAt:journeyDateTime.toISOString(),pickupLocation:location,customerPlaceId:document.getElementById('wd-airport-pickup').dataset.googlePlaceId||'',pickupPlaceId:currentAirportType==='drop'?(document.getElementById('wd-airport-pickup').dataset.googlePlaceId||''):'',airportTerminal:airport,airportType:currentAirportType};
     }
 
     bookingData = {

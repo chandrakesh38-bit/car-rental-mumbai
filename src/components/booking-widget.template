@@ -87,12 +87,7 @@
 
                     <!-- OUTSTATION FIELDS -->
                     <div id="wd-outstation-fields" class="space-y-4 hidden">
-                        <div class="rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 text-[11px] text-indigo-950">
-                            <strong>Fare route:</strong> Our Vikhroli business base → your pickup → all stops in the same order → final drop → Vikhroli base.
-                            Toll, parking and state tax remain extra as per actual.
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-start">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-start">
                             <div class="relative">
                                 <label for="wd-out-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Customer Pickup *</label>
                                 <input type="text" id="wd-out-pickup" autocomplete="off" oninput="scheduleOutstationPlaceSearch('wd-out-pickup','wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search pickup on Google">
@@ -109,7 +104,7 @@
                         <div class="rounded-xl border border-slate-200 bg-white p-3">
                             <div class="flex items-center justify-between gap-3">
                                 <div>
-                                    <p class="text-xs font-bold text-slate-800">Intermediate Stops</p>
+                                    <p class="text-xs font-bold text-slate-800">Add Multiple Stop</p>
                                     <p class="text-[10px] text-slate-500 mt-0.5">Optional. Stops are calculated in the order you add them.</p>
                                 </div>
                                 <button type="button" onclick="addOutstationStop()" class="shrink-0 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">
@@ -164,14 +159,14 @@
                         </div>
 
                         <!-- Outstation Calculation Strip -->
-                        <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-3 text-xs sm:text-sm text-indigo-950 gap-2">
-                            <div>Google Vehicle Route: <strong id="wd-metric-km">—</strong> KM</div>
+                        <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-2 text-xs sm:text-sm text-indigo-950 gap-2">
                             <div>Billed Days: <strong id="wd-metric-days">1</strong> Day(s)</div>
                             <div>Billable Distance: <strong id="wd-metric-billable-km">300</strong> KM</div>
-                            <div id="wd-metric-minimum" class="sm:col-span-2 text-[10px] text-indigo-700">Minimum: 300 KM/day</div>
-                            <div id="wd-metric-night-badge" class="hidden bg-amber-200 border border-amber-300 text-amber-950 font-bold px-2.5 py-1 rounded text-[10px]">
-                                <i class="fa-solid fa-moon mr-1"></i> Night service charge applies: ₹400 Hatchback/Sedan · ₹600 SUV/MUV
+                            <div id="wd-metric-minimum" class="sm:col-span-2 text-[10px] text-indigo-700">Minimum billing: 300 KM/day</div>
+                            <div id="wd-metric-night-badge" class="hidden sm:col-span-2 bg-amber-200 border border-amber-300 text-amber-950 font-bold px-2.5 py-1 rounded text-[10px]">
+                                <i class="fa-solid fa-moon mr-1"></i> Night service charge applies only when pickup or final drop falls between 10 PM and 5 AM.
                             </div>
+                            <strong id="wd-metric-km" class="hidden">0</strong>
                         </div>
                     </div>
 

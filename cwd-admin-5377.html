@@ -267,33 +267,60 @@
         </div>
             </div>
 
-            <!-- SECTION 3: DELIVERY LOCATIONS -->
+            <!-- SECTION 3: BOOKING LOCATIONS -->
             <div id="section-locations" class="hidden space-y-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Service &amp; Delivery Locations</h2>
-                        <p class="text-xs text-slate-500 mt-0.5">Manage Vikhroli round-trip distance in kilometers for auto doorstep delivery fees.</p>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Booking Location Manager</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Manage the locations shown in Local, Outstation, Airport and Self Drive forms. Changes apply without a code deployment.</p>
                     </div>
                     <button onclick="openLocationModal()" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-sm whitespace-nowrap">
                         <i class="fa-solid fa-plus text-amber-400"></i> Add Location
                     </button>
                 </div>
 
+                <div id="location-config-status" class="hidden rounded-xl border px-4 py-3 text-xs font-semibold"></div>
+
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-200">
+                        <h3 class="font-black text-slate-900 text-sm">Mumbai / Metro Service Areas</h3>
+                        <p class="text-[11px] text-slate-500 mt-1">Choose exactly where each area appears. Distance is one-way from Vikhroli and is used for Self Drive delivery fee calculation.</p>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-extrabold tracking-wider">
                                 <tr>
-                                    <th class="py-3.5 px-4">Location Name</th>
-                                    <th class="py-3.5 px-4">City</th>
-                                    <th class="py-3.5 px-4">Vikhroli Round-Trip (KM)</th>
-                                    <th class="py-3.5 px-4">Calculated Fee</th>
-                                    <th class="py-3.5 px-4 text-right">Actions</th>
+                                    <th class="py-3 px-4">Location</th>
+                                    <th class="py-3 px-4">Distance</th>
+                                    <th class="py-3 px-4">Local</th>
+                                    <th class="py-3 px-4">Outstation Pickup</th>
+                                    <th class="py-3 px-4">Airport Area</th>
+                                    <th class="py-3 px-4">Self Drive Delivery</th>
+                                    <th class="py-3 px-4">Active</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-locations-table-body" class="divide-y divide-slate-100">
-                                <!-- Loaded dynamically from DB -->
-                            </tbody>
+                            <tbody id="admin-locations-table-body" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-200">
+                        <h3 class="font-black text-slate-900 text-sm">Outstation Destination Cities</h3>
+                        <p class="text-[11px] text-slate-500 mt-1">Round-trip KM is used for outstation fare calculation and server-side validation.</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-extrabold tracking-wider">
+                                <tr>
+                                    <th class="py-3 px-4">Destination</th>
+                                    <th class="py-3 px-4">Round-trip KM</th>
+                                    <th class="py-3 px-4">Active</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-destinations-table-body" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
                 </div>
@@ -549,29 +576,61 @@
         </div>
     </div>
 
-    <!-- LOCATION CREATE / EDIT MODAL -->
+    <!-- BOOKING LOCATION CREATE / EDIT MODAL -->
     <div id="location-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative">
-            <button onclick="closeLocationModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+        <div class="bg-white w-full max-w-lg rounded-3xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+            <button type="button" onclick="closeLocationModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <h3 class="text-lg font-bold text-slate-900">Add Service Location</h3>
+            <h3 id="location-modal-title" class="text-lg font-bold text-slate-900">Add Booking Location</h3>
 
-            <form onsubmit="handleSaveLocation(event)" class="mt-4 space-y-3">
+            <form onsubmit="handleSaveLocation(event)" class="mt-4 space-y-4">
                 <input type="hidden" id="loc-id">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Location / Area Name</label>
-                    <input type="text" id="loc-name" required placeholder="e.g. Borivali" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Location Type</label>
+                    <select id="loc-type" onchange="syncLocationModalType()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                        <option value="metro">Mumbai / Metro Service Area</option>
+                        <option value="destination">Outstation Destination</option>
+                    </select>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">City</label>
-                    <input type="text" id="loc-city" required placeholder="Mumbai / Thane / Navi Mumbai" value="Mumbai" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Location / City Name</label>
+                    <input type="text" id="loc-name" required maxlength="120" placeholder="e.g. Borivali / Pune" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
                 </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Vikhroli Round-Trip (KM)</label>
-                    <input type="number" id="loc-km" required placeholder="e.g. 54" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+
+                <div id="loc-metro-fields" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">City</label>
+                            <input type="text" id="loc-city" maxlength="80" placeholder="Mumbai / Thane / Navi Mumbai" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">State</label>
+                            <input type="text" id="loc-state" maxlength="80" value="Maharashtra" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">One-way Distance from Vikhroli (KM)</label>
+                        <input type="number" min="0" step="1" id="loc-km" placeholder="e.g. 29" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <label class="flex items-center gap-2 rounded-lg border p-3"><input type="checkbox" id="loc-local" checked> With Driver — Local pickup</label>
+                        <label class="flex items-center gap-2 rounded-lg border p-3"><input type="checkbox" id="loc-outpickup" checked> Outstation pickup</label>
+                        <label class="flex items-center gap-2 rounded-lg border p-3"><input type="checkbox" id="loc-airport" checked> Airport pickup/drop area</label>
+                        <label class="flex items-center gap-2 rounded-lg border p-3"><input type="checkbox" id="loc-selfdrive" checked> Self Drive home delivery</label>
+                    </div>
                 </div>
-                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition">
+
+                <div id="loc-destination-fields" class="hidden">
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Round-trip Distance (KM)</label>
+                    <input type="number" min="1" step="1" id="loc-destination-km" placeholder="e.g. 300" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                </div>
+
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-700">
+                    <input type="checkbox" id="loc-active" checked> Active / visible on website
+                </label>
+
+                <button type="submit" id="btn-save-location" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition">
                     Save Location
                 </button>
             </form>

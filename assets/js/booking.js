@@ -64,12 +64,13 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
 
         document.addEventListener('DOMContentLoaded', () => {
             loadPublicPricingRules();
+            loadPublicLocationConfig();
             loadPublicFaqs();
         });
 
 let mumbaiPlaces = [];
 
-        const destinationCities = [
+        let destinationCities = [
             { name: "Pune", km: 300 }, { name: "Nashik", km: 340 }, { name: "Nagpur", km: 1650 }, 
             { name: "Kolhapur", km: 780 }, { name: "Satara", km: 500 }, { name: "Solapur", km: 820 }, 
             { name: "Sangli", km: 760 }, { name: "Aurangabad / Chhatrapati Sambhajinagar", km: 680 }, 
@@ -85,7 +86,7 @@ let mumbaiPlaces = [];
             { name: "Silvassa", km: 380 }, { name: "Indore", km: 1100 }
             ];
 
-const mumbaiMetroLocations = [
+let mumbaiMetroLocations = [
     { name: "Vikhroli", km: 1, serviceable: true },
     { name: "Powai", km: 2, serviceable: true },    
     { name: "Bhandup", km: 4, serviceable: true },
@@ -243,6 +244,61 @@ const mumbaiMetroLocations = [
     { name: "Dahanu Road", km: null, serviceable: false }
 ];
         mumbaiPlaces = mumbaiMetroLocations.map(location => location.name);
+
+        mumbaiMetroLocations = mumbaiMetroLocations.map(location => ({
+            ...location,
+            active: true,
+            localPickup: true,
+            outstationPickup: true,
+            airportArea: true,
+            selfDriveDelivery: location.serviceable !== false && Number.isFinite(location.km)
+        }));
+        destinationCities = destinationCities.map(location => ({ ...location, active: true }));
+        let localPickupPlaces = mumbaiMetroLocations.filter(l => l.active !== false && l.localPickup).map(l => l.name);
+        let outstationPickupPlaces = mumbaiMetroLocations.filter(l => l.active !== false && l.outstationPickup).map(l => l.name);
+        let airportAreaPlaces = mumbaiMetroLocations.filter(l => l.active !== false && l.airportArea).map(l => l.name);
+        mumbaiPlaces = localPickupPlaces;
+
+        function refreshLocationLists() {
+            localPickupPlaces = mumbaiMetroLocations.filter(l => l.active !== false && l.localPickup).map(l => l.name);
+            outstationPickupPlaces = mumbaiMetroLocations.filter(l => l.active !== false && l.outstationPickup).map(l => l.name);
+            airportAreaPlaces = mumbaiMetroLocations.filter(l => l.active !== false && l.airportArea).map(l => l.name);
+            mumbaiPlaces = localPickupPlaces;
+        }
+
+        async function loadPublicLocationConfig() {
+            try {
+                const response = await fetch('/api/location-config', { cache: 'no-store' });
+                const payload = await response.json();
+                if (!response.ok || !payload?.success || !payload?.config) return;
+                const metro = Array.isArray(payload.config.metro) ? payload.config.metro : [];
+                const destinations = Array.isArray(payload.config.destinations) ? payload.config.destinations : [];
+                if (metro.length) {
+                    mumbaiMetroLocations = metro.map(location => ({
+                        name: String(location.name || '').trim(),
+                        km: location.distanceKm == null ? null : Number(location.distanceKm),
+                        serviceable: location.active !== false && location.selfDriveDelivery === true,
+                        city: String(location.city || '').trim(),
+                        state: String(location.state || 'Maharashtra').trim(),
+                        active: location.active !== false,
+                        localPickup: location.localPickup === true,
+                        outstationPickup: location.outstationPickup === true,
+                        airportArea: location.airportArea === true,
+                        selfDriveDelivery: location.selfDriveDelivery === true
+                    })).filter(location => location.name);
+                    refreshLocationLists();
+                }
+                if (destinations.length) {
+                    destinationCities = destinations
+                        .filter(location => location.active !== false)
+                        .map(location => ({ name: String(location.name || '').trim(), km: Number(location.roundTripKm), active: true }))
+                        .filter(location => location.name && Number.isFinite(location.km) && location.km > 0);
+                    onWDDestinationInput();
+                }
+            } catch (_) {
+                // Keep bundled fallback lists if the config endpoint is unavailable.
+            }
+        }
 
         // 6 WITH DRIVER CARS
         let wdFleet = [
@@ -637,9 +693,12 @@ function onPickupDateChange() {
             if (!query) { dropdown.innerHTML = ''; dropdown.classList.add('hidden'); return; }
 
             let matches = [];
-            if (datasetType === 'mumbai-places') matches = mumbaiPlaces.filter(p => p.toLowerCase().includes(query));
+            if (datasetType === 'mumbai-places') {
+                const source = inputId === 'wd-out-pickup' ? outstationPickupPlaces : inputId === 'wd-airport-pickup' ? airportAreaPlaces : localPickupPlaces;
+                matches = source.filter(p => p.toLowerCase().includes(query));
+            }
             else if (datasetType === 'maharashtra-destinations') matches = destinationCities.filter(c => c.name.toLowerCase().includes(query)).map(c => c.name);
-            else if (datasetType === 'mumbai-metro-locations') matches = mumbaiMetroLocations.filter(l => l.name.toLowerCase().includes(query)).map(l => l.name);
+            else if (datasetType === 'mumbai-metro-locations') matches = mumbaiMetroLocations.filter(l => l.active !== false && l.selfDriveDelivery === true && l.name.toLowerCase().includes(query)).map(l => l.name);
 
             if (matches.length === 0) { dropdown.innerHTML = ''; dropdown.classList.add('hidden'); return; }
 
@@ -1235,7 +1294,7 @@ function onPickupDateChange() {
             let deliveryCharge = 0;
             if (currentDeliveryMode === 'home') {
                 const locInput = document.getElementById('sd-delivery-location-input').value.trim().toLowerCase();
-                const found = mumbaiMetroLocations.find(l => l.name.toLowerCase() === locInput);
+                const found = mumbaiMetroLocations.find(l => l.active !== false && l.selfDriveDelivery === true && l.name.toLowerCase() === locInput);
                 // An empty/partial location is normal while the user is typing. Keep the
                 // rental + deposit visible; strict service-zone validation happens on submit.
                 if (!found || found.serviceable === false || !Number.isFinite(found.km)) {
@@ -1275,7 +1334,7 @@ function onDeliveryLocationSelect() {
     const locInput = input.value.trim().toLowerCase();
 
     const found = mumbaiMetroLocations.find(
-        l => l.name.toLowerCase() === locInput
+        l => l.active !== false && l.selfDriveDelivery === true && l.name.toLowerCase() === locInput
     );
 
     if (!found) return;

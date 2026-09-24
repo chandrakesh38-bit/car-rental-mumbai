@@ -12,6 +12,7 @@
       "quick-routes",
       "fleet",
       "services",
+      "with-driver-home-seo",
       "reviews",
       "partner-banner"
     ]
@@ -20,14 +21,15 @@
     "slug": "with-driver",
     "label": "With Driver",
     "icon": "fa-user-tie",
-    "title": "Car Rental with Driver in Mumbai | Car with Driver India",
-    "description": "Book a car with driver in Mumbai for local city travel, outstation journeys and airport transfers. Choose your package and compare existing cab fares.",
-    "h1": "Car Rental with Driver in Mumbai",
+    "title": "Car Rental with Driver Mumbai | Local & Outstation Cabs",
+    "description": "Book a car with driver in Mumbai, Thane and Navi Mumbai for local city and outstation trips. Compare vehicle options, packages and transparent trip pricing.",
+    "h1": "Car Rental with Driver in Mumbai, Thane & Navi Mumbai",
     "mode": "withdriver",
     "tab": "local",
     "sections": [
       "quick-routes",
-      "fleet"
+      "fleet",
+      "with-driver-seo"
     ]
   },
   {

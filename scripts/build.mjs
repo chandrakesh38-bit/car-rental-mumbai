@@ -42,7 +42,7 @@ function buildStructuredData(page) {
       name:serviceNames[page.slug],
       url:site+'/'+page.slug,
       provider:{'@id':site+'/#organization'},
-      areaServed:['Mumbai','Thane','Navi Mumbai'].map(name => ({'@type':'City',name}))
+      areaServed:(page.slug === 'thane-car-rental-with-driver' ? ['Thane'] : page.slug === 'navi-mumbai-car-rental-with-driver' ? ['Navi Mumbai'] : ['Mumbai','Thane','Navi Mumbai']).map(name => ({'@type':'City',name}))
     });
     if (page.slug === 'with-driver' || page.slug === 'thane-car-rental-with-driver' || page.slug === 'navi-mumbai-car-rental-with-driver') {
       const faqBySlug = {

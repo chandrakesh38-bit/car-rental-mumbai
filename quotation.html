@@ -27,9 +27,7 @@
     .mode.active { background: #172554; border-color: #172554; color: #fff; }
     .mode[disabled] { opacity: .5; cursor: not-allowed; }
     .hidden { display: none !important; }
-    .stop-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; margin-top: 10px; }
-    .stop-remove { border: 1px solid #fecaca; background: #fff1f2; color: #be123c; border-radius: 10px; min-width: 42px; min-height: 46px; font-weight: 900; cursor: pointer; }
-    .add-stop { border: 1px dashed #94a3b8; background: #f8fafc; color: #334155; border-radius: 12px; padding: 11px 12px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 10px; }
+
     .card {
       background: #fff; border: 1px solid #e2e8f0; border-radius: 20px;
       box-shadow: 0 10px 30px rgba(15,23,42,.06); padding: 22px;
@@ -256,18 +254,6 @@
             <input id="local-pickup" type="text" autocomplete="off" placeholder="Search pickup location">
             <div id="local-pickup-suggestions" class="suggestions"></div>
             <div id="local-pickup-status" class="status"></div>
-          </div>
-
-          <div class="full">
-            <label>Add Multiple Stop (Optional)</label>
-            <div id="local-stops"></div>
-            <button id="add-local-stop" type="button" class="add-stop">+ Add Stop</button>
-          </div>
-
-          <div class="full location-wrap">
-            <label for="local-drop">Final Drop Location</label>
-            <input id="local-drop" type="text" autocomplete="off" placeholder="Search final drop">
-            <div id="local-drop-suggestions" class="suggestions"></div>
           </div>
 
           <div class="full">
@@ -709,9 +695,6 @@
 
   let currentMode = 'outstation';
   let localPickupSelection = null;
-  let localDropSelection = null;
-  let localStopCounter = 0;
-  const localStopSelections = new Map();
 
   function setMode(mode) {
     currentMode = mode;
@@ -806,45 +789,6 @@
     input.addEventListener('blur', () => setTimeout(() => { dropdown.style.display = 'none'; }, 180));
   }
 
-  function addLocalStop() {
-    if (localStopCounter >= 8) return showLocalError('A maximum of 8 stops can be added.');
-    localStopCounter += 1;
-    const id = 'local-stop-' + localStopCounter;
-    const wrap = document.createElement('div');
-    wrap.className = 'stop-row';
-    wrap.dataset.stopId = id;
-
-    const field = document.createElement('div');
-    field.className = 'location-wrap';
-    const input = document.createElement('input');
-    input.id = id;
-    input.type = 'text';
-    input.autocomplete = 'off';
-    input.placeholder = 'Stop ' + localStopCounter;
-    const dropdown = document.createElement('div');
-    dropdown.id = id + '-suggestions';
-    dropdown.className = 'suggestions';
-    field.append(input, dropdown);
-
-    const remove = document.createElement('button');
-    remove.type = 'button';
-    remove.className = 'stop-remove';
-    remove.textContent = '×';
-    remove.setAttribute('aria-label', 'Remove stop');
-    remove.addEventListener('click', () => {
-      localStopSelections.delete(id);
-      wrap.remove();
-    });
-
-    wrap.append(field, remove);
-    $('local-stops').appendChild(wrap);
-    setupLocalAutocomplete(input, dropdown, selected => {
-      if (selected) localStopSelections.set(id, selected);
-      else localStopSelections.delete(id);
-    });
-    input.focus();
-  }
-
   function localPackageDetails(pkg) {
     if (pkg === '12hr_120km') return {hours:12, km:120, key:'local12', label:'12 Hours | 120 KM'};
     if (pkg === '10hr_100km') return {hours:10, km:100, key:'local10', label:'10 Hours | 100 KM'};
@@ -875,17 +819,6 @@
     $('local-total-rent').value = Math.round(fare);
   }
 
-  function collectLocalRouteLabels() {
-    const labels = [];
-    if (localPickupSelection) labels.push(localPickupSelection.mainText);
-    for (const row of $('local-stops').querySelectorAll('[data-stop-id]')) {
-      const selected = localStopSelections.get(row.dataset.stopId);
-      if (selected) labels.push(selected.mainText);
-    }
-    if (localDropSelection) labels.push(localDropSelection.mainText);
-    return labels;
-  }
-
   async function generateLocalQuote() {
     clearLocalError();
     const button = $('generate-local');
@@ -896,14 +829,6 @@
       if (!pickup) throw new Error('Please select pickup date and time.');
       if (pickup.getTime() <= Date.now()) throw new Error('Pickup date and time must be later than the current date and time.');
       if (!localPickupSelection) throw new Error('Please select the pickup location from Google suggestions.');
-      if (!localDropSelection) throw new Error('Please select the final drop location from Google suggestions.');
-
-      for (const row of $('local-stops').querySelectorAll('[data-stop-id]')) {
-        const input = row.querySelector('input');
-        if (input?.value.trim() && !localStopSelections.get(row.dataset.stopId)) {
-          throw new Error('Please select every stop from Google suggestions.');
-        }
-      }
 
       const car = fleet[Number($('local-vehicle').value)];
       if (!car) throw new Error('Please select a vehicle.');
@@ -916,7 +841,6 @@
       if (!check.allowed) throw new Error(check.message || 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.');
 
       const details = localPackageDetails(pkg);
-      const routeText = collectLocalRouteLabels().join(' | ');
 
       const quote = [
         'Hello Sir,',
@@ -926,7 +850,7 @@
         'Please find the quotation for your trip:',
         '',
         '🚘 *Vehicle:* ' + displayVehicleName(car.name),
-        '📍 *Route:* ' + routeText,
+        '📍 *Pickup Location:* ' + localPickupSelection.mainText,
         '📅 *Date:* ' + formatDate(pickup) + ' | ' + formatTime(pickup),
         '⏱️ *Package:* ' + details.label,
         '',
@@ -996,8 +920,6 @@
   setupAutocomplete('pickup');
   setupAutocomplete('drop');
   setupLocalAutocomplete($('local-pickup'), $('local-pickup-suggestions'), selected => { localPickupSelection = selected; }, true);
-  setupLocalAutocomplete($('local-drop'), $('local-drop-suggestions'), selected => { localDropSelection = selected; }, false);
-  $('add-local-stop').addEventListener('click', addLocalStop);
   $('generate-local').addEventListener('click', generateLocalQuote);
   $('mode-outstation').addEventListener('click', () => setMode('outstation'));
   $('mode-local').addEventListener('click', () => setMode('local'));

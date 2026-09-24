@@ -26,6 +26,10 @@
     }
     .mode.active { background: #172554; border-color: #172554; color: #fff; }
     .mode[disabled] { opacity: .5; cursor: not-allowed; }
+    .hidden { display: none !important; }
+    .stop-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; margin-top: 10px; }
+    .stop-remove { border: 1px solid #fecaca; background: #fff1f2; color: #be123c; border-radius: 10px; min-width: 42px; min-height: 46px; font-weight: 900; cursor: pointer; }
+    .add-stop { border: 1px dashed #94a3b8; background: #f8fafc; color: #334155; border-radius: 12px; padding: 11px 12px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 10px; }
     .card {
       background: #fff; border: 1px solid #e2e8f0; border-radius: 20px;
       box-shadow: 0 10px 30px rgba(15,23,42,.06); padding: 22px;
@@ -116,11 +120,11 @@
       </header>
 
       <div class="switcher" aria-label="Quotation type">
-        <button type="button" class="mode active">Outstation</button>
-        <button type="button" class="mode" disabled title="Local quotation will be added later">Local</button>
+        <button id="mode-outstation" type="button" class="mode active">Outstation</button>
+        <button id="mode-local" type="button" class="mode">Local</button>
       </div>
 
-      <section class="card">
+      <section id="outstation-card" class="card">
         <div id="alert" class="alert" role="alert"></div>
 
         <div class="grid">
@@ -217,6 +221,86 @@
         </div>
       </section>
 
+
+      <section id="local-card" class="card hidden">
+        <div id="local-alert" class="alert" role="alert"></div>
+        <div class="grid">
+          <div class="datetime-card">
+            <div class="datetime-title">📅 PICKUP DATE &amp; TIME *</div>
+            <label for="local-date">Pickup Date</label>
+            <input id="local-date" type="date">
+            <div class="datetime-row">
+              <div>
+                <label for="local-hour">Time</label>
+                <select id="local-hour">
+                  <option value="">Select time</option>
+                  <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option>
+                  <option value="4">04:00</option><option value="5">05:00</option><option value="6">06:00</option>
+                  <option value="7">07:00</option><option value="8">08:00</option><option value="9">09:00</option>
+                  <option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                </select>
+              </div>
+              <div>
+                <label for="local-ampm">AM / PM</label>
+                <select id="local-ampm">
+                  <option value="">Select</option>
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="full location-wrap">
+            <label for="local-pickup">Pickup Location</label>
+            <input id="local-pickup" type="text" autocomplete="off" placeholder="Search pickup location">
+            <div id="local-pickup-suggestions" class="suggestions"></div>
+            <div id="local-pickup-status" class="status"></div>
+          </div>
+
+          <div class="full">
+            <label>Add Multiple Stop (Optional)</label>
+            <div id="local-stops"></div>
+            <button id="add-local-stop" type="button" class="add-stop">+ Add Stop</button>
+          </div>
+
+          <div class="full location-wrap">
+            <label for="local-drop">Final Drop Location</label>
+            <input id="local-drop" type="text" autocomplete="off" placeholder="Search final drop">
+            <div id="local-drop-suggestions" class="suggestions"></div>
+          </div>
+
+          <div class="full">
+            <label for="local-vehicle">Vehicle</label>
+            <select id="local-vehicle">
+              <option value="">Loading vehicles…</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label for="local-package">Local Package</label>
+            <select id="local-package">
+              <option value="">Select package</option>
+              <option value="8hr_80km">8 Hours / 80 KM</option>
+              <option value="10hr_100km">10 Hours / 100 KM</option>
+              <option value="12hr_120km">12 Hours / 120 KM</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label for="local-total-rent">Total Rent</label>
+            <div class="fare-row">
+              <input id="local-total-rent" type="number" inputmode="numeric" min="0" step="1" placeholder="Auto calculated">
+            </div>
+            <div class="hint">Auto calculated from current pricing — you can edit this amount before generating the quotation.</div>
+          </div>
+
+          <div class="full">
+            <button id="generate-local" type="button" class="cta">Generate Quotation</button>
+          </div>
+        </div>
+      </section>
+
       <section id="result" class="result card">
         <h2>Quotation Ready</h2>
         <div id="quote" class="quote"></div>
@@ -233,11 +317,11 @@
   const SUPABASE_URL = 'https://pwciaihqkfnlenxxiown.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz';
   const fallbackFleet = [
-    { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', outstationPerKm: 17, driverAllowance: 500 },
-    { name: 'Maruti Ertiga', category: 'Family MUV', outstationPerKm: 19, driverAllowance: 500 },
-    { name: 'Kia Carens', category: 'Premium Family MUV', outstationPerKm: 20, driverAllowance: 500 },
-    { name: 'Toyota Innova', category: 'Executive MUV', outstationPerKm: 22, driverAllowance: 500 },
-    { name: 'Innova Crysta', category: 'Luxury MUV', outstationPerKm: 25, driverAllowance: 500 }
+    { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', outstationPerKm: 17, driverAllowance: 500, local8: 3000, local10: 3500, local12: 4000, extraKm: 17, extraHour: 250 },
+    { name: 'Maruti Ertiga', category: 'Family MUV', outstationPerKm: 19, driverAllowance: 500, local8: 3750, local10: 4400, local12: 5000, extraKm: 19, extraHour: 325 },
+    { name: 'Kia Carens', category: 'Premium Family MUV', outstationPerKm: 20, driverAllowance: 500, local8: 4000, local10: 4700, local12: 5400, extraKm: 20, extraHour: 350 },
+    { name: 'Toyota Innova', category: 'Executive MUV', outstationPerKm: 22, driverAllowance: 500, local8: 4400, local10: 5200, local12: 6000, extraKm: 22, extraHour: 400 },
+    { name: 'Innova Crysta', category: 'Luxury MUV', outstationPerKm: 25, driverAllowance: 500, local8: 5000, local10: 6000, local12: 7000, extraKm: 25, extraHour: 500 }
   ];
 
   let fleet = [...fallbackFleet];
@@ -294,7 +378,12 @@
             name,
             category: String(row.segment || 'With Driver'),
             outstationPerKm: Number(row.outstation_rate_per_km) || 0,
-            driverAllowance: Number(row.driver_allowance_per_day) || 500
+            driverAllowance: Number(row.driver_allowance_per_day) || 500,
+            local8: Number(row.local_pkg_8hr_80km) || 0,
+            local10: (Number(row.local_pkg_8hr_80km) || 0) + ((Number(row.local_extra_hour_rate) || 0) * 2),
+            local12: (Number(row.local_pkg_8hr_80km) || 0) + ((Number(row.local_extra_hour_rate) || 0) * 4),
+            extraKm: Number(row.local_extra_km_rate) || 0,
+            extraHour: Number(row.local_extra_hour_rate) || 0
           };
         }).filter(car => car && car.outstationPerKm > 0);
         if (loaded.length) fleet = loaded;
@@ -327,6 +416,19 @@
       select.appendChild(option);
     });
     if (previous && fleet[Number(previous)]) select.value = previous;
+
+    const localSelect = $('local-vehicle');
+    if (localSelect) {
+      const localPrevious = localSelect.value;
+      localSelect.innerHTML = '<option value="">Select vehicle</option>';
+      fleet.forEach((car, index) => {
+        const option = document.createElement('option');
+        option.value = String(index);
+        option.textContent = displayVehicleName(car.name);
+        localSelect.appendChild(option);
+      });
+      if (localPrevious && fleet[Number(localPrevious)]) localSelect.value = localPrevious;
+    }
   }
 
   function setStatus(type, message, kind = '') {
@@ -604,6 +706,260 @@
     }
   }
 
+
+  let currentMode = 'outstation';
+  let localPickupSelection = null;
+  let localDropSelection = null;
+  let localStopCounter = 0;
+  const localStopSelections = new Map();
+
+  function setMode(mode) {
+    currentMode = mode;
+    const out = mode === 'outstation';
+    $('mode-outstation').classList.toggle('active', out);
+    $('mode-local').classList.toggle('active', !out);
+    $('outstation-card').classList.toggle('hidden', !out);
+    $('local-card').classList.toggle('hidden', out);
+    $('result').style.display = 'none';
+  }
+
+  function showLocalError(message) {
+    const box = $('local-alert');
+    box.textContent = message;
+    box.style.display = 'block';
+    box.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  function clearLocalError() {
+    $('local-alert').textContent = '';
+    $('local-alert').style.display = 'none';
+  }
+
+  function localStatus(message, kind='') {
+    const el = $('local-pickup-status');
+    el.textContent = message || '';
+    el.className = 'status' + (kind ? ' ' + kind : '');
+  }
+
+  function setupLocalAutocomplete(input, dropdown, onSelect, validatePickup=false) {
+    let timer;
+    input.addEventListener('input', () => {
+      onSelect(null);
+      if (validatePickup) localStatus('');
+      clearTimeout(timer);
+      const query = input.value.trim();
+      if (query.length < 3) {
+        dropdown.innerHTML = '';
+        dropdown.style.display = 'none';
+        return;
+      }
+      timer = setTimeout(async () => {
+        try {
+          const payload = await mapsRequest('autocomplete', {input: query});
+          if (input.value.trim() !== query) return;
+          dropdown.innerHTML = '';
+          const suggestions = payload.suggestions || [];
+          if (!suggestions.length) {
+            dropdown.style.display = 'none';
+            return;
+          }
+          suggestions.forEach(place => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'suggestion';
+            const main = document.createElement('strong');
+            main.textContent = place.mainText || place.text || '';
+            const secondary = document.createElement('span');
+            secondary.textContent = place.secondaryText || '';
+            button.append(main, secondary);
+            button.addEventListener('mousedown', async event => {
+              event.preventDefault();
+              const selected = {
+                placeId: place.placeId,
+                text: place.text || place.mainText || '',
+                mainText: place.mainText || place.text || ''
+              };
+              input.value = selected.mainText;
+              onSelect(selected);
+              dropdown.style.display = 'none';
+              if (validatePickup) {
+                localStatus('Checking pickup service area…');
+                try {
+                  const result = await mapsRequest('validate-pickup', {placeId: selected.placeId});
+                  if (!result.allowed) throw new Error(result.message || 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.');
+                  localStatus('✓ Pickup location available.', 'ok');
+                  refreshLocalFare();
+                } catch (error) {
+                  onSelect(null);
+                  localStatus(error.message || 'Unable to verify pickup location.', 'error');
+                }
+              }
+            });
+            dropdown.appendChild(button);
+          });
+          dropdown.style.display = 'block';
+        } catch (_) {
+          dropdown.style.display = 'none';
+        }
+      }, 280);
+    });
+    input.addEventListener('blur', () => setTimeout(() => { dropdown.style.display = 'none'; }, 180));
+  }
+
+  function addLocalStop() {
+    if (localStopCounter >= 8) return showLocalError('A maximum of 8 stops can be added.');
+    localStopCounter += 1;
+    const id = 'local-stop-' + localStopCounter;
+    const wrap = document.createElement('div');
+    wrap.className = 'stop-row';
+    wrap.dataset.stopId = id;
+
+    const field = document.createElement('div');
+    field.className = 'location-wrap';
+    const input = document.createElement('input');
+    input.id = id;
+    input.type = 'text';
+    input.autocomplete = 'off';
+    input.placeholder = 'Stop ' + localStopCounter;
+    const dropdown = document.createElement('div');
+    dropdown.id = id + '-suggestions';
+    dropdown.className = 'suggestions';
+    field.append(input, dropdown);
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'stop-remove';
+    remove.textContent = '×';
+    remove.setAttribute('aria-label', 'Remove stop');
+    remove.addEventListener('click', () => {
+      localStopSelections.delete(id);
+      wrap.remove();
+    });
+
+    wrap.append(field, remove);
+    $('local-stops').appendChild(wrap);
+    setupLocalAutocomplete(input, dropdown, selected => {
+      if (selected) localStopSelections.set(id, selected);
+      else localStopSelections.delete(id);
+    });
+    input.focus();
+  }
+
+  function localPackageDetails(pkg) {
+    if (pkg === '12hr_120km') return {hours:12, km:120, key:'local12', label:'12 Hours | 120 KM'};
+    if (pkg === '10hr_100km') return {hours:10, km:100, key:'local10', label:'10 Hours | 100 KM'};
+    return {hours:8, km:80, key:'local8', label:'8 Hours | 80 KM'};
+  }
+
+  function localNightCount(pickup, packageHours) {
+    const nights = new Set();
+    const first = nightKey(pickup);
+    const end = new Date(pickup.getTime() + packageHours * 3600000);
+    const second = nightKey(end);
+    if (first) nights.add(first);
+    if (second) nights.add(second);
+    return nights.size;
+  }
+
+  function refreshLocalFare() {
+    const car = fleet[Number($('local-vehicle').value)];
+    const pkg = $('local-package').value;
+    const pickup = readDateTime('local-date', 'local-hour', 'local-ampm');
+    if (!car || !pkg || !pickup) {
+      $('local-total-rent').value = '';
+      return;
+    }
+    const details = localPackageDetails(pkg);
+    const base = Number(car[details.key]) || 0;
+    const fare = base + (localNightCount(pickup, details.hours) * nightRate(car));
+    $('local-total-rent').value = Math.round(fare);
+  }
+
+  function collectLocalRouteLabels() {
+    const labels = [];
+    if (localPickupSelection) labels.push(localPickupSelection.mainText);
+    for (const row of $('local-stops').querySelectorAll('[data-stop-id]')) {
+      const selected = localStopSelections.get(row.dataset.stopId);
+      if (selected) labels.push(selected.mainText);
+    }
+    if (localDropSelection) labels.push(localDropSelection.mainText);
+    return labels;
+  }
+
+  async function generateLocalQuote() {
+    clearLocalError();
+    const button = $('generate-local');
+    button.disabled = true;
+    button.textContent = 'Generating…';
+    try {
+      const pickup = readDateTime('local-date', 'local-hour', 'local-ampm');
+      if (!pickup) throw new Error('Please select pickup date and time.');
+      if (pickup.getTime() <= Date.now()) throw new Error('Pickup date and time must be later than the current date and time.');
+      if (!localPickupSelection) throw new Error('Please select the pickup location from Google suggestions.');
+      if (!localDropSelection) throw new Error('Please select the final drop location from Google suggestions.');
+
+      for (const row of $('local-stops').querySelectorAll('[data-stop-id]')) {
+        const input = row.querySelector('input');
+        if (input?.value.trim() && !localStopSelections.get(row.dataset.stopId)) {
+          throw new Error('Please select every stop from Google suggestions.');
+        }
+      }
+
+      const car = fleet[Number($('local-vehicle').value)];
+      if (!car) throw new Error('Please select a vehicle.');
+      const pkg = $('local-package').value;
+      if (!pkg) throw new Error('Please select a local package.');
+      const total = Number($('local-total-rent').value);
+      if (!Number.isFinite(total) || total <= 0) throw new Error('Please enter a valid Total Rent.');
+
+      const check = await mapsRequest('validate-pickup', {placeId: localPickupSelection.placeId});
+      if (!check.allowed) throw new Error(check.message || 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.');
+
+      const details = localPackageDetails(pkg);
+      const routeText = collectLocalRouteLabels().join(' | ');
+
+      const quote = [
+        'Hello Sir,',
+        '',
+        'Thank you for contacting *Car With Driver India.*',
+        '',
+        'Please find the quotation for your trip:',
+        '',
+        '🚘 *Vehicle:* ' + displayVehicleName(car.name),
+        '📍 *Route:* ' + routeText,
+        '📅 *Date:* ' + formatDate(pickup) + ' | ' + formatTime(pickup),
+        '⏱️ *Package:* ' + details.label,
+        '',
+        '💰 *Total Rent: Rs. ' + money(total) + '/-*',
+        '',
+        '*Includes:*',
+        '• Car Rental',
+        '• Fuel',
+        '• Driver',
+        '',
+        'Note: Toll & Parking will be as per actual',
+        'Extra KM: Rs.' + money(car.extraKm) + '/km',
+        'Extra Hours: Rs.' + money(car.extraHour) + '/hour',
+        '',
+        'No advance payment is required at this stage. To proceed, please reply *“Confirm”*.',
+        '',
+        'Regards,',
+        '*Car With Driver India*',
+        '📞 9702988465',
+        '🌐 carswithdriverindia.com'
+      ].join('\n');
+
+      $('quote').textContent = quote;
+      $('result').style.display = 'block';
+      $('result').scrollIntoView({behavior:'smooth', block:'start'});
+    } catch (error) {
+      showLocalError(error.message || 'Unable to generate quotation.');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Generate Quotation';
+    }
+  }
+
   $('generate').addEventListener('click', generateQuote);
   $('copy').addEventListener('click', async () => {
     const text = $('quote').textContent;
@@ -633,9 +989,18 @@
   ['pickup-date','pickup-hour','pickup-ampm','return-date','return-hour','return-ampm','vehicle'].forEach(id => {
     $(id).addEventListener('change', refreshAutoFare);
   });
+  ['local-date','local-hour','local-ampm','local-vehicle','local-package'].forEach(id => {
+    $(id).addEventListener('change', refreshLocalFare);
+  });
 
   setupAutocomplete('pickup');
   setupAutocomplete('drop');
+  setupLocalAutocomplete($('local-pickup'), $('local-pickup-suggestions'), selected => { localPickupSelection = selected; }, true);
+  setupLocalAutocomplete($('local-drop'), $('local-drop-suggestions'), selected => { localDropSelection = selected; }, false);
+  $('add-local-stop').addEventListener('click', addLocalStop);
+  $('generate-local').addEventListener('click', generateLocalQuote);
+  $('mode-outstation').addEventListener('click', () => setMode('outstation'));
+  $('mode-local').addEventListener('click', () => setMode('local'));
   document.addEventListener('click', event => {
     if (!event.target.closest('.location-wrap')) {
       closeSuggestions('pickup');
@@ -647,6 +1012,7 @@
   const yyyyMmDd = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
   $('pickup-date').min = yyyyMmDd;
   $('return-date').min = yyyyMmDd;
+  $('local-date').min = yyyyMmDd;
 
   loadPricing();
 })();

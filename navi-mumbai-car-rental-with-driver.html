@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQH1RQ70WV"></script>
+    <script src="/assets/js/analytics.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Rental with Driver in Navi Mumbai | Local &amp; Outstation</title>
+    <!-- Search Engine & Social Meta Tags -->
+    <meta name="description" content="Book a car with driver in Navi Mumbai for local and outstation travel. Pickup available in Vashi, Airoli, Nerul, Belapur, Kharghar and Panvel.">
+        <meta name="robots" content="index, follow">
+<link rel="canonical" href="https://carswithdriverindia.com/navi-mumbai-car-rental-with-driver">
+    
+    <!-- Open Graph (WhatsApp / Social Preview) -->
+    <meta property="og:title" content="Car Rental with Driver in Navi Mumbai | Local &amp; Outstation">
+    <meta property="og:description" content="Book a car with driver in Navi Mumbai for local and outstation travel. Pickup available in Vashi, Airoli, Nerul, Belapur, Kharghar and Panvel.">
+    <meta property="og:url" content="https://carswithdriverindia.com/navi-mumbai-car-rental-with-driver">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://carswithdriverindia.com/logo.png">
+
+        <meta property="og:image:alt" content="Car with Driver India logo">
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://carswithdriverindia.com/#organization","name":"Car with Driver India","legalName":"Car with Driver Mobility LLP","url":"https://carswithdriverindia.com/","telephone":"+919702988465","logo":"https://carswithdriverindia.com/logo.png","areaServed":[{"@type":"City","name":"Mumbai"},{"@type":"City","name":"Thane"},{"@type":"City","name":"Navi Mumbai"}]},{"@type":"Service","@id":"https://carswithdriverindia.com/navi-mumbai-car-rental-with-driver#service","name":"Car rental with driver in Navi Mumbai","url":"https://carswithdriverindia.com/navi-mumbai-car-rental-with-driver","provider":{"@id":"https://carswithdriverindia.com/#organization"},"areaServed":[{"@type":"City","name":"Navi Mumbai"}]},{"@type":"FAQPage","@id":"https://carswithdriverindia.com/navi-mumbai-car-rental-with-driver#faq","mainEntity":[{"@type":"Question","name":"Do you provide car rental with driver pickup in Navi Mumbai?","acceptedAnswer":{"@type":"Answer","text":"Yes. Pickup is available across Navi Mumbai, subject to vehicle availability for your selected date and time."}},{"@type":"Question","name":"Which Navi Mumbai areas are covered?","acceptedAnswer":{"@type":"Answer","text":"Our stated service coverage includes Vashi, Airoli, Nerul, Belapur, Kharghar and Panvel. Enter the exact pickup address in the booking form for validation."}},{"@type":"Question","name":"Can I start an outstation trip from Navi Mumbai?","acceptedAnswer":{"@type":"Answer","text":"Yes. Outstation pickup can start from Navi Mumbai. Applicable distance, daily minimum and actual toll or parking charges are shown or confirmed for the trip."}}]}]}</script>
+<!-- Favicon -->
+    <link rel="icon" type="image/png" href="/logo.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Supabase JS Client v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="stylesheet" href="/assets/css/site.css">
+    <link rel="stylesheet" href="/assets/css/navigation.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen" data-page="navi-mumbai-car-rental-with-driver" data-booking-mode="withdriver" data-booking-tab="local">
+<!-- NAVBAR -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+            <a href="/" class="flex items-center space-x-3">
+                <div id="site-logo-container" class="flex items-center">
+                    <div id="default-brand-icon" class="hidden w-10 h-10 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-xl shadow-inner">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <img id="dynamic-brand-logo" src="/logo.png" alt="Car with Driver India" class="h-9 sm:h-11 w-auto max-w-[180px] object-contain" onerror="this.classList.add('hidden'); document.getElementById('default-brand-icon').classList.remove('hidden');">
+                </div>
+                <div>
+                    <span class="text-xl font-black text-indigo-950 tracking-tight block leading-none">Car with Driver India</span>
+                    <span class="text-[10px] text-slate-400 font-semibold tracking-wider block mt-1">Car with Driver India</span>
+                </div>
+            </a>
+
+            <div class="flex items-center space-x-3">
+                <a href="https://wa.me/919702988465" target="_blank" class="hidden sm:flex bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition items-center gap-1.5 shadow-sm">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> Talk to Us
+                </a>
+                <button type="button" id="nav-menu-button" aria-label="Open navigation" aria-controls="nav-drawer" aria-expanded="false" onclick="openNavDrawer()" class="p-2.5 rounded-xl text-slate-700 hover:text-indigo-950 hover:bg-slate-100 transition focus:outline-none flex items-center justify-center border border-slate-200">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- RIGHT SLIDE-IN DRAWER MENU -->
+    <div id="nav-drawer-overlay" onclick="closeNavDrawer()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 hidden transition-opacity duration-300 opacity-0"></div>
+    <div id="nav-drawer" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" inert class="fixed top-0 right-0 h-full w-72 sm:w-80 bg-white z-50 shadow-2xl border-l border-slate-200 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between p-6">
+        <div>
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-sm">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <span class="font-extrabold text-sm text-indigo-950">Car with Driver India</span>
+                </div>
+                <button type="button" aria-label="Close navigation" onclick="closeNavDrawer()" class="p-2 text-slate-400 hover:text-slate-700 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-1.5 pt-5 text-sm font-bold text-slate-700">
+<a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-house text-indigo-600 w-5" aria-hidden="true"></i><span>Home</span></a>
+<a href="/with-driver" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-user-tie text-indigo-600 w-5" aria-hidden="true"></i><span>With Driver</span></a>
+<a href="/self-drive" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-key text-indigo-600 w-5" aria-hidden="true"></i><span>Self Drive</span></a>
+<a href="/airport-transfer" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-plane text-indigo-600 w-5" aria-hidden="true"></i><span>Airport Transfer</span></a>
+<a href="/outstation" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-route text-indigo-600 w-5" aria-hidden="true"></i><span>Outstation</span></a>
+<a href="/cars" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-car text-indigo-600 w-5" aria-hidden="true"></i><span>Cars</span></a>
+<a href="/mumbai-car-rental" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-city text-indigo-600 w-5" aria-hidden="true"></i><span>Mumbai Car Rental</span></a>
+<a href="/faq" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-circle-question text-indigo-600 w-5" aria-hidden="true"></i><span>FAQ</span></a>
+<a href="/contact" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition"><i class="fa-solid fa-phone text-indigo-600 w-5" aria-hidden="true"></i><span>Contact</span></a>
+<button type="button" onclick="closeNavDrawer(); openPartnerModal();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition text-left font-bold text-slate-700">
+                    <i class="fa-solid fa-handshake text-amber-500 w-5"></i>
+                    <span>Become a Partner</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 space-y-2">
+            <a href="https://wa.me/919702988465" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-sm">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+                <span>WhatsApp: +91 9702988465</span>
+            </a>
+            <p class="text-[10px] text-slate-400 text-center">Car with Driver Mobility LLP • Mumbai, Maharashtra</p>
+        </div>
+    </div>
+
+<main>
+<!-- HERO SECTION -->
+    <header class="bg-gradient-to-b from-indigo-950 via-indigo-900 to-slate-900 text-white pt-10 pb-16 px-4">
+        <div class="max-w-5xl mx-auto text-center">
+            <span class="bg-indigo-800/80 border border-indigo-700 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full inline-block mb-3">
+                Car with Driver India
+            </span>
+            <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">Car Rental with Driver in Navi Mumbai</h1>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto mb-8">
+                Book a car with driver in Navi Mumbai for local and outstation travel. Pickup available in Vashi, Airoli, Nerul, Belapur, Kharghar and Panvel.
+            </p>
+
+            <!-- BOOKING WIDGET CARD -->
+            <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden text-left text-slate-800" id="booking-widget">
+                
+                <!-- MAIN MODE TABS -->
+                <div class="grid grid-cols-2 bg-slate-100 p-1.5 border-b border-slate-200 gap-1">
+                    <button type="button" id="btn-mode-withdriver" onclick="setServiceMode('withdriver')" class="py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition tab-active shadow-sm">
+                        <i class="fa-solid fa-user-tie"></i> With Driver
+                    </button>
+                    <button type="button" id="btn-mode-selfdrive" onclick="setServiceMode('selfdrive')" class="py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 flex items-center justify-center gap-2 hover:text-indigo-950 transition">
+                        <i class="fa-solid fa-key"></i> Self Drive
+                    </button>
+                </div>
+
+                <!-- 1. WITH DRIVER BLOCK -->
+                <div id="with-driver-block" class="p-5 sm:p-7">
+                    
+                    <!-- Trip Subtabs -->
+                    <div class="grid grid-cols-3 bg-slate-100 rounded-xl p-1 mb-6 border border-slate-200 text-xs sm:text-sm font-semibold">
+                        <button type="button" id="subtab-local" onclick="setWDSubTab('local')" class="py-2.5 rounded-lg transition subtab-active flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-city"></i> <span>Local City</span>
+                        </button>
+                        <button type="button" id="subtab-outstation" onclick="setWDSubTab('outstation')" class="py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-route"></i> <span>Outstation</span>
+                        </button>
+                        <button type="button" id="subtab-airport" onclick="setWDSubTab('airport')" class="py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-plane-departure"></i> <span>Airport</span>
+                        </button>
+                    </div>
+
+                    <!-- LOCAL CITY FIELDS -->
+                    <div id="wd-local-fields" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="relative">
+                                <label for="wd-local-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address *</label>
+                                <input type="text" id="wd-local-pickup" autocomplete="off" oninput="scheduleGooglePlaceSearch('wd-local-pickup', 'wd-local-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search pickup on Google">
+                                <div id="wd-local-dropdown" class="autocomplete-dropdown hidden"></div>
+                                <button type="button" onclick="useBookingPickupCurrentLocation('local')" class="mt-2 inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">
+                                    <i class="fa-solid fa-location-crosshairs"></i> Use My Current Location
+                                </button>
+                                <p id="wd-local-location-status" class="text-[10px] text-slate-500 mt-1"></p>
+                            </div>
+                            <div>
+                                <label for="wd-local-date" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-1.5 booking-datetime">
+                                    <div class="relative">
+    <input type="date" id="wd-local-date" onclick="this.showPicker()" class="date-input-custom w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer">
+    <span aria-hidden="true" id="wd-local-date-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+        DD/MM/YY
+    </span>
+</div>
+                                    <label for="wd-local-hour" class="sr-only">Local pickup hour</label>
+<select id="wd-local-hour" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                        <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
+                                        <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
+                                        <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                                    </select>
+                                    <label for="wd-local-ampm" class="sr-only">Local pickup AM or PM</label>
+<select id="wd-local-ampm" class="bg-slate-50 border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                        <option value="AM" selected>AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Local Packages Selection -->
+                        <div>
+                            <label for="wd-local-package" class="block text-xs font-bold text-slate-700 uppercase mb-2"><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> Select Rental Package</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="button" id="pkg-card-8hr" onclick="selectLocalPackage('8hr_80km')" class="p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/50 text-left transition flex items-center justify-between">
+                                    <div>
+                                        <span class="font-extrabold text-xs sm:text-sm text-indigo-950 block">8 Hours / 80 KM</span>
+                                        <span class="text-[10px] text-slate-500 block">Full Day City Package</span>
+                                    </div>
+                                    <i class="fa-solid fa-circle-check text-indigo-600 text-base" id="pkg-check-8hr"></i>
+                                </button>
+                                <button type="button" id="pkg-card-12hr" onclick="selectLocalPackage('12hr_120km')" class="p-3.5 rounded-xl border-2 border-slate-200 bg-white text-left transition flex items-center justify-between">
+                                    <div>
+                                        <span class="font-extrabold text-xs sm:text-sm text-slate-800 block">12 Hours / 120 KM</span>
+                                        <span class="text-[10px] text-slate-500 block">Extended City Package</span>
+                                    </div>
+                                    <i class="fa-solid fa-circle-check text-slate-300 text-base" id="pkg-check-12hr"></i>
+                                </button>
+                            </div>
+                            <select id="wd-local-package" class="hidden">
+                                <option value="8hr_80km" selected>8 Hours / 80 KM</option>
+                                <option value="12hr_120km">12 Hours / 120 KM</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- OUTSTATION FIELDS -->
+                    <div id="wd-outstation-fields" class="space-y-4 hidden">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-start">
+                            <div class="relative">
+                                <label for="wd-out-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Customer Pickup *</label>
+                                <input type="text" id="wd-out-pickup" autocomplete="off" oninput="scheduleOutstationPlaceSearch('wd-out-pickup','wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search pickup on Google">
+                                <div id="wd-out-pickup-dropdown" class="autocomplete-dropdown hidden"></div>
+                                <button type="button" onclick="useBookingPickupCurrentLocation('outstation')" class="mt-2 inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">
+                                    <i class="fa-solid fa-location-crosshairs"></i> Use My Current Location
+                                </button>
+                                <p id="wd-out-location-status" class="text-[10px] text-slate-500 mt-1"></p>
+                            </div>
+
+                            <div class="relative">
+                                <label for="wd-out-destination" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-crosshairs text-indigo-600 mr-1"></i> Final Customer Drop *</label>
+                                <input type="text" id="wd-out-destination" autocomplete="off" oninput="scheduleOutstationPlaceSearch('wd-out-destination','wd-out-dest-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search final drop on Google">
+                                <div id="wd-out-dest-dropdown" class="autocomplete-dropdown hidden"></div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-xl border border-slate-200 bg-white p-2.5">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">Add Multiple Stop <span class="font-medium text-slate-500">(Optional)</span></p>
+                                </div>
+                                <button type="button" onclick="addOutstationStop()" class="shrink-0 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">
+                                    <i class="fa-solid fa-plus mr-1"></i> Add Stop
+                                </button>
+                            </div>
+                            <div id="wd-out-stops" class="mt-2 space-y-1.5"></div>
+                        </div>
+
+                        <div id="wd-out-route-status" class="hidden rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-600"></div>
+
+                        <!-- Date & Time Pickers -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                <label for="wd-out-pdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2 booking-datetime">
+                                    <div class="relative">
+                                        <input type="date" id="wd-out-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-1 py-2 text-xs font-medium outline-none cursor-pointer" onchange="calculateDriverFare()">
+                                        <span aria-hidden="true" id="wd-out-pdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">DD/MM/YY</span>
+                                    </div>
+                                    <label for="wd-out-phour" class="sr-only">Outstation pickup hour</label>
+                                    <select id="wd-out-phour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
+                                        <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
+                                        <option value="5">05:00</option><option value="6" selected>06:00</option><option value="7">07:00</option><option value="8">08:00</option>
+                                        <option value="9">09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                                    </select>
+                                    <label for="wd-out-pampm" class="sr-only">Outstation pickup AM or PM</label>
+                                    <select id="wd-out-pampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
+                                        <option value="AM" selected>AM</option><option value="PM">PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                <label for="wd-out-rdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Final Drop Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2 booking-datetime">
+                                    <div class="relative">
+                                        <input type="date" id="wd-out-rdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-1 py-2 text-xs font-medium outline-none cursor-pointer" onchange="calculateDriverFare()">
+                                        <span aria-hidden="true" id="wd-out-rdate-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">DD/MM/YY</span>
+                                    </div>
+                                    <label for="wd-out-rhour" class="sr-only">Outstation final drop hour</label>
+                                    <select id="wd-out-rhour" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none" onchange="calculateDriverFare()">
+                                        <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
+                                        <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
+                                        <option value="9">09:00</option><option value="10" selected>10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                                    </select>
+                                    <label for="wd-out-rampm" class="sr-only">Outstation final drop AM or PM</label>
+                                    <select id="wd-out-rampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
+                                        <option value="AM">AM</option><option value="PM" selected>PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Outstation Calculation Strip -->
+                        <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-2 text-xs sm:text-sm text-indigo-950 gap-2">
+                            <div>Billed Days: <strong id="wd-metric-days">1</strong> Day(s)</div>
+                            <div>Billable Distance: <strong id="wd-metric-billable-km">300</strong> KM</div>
+                            <div id="wd-metric-minimum" class="sm:col-span-2 text-[10px] text-indigo-700">Minimum billing: 300 KM/day</div>
+                            <div id="wd-metric-night-badge" class="hidden sm:col-span-2 bg-amber-200 border border-amber-300 text-amber-950 font-bold px-2.5 py-1 rounded text-[10px]">
+                                <i class="fa-solid fa-moon mr-1"></i> Night service charge applies only when pickup or final drop falls between 11 PM and 4 AM.
+                            </div>
+                            <strong id="wd-metric-km" class="hidden">0</strong>
+                        </div>
+                    </div>
+
+                    <!-- AIRPORT FIELDS -->
+                    <div id="wd-airport-fields" class="hidden space-y-4">
+                        <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold gap-1">
+                            <button type="button" id="btn-airport-drop" onclick="setAirportTransferType('drop')" class="flex-1 py-2.5 rounded-lg transition bg-white text-indigo-950 shadow-sm font-bold border border-slate-200">
+                                Drop to Airport
+                            </button>
+                            <button type="button" id="btn-airport-pickup" onclick="setAirportTransferType('pickup')" class="flex-1 py-2.5 rounded-lg transition text-slate-600 font-semibold border border-transparent">
+                                Pickup from Airport
+                            </button>
+                        </div>
+
+                        <div id="airport-dynamic-form" class="space-y-4"></div>
+                    </div>
+
+                    <!-- Policy Banner -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 mt-5 text-xs text-amber-950 flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-shield-check text-amber-600"></i>
+                            <span><strong>Pricing Includes:</strong> Car rental, Fuel & Driver Allowance. Extra: Tolls & Parking as actual receipts.</span>
+                        </div>
+                        <button type="button" onclick="openFareBreakdownModal()" class="text-indigo-700 font-bold hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-circle-info"></i> View Fare Breakdown
+                        </button>
+                    </div>
+
+                    <!-- Search Button -->
+                    <div class="mt-6 flex justify-center">
+                        <button type="button" onclick="triggerFareSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
+                            <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="search-btn-icon"></i>
+                            <span id="search-btn-text">Explore Cabs</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. SELF DRIVE BLOCK -->
+                <div id="self-drive-block" class="hidden p-5 sm:p-7 space-y-6">
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="sd-pdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Choose Pickup Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2 booking-datetime">
+                                    <div class="relative">
+    <input type="date" id="sd-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
+    <span aria-hidden="true" id="sd-pdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+        DD/MM/YY
+    </span>
+</div>
+                                    <label for="sd-phour" class="sr-only">Self-drive pickup hour</label>
+<select id="sd-phour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                        <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
+                                        <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
+                                        <option value="9" selected>09:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                                    </select>
+                                    <label for="sd-pampm" class="sr-only">Self-drive pickup AM or PM</label>
+<select id="sd-pampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                        <option value="AM">AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="sd-rdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Choose Return Date & Time *</label>
+                                <div class="grid grid-cols-3 gap-2 booking-datetime">
+                                    <div class="relative">
+    <input type="date" id="sd-rdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
+    <span aria-hidden="true" id="sd-rdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+        DD/MM/YY
+    </span>
+</div>
+                                    <label for="sd-rhour" class="sr-only">Self-drive return hour</label>
+<select id="sd-rhour" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-medium outline-none">
+                                        <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option><option value="4">04:00</option>
+                                        <option value="5">05:00</option><option value="6">06:00</option><option value="7">07:00</option><option value="8">08:00</option>
+                                        <option value="9">09:00</option><option value="10" selected>10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                                    </select>
+                                    <label for="sd-rampm" class="sr-only">Self-drive return AM or PM</label>
+<select id="sd-rampm" class="bg-white border border-slate-300 rounded-lg px-1.5 py-2 text-xs font-bold text-indigo-950 outline-none">
+                                        <option value="AM">AM</option>
+                                        <option value="PM" selected>PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 mb-2 flex justify-center">
+                        <button type="button" onclick="triggerSDParseSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
+                            <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="sd-search-btn-icon"></i>
+                            <span id="sd-search-btn-text">Search Available Cars</span>
+                        </button>
+                    </div>
+
+                    <!-- Collapsible Filters & Sorting Toolbar -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="relative flex-1 mr-3">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+                                <label for="sd-search-box" class="sr-only">Search self-drive cars</label>
+<input type="text" id="sd-search-box" oninput="applyAllSDFilters()" placeholder="Search car (e.g. Nexon, Punch, Thar, Creta)..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2 text-xs font-medium focus:ring-2 focus:ring-indigo-600 outline-none">
+                            </div>
+                            <button type="button" onclick="toggleSDFiltersPanel()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-950 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition whitespace-nowrap">
+                                <i class="fa-solid fa-sliders"></i> <span id="filter-toggle-text">Sort &amp; Filter</span>
+                            </button>
+                        </div>
+
+                        <!-- Expandable Panel -->
+                        <div id="sd-filters-expandable-panel" class="hidden space-y-3 pt-3 border-t border-slate-100 animate-fade-in">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-700">Filter &amp; Sort Options</span>
+                                <button onclick="resetSDFilters()" class="text-xs font-semibold text-indigo-600 hover:underline">Reset All</button>
+                            </div>
+                            <div class="flex items-center gap-2 pb-2">
+                                <label for="sd-sort-by" class="text-xs font-bold text-slate-600 whitespace-nowrap">Sort By:</label>
+                                <select id="sd-sort-by" onchange="applyAllSDFilters()" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 outline-none flex-1">
+                                    <option value="default">Featured / Priority</option>
+                                    <option value="best-selling">Best Selling</option>
+                                    <option value="price-asc">Price: Low to High</option>
+                                    <option value="price-desc">Price: High to Low</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                                <div>
+                                    <label for="sd-filter-fuel" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fuel Type</label>
+                                    <select id="sd-filter-fuel" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
+                                        <option value="All">All Fuels</option>
+                                        <option value="Petrol">Petrol</option>
+                                        <option value="Diesel">Diesel</option>
+                                        <option value="Petrol + CNG">Petrol + CNG</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="sd-filter-transmission" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Transmission</label>
+                                    <select id="sd-filter-transmission" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
+                                        <option value="All">All Transmissions</option>
+                                        <option value="Manual">Manual</option>
+                                        <option value="Automatic">Automatic</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="sd-filter-seats" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Seats</label>
+                                    <select id="sd-filter-seats" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
+                                        <option value="All">All Capacities</option>
+                                        <option value="4">4 Seats</option>
+                                        <option value="5">5 Seats</option>
+                                        <option value="6">6 Seats</option>
+                                        <option value="7">7 Seats</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="sd-filter-segment" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Segment</label>
+                                    <select id="sd-filter-segment" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
+                                        <option value="All">All Segments</option>
+                                        <option value="Hatchback">Hatchback</option>
+                                        <option value="Sedan">Sedan</option>
+                                        <option value="Compact SUV">Compact SUV</option>
+                                        <option value="SUV">SUV</option>
+                                        <option value="MUV / 7-Seater">MUV / 7-Seater</option>
+                                        <option value="Luxury Sedan">Luxury Sedan</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="sd-filter-brand" class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Brand</label>
+                                    <select id="sd-filter-brand" onchange="applyAllSDFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium outline-none">
+                                        <option value="All">All Brands</option>
+                                        <option value="Tata">Tata</option>
+                                        <option value="Maruti Suzuki">Maruti Suzuki</option>
+                                        <option value="Mahindra">Mahindra</option>
+                                        <option value="Toyota">Toyota</option>
+                                        <option value="Hyundai">Hyundai</option>
+                                        <option value="Kia">Kia</option>
+                                        <option value="Jeep">Jeep</option>
+                                        <option value="BMW">BMW</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Brand Pills -->
+                        <div class="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-slate-100 scrollbar-none text-xs font-bold" id="brand-filter-btns">
+                            <button onclick="setBrandPill('All')" class="sd-brand-btn active px-3 py-1.5 bg-indigo-950 text-white rounded-lg whitespace-nowrap shadow-sm">All Cars</button>
+                            <button onclick="setBrandPill('Tata')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Tata</button>
+                            <button onclick="setBrandPill('Maruti Suzuki')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Maruti Suzuki</button>
+                            <button onclick="setBrandPill('Mahindra')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Mahindra</button>
+                            <button onclick="setBrandPill('Toyota')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Toyota</button>
+                            <button onclick="setBrandPill('Hyundai')" class="sd-brand-btn px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap hover:bg-slate-200">Hyundai</button>
+                        </div>
+                    </div>
+
+                    <!-- Cars Grid (6 per page) -->
+                    <div id="selfdrive-cars-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5"></div>
+
+                    <!-- Pagination -->
+                    <div id="sd-pagination-container" class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <span class="text-xs text-slate-500 font-medium" id="sd-pagination-info">Showing 1 to 6 cars</span>
+                        <div class="flex items-center space-x-1.5" id="sd-pagination-btns"></div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </header>
+
+
+<!-- WITH DRIVER FLEET SECTION -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-4" id="fleet">
+        <div class="text-center mb-8">
+            <span class="bg-indigo-50 border border-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2">Verified Fleet</span>
+            <h2 class="text-2xl font-black text-slate-900">Choose Your Cab</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Comfortable, well-maintained cars with clean sanitization and Fastag.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-4" id="fleet-container"></div>
+    </section>
+
+<!-- NAVI MUMBAI WITH DRIVER SEO CONTENT -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 py-10" id="navi-mumbai-with-driver-guide">
+  <div class="bg-white border border-slate-200 rounded-3xl shadow-sm p-5 sm:p-8">
+    <span class="inline-block text-[11px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full mb-3">Navi Mumbai Car Rental with Driver</span>
+    <h2 class="text-2xl sm:text-3xl font-black text-slate-900">Local & Outstation Car with Driver from Navi Mumbai</h2>
+    <p class="mt-3 text-sm text-slate-600 leading-7">Book a chauffeur-driven car with pickup across Navi Mumbai for local city use or outstation travel. Service coverage includes areas such as Vashi, Airoli, Nerul, Belapur, Kharghar and Panvel, subject to vehicle availability. Enter your exact pickup point and trip details to view the applicable fare.</p>
+
+    <div class="grid md:grid-cols-2 gap-4 mt-7">
+      <article class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+        <h3 class="font-extrabold text-slate-900">Local car rental in Navi Mumbai</h3>
+        <p class="mt-2 text-sm text-slate-600 leading-6">For local travel, office visits, family plans or multiple stops, select the 8 Hours / 80 KM or 12 Hours / 120 KM package. Your chosen vehicle category and package determine the fare shown in the booking flow.</p>
+      </article>
+      <article class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+        <h3 class="font-extrabold text-slate-900">Outstation car rental from Navi Mumbai</h3>
+        <p class="mt-2 text-sm text-slate-600 leading-6">Begin your outstation trip directly from Navi Mumbai. Outstation billing follows the applicable route and a minimum of 300 KM per day where relevant. Toll, parking and state taxes are charged as per actuals unless specifically included in a confirmed quotation.</p>
+      </article>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
+      <div class="rounded-xl border border-slate-200 p-4"><div class="text-xs font-black text-indigo-700 uppercase">Pickup Areas</div><p class="text-sm text-slate-600 mt-1">Vashi, Airoli, Nerul, Belapur, Kharghar & Panvel</p></div>
+      <div class="rounded-xl border border-slate-200 p-4"><div class="text-xs font-black text-indigo-700 uppercase">Local Packages</div><p class="text-sm text-slate-600 mt-1">8 Hr / 80 KM and 12 Hr / 120 KM</p></div>
+      <div class="rounded-xl border border-slate-200 p-4"><div class="text-xs font-black text-indigo-700 uppercase">Night Travel</div><p class="text-sm text-slate-600 mt-1">Night charges may apply between 11 PM and 4 AM</p></div>
+      <div class="rounded-xl border border-slate-200 p-4"><div class="text-xs font-black text-indigo-700 uppercase">Trip Types</div><p class="text-sm text-slate-600 mt-1">Local city and outstation travel</p></div>
+    </div>
+
+    <div class="mt-8">
+      <h2 class="text-xl font-black text-slate-900">How booking from Navi Mumbai works</h2>
+      <ol class="grid md:grid-cols-4 gap-3 mt-4 text-sm text-slate-600">
+        <li class="rounded-xl bg-indigo-50/50 border border-indigo-100 p-4"><strong class="block text-indigo-950 mb-1">1. Add pickup</strong>Enter your exact Navi Mumbai pickup location.</li>
+        <li class="rounded-xl bg-indigo-50/50 border border-indigo-100 p-4"><strong class="block text-indigo-950 mb-1">2. Select trip</strong>Choose Local City or Outstation and add travel details.</li>
+        <li class="rounded-xl bg-indigo-50/50 border border-indigo-100 p-4"><strong class="block text-indigo-950 mb-1">3. Choose a car</strong>Review the available vehicle categories and applicable fare.</li>
+        <li class="rounded-xl bg-indigo-50/50 border border-indigo-100 p-4"><strong class="block text-indigo-950 mb-1">4. Get confirmation</strong>Send the request and our team confirms availability and booking details.</li>
+      </ol>
+    </div>
+
+    <div class="mt-8">
+      <h2 class="text-xl font-black text-slate-900">Useful links for your trip</h2>
+      <div class="flex flex-wrap gap-2 mt-3 text-sm font-bold">
+        <a href="/with-driver" class="px-3 py-2 rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50">All With Driver Services</a>
+        <a href="/outstation" class="px-3 py-2 rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50">Outstation Booking</a>
+        <a href="/mumbai-to-lonavala-car-rental" class="px-3 py-2 rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50">Lonavala Route Guide</a>
+        <a href="/mumbai-to-trimbakeshwar-car-rental" class="px-3 py-2 rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50">Trimbakeshwar Route Guide</a>
+      </div>
+    </div>
+
+    <div class="mt-9">
+      <h2 class="text-xl font-black text-slate-900">Navi Mumbai Car Rental with Driver FAQs</h2>
+      <div class="space-y-3 mt-4">
+        <article class="rounded-xl border border-slate-200 p-4"><h3 class="font-extrabold text-slate-900 text-sm">Do you provide car rental with driver pickup in Navi Mumbai?</h3><p class="text-sm text-slate-600 mt-1 leading-6">Yes. Pickup is available across Navi Mumbai, subject to vehicle availability for your selected date and time.</p></article>
+        <article class="rounded-xl border border-slate-200 p-4"><h3 class="font-extrabold text-slate-900 text-sm">Which Navi Mumbai areas are covered?</h3><p class="text-sm text-slate-600 mt-1 leading-6">Our stated service coverage includes Vashi, Airoli, Nerul, Belapur, Kharghar and Panvel. Enter the exact pickup address in the booking form for validation.</p></article>
+        <article class="rounded-xl border border-slate-200 p-4"><h3 class="font-extrabold text-slate-900 text-sm">Can I start an outstation trip from Navi Mumbai?</h3><p class="text-sm text-slate-600 mt-1 leading-6">Yes. Outstation pickup can start from Navi Mumbai. Applicable distance, daily minimum and actual toll or parking charges are shown or confirmed for the trip.</p></article>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<!-- SEO Outstation Routes Cluster -->
+    <div class="bg-slate-100 border-t border-slate-200 py-6 px-4 sm:px-8">
+        <div class="max-w-7xl mx-auto">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
+                Popular Round-Trip Chauffeur Routes:
+            </span>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-slate-600 font-medium">
+                <a href="/mumbai-to-shirdi-car-rental" class="hover:text-indigo-600 hover:underline">Mumbai to Shirdi Car Rental</a>
+                <span class="text-slate-300">•</span>
+                <a href="/mumbai-to-trimbakeshwar-car-rental" class="hover:text-indigo-600 hover:underline">Mumbai to Trimbakeshwar Cab</a>
+                <span class="text-slate-300">•</span>
+                <a href="/mumbai-to-lonavala-car-rental" class="hover:text-indigo-600 hover:underline">Mumbai to Lonavala Car Rental</a>
+                <span class="text-slate-300">•</span>
+                <a href="/outstation" class="hover:text-indigo-600 hover:underline">Mumbai to Pune Cabs</a>
+            </div>
+        </div>
+    </div>
+
+<!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-center text-xs">
+        <nav aria-label="Footer navigation" class="max-w-5xl mx-auto px-4 mb-6 flex flex-wrap justify-center gap-x-5 gap-y-3"><a href="/" class="hover:text-amber-400 transition"><span>Home</span></a>
+<a href="/with-driver" aria-current="page" class="hover:text-amber-400 transition"><span>With Driver</span></a>
+<a href="/self-drive" class="hover:text-amber-400 transition"><span>Self Drive</span></a>
+<a href="/airport-transfer" class="hover:text-amber-400 transition"><span>Airport Transfer</span></a>
+<a href="/outstation" class="hover:text-amber-400 transition"><span>Outstation</span></a>
+<a href="/cars" class="hover:text-amber-400 transition"><span>Cars</span></a>
+<a href="/mumbai-car-rental" class="hover:text-amber-400 transition"><span>Mumbai Car Rental</span></a>
+<a href="/faq" class="hover:text-amber-400 transition"><span>FAQ</span></a>
+<a href="/contact" class="hover:text-amber-400 transition"><span>Contact</span></a></nav>
+        <p class="font-semibold text-slate-300">Car with Driver Mobility LLP</p>
+        <p class="mt-1 text-slate-400">Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai 400079</p>
+        <p class="mt-2 text-slate-500">Phone / WhatsApp: +91 9702988465 • &copy; 2026 Car with Driver Mobility LLP. All rights reserved.</p>
+    </footer>
+
+<!-- WHY CHOOSE US DETAILS MODAL -->
+<div id="why-choose-modal"
+    class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto animate-fade-in">
+
+        <!-- Close Button -->
+        <button aria-label="Close service details" type="button"
+            onclick="closeWhyChooseModal()"
+            class="absolute right-4 top-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition z-10">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+
+        <!-- Modal Header -->
+        <div class="p-6 pb-4 border-b border-slate-100">
+
+            <div class="flex items-center gap-3 pr-10">
+
+                <div id="why-modal-icon"
+                    class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+
+                <div>
+                    <h3 id="why-modal-heading"
+                        class="text-lg font-black text-slate-900 leading-tight">
+                        Experienced, Verified & Multi-Lingual Chauffeurs
+                    </h3>
+
+                    <p class="text-[11px] text-slate-500 mt-1">
+                        Car with Driver India
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Modal Details -->
+        <div class="p-6">
+
+            <ul id="why-modal-details"
+                class="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+            </ul>
+
+
+            <!-- CTA -->
+            <div class="mt-6 pt-4 border-t border-slate-100">
+
+                <a id="why-modal-whatsapp"
+                    href="https://wa.me/919702988465?text=Hi%20Car%20with%20Driver%20India%2C%20I%20want%20to%20book%20a%20ride."
+                    target="_blank"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-sm">
+
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span>Book Your Ride Now</span>
+
+                </a>
+
+                <button
+                type="button"
+                onclick="closeWhyChooseModal()"
+                class="w-full mt-3 px-5 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-50 transition">
+                Close
+            </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <!-- SUCCESS ANIMATION MODAL -->
+    <div id="success-confirmation-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center animate-fade-in relative space-y-4">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-black text-slate-900">Enquiry Successfully Submitted!</h3>
+                <p class="text-xs text-slate-500 mt-1">Thank you! Your details have been submitted. Please keep your reference number.</p>
+
+<div id="success-application-id" class="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-200 hidden">
+                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Application ID
+              </div>
+              
+              <!-- ID aur Copy Button -->
+              <div class="mt-1.5 flex items-center justify-center gap-2">
+                  <span id="success-application-number" class="text-sm sm:text-base font-bold text-gray-900 select-all tracking-wide"></span>
+                  <button type="button" onclick="copyApplicationId()" class="px-2.5 py-1 rounded-lg bg-white hover:bg-indigo-50 border border-gray-300 text-indigo-950 text-xs font-bold flex items-center gap-1.5 transition shadow-xs active:scale-95">
+                      <i class="fa-regular fa-copy text-indigo-600"></i>
+                      <span id="copy-btn-text">Copy</span>
+                  </button>
+              </div>
+
+              <div class="mt-1.5 text-xs text-gray-500">
+    Please save this ID for future reference.
+  </div>
+</div>
+            </div>
+            <button type="button" onclick="closeSuccessModal()" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 rounded-xl text-xs shadow-lg transition">
+                Done & Close
+            </button>
+        </div>
+    </div>
+
+    <!-- FARE BREAKDOWN INFO MODAL -->
+    <div id="fare-breakdown-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-fade-in">
+            <button aria-label="Close fare breakdown" type="button" onclick="closeFareBreakdownModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-receipt text-indigo-600"></i> Transparent Fare Details &amp; Inclusions
+            </h3>
+            <div id="fare-breakdown-content" class="space-y-4 text-xs text-slate-700 leading-relaxed"></div>
+            <div class="mt-6 pt-3 border-t border-slate-100 flex justify-end">
+                <button type="button" onclick="closeFareBreakdownModal()" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold px-5 py-2.5 rounded-xl text-xs">
+                    Got It
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WITH DRIVER BOOKING SUMMARY / REVIEW MODAL -->
+    <div id="booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
+            <button aria-label="Close booking review" type="button" onclick="closeModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Review Travel Details &amp; Fare Summary</h3>
+            
+            <!-- Detailed Travel Summary Card -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2.5">
+                <div class="flex justify-between items-start border-b border-slate-200 pb-2">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded">Selected Car</span>
+                        <h4 class="text-sm font-extrabold text-indigo-950 mt-1" id="modal-car-name">Car Name</h4>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-slate-400 text-[10px] block">Approx Total Amount</span>
+                        <strong class="text-emerald-700 font-black text-base" id="modal-fare">₹0</strong>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                    <div><strong>Pickup Location:</strong> <span id="modal-summary-pickup" class="text-slate-900"></span></div>
+                    <div><strong>Destination / Route:</strong> <span id="modal-summary-dest" class="text-slate-900"></span></div>
+                    <div><strong>Date &amp; Time:</strong> <span id="modal-summary-datetime" class="text-slate-900"></span></div>
+                    <div><strong>Trip Package:</strong> <span id="modal-summary-package" class="text-slate-900"></span></div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-200 space-y-1">
+                    <div class="text-emerald-800 font-semibold">✓ Inclusions: Car rental, fuel &amp; driver allowance included.</div>
+                    <div class="text-rose-800 font-semibold">✕ Exclusions: Toll taxes, parking fees, and state entry permits are extra as actuals.</div>
+                </div>
+            </div>
+            
+            <div class="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3 text-xs text-slate-700">
+                <div class="font-black text-emerald-800">💡 No advance payment required now.</div>
+                <div class="mt-1 leading-relaxed">Submit your booking request. Our team will verify car availability and contact you shortly. Once availability is confirmed, we’ll share a secure Razorpay payment link for the 20% advance.</div>
+            </div>
+
+            <form id="wd-booking-form" onsubmit="handleBookingSubmit(event)" class="mt-4 space-y-3">
+                <div>
+                    <label for="cust-name" class="block text-xs font-semibold text-slate-600 mb-1">Your Full Name *</label>
+                    <input type="text" id="cust-name" required placeholder="Enter full name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
+                </div>
+                <div>
+                    <label for="cust-phone" class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number (WhatsApp) *</label>
+                    <input type="tel" id="cust-phone" maxlength="10" required placeholder="10-digit mobile number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
+                </div>
+                <div>
+                    <label for="cust-email" class="block text-xs font-semibold text-slate-600 mb-1">Email Address *</label>
+                    <input type="email" id="cust-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
+                </div>
+                <div id="wd-current-location-wrap">
+                    <button type="button" id="wd-use-current-location" onclick="useCurrentLocation('withdriver')" class="w-full sm:w-auto border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-bold px-4 py-2.5 rounded-xl text-xs transition">
+                        <i class="fa-solid fa-location-crosshairs mr-1"></i> Use My Current Location
+                    </button>
+                    <p id="wd-current-location-status" class="text-[10px] text-slate-500 mt-1"></p>
+                </div>
+                <div>
+                    <label for="cust-address" class="block text-xs font-semibold text-slate-600 mb-1">Exact Pickup Address / Landmark *</label>
+                    <textarea id="cust-address" rows="2" required placeholder="Building / Hotel / Gate / Landmark (you can edit this)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm">
+                    <i class="fa-solid fa-check-circle text-base"></i>
+                    <span>Submit Booking Request</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SELF DRIVE BOOKING REVIEW MODAL -->
+    <div id="sd-booking-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
+            <button aria-label="Close self-drive booking review" type="button" onclick="closeSDModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-900">Self-Drive Booking Review &amp; Checkout</h3>
+            
+            <div class="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2.5">
+                <div class="flex justify-between items-start border-b border-slate-200 pb-2">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded" id="sd-modal-car-brand">Brand</span>
+                        <h4 class="text-sm font-extrabold text-indigo-950 mt-1" id="sd-modal-car-name">Car Name</h4>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-slate-400 text-[10px] block">Rental Rate</span>
+                        <strong class="text-indigo-950 font-black text-sm" id="sd-modal-car-rate">₹0/hour</strong>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-[11px] pt-1">
+                    <div><strong>Pickup:</strong> <span id="sd-review-pdatetime" class="text-slate-900"></span></div>
+                    <div><strong>Return:</strong> <span id="sd-review-rdatetime" class="text-slate-900"></span></div>
+                    <div><strong>Duration:</strong> <span id="sd-review-duration" class="text-slate-900"></span></div>
+                    <div><strong>Delivery Mode:</strong> <span id="sd-review-deliv-mode" class="text-slate-900"></span></div>
+                </div>
+                <div id="sd-review-deliv-location-row" class="text-[11px] pt-1 border-t border-slate-200">
+                    <strong>Delivery Location:</strong> <span id="sd-review-deliv-location" class="text-slate-900"></span>
+                </div>
+
+                <div class="pt-2 border-t border-slate-200 space-y-1 text-xs">
+                    <div class="flex justify-between text-slate-600">
+                        <span>Base Rental Fare:</span>
+                        <strong id="sd-review-base-fare" class="text-slate-900">₹0</strong>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>Security Deposit (Refundable):</span>
+                        <strong id="sd-review-deposit" class="text-slate-900">₹0</strong>
+                    </div>
+                    <div id="sd-review-delivery-charge-row" class="flex justify-between text-slate-600">
+                        <span>Home Delivery Charge:</span>
+                        <strong id="sd-review-delivery-charge" class="text-slate-900">₹0</strong>
+                    </div>
+                    <div class="flex justify-between text-indigo-950 pt-1 border-t border-slate-200 text-sm font-black">
+                        <span>Total Amount:</span>
+                        <strong id="disp-total-final-fare" class="text-emerald-700 text-base">₹0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <form onsubmit="handleSDBookingSubmit(event)" class="mt-4 space-y-3.5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-800 uppercase mb-1.5">Choose Delivery Option</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="border-2 border-indigo-600 bg-indigo-50/50 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition text-xs font-bold text-indigo-950" id="label-deliv-home">
+                            <input type="radio" name="sd-delivery-mode" value="home" checked onchange="onSDDeliveryOptionChange()" class="text-indigo-600">
+                            <span><i class="fa-solid fa-truck-ramp-box mr-1"></i> Home Delivery</span>
+                        </label>
+                        <label class="border-2 border-slate-200 rounded-xl p-2.5 flex items-center gap-2 cursor-pointer transition text-xs font-bold text-slate-700" id="label-deliv-self">
+                            <input type="radio" name="sd-delivery-mode" value="self" onchange="onSDDeliveryOptionChange()" class="text-indigo-600">
+                            <span><i class="fa-solid fa-building mr-1"></i> Self Pick-up</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-2.5 pt-1">
+                    <div>
+                        <label for="sd-cust-name" class="block text-xs font-semibold text-slate-600 mb-1">Full Name *</label>
+                        <input type="text" id="sd-cust-name" required placeholder="Full Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                            <label for="sd-cust-phone" class="block text-xs font-semibold text-slate-600 mb-1">Mobile Number *</label>
+                            <input type="tel" id="sd-cust-phone" maxlength="10" required placeholder="10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                        <div>
+                            <label for="sd-cust-alt-phone" class="block text-xs font-semibold text-slate-600 mb-1">Alternate Mobile Number</label>
+                            <input type="tel" id="sd-cust-alt-phone" maxlength="10" placeholder="Optional alternate number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="sd-cust-email" class="block text-xs font-semibold text-slate-600 mb-1">Email Address *</label>
+                        <input type="email" id="sd-cust-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                    </div>
+                </div>
+
+                <div id="sd-home-delivery-box" class="space-y-3 p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl relative">
+                    <div class="relative">
+                        <label for="sd-delivery-location-input" class="block text-xs font-bold text-indigo-950 mb-1">Delivery Location *</label>
+                        <input type="text" id="sd-delivery-location-input" autocomplete="off" oninput="onDeliveryLocationSelect(); scheduleGooglePlaceSearch('sd-delivery-location-input', 'sd-delivery-dropdown')" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-800 font-medium focus:ring-2 focus:ring-indigo-600 outline-none" placeholder="Search delivery location on Google">
+                        <div id="sd-delivery-dropdown" class="autocomplete-dropdown hidden"></div>
+                    </div>
+
+                    <div>
+                        <button type="button" id="sd-use-current-location" onclick="useCurrentLocation('selfdrive')" class="w-full sm:w-auto border border-indigo-200 bg-white hover:bg-indigo-50 text-indigo-800 font-bold px-3.5 py-2.5 rounded-xl text-xs transition">
+                            <i class="fa-solid fa-location-crosshairs mr-1"></i> Use My Current Location
+                        </button>
+                        <p id="sd-current-location-status" class="text-[10px] text-slate-500 mt-1"></p>
+                    </div>
+                    <div>
+                        <label for="sd-cust-address" class="block text-xs font-semibold text-slate-600 mb-1">Delivery Address *</label>
+                        <textarea id="sd-cust-address" rows="2" placeholder="Flat / House No., Building Name, Street / Locality" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div>
+                            <label for="sd-cust-city" class="block text-xs font-semibold text-slate-600 mb-1">City *</label>
+                            <input type="text" id="sd-cust-city" required placeholder="City" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                        <div>
+                            <label for="sd-cust-state" class="block text-xs font-semibold text-slate-600 mb-1">State *</label>
+                            <input type="text" id="sd-cust-state" required placeholder="State" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                        <div>
+                            <label for="sd-cust-pincode" class="block text-xs font-semibold text-slate-600 mb-1">Pincode *</label>
+                            <input type="text" id="sd-cust-pincode" maxlength="6" placeholder="Pincode" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs tracking-wide">
+                    <i class="fa-solid fa-key text-base"></i>
+                    <span>Confirm Self-Drive Booking</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- BECOME A PARTNER MODAL -->
+    <div id="partner-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
+            <button aria-label="Close partner application" type="button" onclick="closePartnerModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="mb-4">
+                <span class="text-amber-600 font-bold uppercase text-[10px] tracking-wider bg-amber-50 px-2 py-0.5 rounded">Partner With Us</span>
+                <h3 class="text-xl font-extrabold text-slate-900 mt-1">List Your Car. Grow With Us.</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Submit your details and required documents.</p>
+            </div>
+            <form onsubmit="handlePartnerFormSubmit(event)" class="space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                        <label for="part-name" class="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
+                        <input type="text" id="part-name" required placeholder="Owner Name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label for="part-phone" class="block text-xs font-semibold text-slate-700 mb-1">Mobile Number *</label>
+                        <input type="tel" id="part-phone" maxlength="10" required placeholder="10-digit number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                        <label for="part-email" class="block text-xs font-semibold text-slate-700 mb-1">Email Address *</label>
+                        <input type="email" id="part-email" required placeholder="name@example.com" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label for="part-alt-phone" class="block text-xs font-semibold text-slate-700 mb-1">Alternate Number *</label>
+                        <input type="tel" id="part-alt-phone" maxlength="10" required placeholder="10-digit alternate number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div>
+                        <label for="part-car-brand-select" class="block text-xs font-semibold text-slate-700 mb-1">Car Brand *</label>
+                        <select id="part-car-brand-select" onchange="handleBrandDropdownChange(this.value)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none bg-white font-medium">
+                            <option value="Tata" selected>Tata</option>
+                            <option value="Maruti Suzuki">Maruti Suzuki</option>
+                            <option value="Mahindra">Mahindra</option>
+                            <option value="Toyota">Toyota</option>
+                            <option value="Hyundai">Hyundai</option>
+                            <option value="Kia">Kia</option>
+                            <option value="Brand Not Listed">Brand Not Listed</option>
+                        </select>
+                        <label for="part-car-brand-custom" class="sr-only">Car brand not listed</label>
+<input type="text" id="part-car-brand-custom" placeholder="Enter Custom Brand" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none mt-1.5 hidden">
+                    </div>
+                    <div>
+                        <label for="part-car-model" class="block text-xs font-semibold text-slate-700 mb-1">Car Model *</label>
+                        <input type="text" id="part-car-model" required placeholder="e.g. Nexon, Ertiga" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label for="part-car-year" class="block text-xs font-semibold text-slate-700 mb-1">Mfg Year *</label>
+                        <select id="part-car-year" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none bg-white font-medium">
+                            <option value="2026" selected>2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                        </select>
+                    </div>
+                </div>
+
+<!-- PARTNER DOCUMENT UPLOADS -->
+<div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+
+    <div>
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-file-shield text-indigo-600"></i>
+            <span class="font-bold text-sm text-slate-900">
+                Upload Vehicle & Owner Documents
+            </span>
+        </div>
+
+        <p class="text-[10px] text-slate-500 mt-1">
+            <p class="text-[10px] text-slate-500 mt-1">
+    JPG, PNG or PDF • Max 5 MB per file
+</p>
+        </p>
+    </div>
+
+    <!-- RC -->
+    <div>
+        <label for="part-rc" class="block text-[11px] font-semibold text-slate-700 mb-1">
+            RC Copy *
+        </label>
+        <input
+            type="file"
+            id="part-rc"
+            name="rc"
+            accept=".jpg,.jpeg,.png,.pdf"
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+    </div>
+
+    <!-- Insurance -->
+    <div>
+        <label for="part-insurance" class="block text-[11px] font-semibold text-slate-700 mb-1">
+            Valid Insurance *
+        </label>
+        <input
+            type="file"
+            id="part-insurance"
+            name="insurance"
+            accept=".jpg,.jpeg,.png,.pdf"
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+    </div>
+
+    <!-- PUC -->
+    <div>
+        <label for="part-puc" class="block text-[11px] font-semibold text-slate-700 mb-1">
+            PUC *
+        </label>
+        <input
+            type="file"
+            id="part-puc"
+            name="puc"
+            accept=".jpg,.jpeg,.png,.pdf"
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+    </div>
+
+    <!-- Driving Licence -->
+    <div>
+        <label for="part-dl" class="block text-[11px] font-semibold text-slate-700 mb-1">
+            Owner Driving Licence *
+        </label>
+        <input
+            type="file"
+            id="part-dl"
+            name="dl"
+            accept=".jpg,.jpeg,.png,.pdf"
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+    </div>
+
+    <!-- Aadhaar -->
+    <div>
+        <label for="part-aadhaar" class="block text-[11px] font-semibold text-slate-700 mb-1">
+            Aadhaar Card *
+        </label>
+        <input
+            type="file"
+            id="part-aadhaar"
+            name="aadhaar"
+            accept=".jpg,.jpeg,.png,.pdf"
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+    </div>
+
+    <!-- PAN -->
+    <div>
+        <label for="part-pan" class="block text-[11px] font-semibold text-slate-700 mb-1">
+            PAN Card *
+        </label>
+        <input
+            type="file"
+            id="part-pan"
+            name="pan"
+            accept=".jpg,.jpeg,.png,.pdf"
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+    </div>
+
+    <!-- Vehicle Photos -->
+    <div>
+        <label for="part-vehicle-photos" class="block text-[11px] font-semibold text-slate-700 mb-1">
+            Vehicle Photos
+        </label>
+        <input
+            type="file"
+            id="part-vehicle-photos"
+            name="vehicle_photos"
+            accept=".jpg,.jpeg,.png,.webp"
+            multiple
+            class="w-full text-[11px] border border-slate-300 rounded-lg bg-white p-2"
+        >
+
+    </div>
+
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5">
+        <p class="text-[10px] text-amber-900">
+            <i class="fa-solid fa-lock mr-1"></i>
+            Your documents are securely stored and are not sent by email.
+        </p>
+    </div>
+
+</div>
+
+                <button type="submit" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-3 rounded-xl shadow-lg transition text-xs">
+                    Submit Partner Application
+                </button>
+            </form>
+        </div>
+    </div>
+
+<!-- HOME DELIVERY UNAVAILABLE MODAL -->
+<div id="sd-serviceability-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] hidden items-center justify-center px-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
+
+        <div class="mx-auto mb-4 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+            <i class="fa-solid fa-location-dot text-red-600 text-xl"></i>
+        </div>
+
+        <h3 class="text-lg font-extrabold text-slate-900 mb-2">
+            Home Delivery Unavailable
+        </h3>
+
+        <p class="text-sm text-slate-600 leading-relaxed mb-5">
+            This location is not servicable for home delivery.
+        </p>
+
+        <button
+            type="button"
+            onclick="closeSDServiceabilityModal()"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm py-2.5 rounded-xl transition">
+            OK
+        </button>
+
+    </div>
+</div>
+
+<script src="/assets/js/booking.js"></script>
+<script src="/assets/js/partner-documents.js"></script>
+<script src="/assets/js/application-id.js"></script>
+<script src="/assets/js/page.js"></script>
+</body>
+</html>

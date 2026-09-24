@@ -92,6 +92,27 @@ function cleanPlaceId(value) {
   return id;
 }
 
+async function googlePlaceIdForAddress(address) {
+  const key = String(process.env.GOOGLE_MAPS_SERVER_API_KEY || '').trim();
+  if (!key) throw Object.assign(new Error('Google route pricing is not configured.'), { status: 503 });
+  const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
+  url.searchParams.set('address', address);
+  url.searchParams.set('key', key);
+  url.searchParams.set('language', 'en');
+  url.searchParams.set('region', 'in');
+  const response = await fetch(url);
+  const payload = await response.json().catch(() => ({}));
+  const placeId = payload?.results?.[0]?.place_id;
+  if (!response.ok || payload.status !== 'OK' || !placeId) {
+    throw Object.assign(new Error('Unable to find the nearest motorable point for this destination.'), { status: 422 });
+  }
+  return placeId;
+}
+
+function isRouteNotDrivableError(error) {
+  return /Unable to calculate driving distance for the selected outstation route/i.test(String(error?.message || ''));
+}
+
 function istParts(iso) {
   const date = new Date(iso);
   const parts = new Intl.DateTimeFormat('en-GB', {
@@ -181,23 +202,48 @@ export default async function handler(request) {
     let billableKm = 0;
     let quotes = [];
     let routeLabel = '';
+    let accessNote = '';
 
     if (tripType === 'outstation') {
       returnAt = cleanText(body.returnAt, 80);
       destination = cleanText(body.destination);
       const destinationPlaceId = cleanPlaceId(body.destinationPlaceId);
 
-      const primary = await validateBookingData('withdriver', {
-        tripType: 'outstation',
-        carName: primaryVehicle.carName,
-        pickupAt,
-        returnAt,
-        pickupPlaceId,
-        pickupLocation,
-        destinationPlaceId,
-        destination,
-        stops: []
-      });
+      let primary;
+      try {
+        primary = await validateBookingData('withdriver', {
+          tripType: 'outstation',
+          carName: primaryVehicle.carName,
+          pickupAt,
+          returnAt,
+          pickupPlaceId,
+          pickupLocation,
+          destinationPlaceId,
+          destination,
+          stops: []
+        });
+      } catch (error) {
+        const isMatheran = /\bmatheran\b/i.test(destination);
+        if (isMatheran && isRouteNotDrivableError(error)) {
+          const motorablePlaceId = await googlePlaceIdForAddress('Dasturi Car Park, Matheran, Maharashtra, India');
+          primary = await validateBookingData('withdriver', {
+            tripType: 'outstation',
+            carName: primaryVehicle.carName,
+            pickupAt,
+            returnAt,
+            pickupPlaceId,
+            pickupLocation,
+            destinationPlaceId: motorablePlaceId,
+            destination: 'Dasturi Naka, Matheran',
+            stops: []
+          });
+          accessNote = 'Vehicle access is available up to Dasturi Naka / Dasturi Car Park. Private vehicles are not permitted beyond this motorable point.';
+        } else if (isRouteNotDrivableError(error)) {
+          throw Object.assign(new Error('This destination may have vehicle access restrictions. Please select the nearest motorable drop point or contact us for assistance.'), { status: 422 });
+        } else {
+          throw error;
+        }
+      }
 
       const days = Number(primary.normalized?.days) || 1;
       const googleRouteKm = Number(primary.normalized?.googleRouteKm) || 0;
@@ -310,6 +356,7 @@ export default async function handler(request) {
       airportType: body.airportType || '',
       airportTerminal: body.airportTerminal || '',
       routeLabel,
+      accessNote,
       durationDays,
       routeKm,
       billableKm,

@@ -514,7 +514,7 @@
       const route = await ensureRoute();
       const days = tripDays();
       const billableKm = Math.max(Number(route.billableRouteKm) || 0, days * minimumKmPerDay);
-      const extraRate = data.car.outstationPerKm;
+      const extraRate = 15;
 
       const quote = [
         'Hello Sir,',

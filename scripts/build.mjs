@@ -27,12 +27,14 @@ function buildStructuredData(page) {
   const graph = [organization];
   if (!page.slug) {
     graph.push({'@type':'WebSite','@id':site+'/#website',url:site+'/',name:'Car with Driver India',publisher:{'@id':site+'/#organization'}});
-  } else if (['with-driver','self-drive','airport-transfer','outstation'].includes(page.slug)) {
+  } else if (['with-driver','self-drive','airport-transfer','outstation','thane-car-rental-with-driver','navi-mumbai-car-rental-with-driver'].includes(page.slug)) {
     const serviceNames = {
       'with-driver':'Car rental with driver',
       'self-drive':'Self drive car rental',
       'airport-transfer':'Airport transfer car service',
-      'outstation':'Outstation car rental with driver'
+      'outstation':'Outstation car rental with driver',
+      'thane-car-rental-with-driver':'Car rental with driver in Thane',
+      'navi-mumbai-car-rental-with-driver':'Car rental with driver in Navi Mumbai'
     };
     graph.push({
       '@type':'Service',
@@ -40,34 +42,35 @@ function buildStructuredData(page) {
       name:serviceNames[page.slug],
       url:site+'/'+page.slug,
       provider:{'@id':site+'/#organization'},
-      areaServed:['Mumbai','Thane','Navi Mumbai'].map(name => ({'@type':'City',name}))
+      areaServed:(page.slug === 'thane-car-rental-with-driver' ? ['Thane'] : page.slug === 'navi-mumbai-car-rental-with-driver' ? ['Navi Mumbai'] : ['Mumbai','Thane','Navi Mumbai']).map(name => ({'@type':'City',name}))
     });
-    if (page.slug === 'with-driver') {
+    if (page.slug === 'with-driver' || page.slug === 'thane-car-rental-with-driver' || page.slug === 'navi-mumbai-car-rental-with-driver') {
+      const faqBySlug = {
+        'with-driver':[
+          ['Do you provide car rental with driver in Mumbai, Thane and Navi Mumbai?','Yes. Pickup is available across Mumbai, Thane and Navi Mumbai for local and outstation trips, subject to vehicle availability.'],
+          ['Can I book a car with driver for one day?','Yes. For city use, select a local package such as 8 Hours / 80 KM or 12 Hours / 120 KM. For an outstation trip, billing is based on the applicable distance and day rules.'],
+          ['Are toll and parking included in the fare?','Toll, parking and applicable state taxes are normally charged as per actuals unless your confirmed quotation specifically states otherwise.'],
+          ['Is this a driver-only service?','No. This service provides a car together with a driver. We do not offer a driver-only booking for a customer\'s own vehicle.']
+        ],
+        'thane-car-rental-with-driver':[
+          ['Do you provide car rental with driver pickup in Thane?','Yes. With-driver pickup is available in Thane, subject to vehicle availability for your selected date and time.'],
+          ['Can I book a one-day local car with driver in Thane?','Yes. You can choose a local package such as 8 Hours / 80 KM or 12 Hours / 120 KM depending on your planned usage.'],
+          ['Can I start an outstation trip from Thane?','Yes. Outstation pickup can start from Thane and the destination can be outside the Mumbai metropolitan area. Applicable distance, daily minimum and actual toll or parking charges are shown or confirmed for the trip.']
+        ],
+        'navi-mumbai-car-rental-with-driver':[
+          ['Do you provide car rental with driver pickup in Navi Mumbai?','Yes. Pickup is available across Navi Mumbai, subject to vehicle availability for your selected date and time.'],
+          ['Which Navi Mumbai areas are covered?','Our stated service coverage includes Vashi, Airoli, Nerul, Belapur, Kharghar and Panvel. Enter the exact pickup address in the booking form for validation.'],
+          ['Can I start an outstation trip from Navi Mumbai?','Yes. Outstation pickup can start from Navi Mumbai. Applicable distance, daily minimum and actual toll or parking charges are shown or confirmed for the trip.']
+        ]
+      };
       graph.push({
         '@type':'FAQPage',
-        '@id':site+'/with-driver#faq',
-        mainEntity:[
-          {
-            '@type':'Question',
-            name:'Do you provide car rental with driver in Mumbai, Thane and Navi Mumbai?',
-            acceptedAnswer:{'@type':'Answer',text:'Yes. Pickup is available across Mumbai, Thane and Navi Mumbai for local and outstation trips, subject to vehicle availability.'}
-          },
-          {
-            '@type':'Question',
-            name:'Can I book a car with driver for one day?',
-            acceptedAnswer:{'@type':'Answer',text:'Yes. For city use, select a local package such as 8 Hours / 80 KM or 12 Hours / 120 KM. For an outstation trip, billing is based on the applicable distance and day rules.'}
-          },
-          {
-            '@type':'Question',
-            name:'Are toll and parking included in the fare?',
-            acceptedAnswer:{'@type':'Answer',text:'Toll, parking and applicable state taxes are normally charged as per actuals unless your confirmed quotation specifically states otherwise.'}
-          },
-          {
-            '@type':'Question',
-            name:'Is this a driver-only service?',
-            acceptedAnswer:{'@type':'Answer',text:'No. This service provides a car together with a driver. We do not offer a driver-only booking for a customer\'s own vehicle.'}
-          }
-        ]
+        '@id':site+'/'+page.slug+'#faq',
+        mainEntity:faqBySlug[page.slug].map(([name,text])=>({
+          '@type':'Question',
+          name,
+          acceptedAnswer:{'@type':'Answer',text}
+        }))
       });
     }
   } else {
@@ -79,8 +82,9 @@ function buildStructuredData(page) {
 for (const page of pages) {
   const route = '/' + page.slug;
   const link = (target, className, icon = false) => `<a href="/${target.slug}"${target.slug === page.slug ? ' aria-current="page"' : ''} class="${className}">${icon ? `<i class="fa-solid ${target.icon} text-indigo-600 w-5" aria-hidden="true"></i>` : ''}<span>${escape(target.label)}</span></a>`;
-  const navigationLinks = pages.map(p => link(p, 'flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition', true)).join('\n');
-  const footerLinks = pages.map(p => link(p, 'hover:text-amber-400 transition')).join('\n');
+  const visiblePages = pages.filter(p => p.nav !== false);
+  const navigationLinks = visiblePages.map(p => link(p, 'flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-indigo-50 hover:text-indigo-950 transition', true)).join('\n');
+  const footerLinks = visiblePages.map(p => link(p, 'hover:text-amber-400 transition')).join('\n');
   const data = Object.fromEntries(Object.entries(page).filter(([,v])=>typeof v === 'string').map(([k,v])=>[k,escape(v)]));
   data.canonical = 'https://carswithdriverindia.com' + route;
   data.structuredData = buildStructuredData(page);

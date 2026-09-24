@@ -32,6 +32,16 @@
     }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .full { grid-column: 1 / -1; }
+    .datetime-card {
+      grid-column: 1 / -1; border: 1px solid #e2e8f0; background: #f8fafc;
+      border-radius: 18px; padding: 16px;
+    }
+    .datetime-title {
+      font-size: 14px; font-weight: 850; color: #334155; margin-bottom: 10px;
+      letter-spacing: .01em;
+    }
+    .datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .datetime-card input, .datetime-card select { background: #fff; min-height: 48px; }
     label { display: block; font-size: 13px; font-weight: 750; margin-bottom: 7px; color: #334155; }
     input, select {
       width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px 13px;
@@ -114,22 +124,56 @@
         <div id="alert" class="alert" role="alert"></div>
 
         <div class="grid">
-          <div>
+          <div class="datetime-card">
+            <div class="datetime-title">📅 PICKUP DATE &amp; TIME *</div>
             <label for="pickup-date">Pickup Date</label>
             <input id="pickup-date" type="date">
-          </div>
-          <div>
-            <label for="pickup-time">Pickup Time</label>
-            <input id="pickup-time" type="time">
+            <div class="datetime-row">
+              <div>
+                <label for="pickup-hour">Time</label>
+                <select id="pickup-hour">
+                  <option value="">Select time</option>
+                  <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option>
+                  <option value="4">04:00</option><option value="5">05:00</option><option value="6">06:00</option>
+                  <option value="7">07:00</option><option value="8">08:00</option><option value="9">09:00</option>
+                  <option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                </select>
+              </div>
+              <div>
+                <label for="pickup-ampm">AM / PM</label>
+                <select id="pickup-ampm">
+                  <option value="">Select</option>
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label for="return-date">Return Date</label>
+          <div class="datetime-card">
+            <div class="datetime-title">🗓️ FINAL DROP DATE &amp; TIME *</div>
+            <label for="return-date">Final Drop Date</label>
             <input id="return-date" type="date">
-          </div>
-          <div>
-            <label for="return-time">Return Time</label>
-            <input id="return-time" type="time">
+            <div class="datetime-row">
+              <div>
+                <label for="return-hour">Time</label>
+                <select id="return-hour">
+                  <option value="">Select time</option>
+                  <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option>
+                  <option value="4">04:00</option><option value="5">05:00</option><option value="6">06:00</option>
+                  <option value="7">07:00</option><option value="8">08:00</option><option value="9">09:00</option>
+                  <option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                </select>
+              </div>
+              <div>
+                <label for="return-ampm">AM / PM</label>
+                <select id="return-ampm">
+                  <option value="">Select</option>
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div class="full location-wrap">
@@ -377,17 +421,20 @@
     input.addEventListener('blur', () => setTimeout(() => closeSuggestions(type), 180));
   }
 
-  function readDateTime(dateId, timeId) {
+  function readDateTime(dateId, hourId, ampmId) {
     const date = $(dateId).value;
-    const time = $(timeId).value;
-    if (!date || !time) return null;
-    const d = new Date(date + 'T' + time + ':00');
+    const hour = Number($(hourId).value);
+    const ampm = $(ampmId).value;
+    if (!date || !Number.isInteger(hour) || hour < 1 || hour > 12 || !['AM','PM'].includes(ampm)) return null;
+    let hour24 = hour % 12;
+    if (ampm === 'PM') hour24 += 12;
+    const d = new Date(date + 'T' + String(hour24).padStart(2, '0') + ':00:00');
     return Number.isFinite(d.getTime()) ? d : null;
   }
 
   function tripDays() {
-    const pickup = readDateTime('pickup-date', 'pickup-time');
-    const ret = readDateTime('return-date', 'return-time');
+    const pickup = readDateTime('pickup-date', 'pickup-hour', 'pickup-ampm');
+    const ret = readDateTime('return-date', 'return-hour', 'return-ampm');
     if (!pickup || !ret || ret <= pickup) return 1;
     const p = new Date(pickup.getFullYear(), pickup.getMonth(), pickup.getDate());
     const r = new Date(ret.getFullYear(), ret.getMonth(), ret.getDate());
@@ -405,8 +452,8 @@
 
   function nightCount() {
     const nights = new Set();
-    const a = nightKey(readDateTime('pickup-date', 'pickup-time'));
-    const b = nightKey(readDateTime('return-date', 'return-time'));
+    const a = nightKey(readDateTime('pickup-date', 'pickup-hour', 'pickup-ampm'));
+    const b = nightKey(readDateTime('return-date', 'return-hour', 'return-ampm'));
     if (a) nights.add(a);
     if (b) nights.add(b);
     return nights.size;
@@ -441,8 +488,8 @@
       clearFare();
       return;
     }
-    const pickup = readDateTime('pickup-date', 'pickup-time');
-    const ret = readDateTime('return-date', 'return-time');
+    const pickup = readDateTime('pickup-date', 'pickup-hour', 'pickup-ampm');
+    const ret = readDateTime('return-date', 'return-hour', 'return-ampm');
     if (!pickup || !ret || ret <= pickup) {
       clearFare();
       return;
@@ -470,8 +517,8 @@
 
   function validateTrip() {
     clearError();
-    const pickup = readDateTime('pickup-date', 'pickup-time');
-    const ret = readDateTime('return-date', 'return-time');
+    const pickup = readDateTime('pickup-date', 'pickup-hour', 'pickup-ampm');
+    const ret = readDateTime('return-date', 'return-hour', 'return-ampm');
     if (!pickup) throw new Error('Please select pickup date and time.');
     if (!ret) throw new Error('Please select return date and time.');
     if (ret <= pickup) throw new Error('Return date and time must be later than pickup date and time.');
@@ -583,7 +630,7 @@
     window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer');
   });
 
-  ['pickup-date','pickup-time','return-date','return-time','vehicle'].forEach(id => {
+  ['pickup-date','pickup-hour','pickup-ampm','return-date','return-hour','return-ampm','vehicle'].forEach(id => {
     $(id).addEventListener('change', refreshAutoFare);
   });
 

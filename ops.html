@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0B3D91">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="CWD Operations">
+  <link rel="manifest" href="/ops-manifest.json">
+  <link rel="apple-touch-icon" href="/logo.png">
+  <title>CWD Operations</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/ops.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+    .field { width:100%; border:1px solid #cbd5e1; border-radius:14px; padding:.8rem .9rem; font-size:.875rem; background:#fff; outline:none; }
+    .field:focus { border-color:#3BA7F2; box-shadow:0 0 0 3px rgba(59,167,242,.15); }
+    .suggestions { position:absolute; z-index:50; left:0; right:0; top:calc(100% + 5px); background:white; border:1px solid #dbe3ee; border-radius:14px; box-shadow:0 14px 34px rgba(15,23,42,.16); max-height:240px; overflow:auto; }
+    button:active:not(:disabled), a:active { transform:scale(.97); }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+    .cta-action { position:relative; overflow:hidden; transition:transform .16s ease, box-shadow .18s ease, filter .18s ease; }
+    .cta-action:not(:disabled)::after { content:''; position:absolute; inset:-40% auto -40% -35%; width:24%; transform:skewX(-18deg); background:rgba(255,255,255,.35); animation:ctaShine 3.2s ease-in-out infinite; }
+    .cta-action:active:not(:disabled) { transform:scale(.965); filter:brightness(.96); box-shadow:0 4px 12px rgba(15,23,42,.16); }
+    @keyframes ctaShine { 0%,65%{left:-35%} 82%,100%{left:125%} }
+    @media (prefers-reduced-motion: reduce) { .cta-action:not(:disabled)::after { animation:none; } }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+
+  <section id="boot-screen" class="min-h-screen flex items-center justify-center p-5 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
+    <div class="text-center text-white">
+      <img src="/logo.png" alt="Car with Driver India" class="h-14 w-auto mx-auto object-contain">
+      <div class="mt-4 font-black text-xl">CWD Operations</div>
+      <div class="mt-2 text-xs text-blue-100"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Checking session…</div>
+    </div>
+  </section>
+
+  <section id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-5 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900">
+    <div class="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl">
+      <div class="text-center mb-6">
+        <img src="/logo.png" alt="Car with Driver India" class="h-14 w-auto mx-auto object-contain">
+        <h1 class="text-2xl font-black text-blue-950 mt-3">CWD Operations</h1>
+        <p class="text-xs text-slate-500 mt-1">Mobile Operations Console</p>
+      </div>
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Admin Email</label>
+          <input id="login-email" type="email" required autocomplete="username" class="field" placeholder="admin@carswithdriverindia.com">
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Password</label>
+          <input id="login-password" type="password" required autocomplete="current-password" class="field" placeholder="••••••••">
+        </div>
+        <p id="login-error" class="hidden text-xs font-semibold text-rose-600"></p>
+        <button id="login-button" class="w-full rounded-2xl bg-blue-950 text-white font-extrabold py-3.5 shadow-lg">Sign in to Operations</button>
+      </form>
+    </div>
+  </section>
+
+  <div id="app-screen" class="hidden min-h-screen pb-24">
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
+      <div class="max-w-xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <img src="/logo.png" alt="Car with Driver India" class="h-9 w-auto max-w-[120px] object-contain">
+          <div>
+            <div class="font-black text-sm text-blue-950 leading-tight">CWD Operations</div>
+            <div id="admin-email" class="text-[9px] text-slate-400 max-w-[180px] truncate">Signed in</div>
+          </div>
+        </div>
+        <button id="logout-button" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-600" aria-label="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </header>
+
+    <main class="max-w-xl mx-auto px-4 pt-4">
+      <section id="home-view">
+        <div class="text-center py-3">
+          <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-blue-700">Car With Driver India</p>
+          <h1 class="text-2xl sm:text-3xl font-black text-blue-950 mt-1">CWD Quotation</h1>
+          <p class="text-sm text-slate-500 mt-1">Create and share quotation quickly</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
+          <button type="button" onclick="showView('quote')" class="bg-white rounded-3xl border border-slate-200 p-6 text-center shadow-sm hover:shadow-md transition">
+            <div class="w-16 h-16 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center mx-auto text-2xl"><i class="fa-solid fa-car-side"></i></div>
+            <div class="font-black text-xl text-slate-900 mt-4">With Driver</div>
+            <div class="text-xs text-slate-500 mt-2 leading-relaxed">Local, Outstation or Airport quotation</div>
+          </button>
+          <button type="button" onclick="showView('selfdrive')" class="bg-white rounded-3xl border border-slate-200 p-6 text-center shadow-sm hover:shadow-md transition">
+            <div class="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto text-2xl"><i class="fa-solid fa-key"></i></div>
+            <div class="font-black text-xl text-slate-900 mt-4">Self Drive</div>
+            <div class="text-xs text-slate-500 mt-2 leading-relaxed">Create self-drive rental quotation</div>
+          </button>
+        </div>
+      </section>
+
+      <section id="selfdrive-view" class="hidden">
+        <div class="flex items-center justify-between mb-4">
+          <button type="button" onclick="showView('home')" class="text-sm font-extrabold text-blue-800"><i class="fa-solid fa-arrow-left mr-1"></i>Back to Home</button>
+          <button type="button" id="sd-reset" class="text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-xl px-3 py-2">Reset</button>
+        </div>
+        <div class="mb-4">
+          <p class="text-[10px] uppercase tracking-wider font-bold text-amber-600">Self Drive</p>
+          <h2 class="text-xl font-black text-slate-900">Self Drive Quotation</h2>
+        </div>
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 space-y-4">
+          <div class="relative">
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Vehicle *</label>
+            <input id="sd-vehicle-search" class="field" autocomplete="off" placeholder="Search vehicle e.g. ma">
+            <div id="sd-vehicle-results" class="suggestions hidden"></div>
+            <p id="sd-selected-vehicle" class="text-[10px] text-slate-400 mt-1">Search and select a vehicle.</p>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Fuel Type *</label>
+              <select id="sd-fuel" class="field" disabled><option value="">Select vehicle first</option></select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Transmission *</label>
+              <select id="sd-transmission" class="field" disabled><option value="">Select vehicle first</option></select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Pickup *</label>
+            <div class="grid grid-cols-[minmax(0,1fr)_72px_82px] gap-2">
+              <input id="sd-pickup-date" type="date" class="field min-w-0">
+              <select id="sd-pickup-hour" class="field"><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
+              <select id="sd-pickup-ampm" class="field"><option>AM</option><option>PM</option></select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Return *</label>
+            <div class="grid grid-cols-[minmax(0,1fr)_72px_82px] gap-2">
+              <input id="sd-return-date" type="date" class="field min-w-0">
+              <select id="sd-return-hour" class="field"><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
+              <select id="sd-return-ampm" class="field"><option>AM</option><option selected>PM</option></select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Pickup Type *</label>
+            <select id="sd-pickup-type" class="field">
+              <option value="self">Self Pick-up</option>
+              <option value="delivery">Home Delivery</option>
+            </select>
+          </div>
+          <div id="sd-delivery-location-wrap" class="hidden">
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Delivery Location *</label>
+            <input id="sd-delivery-location" class="field" placeholder="Enter delivery location">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Per Day Rate *</label>
+            <input id="sd-day-rate" class="field" type="number" min="0" step="1" inputmode="numeric" placeholder="Enter verified partner rate">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Extra Hour Rate *</label>
+              <input id="sd-extra-hour-rate" class="field" type="number" min="0" step="1" inputmode="numeric" placeholder="₹ / hour">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Extra KM Rate *</label>
+              <input id="sd-extra-km-rate" class="field" type="number" min="0" step="1" inputmode="numeric" placeholder="₹ / KM">
+            </div>
+          </div>
+          <div id="sd-delivery-charge-wrap" class="hidden">
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Home Delivery Charge</label>
+            <input id="sd-delivery-charge" class="field" type="number" min="0" step="1" inputmode="numeric" value="0">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Security Deposit *</label>
+            <input id="sd-security-deposit" class="field" type="number" min="0" step="1" inputmode="numeric" placeholder="Enter verified deposit">
+          </div>
+          <div class="rounded-2xl bg-emerald-50 border border-emerald-100 p-4">
+            <div class="text-[10px] uppercase tracking-wider font-extrabold text-emerald-700">Total Amount Payable</div>
+            <div id="sd-total-payable" class="text-2xl font-black text-emerald-800 mt-1">₹0</div>
+            <div id="sd-total-hint" class="text-[10px] text-emerald-700 mt-1">Select vehicle and travel dates.</div>
+          </div>
+          <p id="sd-error" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl p-3"></p>
+          <button id="sd-generate" class="cta-action w-full rounded-2xl bg-blue-950 text-white font-black py-4 shadow-lg"><i class="fa-solid fa-file-invoice mr-2"></i>Generate Quotation</button>
+        </div>
+        <section id="sd-quote-result" class="hidden mt-5 mb-5">
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="bg-blue-950 text-white px-5 py-4"><div class="text-[10px] text-blue-200 uppercase font-bold tracking-wider">Quotation Ready</div><div class="font-black mt-1">Self Drive</div></div>
+            <div class="p-5">
+              <pre id="sd-quote-message" class="whitespace-pre-wrap font-sans text-xs leading-relaxed text-slate-700 bg-slate-50 border border-slate-200 rounded-2xl p-4 max-h-[420px] overflow-auto"></pre>
+              <div class="grid grid-cols-2 gap-2 mt-4">
+                <button id="sd-copy" class="rounded-xl border border-slate-300 bg-white py-3 text-xs font-extrabold text-slate-700"><i class="fa-regular fa-copy mr-1.5"></i>Copy</button>
+                <button id="sd-whatsapp" class="rounded-xl bg-emerald-600 text-white py-3 text-xs font-extrabold"><i class="fa-brands fa-whatsapp mr-1.5"></i>WhatsApp</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section id="quote-view" class="hidden">
+        <div class="flex items-center justify-between mb-4">
+          <button type="button" onclick="showView('home')" class="text-sm font-extrabold text-blue-800"><i class="fa-solid fa-arrow-left mr-1"></i>Back to Home</button>
+          <button onclick="resetQuoteForm()" class="text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-xl px-3 py-2">Reset</button>
+        </div>
+        <div class="mb-4">
+          <p class="text-[10px] uppercase tracking-wider font-bold text-blue-700">With Driver</p>
+          <h2 class="text-xl font-black text-slate-900">With Driver Quotation</h2>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 space-y-5">
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-2">Trip Type</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" class="trip-chip bg-blue-950 text-white border-blue-950 rounded-xl border py-2.5 text-xs font-bold" data-trip="outstation">Outstation</button>
+              <button type="button" class="trip-chip rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-600 bg-white" data-trip="local">Local</button>
+              <button type="button" class="trip-chip rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-600 bg-white" data-trip="airport">Airport</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Pickup Date & Time *</label>
+              <div class="ops-datetime-grid">
+                <input id="pickup-date" type="date" class="field">
+                <select id="pickup-hour" class="field"><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4" selected>04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
+                <select id="pickup-ampm" class="field"><option value="AM" selected>AM</option><option value="PM">PM</option></select>
+              </div>
+            </div>
+            <div id="return-field">
+              <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Return Date & Time *</label>
+              <div class="ops-datetime-grid">
+                <input id="return-date" type="date" class="field">
+                <select id="return-hour" class="field"><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10" selected>10</option><option value="11">11</option><option value="12">12</option></select>
+                <select id="return-ampm" class="field"><option value="AM">AM</option><option value="PM" selected>PM</option></select>
+              </div>
+            </div>
+            <div id="local-package-field" class="hidden">
+              <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Local Package *</label>
+              <select id="local-package" class="field">
+                <option value="8hr_80km">8 Hours / 80 KM</option>
+                <option value="10hr_100km">10 Hours / 100 KM</option>
+                <option value="12hr_120km">12 Hours / 120 KM</option>
+              </select>
+              <p class="text-[10px] text-slate-400 mt-1">Return time will be calculated automatically from the selected package.</p>
+            </div>
+          </div>
+
+          <div id="duration-preview" class="hidden rounded-2xl bg-blue-50 border border-blue-100 px-4 py-3 text-xs">
+            <span class="font-bold text-blue-950">Estimated duration:</span>
+            <span id="duration-text" class="text-blue-800"></span>
+          </div>
+
+          <div id="airport-controls" class="hidden grid grid-cols-1 gap-4">
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Airport Transfer *</label>
+              <select id="airport-type" class="field">
+                <option value="drop">Drop to Airport</option>
+                <option value="pickup">Pickup from Airport</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Airport / Terminal *</label>
+              <select id="airport-terminal" class="field">
+                <option value="t1">Mumbai Airport T1</option>
+                <option value="t2" selected>Mumbai Airport T2</option>
+                <option value="nmia">Navi Mumbai International Airport</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="relative">
+            <label id="pickup-label" class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Pickup Location *</label>
+            <input id="pickup-location" type="text" autocomplete="off" class="field" placeholder="Search pickup on Google">
+            <div id="pickup-suggestions" class="suggestions hidden"></div>
+            <input id="pickup-place-id" type="hidden">
+            <p id="pickup-status" class="text-[10px] text-slate-400 mt-1">Select from Google suggestions.</p>
+          </div>
+
+          <input id="pickup-detail" type="hidden">
+
+          <div id="destination-field" class="relative">
+            <label id="destination-label" class="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">Destination *</label>
+            <input id="destination" type="text" autocomplete="off" class="field" placeholder="Search destination on Google">
+            <div id="destination-suggestions" class="suggestions hidden"></div>
+            <input id="destination-place-id" type="hidden">
+            <p id="destination-status" class="text-[10px] text-slate-400 mt-1">Select from Google suggestions.</p>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-2">Vehicle Requirement *</label>
+            <details id="vehicle-picker" class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+              <summary class="cursor-pointer list-none px-4 py-3.5 flex items-center justify-between gap-3">
+                <span id="vehicle-summary" class="text-sm font-extrabold text-slate-800">Select vehicle</span>
+                <i class="fa-solid fa-chevron-down text-slate-400"></i>
+              </summary>
+              <div id="vehicle-options" class="border-t border-slate-100 max-h-72 overflow-auto p-2 space-y-1">
+                <div class="animate-pulse h-12 bg-slate-100 rounded-xl"></div>
+              </div>
+            </details>
+            <p class="text-[10px] text-slate-400 mt-1.5">Select one or multiple vehicles.</p>
+          </div>
+
+          <button id="calculate-button" class="cta-action w-full rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-blue-950 font-black py-4 shadow-lg">
+            <i class="fa-solid fa-calculator mr-2"></i>Generate Quotation
+          </button>
+          <p id="form-error" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl p-3"></p>
+        </div>
+
+        <section id="quote-result" class="hidden mt-5 mb-5">
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="bg-blue-950 text-white px-5 py-4">
+              <div class="text-[10px] text-blue-200 uppercase font-bold tracking-wider">Quotation Ready</div>
+              <div id="quote-reference" class="font-black mt-1"></div>
+            </div>
+            <div class="p-5">
+              <pre id="quote-message" class="whitespace-pre-wrap font-sans text-xs leading-relaxed text-slate-700 bg-slate-50 border border-slate-200 rounded-2xl p-4 max-h-[420px] overflow-auto"></pre>
+              <div class="grid grid-cols-2 gap-2 mt-4">
+                <button id="copy-quote" class="rounded-xl border border-slate-300 bg-white py-3 text-xs font-extrabold text-slate-700"><i class="fa-regular fa-copy mr-1.5"></i>Copy</button>
+                <button id="whatsapp-quote" class="rounded-xl bg-emerald-600 text-white py-3 text-xs font-extrabold"><i class="fa-brands fa-whatsapp mr-1.5"></i>WhatsApp</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+
+
+  </div>
+
+<script>
+(() => {
+  const SUPABASE_URL = 'https://pwciaihqkfnlenxxiown.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz';
+  const SESSION_KEY = 'cwd_ops_session_v1';
+  let session = null;
+  let vehicleOptions = [];
+  let selfDriveRows = [];
+  let selfDriveGroups = [];
+  let selectedSelfDriveGroup = null;
+  let selectedSelfDriveVariant = null;
+  let selfDriveQuoteText = '';
+  let latestQuoteText = '';
+  let currentTripType = 'outstation';
+  const searchTimers = {};
+
+  const el = id => document.getElementById(id);
+  const money = value => '₹' + Number(value || 0).toLocaleString('en-IN');
+
+  function readStoredSession() {
+    try {
+      const value = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+      return value && value.access_token ? value : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function storeSession(value) {
+    session = value && value.access_token ? value : null;
+    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    else localStorage.removeItem(SESSION_KEY);
+  }
+
+  async function supabaseAuth(path, body, accessToken = '') {
+    const response = await fetch(SUPABASE_URL + '/auth/v1/' + path, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_ANON_KEY,
+        ...(accessToken ? { Authorization: 'Bearer ' + accessToken } : {})
+      },
+      body: JSON.stringify(body || {})
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error_description || data.msg || data.message || 'Authentication failed.');
+    return data;
+  }
+
+  async function signIn(email, password) {
+    const data = await supabaseAuth('token?grant_type=password', { email, password });
+    storeSession(data);
+    return data;
+  }
+
+  async function refreshSessionIfNeeded() {
+    session = readStoredSession();
+    if (!session) return null;
+    const expiresAt = Number(session.expires_at || 0) * 1000;
+    if (!expiresAt || expiresAt - Date.now() > 60000) return session;
+    if (!session.refresh_token) {
+      storeSession(null);
+      return null;
+    }
+    try {
+      const data = await supabaseAuth('token?grant_type=refresh_token', { refresh_token: session.refresh_token });
+      storeSession(data);
+      return session;
+    } catch (_) {
+      storeSession(null);
+      return null;
+    }
+  }
+
+  async function signOut() {
+    const token = session?.access_token || '';
+    try {
+      if (token) await supabaseAuth('logout', {}, token);
+    } catch (_) {}
+    storeSession(null);
+  }
+
+  async function api(path, body) {
+    if (!session?.access_token) throw new Error('Admin session expired. Please sign in again.');
+    const response = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
+      body: JSON.stringify(body)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.success === false) throw new Error(data.message || 'Request failed.');
+    return data;
+  }
+
+  async function verifySession() {
+    await refreshSessionIfNeeded();
+    if (!session) return showAuth();
+    try {
+      const ping = await api('/api/admin-quote', { action: 'ping' });
+      showApp(ping.email || '');
+      await loadVehicles();
+    } catch (error) {
+      storeSession(null);
+      showAuth(error.message);
+    }
+  }
+
+  function showAuth(message = '') {
+    el('boot-screen').classList.add('hidden');
+    el('auth-screen').classList.remove('hidden');
+    el('app-screen').classList.add('hidden');
+    if (message) {
+      el('login-error').textContent = message;
+      el('login-error').classList.remove('hidden');
+    }
+  }
+
+  function showApp(email) {
+    el('boot-screen').classList.add('hidden');
+    el('auth-screen').classList.add('hidden');
+    el('app-screen').classList.remove('hidden');
+    el('admin-email').textContent = email || 'Signed in';
+    showView('home');
+  }
+
+  window.showView = function(view) {
+    el('home-view').classList.toggle('hidden', view !== 'home');
+    el('quote-view').classList.toggle('hidden', view !== 'quote');
+    el('selfdrive-view').classList.toggle('hidden', view !== 'selfdrive');
+    if (view === 'selfdrive' && !selfDriveRows.length) loadSelfDriveFleet();
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      const active = btn.dataset.view === view;
+      btn.classList.toggle('text-blue-800', active);
+      btn.classList.toggle('text-slate-400', !active);
+      btn.classList.toggle('nav-selected', active);
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  async function loadVehicles() {
+    const data = await api('/api/admin-quote', { action: 'vehicles' });
+    vehicleOptions = data.vehicles || [];
+    renderVehicleOptions();
+  }
+
+  function updateVehicleSummary() {
+    const selected = [...document.querySelectorAll('input[name="vehicle-key"]:checked')];
+    const summary = el('vehicle-summary');
+    if (!summary) return;
+    if (!selected.length) summary.textContent = 'Select vehicle';
+    else if (selected.length === 1) {
+      const car = vehicleOptions.find(v => String(v.key) === selected[0].value);
+      summary.textContent = car?.carName || '1 vehicle selected';
+    } else summary.textContent = selected.length + ' vehicles selected';
+  }
+
+  function renderVehicleOptions() {
+    const previouslySelected = new Set(selectedVehicleKeys());
+    el('vehicle-options').innerHTML = vehicleOptions.map(vehicle => {
+      const rateText = currentTripType === 'outstation'
+        ? '₹' + Number(vehicle.outstationRate || 0).toLocaleString('en-IN') + '/KM'
+        : currentTripType === 'local'
+          ? 'From ₹' + Number(vehicle.localBaseRate || 0).toLocaleString('en-IN')
+          : 'Airport fare';
+      return `
+        <label class="flex items-center gap-3 rounded-xl p-3 hover:bg-slate-50 cursor-pointer">
+          <input type="checkbox" name="vehicle-key" value="${vehicle.key}" class="w-5 h-5 accent-blue-900" ${previouslySelected.has(String(vehicle.key)) ? 'checked' : ''}>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-extrabold text-slate-900">${escapeHtml(vehicle.carName)}</div>
+            <div class="text-[10px] text-slate-500">${vehicle.seats || '-'} Seater • ${rateText}</div>
+          </div>
+        </label>
+      `;
+    }).join('') || '<p class="text-xs text-rose-600 p-3">No quotation vehicles available.</p>';
+    el('vehicle-options').querySelectorAll('input[name="vehicle-key"]').forEach(input => input.addEventListener('change', updateVehicleSummary));
+    updateVehicleSummary();
+  }
+
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  function opsDateTimeIso(prefix) {
+    const date = el(prefix + '-date')?.value;
+    const hour12 = Number(el(prefix + '-hour')?.value);
+    const ampm = el(prefix + '-ampm')?.value;
+    if (!date || !Number.isInteger(hour12) || hour12 < 1 || hour12 > 12 || !['AM','PM'].includes(ampm)) return '';
+    let hour24 = hour12 % 12;
+    if (ampm === 'PM') hour24 += 12;
+    const local = new Date(date + 'T' + String(hour24).padStart(2,'0') + ':00:00');
+    return Number.isFinite(local.getTime()) ? local.toISOString() : '';
+  }
+
+  function formatDateTime(iso) {
+    return new Intl.DateTimeFormat('en-IN', {
+      timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true
+    }).format(new Date(iso)).replace(',', ' @');
+  }
+
+  function updateDurationPreview() {
+    if (currentTripType !== 'outstation') {
+      el('duration-preview').classList.add('hidden');
+      return;
+    }
+    const startIso = opsDateTimeIso('pickup');
+    const endIso = opsDateTimeIso('return');
+    const start = new Date(startIso);
+    const end = new Date(endIso);
+    if (!startIso || !endIso || !Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start) {
+      el('duration-preview').classList.add('hidden');
+      return;
+    }
+    const startDay = new Date(el('pickup-date').value + 'T12:00:00');
+    const endDay = new Date(el('return-date').value + 'T12:00:00');
+    const days = Math.max(1, Math.round((endDay - startDay) / 86400000) + 1);
+    el('duration-text').textContent = ' ' + days + ' Day' + (days > 1 ? 's' : '');
+    el('duration-preview').classList.remove('hidden');
+  }
+
+  function cleanShortLabel(value) {
+    return String(value || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function quoteRouteLabel(place, inputId) {
+    const main = cleanShortLabel(place.mainText || place.text);
+    const full = cleanShortLabel(place.text);
+    if (/bhimashankar/i.test(main + ' ' + full)) return 'Bhimashankar';
+    if (inputId === 'pickup-location') {
+      const parts = full.split(',').map(part => part.trim()).filter(Boolean);
+      const mumbaiIndex = parts.findIndex(part => /^mumbai$/i.test(part));
+      if (mumbaiIndex > 0) {
+        return parts[mumbaiIndex - 1].replace(/\s+(East|West)$/i, '').trim();
+      }
+    }
+    return main;
+  }
+
+  function setTripType(type) {
+    currentTripType = type;
+    document.querySelectorAll('.trip-chip').forEach(btn => {
+      const active = btn.dataset.trip === type;
+      btn.className = 'trip-chip rounded-xl border py-2.5 text-xs font-bold ' +
+        (active ? 'bg-blue-950 text-white border-blue-950' : 'border-slate-200 text-slate-600 bg-white');
+    });
+    const airport = type === 'airport';
+    const local = type === 'local';
+    el('return-field').classList.toggle('hidden', airport || local);
+    el('local-package-field').classList.toggle('hidden', !local);
+    el('destination-field').classList.toggle('hidden', airport || local);
+    el('airport-controls').classList.toggle('hidden', !airport);
+    el('pickup-label').textContent = airport ? 'Customer Location *' : 'Pickup Location *';
+    el('pickup-location').placeholder = airport ? 'Search customer location on Google' : 'Search pickup on Google';
+    el('quote-result').classList.add('hidden');
+    el('form-error').classList.add('hidden');
+    renderVehicleOptions();
+    updateDurationPreview();
+  }
+
+  async function searchPlaces(inputId, suggestionsId, statusId) {
+    const input = el(inputId);
+    const text = input.value.trim();
+    el(inputId.replace('-location','-place-id'));
+    if (inputId === 'pickup-location') el('pickup-place-id').value = '';
+    if (inputId === 'destination') el('destination-place-id').value = '';
+    const box = el(suggestionsId);
+    clearTimeout(searchTimers[inputId]);
+    if (text.length < 3) {
+      box.classList.add('hidden'); box.innerHTML = '';
+      el(statusId).textContent = 'Type at least 3 characters.';
+      return;
+    }
+    el(statusId).textContent = 'Searching Google…';
+    searchTimers[inputId] = setTimeout(async () => {
+      try {
+        const data = await api('/api/admin-maps', { action: 'autocomplete', input: text });
+        box.innerHTML = '';
+        (data.suggestions || []).forEach(place => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'w-full text-left px-3.5 py-3 border-b border-slate-100 last:border-0 hover:bg-blue-50';
+          button.innerHTML = '<div class="text-xs font-bold text-slate-800">' + escapeHtml(place.mainText) + '</div><div class="text-[10px] text-slate-500 mt-0.5">' + escapeHtml(place.secondaryText || place.text) + '</div>';
+          button.onclick = () => {
+            const shortLabel = quoteRouteLabel(place, inputId);
+            input.value = place.text || place.mainText;
+            input.dataset.shortLabel = shortLabel;
+            if (inputId === 'pickup-location') el('pickup-place-id').value = place.placeId;
+            else el('destination-place-id').value = place.placeId;
+            box.classList.add('hidden');
+            el(statusId).textContent = 'Google location selected.';
+            el(statusId).className = 'text-[10px] text-emerald-600 font-semibold mt-1';
+          };
+          box.appendChild(button);
+        });
+        box.classList.toggle('hidden', !(data.suggestions || []).length);
+        if (!(data.suggestions || []).length) el(statusId).textContent = 'No Google location found.';
+      } catch (error) {
+        box.classList.add('hidden');
+        el(statusId).textContent = error.message;
+        el(statusId).className = 'text-[10px] text-rose-600 mt-1';
+      }
+    }, 280);
+  }
+
+  function selectedVehicleKeys() {
+    return [...document.querySelectorAll('input[name="vehicle-key"]:checked')].map(input => input.value);
+  }
+
+  function buildMessage(data) {
+    const options = data.quotes.map(quote => {
+      const night = Number(quote.nightCharge || 0) > 0 ? ' • Night ₹' + Number(quote.nightCharge).toLocaleString('en-IN') + ' included' : '';
+      return '🚗 *' + quote.carName + (quote.seats ? ' - ' + quote.seats + ' Seater' : '') + '*\n' +
+        '💰 *₹' + Number(quote.fare || 0).toLocaleString('en-IN') + '*' + night;
+    }).join('\n\n');
+
+    const lines = ['*Car With Driver India - Quotation*', ''];
+    if (data.tripType === 'Local') {
+      const first = data.quotes[0] || {};
+      lines.push('📍 Pickup Area: *' + data.routeLabel + '*');
+      lines.push('📅 Pickup: ' + formatDateTime(data.pickupAt));
+      lines.push('⏱ Package: ' + (first.packageLabel || ((first.packageHours || 8) + ' Hours / ' + (first.includedKm || data.billableKm || 80) + ' KM')));
+    } else if (data.tripType === 'Airport') {
+      lines.push('✈️ *' + data.routeLabel + '*');
+      lines.push('📅 Pickup: ' + formatDateTime(data.pickupAt));
+    } else {
+      lines.push('📍 *' + data.routeLabel + '*');
+      lines.push('📅 Pickup: ' + formatDateTime(data.pickupAt));
+      if (data.returnAt) lines.push('📅 Return: ' + formatDateTime(data.returnAt));
+      lines.push('⏱ ' + data.durationDays + ' Day' + (data.durationDays > 1 ? 's' : ''));
+      if (data.billableKm) lines.push('📏 ' + Math.round(data.billableKm).toLocaleString('en-IN') + ' KM included');
+    }
+
+    lines.push('', options, '', data.tripType === 'Airport' ? '✓ Includes: Car + Fuel + Driver' : '✓ Includes: Car + Fuel + Driver Allowance');
+
+    const kmRates = [...new Set(data.quotes.map(q => Number(q.extraKmRate || 0)).filter(Boolean))];
+    const hrRates = [...new Set(data.quotes.map(q => Number(q.extraHourRate || 0)).filter(Boolean))];
+    let extras = '✕ Toll / Parking / State Tax: As per actual';
+    if (data.tripType !== 'Airport' && kmRates.length === 1) extras += '\n• Extra KM: ₹' + kmRates[0] + '/KM';
+    if (data.tripType === 'Local' && hrRates.length === 1) extras += '\n• Extra Hour: ₹' + hrRates[0] + '/Hour';
+    lines.push(extras, '', 'Reply *CONFIRM* to proceed.', '', 'Regards,', '*Car With Driver India*', '📞 9702988465', '🌐 https://carswithdriverindia.com/');
+    return lines.join('\n');
+  }
+
+  async function calculateQuote() {
+    const errorBox = el('form-error');
+    errorBox.classList.add('hidden');
+    const keys = selectedVehicleKeys();
+    const payload = {
+      action: 'calculate',
+      tripType: currentTripType,
+      pickupAt: opsDateTimeIso('pickup'),
+      returnAt: currentTripType === 'outstation' ? opsDateTimeIso('return') : '',
+      pickupLocation: el('pickup-location').dataset.shortLabel || el('pickup-location').value.trim(),
+      pickupPlaceId: el('pickup-place-id').value,
+      destination: el('destination').dataset.shortLabel || el('destination').value.trim(),
+      destinationPlaceId: el('destination-place-id').value,
+      airportType: el('airport-type').value,
+      airportTerminal: el('airport-terminal').value,
+      localPackage: el('local-package').value,
+      vehicleKeys: keys
+    };
+
+    const missingBase = !payload.pickupAt || !payload.pickupLocation || !payload.pickupPlaceId || !keys.length;
+    const missingRoute = currentTripType === 'outstation' && (!payload.returnAt || !payload.destination || !payload.destinationPlaceId);
+    if (missingBase || missingRoute) {
+      errorBox.textContent = 'Please complete all required details and select Google locations.';
+      errorBox.classList.remove('hidden'); return;
+    }
+    if (currentTripType === 'outstation' && new Date(payload.returnAt) <= new Date(payload.pickupAt)) {
+      errorBox.textContent = 'Return date and time must be later than pickup date and time.';
+      errorBox.classList.remove('hidden'); return;
+    }
+
+    const button = el('calculate-button');
+    const original = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Calculating fare…';
+    try {
+      const data = await api('/api/admin-quote', payload);
+      latestQuoteText = buildMessage(data);
+      el('quote-reference').textContent = data.reference;
+      el('quote-message').textContent = latestQuoteText;
+      el('quote-result').classList.remove('hidden');
+      el('quote-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (error) {
+      errorBox.textContent = error.message || 'Unable to generate quotation.';
+      errorBox.classList.remove('hidden');
+    } finally {
+      button.disabled = false;
+      button.innerHTML = original;
+    }
+  }
+
+  window.resetQuoteForm = function() {
+    ['pickup-date','return-date','pickup-location','pickup-place-id','destination','destination-place-id','pickup-detail'].forEach(id => el(id).value = '');
+    delete el('pickup-location').dataset.shortLabel;
+    delete el('destination').dataset.shortLabel;
+    document.querySelectorAll('input[name="vehicle-key"]').forEach(input => input.checked = false);
+    el('duration-preview').classList.add('hidden');
+    el('quote-result').classList.add('hidden');
+    el('form-error').classList.add('hidden');
+    latestQuoteText = '';
+  };
+
+  function selfDriveDisplayName(row) {
+    return String(row.full_name || [row.brand, row.model].filter(Boolean).join(' ') || 'Vehicle').trim();
+  }
+
+  function selfDriveGroupKey(row) {
+    const brand = String(row.brand || '').trim().toLowerCase();
+    const model = String(row.model || '').trim().toLowerCase();
+    return brand || model ? brand + '|' + model : selfDriveDisplayName(row).toLowerCase();
+  }
+
+  async function loadSelfDriveFleet() {
+    const cols = 'id,brand,model,full_name,service_type,transmission,fuel_type,rate_per_hour,refundable_deposit,display_order,is_active';
+    const query = new URLSearchParams({select: cols,is_active:'eq.true',service_type:'in.(Self-Drive,Both)',order:'display_order.asc,id.asc',limit:'500'});
+    try {
+      const response = await fetch(SUPABASE_URL + '/rest/v1/vehicles?' + query.toString(), {headers:{apikey:SUPABASE_ANON_KEY},cache:'no-store'});
+      if (!response.ok) throw new Error('Unable to load self-drive vehicles.');
+      selfDriveRows = await response.json();
+      const groups = new Map();
+      selfDriveRows.forEach(row => {
+        const key = selfDriveGroupKey(row);
+        if (!groups.has(key)) groups.set(key, {key,name:selfDriveDisplayName(row),rows:[]});
+        groups.get(key).rows.push(row);
+      });
+      selfDriveGroups = [...groups.values()];
+    } catch (error) {
+      el('sd-selected-vehicle').textContent = error.message || 'Unable to load self-drive vehicles.';
+      el('sd-selected-vehicle').className = 'text-[10px] text-rose-600 font-semibold mt-1';
+    }
+  }
+
+  function renderSelfDriveSearch() {
+    const q = el('sd-vehicle-search').value.trim().toLowerCase();
+    const box = el('sd-vehicle-results');
+    if (!q) { box.classList.add('hidden'); box.innerHTML=''; return; }
+    const matches = selfDriveGroups.filter(g => g.name.toLowerCase().includes(q)).slice(0,20);
+    box.innerHTML = matches.length ? matches.map(g =>
+      '<button type="button" class="w-full text-left px-3.5 py-3 border-b border-slate-100 last:border-0 hover:bg-blue-50" data-sd-group="' + escapeHtml(g.key) + '">' +
+      '<div class="text-xs font-extrabold text-slate-800">' + escapeHtml(g.name) + '</div>' +
+      '<div class="text-[10px] text-slate-500 mt-0.5">' + g.rows.length + ' variant' + (g.rows.length===1?'':'s') + '</div></button>'
+    ).join('') : '<div class="px-3.5 py-3 text-xs text-slate-500">No matching vehicle found.</div>';
+    box.classList.remove('hidden');
+    box.querySelectorAll('[data-sd-group]').forEach(btn => btn.addEventListener('click', () => selectSelfDriveGroup(selfDriveGroups.find(g => g.key === btn.dataset.sdGroup))));
+  }
+
+  function uniqueValues(rows, field) {
+    return [...new Set(rows.map(r => String(r[field] || '').trim()).filter(Boolean))];
+  }
+
+  function setVariantSelect(selectId, values, placeholder) {
+    const select = el(selectId);
+    select.innerHTML = values.length ? values.map(v => '<option value="' + escapeHtml(v) + '">' + escapeHtml(v) + '</option>').join('') : '<option value="">' + placeholder + '</option>';
+    select.disabled = values.length <= 1;
+  }
+
+  function selectSelfDriveGroup(group) {
+    if (!group) return;
+    selectedSelfDriveGroup = group;
+    selectedSelfDriveVariant = null;
+    el('sd-vehicle-search').value = group.name;
+    el('sd-vehicle-results').classList.add('hidden');
+    el('sd-selected-vehicle').textContent = group.name + ' selected';
+    el('sd-selected-vehicle').className = 'text-[10px] text-emerald-600 font-semibold mt-1';
+    setVariantSelect('sd-fuel', uniqueValues(group.rows,'fuel_type'), 'Fuel unavailable');
+    updateSelfDriveTransmissionOptions();
+  }
+
+  function updateSelfDriveTransmissionOptions() {
+    if (!selectedSelfDriveGroup) return;
+    const fuel=el('sd-fuel').value;
+    const matching=selectedSelfDriveGroup.rows.filter(r => !fuel || String(r.fuel_type||'')===fuel);
+    setVariantSelect('sd-transmission', uniqueValues(matching,'transmission'), 'Transmission unavailable');
+    resolveSelfDriveVariant();
+  }
+
+  function resolveSelfDriveVariant() {
+    if (!selectedSelfDriveGroup) return;
+    const fuel=el('sd-fuel').value, transmission=el('sd-transmission').value;
+    selectedSelfDriveVariant=selectedSelfDriveGroup.rows.find(r => String(r.fuel_type||'')===fuel && String(r.transmission||'')===transmission)
+      || selectedSelfDriveGroup.rows.find(r => String(r.fuel_type||'')===fuel) || selectedSelfDriveGroup.rows[0] || null;
+    // Partner pricing is verified offline for every enquiry. Never infer pricing
+    // from the website fleet record or a previous vehicle/variant selection.
+    ['sd-day-rate','sd-extra-hour-rate','sd-extra-km-rate','sd-security-deposit'].forEach(id => { el(id).value=''; });
+    updateSelfDriveTotal();
+  }
+
+  function selfDriveDate(prefix) {
+    const date=el('sd-'+prefix+'-date').value, hour=Number(el('sd-'+prefix+'-hour').value||0), ampm=el('sd-'+prefix+'-ampm').value;
+    if(!date||!hour) return null;
+    let h=hour%12; if(ampm==='PM') h+=12;
+    return new Date(date+'T'+String(h).padStart(2,'0')+':00:00+05:30');
+  }
+
+  function selfDriveDuration() {
+    const pickup=selfDriveDate('pickup'), ret=selfDriveDate('return');
+    if(!pickup||!ret||ret<=pickup) return {totalHours:0,days:0,extraHours:0};
+    const totalHours=Math.round((ret-pickup)/3600000);
+    return {totalHours,days:Math.floor(totalHours/24),extraHours:totalHours%24};
+  }
+
+  function updateSelfDriveTotal() {
+    const duration=selfDriveDuration();
+    const perDay=Number(el('sd-day-rate').value||0);
+    const extraHourRate=Number(el('sd-extra-hour-rate').value||0);
+    const extraKmRate=Number(el('sd-extra-km-rate').value||0);
+    const deposit=Number(el('sd-security-deposit').value||0);
+    const delivery=el('sd-pickup-type').value==='delivery'?Number(el('sd-delivery-charge').value||0):0;
+    const rental=(duration.days*perDay)+(duration.extraHours*extraHourRate);
+    const total=duration.totalHours>=24&&perDay?rental+deposit+delivery:0;
+    el('sd-total-payable').textContent=money(total);
+    if(duration.totalHours>0&&duration.totalHours<24) {
+      el('sd-total-hint').textContent='Minimum self-drive rental is 24 hours.';
+    } else if(duration.totalHours>=24&&perDay) {
+      const parts=[];
+      if(duration.days) parts.push(duration.days+' Day'+(duration.days>1?'s':'')+' × '+money(perDay));
+      if(duration.extraHours) parts.push(duration.extraHours+' Hour'+(duration.extraHours>1?'s':'')+' × '+money(extraHourRate));
+      if(delivery) parts.push('Delivery '+money(delivery));
+      parts.push('Deposit '+money(deposit));
+      el('sd-total-hint').textContent=parts.join(' + ');
+    } else {
+      el('sd-total-hint').textContent='Enter verified partner rates and travel dates.';
+    }
+    return {...duration,perDay,extraHourRate,extraKmRate,deposit,delivery,rental,total};
+  }
+
+  function toggleSelfDriveDelivery() {
+    const delivery=el('sd-pickup-type').value==='delivery';
+    el('sd-delivery-location-wrap').classList.toggle('hidden',!delivery);
+    el('sd-delivery-charge-wrap').classList.toggle('hidden',!delivery);
+    if(!delivery){el('sd-delivery-location').value='';el('sd-delivery-charge').value='0';}
+    updateSelfDriveTotal();
+  }
+
+  function formatSelfDriveDate(date) {
+    if(!date) return '-';
+    return new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}).format(date);
+  }
+
+  function buildSelfDriveQuote() {
+    const error=el('sd-error'); error.classList.add('hidden');
+    if(!selectedSelfDriveGroup||!selectedSelfDriveVariant) throw new Error('Please search and select a vehicle.');
+    const pickup=selfDriveDate('pickup'), ret=selfDriveDate('return');
+    if(!pickup||!ret||ret<=pickup) throw new Error('Return date/time must be later than pickup date/time.');
+    const summary=updateSelfDriveTotal();
+    if(summary.totalHours<24) throw new Error('Minimum self-drive rental is 24 hours.');
+    if(summary.perDay<=0) throw new Error('Enter the verified Per Day Rate.');
+    if(summary.extraHourRate<=0) throw new Error('Enter the verified Extra Hour Rate.');
+    if(summary.extraKmRate<=0) throw new Error('Enter the verified Extra KM Rate.');
+    if(summary.deposit<0 || el('sd-security-deposit').value==='') throw new Error('Enter the verified Security Deposit.');
+    const isDelivery=el('sd-pickup-type').value==='delivery';
+    const location=el('sd-delivery-location').value.trim();
+    if(isDelivery&&!location) throw new Error('Enter the home delivery location.');
+
+    const durationText=[
+      summary.days ? summary.days+' Day'+(summary.days>1?'s':'') : '',
+      summary.extraHours ? summary.extraHours+' Hour'+(summary.extraHours>1?'s':'') : ''
+    ].filter(Boolean).join(' + ');
+
+    const lines=[
+      "Hello Sir/Ma'am",'','Thank you for contacting Car With Driver India.','',
+      '🚗 *Self Drive Car:* '+selectedSelfDriveGroup.name,
+      '⛽ *Fuel Type:* '+(selectedSelfDriveVariant.fuel_type||'-'),
+      '⚙️ *Transmission:* '+(selectedSelfDriveVariant.transmission||'-'),'',
+      '📅 *Pickup:* '+formatSelfDriveDate(pickup),
+      '📅 *Return:* '+formatSelfDriveDate(ret),
+      '⏱ *Duration:* '+durationText,
+      '','📍 *Pickup Type:* '+(isDelivery?'Home Delivery':'Self Pick-up')
+    ];
+    if(isDelivery) lines.push('📌 *Delivery Location:* '+location);
+    lines.push(
+      '',
+      '💰 *Rental Charges:*',
+      'Per Day Rate: '+money(summary.perDay),
+      'Extra Hour Rate: '+money(summary.extraHourRate)+'/hour',
+      'Extra KM Rate: '+money(summary.extraKmRate)+'/KM'
+    );
+    if(isDelivery) lines.push('Home Delivery Charge: '+money(summary.delivery));
+    lines.push(
+      'Security Deposit: '+money(summary.deposit),'',
+      '💳 *Total Amount Payable:* *'+money(summary.total)+'*','',
+      '📌 Fuel, toll, parking and traffic fines are extra/as applicable.',
+      '📌 Booking is subject to vehicle availability and final verification.','',
+      'Kindly reply *"confirm"* to process further.','',
+      'Regards,','*Car With Driver India*','📞 9702988465','🌐 https://carswithdriverindia.com/'
+    );
+    return lines.join('\n');
+  }
+
+  function resetSelfDriveQuote() {
+    selectedSelfDriveGroup=null; selectedSelfDriveVariant=null; selfDriveQuoteText='';
+    el('sd-vehicle-search').value=''; el('sd-vehicle-results').classList.add('hidden');
+    el('sd-selected-vehicle').textContent='Search and select a vehicle.';
+    el('sd-selected-vehicle').className='text-[10px] text-slate-400 mt-1';
+    el('sd-fuel').innerHTML='<option value="">Select vehicle first</option>';
+    el('sd-transmission').innerHTML='<option value="">Select vehicle first</option>';
+    el('sd-fuel').disabled=true; el('sd-transmission').disabled=true;
+    ['sd-pickup-date','sd-return-date','sd-delivery-location','sd-day-rate','sd-extra-hour-rate','sd-extra-km-rate','sd-security-deposit'].forEach(id=>el(id).value='');
+    el('sd-pickup-type').value='self'; el('sd-delivery-charge').value='0';
+    el('sd-quote-result').classList.add('hidden'); el('sd-error').classList.add('hidden');
+    toggleSelfDriveDelivery();
+  }
+
+  el('sd-vehicle-search').addEventListener('input', () => {selectedSelfDriveGroup=null;selectedSelfDriveVariant=null;renderSelfDriveSearch();});
+  el('sd-fuel').addEventListener('change', updateSelfDriveTransmissionOptions);
+  el('sd-transmission').addEventListener('change', resolveSelfDriveVariant);
+  ['sd-pickup-date','sd-pickup-hour','sd-pickup-ampm','sd-return-date','sd-return-hour','sd-return-ampm','sd-delivery-charge'].forEach(id=>el(id).addEventListener('change',updateSelfDriveTotal));
+  ['sd-day-rate','sd-extra-hour-rate','sd-extra-km-rate','sd-security-deposit'].forEach(id=>el(id).addEventListener('input',updateSelfDriveTotal));
+  el('sd-pickup-type').addEventListener('change', toggleSelfDriveDelivery);
+  el('sd-reset').addEventListener('click', resetSelfDriveQuote);
+  el('sd-generate').addEventListener('click', () => {
+    const error=el('sd-error');
+    try{selfDriveQuoteText=buildSelfDriveQuote();el('sd-quote-message').textContent=selfDriveQuoteText;el('sd-quote-result').classList.remove('hidden');el('sd-quote-result').scrollIntoView({behavior:'smooth',block:'start'});}
+    catch(e){error.textContent=e.message||'Unable to generate self-drive quotation.';error.classList.remove('hidden');}
+  });
+  el('sd-copy').addEventListener('click', async () => {if(!selfDriveQuoteText)return;try{await navigator.clipboard.writeText(selfDriveQuoteText);}catch{prompt('Copy quotation:',selfDriveQuoteText);}});
+  el('sd-whatsapp').addEventListener('click', () => {if(!selfDriveQuoteText)return;window.open('https://wa.me/?text='+encodeURIComponent(selfDriveQuoteText),'_blank','noopener');});
+
+  el('login-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = el('login-button');
+    const original = button.textContent;
+    el('login-error').classList.add('hidden');
+    button.disabled = true; button.textContent = 'Signing in…';
+    try {
+      await signIn(el('login-email').value.trim(), el('login-password').value);
+      button.disabled = false; button.textContent = original;
+      await verifySession();
+    } catch (error) {
+      button.disabled = false; button.textContent = original;
+      el('login-error').textContent = error.message || 'Unable to sign in.';
+      el('login-error').classList.remove('hidden');
+    }
+  });
+
+  el('logout-button').addEventListener('click', async () => {
+    await signOut();
+    showAuth();
+  });
+
+  document.querySelectorAll('.trip-chip').forEach(btn => btn.addEventListener('click', () => setTripType(btn.dataset.trip)));
+  ['pickup-date','pickup-hour','pickup-ampm','return-date','return-hour','return-ampm'].forEach(id => el(id)?.addEventListener('change', updateDurationPreview));
+  el('pickup-location').addEventListener('input', () => { delete el('pickup-location').dataset.shortLabel; searchPlaces('pickup-location','pickup-suggestions','pickup-status'); });
+  el('destination').addEventListener('input', () => { delete el('destination').dataset.shortLabel; searchPlaces('destination','destination-suggestions','destination-status'); });
+  el('calculate-button').addEventListener('click', calculateQuote);
+  el('local-package').addEventListener('change', () => { el('quote-result').classList.add('hidden'); });
+  el('copy-quote').addEventListener('click', async () => {
+    if (!latestQuoteText) return;
+    try { await navigator.clipboard.writeText(latestQuoteText); el('copy-quote').innerHTML = '<i class="fa-solid fa-check mr-1.5"></i>Copied'; setTimeout(() => el('copy-quote').innerHTML = '<i class="fa-regular fa-copy mr-1.5"></i>Copy', 1400); }
+    catch { prompt('Copy quotation:', latestQuoteText); }
+  });
+  el('whatsapp-quote').addEventListener('click', () => {
+    if (!latestQuoteText) return;
+    window.open('https://wa.me/?text=' + encodeURIComponent(latestQuoteText), '_blank', 'noopener');
+  });
+
+  document.addEventListener('click', event => {
+    if (!event.target.closest('#sd-vehicle-search') && !event.target.closest('#sd-vehicle-results')) el('sd-vehicle-results').classList.add('hidden');
+    if (!event.target.closest('#pickup-location') && !event.target.closest('#pickup-suggestions')) el('pickup-suggestions').classList.add('hidden');
+    if (!event.target.closest('#destination') && !event.target.closest('#destination-suggestions')) el('destination-suggestions').classList.add('hidden');
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/ops-sw.js', { scope: '/ops' }).catch(() => {});
+  }
+
+  verifySession();
+})();
+</script>
+</body>
+</html>

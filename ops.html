@@ -655,6 +655,7 @@
       if (data.returnAt) lines.push('📅 Return: ' + formatDateTime(data.returnAt));
       lines.push('⏱ ' + data.durationDays + ' Day' + (data.durationDays > 1 ? 's' : ''));
       if (data.billableKm) lines.push('📏 ' + Math.round(data.billableKm).toLocaleString('en-IN') + ' KM included');
+      if (data.accessNote) lines.push('⚠️ ' + data.accessNote);
     }
 
     lines.push('', options, '', data.tripType === 'Airport' ? '✓ Includes: Car + Fuel + Driver' : '✓ Includes: Car + Fuel + Driver Allowance');

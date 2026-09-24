@@ -1,0 +1,10 @@
+<!-- HOMEPAGE WITH DRIVER SUPPORTING CONTENT -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 py-8" id="home-with-driver">
+  <div class="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-5 sm:p-7 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+    <div class="max-w-3xl">
+      <h2 class="text-xl sm:text-2xl font-black text-slate-900">Car Rental with Driver in Mumbai, Thane & Navi Mumbai</h2>
+      <p class="text-sm text-slate-600 mt-2 leading-6">Book a chauffeur-driven car for local city travel or outstation trips with pickup across Mumbai, Thane and Navi Mumbai. Choose your trip details and vehicle to view the applicable fare.</p>
+    </div>
+    <a href="/with-driver" class="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-950 text-white px-5 py-3 text-sm font-bold hover:bg-indigo-900 transition">Explore With Driver <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i></a>
+  </div>
+</section>

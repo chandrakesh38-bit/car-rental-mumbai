@@ -42,6 +42,34 @@ function buildStructuredData(page) {
       provider:{'@id':site+'/#organization'},
       areaServed:['Mumbai','Thane','Navi Mumbai'].map(name => ({'@type':'City',name}))
     });
+    if (page.slug === 'with-driver') {
+      graph.push({
+        '@type':'FAQPage',
+        '@id':site+'/with-driver#faq',
+        mainEntity:[
+          {
+            '@type':'Question',
+            name:'Do you provide car rental with driver in Mumbai, Thane and Navi Mumbai?',
+            acceptedAnswer:{'@type':'Answer',text:'Yes. Pickup is available across Mumbai, Thane and Navi Mumbai for local and outstation trips, subject to vehicle availability.'}
+          },
+          {
+            '@type':'Question',
+            name:'Can I book a car with driver for one day?',
+            acceptedAnswer:{'@type':'Answer',text:'Yes. For city use, select a local package such as 8 Hours / 80 KM or 12 Hours / 120 KM. For an outstation trip, billing is based on the applicable distance and day rules.'}
+          },
+          {
+            '@type':'Question',
+            name:'Are toll and parking included in the fare?',
+            acceptedAnswer:{'@type':'Answer',text:'Toll, parking and applicable state taxes are normally charged as per actuals unless your confirmed quotation specifically states otherwise.'}
+          },
+          {
+            '@type':'Question',
+            name:'Is this a driver-only service?',
+            acceptedAnswer:{'@type':'Answer',text:'No. This service provides a car together with a driver. We do not offer a driver-only booking for a customer\'s own vehicle.'}
+          }
+        ]
+      });
+    }
   } else {
     graph.push({'@type':'WebPage','@id':site+'/'+page.slug+'#webpage',url:site+'/'+page.slug,name:page.title,about:{'@id':site+'/#organization'}});
   }

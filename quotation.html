@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Quick Quotation | Car With Driver India</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    .page { min-height: 100vh; padding: 24px 16px 48px; }
+    .shell { width: 100%; max-width: 760px; margin: 0 auto; }
+    .brand { text-align: center; margin-bottom: 22px; }
+    .brand img { width: 72px; height: 72px; object-fit: contain; border-radius: 16px; background: #fff; }
+    .brand h1 { margin: 10px 0 4px; font-size: 24px; }
+    .brand p { margin: 0; color: #64748b; font-size: 14px; }
+    .switcher { display: flex; justify-content: center; gap: 10px; margin: 20px auto; }
+    .mode {
+      min-width: 150px; border: 1px solid #cbd5e1; background: #fff; color: #334155;
+      border-radius: 14px; padding: 13px 18px; font-weight: 800; cursor: pointer;
+    }
+    .mode.active { background: #172554; border-color: #172554; color: #fff; }
+    .mode[disabled] { opacity: .5; cursor: not-allowed; }
+    .card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(15,23,42,.06); padding: 22px;
+    }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .full { grid-column: 1 / -1; }
+    .datetime-card {
+      grid-column: 1 / -1; border: 1px solid #e2e8f0; background: #f8fafc;
+      border-radius: 18px; padding: 16px;
+    }
+    .datetime-title {
+      font-size: 14px; font-weight: 850; color: #334155; margin-bottom: 10px;
+      letter-spacing: .01em;
+    }
+    .datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .datetime-card input, .datetime-card select { background: #fff; min-height: 48px; }
+    label { display: block; font-size: 13px; font-weight: 750; margin-bottom: 7px; color: #334155; }
+    input, select {
+      width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px 13px;
+      font-size: 15px; background: #fff; color: #0f172a; outline: none;
+    }
+    input:focus, select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.10); }
+    .location-wrap { position: relative; }
+    .suggestions {
+      position: absolute; z-index: 30; top: calc(100% + 5px); left: 0; right: 0;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      box-shadow: 0 16px 35px rgba(15,23,42,.14); overflow: hidden; display: none;
+    }
+    .suggestion {
+      width: 100%; text-align: left; border: 0; background: #fff; padding: 11px 12px;
+      cursor: pointer; border-bottom: 1px solid #f1f5f9;
+    }
+    .suggestion:hover { background: #f8fafc; }
+    .suggestion strong, .suggestion span { display: block; }
+    .suggestion span { color: #64748b; font-size: 11px; margin-top: 2px; }
+    .status { font-size: 12px; margin-top: 6px; min-height: 17px; color: #64748b; }
+    .status.ok { color: #047857; font-weight: 700; }
+    .status.error { color: #be123c; font-weight: 700; }
+    .fare-row { display: flex; gap: 10px; align-items: center; }
+    .fare-row input { font-weight: 800; font-size: 18px; }
+    .hint { font-size: 11px; color: #64748b; margin-top: 5px; }
+    .metrics {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px;
+      padding: 12px 14px; font-size: 12px; color: #475569; display: none;
+    }
+    .metrics strong { color: #0f172a; }
+    .cta {
+      width: 100%; border: 0; border-radius: 14px; padding: 14px 18px;
+      background: #172554; color: #fff; font-size: 16px; font-weight: 850;
+      cursor: pointer; margin-top: 4px;
+    }
+    .cta:disabled { opacity: .65; cursor: wait; }
+    .alert {
+      display: none; margin-bottom: 14px; padding: 11px 13px; border-radius: 12px;
+      font-size: 13px; font-weight: 650; background: #fff1f2; color: #be123c; border: 1px solid #fecdd3;
+    }
+    .result { display: none; margin-top: 18px; }
+    .result h2 { margin: 0 0 10px; font-size: 18px; }
+    .quote {
+      white-space: pre-wrap; word-break: break-word; background: #0f172a; color: #f8fafc;
+      border-radius: 16px; padding: 18px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px; line-height: 1.55;
+    }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .action {
+      border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; background: #fff;
+      font-weight: 800; cursor: pointer; color: #172554;
+    }
+    .action.primary { background: #16a34a; border-color: #16a34a; color: #fff; }
+    @media (max-width: 620px) {
+      .page { padding: 16px 12px 36px; }
+      .grid { grid-template-columns: 1fr; }
+      .full { grid-column: auto; }
+      .card { padding: 16px; border-radius: 16px; }
+      .switcher { gap: 8px; }
+      .mode { min-width: 0; flex: 1; padding: 12px 8px; }
+      .actions { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="shell">
+      <header class="brand">
+        <img src="/logo.png" alt="Car With Driver India">
+        <h1>Quick Quotation</h1>
+        <p>Car With Driver India</p>
+      </header>
+
+      <div class="switcher" aria-label="Quotation type">
+        <button type="button" class="mode active">Outstation</button>
+        <button type="button" class="mode" disabled title="Local quotation will be added later">Local</button>
+      </div>
+
+      <section class="card">
+        <div id="alert" class="alert" role="alert"></div>
+
+        <div class="grid">
+          <div class="datetime-card">
+            <div class="datetime-title">📅 PICKUP DATE &amp; TIME *</div>
+            <label for="pickup-date">Pickup Date</label>
+            <input id="pickup-date" type="date">
+            <div class="datetime-row">
+              <div>
+                <label for="pickup-hour">Time</label>
+                <select id="pickup-hour">
+                  <option value="">Select time</option>
+                  <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option>
+                  <option value="4">04:00</option><option value="5">05:00</option><option value="6">06:00</option>
+                  <option value="7">07:00</option><option value="8">08:00</option><option value="9">09:00</option>
+                  <option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                </select>
+              </div>
+              <div>
+                <label for="pickup-ampm">AM / PM</label>
+                <select id="pickup-ampm">
+                  <option value="">Select</option>
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="datetime-card">
+            <div class="datetime-title">🗓️ FINAL DROP DATE &amp; TIME *</div>
+            <label for="return-date">Final Drop Date</label>
+            <input id="return-date" type="date">
+            <div class="datetime-row">
+              <div>
+                <label for="return-hour">Time</label>
+                <select id="return-hour">
+                  <option value="">Select time</option>
+                  <option value="1">01:00</option><option value="2">02:00</option><option value="3">03:00</option>
+                  <option value="4">04:00</option><option value="5">05:00</option><option value="6">06:00</option>
+                  <option value="7">07:00</option><option value="8">08:00</option><option value="9">09:00</option>
+                  <option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
+                </select>
+              </div>
+              <div>
+                <label for="return-ampm">AM / PM</label>
+                <select id="return-ampm">
+                  <option value="">Select</option>
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="full location-wrap">
+            <label for="pickup-location">Pickup Location</label>
+            <input id="pickup-location" type="text" autocomplete="off" placeholder="Search pickup location">
+            <div id="pickup-suggestions" class="suggestions"></div>
+            <div id="pickup-status" class="status"></div>
+          </div>
+
+          <div class="full location-wrap">
+            <label for="drop-location">Drop Location</label>
+            <input id="drop-location" type="text" autocomplete="off" placeholder="Search drop location">
+            <div id="drop-suggestions" class="suggestions"></div>
+            <div id="drop-status" class="status"></div>
+          </div>
+
+          <div class="full">
+            <label for="vehicle">Vehicle</label>
+            <select id="vehicle">
+              <option value="">Loading vehicles…</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label for="total-rent">Total Rent</label>
+            <div class="fare-row">
+              <input id="total-rent" type="number" inputmode="numeric" min="0" step="1" placeholder="Auto calculated">
+            </div>
+            <div class="hint">Auto calculated from current pricing — you can edit this amount before generating the quotation.</div>
+          </div>
+
+          <div id="metrics" class="metrics full">
+            Route: <strong id="route-km">—</strong> KM ·
+            Billable: <strong id="billable-km">—</strong> KM ·
+            Days: <strong id="trip-days">—</strong>
+          </div>
+
+          <div class="full">
+            <button id="generate" type="button" class="cta">Generate Quotation</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="result" class="result card">
+        <h2>Quotation Ready</h2>
+        <div id="quote" class="quote"></div>
+        <div class="actions">
+          <button id="copy" type="button" class="action">Copy Quotation</button>
+          <button id="whatsapp" type="button" class="action primary">Share on WhatsApp</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+<script>
+(() => {
+  const SUPABASE_URL = 'https://pwciaihqkfnlenxxiown.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz';
+  const fallbackFleet = [
+    { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', outstationPerKm: 17, driverAllowance: 500 },
+    { name: 'Maruti Ertiga', category: 'Family MUV', outstationPerKm: 19, driverAllowance: 500 },
+    { name: 'Kia Carens', category: 'Premium Family MUV', outstationPerKm: 20, driverAllowance: 500 },
+    { name: 'Toyota Innova', category: 'Executive MUV', outstationPerKm: 22, driverAllowance: 500 },
+    { name: 'Innova Crysta', category: 'Luxury MUV', outstationPerKm: 25, driverAllowance: 500 }
+  ];
+
+  let fleet = [...fallbackFleet];
+  let minimumKmPerDay = 300;
+  let pickupSelection = null;
+  let dropSelection = null;
+  let routeQuote = null;
+  let searchTimers = {};
+  let calculating = false;
+
+  const $ = id => document.getElementById(id);
+  const alertBox = $('alert');
+
+  function showError(message) {
+    alertBox.textContent = message;
+    alertBox.style.display = 'block';
+    window.scrollTo({ top: Math.max(0, alertBox.getBoundingClientRect().top + window.scrollY - 24), behavior: 'smooth' });
+  }
+
+  function clearError() {
+    alertBox.textContent = '';
+    alertBox.style.display = 'none';
+  }
+
+  async function mapsRequest(action, extra = {}) {
+    const response = await fetch('/api/maps-route', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...extra })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.success) throw new Error(payload.message || 'Unable to calculate this route.');
+    return payload;
+  }
+
+  async function loadPricing() {
+    try {
+      const headers = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY };
+      const [ratesResponse, rulesResponse] = await Promise.all([
+        fetch(SUPABASE_URL + '/rest/v1/with_driver_rates?select=*&is_active=eq.true&order=display_order.asc,full_name.asc', { headers, cache: 'no-store' }),
+        fetch(SUPABASE_URL + '/rest/v1/pricing_rules?select=rule_name,rule_value', { headers, cache: 'no-store' })
+      ]);
+
+      if (ratesResponse.ok) {
+        const rows = await ratesResponse.json();
+        const seen = new Set();
+        const loaded = rows.map(row => {
+          let name = String(row.full_name || '').trim();
+          if (String(row.segment || '').toLowerCase() === 'sedan' && /dzire|aura/i.test(name)) name = 'Sedan (Dzire / Aura)';
+          const key = name.toLowerCase();
+          if (!name || seen.has(key)) return null;
+          seen.add(key);
+          return {
+            name,
+            category: String(row.segment || 'With Driver'),
+            outstationPerKm: Number(row.outstation_rate_per_km) || 0,
+            driverAllowance: Number(row.driver_allowance_per_day) || 500
+          };
+        }).filter(car => car && car.outstationPerKm > 0);
+        if (loaded.length) fleet = loaded;
+      }
+
+      if (rulesResponse.ok) {
+        const rules = await rulesResponse.json();
+        for (const rule of rules) {
+          const name = String(rule.rule_name || '').toLowerCase();
+          const value = Number(rule.rule_value);
+          if (name.includes('minimum') && name.includes('outstation') && Number.isFinite(value) && value > 0) {
+            minimumKmPerDay = value;
+          }
+        }
+      }
+    } catch (_) {
+      // Safe fallback keeps the tool usable if live pricing is temporarily unavailable.
+    }
+    renderVehicles();
+  }
+
+  function renderVehicles() {
+    const select = $('vehicle');
+    const previous = select.value;
+    select.innerHTML = '<option value="">Select vehicle</option>';
+    fleet.forEach((car, index) => {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = car.name;
+      select.appendChild(option);
+    });
+    if (previous && fleet[Number(previous)]) select.value = previous;
+  }
+
+  function setStatus(type, message, kind = '') {
+    const el = $(type + '-status');
+    el.textContent = message || '';
+    el.className = 'status' + (kind ? ' ' + kind : '');
+  }
+
+  function closeSuggestions(type) {
+    $(type + '-suggestions').style.display = 'none';
+  }
+
+  function setupAutocomplete(type) {
+    const input = $(type + '-location');
+    const box = $(type + '-suggestions');
+    input.addEventListener('input', () => {
+      if (type === 'pickup') pickupSelection = null;
+      else dropSelection = null;
+      routeQuote = null;
+      setStatus(type, '');
+      clearFare();
+      clearTimeout(searchTimers[type]);
+      const query = input.value.trim();
+      if (query.length < 3) {
+        box.innerHTML = '';
+        box.style.display = 'none';
+        return;
+      }
+
+      searchTimers[type] = setTimeout(async () => {
+        try {
+          const payload = await mapsRequest('autocomplete', { input: query });
+          if (input.value.trim() !== query) return;
+          box.innerHTML = '';
+          const suggestions = payload.suggestions || [];
+          if (!suggestions.length) {
+            box.style.display = 'none';
+            return;
+          }
+          suggestions.forEach(place => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'suggestion';
+            const main = document.createElement('strong');
+            main.textContent = place.mainText || place.text || '';
+            const secondary = document.createElement('span');
+            secondary.textContent = place.secondaryText || '';
+            button.append(main, secondary);
+            button.addEventListener('click', async () => {
+              input.value = place.text || place.mainText || '';
+              const selected = {
+                placeId: place.placeId,
+                text: place.text || place.mainText || '',
+                mainText: place.mainText || place.text || ''
+              };
+              if (type === 'pickup') pickupSelection = selected;
+              else dropSelection = selected;
+              closeSuggestions(type);
+
+              if (type === 'pickup') {
+                setStatus('pickup', 'Checking pickup service area…');
+                try {
+                  const result = await mapsRequest('validate-pickup', { placeId: selected.placeId });
+                  if (!result.allowed) {
+                    pickupSelection = null;
+                    setStatus('pickup', result.message || 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.', 'error');
+                    clearFare();
+                    return;
+                  }
+                  setStatus('pickup', '✓ Pickup location available.', 'ok');
+                } catch (error) {
+                  pickupSelection = null;
+                  setStatus('pickup', error.message || 'Unable to verify pickup location.', 'error');
+                  clearFare();
+                  return;
+                }
+              } else {
+                setStatus('drop', '✓ Drop location selected.', 'ok');
+              }
+              await refreshAutoFare();
+            });
+            box.appendChild(button);
+          });
+          box.style.display = 'block';
+        } catch (error) {
+          setStatus(type, error.message || 'Location search failed.', 'error');
+          box.style.display = 'none';
+        }
+      }, 280);
+    });
+
+    input.addEventListener('blur', () => setTimeout(() => closeSuggestions(type), 180));
+  }
+
+  function readDateTime(dateId, hourId, ampmId) {
+    const date = $(dateId).value;
+    const hour = Number($(hourId).value);
+    const ampm = $(ampmId).value;
+    if (!date || !Number.isInteger(hour) || hour < 1 || hour > 12 || !['AM','PM'].includes(ampm)) return null;
+    let hour24 = hour % 12;
+    if (ampm === 'PM') hour24 += 12;
+    const d = new Date(date + 'T' + String(hour24).padStart(2, '0') + ':00:00');
+    return Number.isFinite(d.getTime()) ? d : null;
+  }
+
+  function tripDays() {
+    const pickup = readDateTime('pickup-date', 'pickup-hour', 'pickup-ampm');
+    const ret = readDateTime('return-date', 'return-hour', 'return-ampm');
+    if (!pickup || !ret || ret <= pickup) return 1;
+    const p = new Date(pickup.getFullYear(), pickup.getMonth(), pickup.getDate());
+    const r = new Date(ret.getFullYear(), ret.getMonth(), ret.getDate());
+    return Math.max(1, Math.round((r - p) / 86400000) + 1);
+  }
+
+  function nightKey(dateObj) {
+    if (!dateObj) return '';
+    const hour = dateObj.getHours();
+    if (!(hour >= 23 || hour <= 4)) return '';
+    const d = new Date(dateObj);
+    if (hour <= 4) d.setDate(d.getDate() - 1);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function nightCount() {
+    const nights = new Set();
+    const a = nightKey(readDateTime('pickup-date', 'pickup-hour', 'pickup-ampm'));
+    const b = nightKey(readDateTime('return-date', 'return-hour', 'return-ampm'));
+    if (a) nights.add(a);
+    if (b) nights.add(b);
+    return nights.size;
+  }
+
+  function nightRate(car) {
+    return /hatchback|sedan/i.test(String(car.category || '')) ? 400 : 600;
+  }
+
+  function clearFare() {
+    $('total-rent').value = '';
+    $('metrics').style.display = 'none';
+  }
+
+  async function ensureRoute() {
+    if (!pickupSelection || !dropSelection) return null;
+    const signature = pickupSelection.placeId + '|' + dropSelection.placeId;
+    if (routeQuote && routeQuote.signature === signature) return routeQuote;
+    const payload = await mapsRequest('route', {
+      pickupPlaceId: pickupSelection.placeId,
+      stopPlaceIds: [],
+      finalDropPlaceId: dropSelection.placeId
+    });
+    routeQuote = { ...payload, signature };
+    return routeQuote;
+  }
+
+  async function refreshAutoFare() {
+    const carIndex = Number($('vehicle').value);
+    const car = Number.isInteger(carIndex) ? fleet[carIndex] : null;
+    if (!car || !pickupSelection || !dropSelection || !$('pickup-date').value || !$('return-date').value) {
+      clearFare();
+      return;
+    }
+    const pickup = readDateTime('pickup-date', 'pickup-hour', 'pickup-ampm');
+    const ret = readDateTime('return-date', 'return-hour', 'return-ampm');
+    if (!pickup || !ret || ret <= pickup) {
+      clearFare();
+      return;
+    }
+
+    if (calculating) return;
+    calculating = true;
+    try {
+      const route = await ensureRoute();
+      const days = tripDays();
+      const billableKm = Math.max(Number(route.billableRouteKm) || 0, days * minimumKmPerDay);
+      const fare = (billableKm * car.outstationPerKm) + (days * car.driverAllowance) + (nightCount() * nightRate(car));
+      $('total-rent').value = Math.round(fare);
+      $('route-km').textContent = Number(route.distanceKmExact || route.billableRouteKm || 0).toLocaleString('en-IN');
+      $('billable-km').textContent = billableKm.toLocaleString('en-IN');
+      $('trip-days').textContent = String(days);
+      $('metrics').style.display = 'block';
+    } catch (error) {
+      clearFare();
+      setStatus('drop', error.message || 'Unable to calculate route.', 'error');
+    } finally {
+      calculating = false;
+    }
+  }
+
+  function validateTrip() {
+    clearError();
+    const pickup = readDateTime('pickup-date', 'pickup-hour', 'pickup-ampm');
+    const ret = readDateTime('return-date', 'return-hour', 'return-ampm');
+    if (!pickup) throw new Error('Please select pickup date and time.');
+    if (!ret) throw new Error('Please select return date and time.');
+    if (ret <= pickup) throw new Error('Return date and time must be later than pickup date and time.');
+    if (!pickupSelection) throw new Error('Please select the pickup location from Google suggestions.');
+    if (!dropSelection) throw new Error('Please select the drop location from Google suggestions.');
+    const car = fleet[Number($('vehicle').value)];
+    if (!car) throw new Error('Please select a vehicle.');
+    const rent = Number($('total-rent').value);
+    if (!Number.isFinite(rent) || rent <= 0) throw new Error('Please enter a valid Total Rent.');
+    return { pickup, ret, car, rent };
+  }
+
+  function displayVehicleName(name) {
+    if (/sedan.*dzire.*aura|dzire.*aura/i.test(name)) return 'Maruti Dzire or Hyundai Aura';
+    return name;
+  }
+
+  function formatDate(date) {
+    return String(date.getDate()).padStart(2, '0') + '/' +
+      String(date.getMonth() + 1).padStart(2, '0') + '/' + date.getFullYear();
+  }
+
+  function formatTime(date) {
+    let h = date.getHours();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + String(date.getMinutes()).padStart(2, '0') + ' ' + ampm;
+  }
+
+  function money(value) {
+    return Math.round(value).toLocaleString('en-IN');
+  }
+
+  async function generateQuote() {
+    const button = $('generate');
+    button.disabled = true;
+    button.textContent = 'Generating…';
+    try {
+      const data = validateTrip();
+      const route = await ensureRoute();
+      const days = tripDays();
+      const billableKm = Math.max(Number(route.billableRouteKm) || 0, days * minimumKmPerDay);
+      const extraRate = 15;
+
+      const quote = [
+        'Hello Sir,',
+        '',
+        'Thank you for contacting *Car With Driver India.*',
+        '',
+        'Please find the quotation for your trip:',
+        '',
+        '🚘 *Vehicle:* ' + displayVehicleName(data.car.name),
+        '📍 *Route:* ' + pickupSelection.mainText + ' | ' + dropSelection.mainText,
+        '📅 *Date:* ' + formatDate(data.pickup) + ' | ' + formatTime(data.pickup),
+        '🕙 *Return Date:* ' + formatDate(data.ret) + ' | ' + formatTime(data.ret),
+        '',
+        '💰 *Total Rent: Rs. ' + money(data.rent) + '/-*',
+        '',
+        '*Includes:*',
+        '• Car Rental',
+        '• Fuel',
+        '• Driver Allowance',
+        '',
+        'Note: Toll & Parking will be as per actual',
+        'KM limit: ' + money(billableKm) + ' beyond Rs.' + money(extraRate) + '/km will be charged.',
+        '',
+        'No advance payment is required at this stage. To proceed, please reply *“Confirm”*.',
+        '',
+        'Regards,',
+        '*Car With Driver India*',
+        '📞 9702988465',
+        '🌐 carswithdriverindia.com'
+      ].join('\n');
+
+      $('quote').textContent = quote;
+      $('result').style.display = 'block';
+      $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (error) {
+      showError(error.message || 'Unable to generate quotation.');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Generate Quotation';
+    }
+  }
+
+  $('generate').addEventListener('click', generateQuote);
+  $('copy').addEventListener('click', async () => {
+    const text = $('quote').textContent;
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      $('copy').textContent = 'Copied ✓';
+      setTimeout(() => { $('copy').textContent = 'Copy Quotation'; }, 1600);
+    } catch (_) {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand('copy');
+      area.remove();
+    }
+  });
+
+  $('whatsapp').addEventListener('click', () => {
+    const text = $('quote').textContent;
+    if (!text) return;
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer');
+  });
+
+  ['pickup-date','pickup-hour','pickup-ampm','return-date','return-hour','return-ampm','vehicle'].forEach(id => {
+    $(id).addEventListener('change', refreshAutoFare);
+  });
+
+  setupAutocomplete('pickup');
+  setupAutocomplete('drop');
+  document.addEventListener('click', event => {
+    if (!event.target.closest('.location-wrap')) {
+      closeSuggestions('pickup');
+      closeSuggestions('drop');
+    }
+  });
+
+  const today = new Date();
+  const yyyyMmDd = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+  $('pickup-date').min = yyyyMmDd;
+  $('return-date').min = yyyyMmDd;
+
+  loadPricing();
+})();
+</script>
+</body>
+</html>

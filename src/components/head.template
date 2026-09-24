@@ -9,6 +9,7 @@
     <title>{{title}}</title>
     <!-- Search Engine & Social Meta Tags -->
     <meta name="description" content="{{description}}">
+    <meta name="robots" content="index, follow">
     <link rel="canonical" href="{{canonical}}">
     
     <!-- Open Graph (WhatsApp / Social Preview) -->
@@ -17,6 +18,8 @@
     <meta property="og:url" content="{{canonical}}">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://carswithdriverindia.com/logo.png">
+    <meta property="og:image:alt" content="Car with Driver India logo">
+    {{structuredData}}
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/logo.png">

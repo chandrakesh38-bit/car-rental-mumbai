@@ -12,6 +12,42 @@ const render = (text, data) => text.replace(/\{\{(\w+)\}\}/g, (_,key) => {
   return data[key];
 });
 
+function buildStructuredData(page) {
+  const site = 'https://carswithdriverindia.com';
+  const organization = {
+    '@type':'Organization',
+    '@id':site+'/#organization',
+    name:'Car with Driver India',
+    legalName:'Car with Driver Mobility LLP',
+    url:site+'/',
+    telephone:'+919702988465',
+    logo:site+'/logo.png',
+    areaServed:['Mumbai','Thane','Navi Mumbai'].map(name => ({'@type':'City',name}))
+  };
+  const graph = [organization];
+  if (!page.slug) {
+    graph.push({'@type':'WebSite','@id':site+'/#website',url:site+'/',name:'Car with Driver India',publisher:{'@id':site+'/#organization'}});
+  } else if (['with-driver','self-drive','airport-transfer','outstation'].includes(page.slug)) {
+    const serviceNames = {
+      'with-driver':'Car rental with driver',
+      'self-drive':'Self drive car rental',
+      'airport-transfer':'Airport transfer car service',
+      'outstation':'Outstation car rental with driver'
+    };
+    graph.push({
+      '@type':'Service',
+      '@id':site+'/'+page.slug+'#service',
+      name:serviceNames[page.slug],
+      url:site+'/'+page.slug,
+      provider:{'@id':site+'/#organization'},
+      areaServed:['Mumbai','Thane','Navi Mumbai'].map(name => ({'@type':'City',name}))
+    });
+  } else {
+    graph.push({'@type':'WebPage','@id':site+'/'+page.slug+'#webpage',url:site+'/'+page.slug,name:page.title,about:{'@id':site+'/#organization'}});
+  }
+  return '<script type="application/ld+json">' + JSON.stringify({'@context':'https://schema.org','@graph':graph}).replace(/</g,'\\u003c') + '</script>';
+}
+
 for (const page of pages) {
   const route = '/' + page.slug;
   const link = (target, className, icon = false) => `<a href="/${target.slug}"${target.slug === page.slug ? ' aria-current="page"' : ''} class="${className}">${icon ? `<i class="fa-solid ${target.icon} text-indigo-600 w-5" aria-hidden="true"></i>` : ''}<span>${escape(target.label)}</span></a>`;
@@ -19,6 +55,7 @@ for (const page of pages) {
   const footerLinks = pages.map(p => link(p, 'hover:text-amber-400 transition')).join('\n');
   const data = Object.fromEntries(Object.entries(page).filter(([,v])=>typeof v === 'string').map(([k,v])=>[k,escape(v)]));
   data.canonical = 'https://carswithdriverindia.com' + route;
+  data.structuredData = buildStructuredData(page);
   // This page-only renderer leaves the other eight page outputs unchanged.
   const custom = page.slug === 'mumbai-car-rental'
     ? await renderMumbaiPage({ root, component, escape, page }) : null;

@@ -624,11 +624,11 @@ function showCustomAlert(message) {
                 if(btnPickup) btnPickup.className = "flex-1 py-2.5 rounded-lg transition text-slate-600 font-semibold border border-transparent";
                 formBox.innerHTML = `
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="relative">
-                            <label for="wd-airport-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Pickup Area / Address *</label>
+                        <div class="relative location-entry">
+                            <label for="wd-airport-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> From *</label>
                             <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="scheduleGooglePlaceSearch('wd-airport-pickup', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Search pickup on Google">
                             <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
-                            <button type="button" onclick="useBookingPickupCurrentLocation('airport')" class="mt-2 inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">
+                            <button type="button" onclick="useBookingPickupCurrentLocation('airport')" class="location-current-action mt-2 items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">
                                 <i class="fa-solid fa-location-crosshairs"></i> Use My Current Location
                             </button>
                             <p id="wd-airport-location-status" class="text-[10px] text-slate-500 mt-1"></p>
@@ -658,7 +658,7 @@ function showCustomAlert(message) {
                             </select>
                         </div>
                         <div class="relative">
-                            <label for="wd-airport-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> Drop Area / Address *</label>
+                            <label for="wd-airport-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> To *</label>
                             <input type="text" id="wd-airport-pickup" autocomplete="off" oninput="scheduleGooglePlaceSearch('wd-airport-pickup', 'wd-airport-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="Search drop on Google">
                             <div id="wd-airport-dropdown" class="autocomplete-dropdown hidden"></div>
                             <p id="wd-airport-location-status" class="text-[10px] text-slate-500 mt-1"></p>

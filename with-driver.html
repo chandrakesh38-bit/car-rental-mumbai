@@ -40,16 +40,16 @@
 <!-- NAVBAR -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
-            <a href="/" class="flex items-center space-x-3">
+            <a href="/" class="flex items-center gap-3" aria-label="Car with Driver India home">
                 <div id="site-logo-container" class="flex items-center">
                     <div id="default-brand-icon" class="hidden w-10 h-10 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-xl shadow-inner">
                         <i class="fa-solid fa-car"></i>
                     </div>
-                    <img id="dynamic-brand-logo" src="/logo.png" alt="Car with Driver India" class="h-9 sm:h-11 w-auto max-w-[180px] object-contain" onerror="this.classList.add('hidden'); document.getElementById('default-brand-icon').classList.remove('hidden');">
+                    <img id="dynamic-brand-logo" src="/logo.png" alt="Car with Driver India logo" class="h-12 w-12 sm:h-14 sm:w-14 rounded-lg object-contain" onerror="this.classList.add('hidden'); document.getElementById('default-brand-icon').classList.remove('hidden');">
                 </div>
                 <div>
                     <span class="text-xl font-black text-indigo-950 tracking-tight block leading-none">Car with Driver India</span>
-                    <span class="text-[10px] text-slate-400 font-semibold tracking-wider block mt-1">Car with Driver India</span>
+                    <span class="text-[10px] text-slate-500 font-semibold tracking-wider block mt-1">Mumbai • Thane • Navi Mumbai</span>
                 </div>
             </a>
 
@@ -70,9 +70,7 @@
         <div>
             <div class="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 rounded-full bg-indigo-950 flex items-center justify-center text-amber-400 font-black text-sm">
-                        <i class="fa-solid fa-car"></i>
-                    </div>
+                    <img src="/logo.png" alt="" class="w-9 h-9 rounded-md object-contain">
                     <span class="font-extrabold text-sm text-indigo-950">Car with Driver India</span>
                 </div>
                 <button type="button" aria-label="Close navigation" onclick="closeNavDrawer()" class="p-2 text-slate-400 hover:text-slate-700 text-lg">
@@ -670,6 +668,17 @@
         <p class="mt-1 text-slate-400">Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai 400079</p>
         <p class="mt-2 text-slate-500">Phone / WhatsApp: +91 9702988465 • &copy; 2026 Car with Driver Mobility LLP. All rights reserved.</p>
     </footer>
+
+<!-- EXPLORE CABS TRANSITION -->
+<div id="explore-cabs-overlay" class="explore-cabs-overlay" role="status" aria-live="polite" aria-hidden="true">
+    <div class="explore-cabs-content">
+        <div class="explore-cabs-icon" aria-hidden="true"><i class="fa-solid fa-car-side"></i></div>
+        <h2>Finding the right cab for you</h2>
+        <p>Checking options and fares for your journey...</p>
+        <div class="explore-cabs-progress" aria-hidden="true"><span></span></div>
+        <div class="explore-cabs-status">Getting your options ready</div>
+    </div>
+</div>
 
 <!-- WHY CHOOSE US DETAILS MODAL -->
 <div id="why-choose-modal"

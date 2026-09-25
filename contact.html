@@ -9,8 +9,8 @@
     <title>Contact Car with Driver India | Mumbai Car Rental</title>
     <!-- Search Engine & Social Meta Tags -->
     <meta name="description" content="Contact Car with Driver India by phone, WhatsApp or email. Find our Mumbai operating hub in Vikhroli West and get help with your car rental inquiry.">
-        <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://carswithdriverindia.com/contact">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://carswithdriverindia.com/contact">
     
     <!-- Open Graph (WhatsApp / Social Preview) -->
     <meta property="og:title" content="Contact Car with Driver India | Mumbai Car Rental">
@@ -18,10 +18,10 @@
     <meta property="og:url" content="https://carswithdriverindia.com/contact">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://carswithdriverindia.com/logo.png">
-
-        <meta property="og:image:alt" content="Car with Driver India logo">
+    <meta property="og:image:alt" content="Car with Driver India logo">
     <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://carswithdriverindia.com/#organization","name":"Car with Driver India","legalName":"Car with Driver Mobility LLP","url":"https://carswithdriverindia.com/","telephone":"+919702988465","logo":"https://carswithdriverindia.com/logo.png","areaServed":[{"@type":"City","name":"Mumbai"},{"@type":"City","name":"Thane"},{"@type":"City","name":"Navi Mumbai"}]},{"@type":"WebPage","@id":"https://carswithdriverindia.com/contact#webpage","url":"https://carswithdriverindia.com/contact","name":"Contact Car with Driver India | Mumbai Car Rental","about":{"@id":"https://carswithdriverindia.com/#organization"}}]}</script>
-<!-- Favicon -->
+
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="/logo.png">
 
     <!-- Tailwind CSS -->
@@ -112,9 +112,7 @@
                 Car with Driver India
             </span>
             <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">Contact Car with Driver India</h1>
-            <p class="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto mb-8">
-                Contact Car with Driver India by phone, WhatsApp or email. Find our Mumbai operating hub in Vikhroli West and get help with your car rental inquiry.
-            </p>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto mb-8">Contact Car with Driver India by phone, WhatsApp or email. Find our Mumbai operating hub in Vikhroli West and get help with your car rental inquiry.</p>
 
             
         </div>
@@ -366,21 +364,23 @@
                         <h4 class="text-sm font-extrabold text-indigo-950 mt-1" id="modal-car-name">Car Name</h4>
                     </div>
                     <div class="text-right">
-                        <span class="text-slate-400 text-[10px] block">Approx Total Amount</span>
+                        <span class="text-slate-400 text-[10px] block">Estimated Fare</span>
                         <strong class="text-emerald-700 font-black text-base" id="modal-fare">₹0</strong>
+                        <span id="modal-summary-extra-note" class="block max-w-40 text-[10px] text-slate-500 leading-tight mt-1">Extra charges may apply.</span>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
                     <div><strong>Pickup Location:</strong> <span id="modal-summary-pickup" class="text-slate-900"></span></div>
-                    <div><strong>Destination / Route:</strong> <span id="modal-summary-dest" class="text-slate-900"></span></div>
+                    <div><strong id="modal-summary-dest-label">Destination / Route:</strong> <span id="modal-summary-dest" class="text-slate-900"></span></div>
+                    <div id="modal-summary-trip-type-row" class="hidden"><strong>Trip Type:</strong> <span id="modal-summary-trip-type" class="text-slate-900"></span></div>
                     <div><strong>Date &amp; Time:</strong> <span id="modal-summary-datetime" class="text-slate-900"></span></div>
                     <div><strong>Trip Package:</strong> <span id="modal-summary-package" class="text-slate-900"></span></div>
                 </div>
 
                 <div class="pt-2 border-t border-slate-200 space-y-1">
                     <div class="text-emerald-800 font-semibold">✓ Inclusions: Car rental, fuel &amp; driver allowance included.</div>
-                    <div class="text-rose-800 font-semibold">✕ Exclusions: Toll taxes, parking fees, and state entry permits are extra as actuals.</div>
+                    <div id="modal-summary-exclusions" class="text-rose-800 font-semibold">✕ Extra charges: Tolls and parking are charged at actual cost.</div>
                 </div>
             </div>
             
@@ -411,8 +411,6 @@
                         </button>
                         <p id="wd-current-location-status" class="text-[10px] text-slate-500 mt-1"></p>
                     </div>
-                </div> class="block text-xs font-semibold text-slate-600 mb-1">Exact Pickup Address / Landmark *</label>
-                    <textarea id="cust-address" rows="2" required placeholder="Building / Hotel / Gate / Landmark (you can edit this)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
                 </div>
 
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm">

@@ -154,21 +154,23 @@
                         <h4 class="text-sm font-extrabold text-indigo-950 mt-1" id="modal-car-name">Car Name</h4>
                     </div>
                     <div class="text-right">
-                        <span class="text-slate-400 text-[10px] block">Approx Total Amount</span>
+                        <span class="text-slate-400 text-[10px] block">Estimated Fare</span>
                         <strong class="text-emerald-700 font-black text-base" id="modal-fare">₹0</strong>
+                        <span id="modal-summary-extra-note" class="block max-w-40 text-[10px] text-slate-500 leading-tight mt-1">Extra charges may apply.</span>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
                     <div><strong>Pickup Location:</strong> <span id="modal-summary-pickup" class="text-slate-900"></span></div>
-                    <div><strong>Destination / Route:</strong> <span id="modal-summary-dest" class="text-slate-900"></span></div>
+                    <div><strong id="modal-summary-dest-label">Destination / Route:</strong> <span id="modal-summary-dest" class="text-slate-900"></span></div>
+                    <div id="modal-summary-trip-type-row" class="hidden"><strong>Trip Type:</strong> <span id="modal-summary-trip-type" class="text-slate-900"></span></div>
                     <div><strong>Date &amp; Time:</strong> <span id="modal-summary-datetime" class="text-slate-900"></span></div>
                     <div><strong>Trip Package:</strong> <span id="modal-summary-package" class="text-slate-900"></span></div>
                 </div>
 
                 <div class="pt-2 border-t border-slate-200 space-y-1">
                     <div class="text-emerald-800 font-semibold">✓ Inclusions: Car rental, fuel &amp; driver allowance included.</div>
-                    <div class="text-rose-800 font-semibold">✕ Exclusions: Toll taxes, parking fees, and state entry permits are extra as actuals.</div>
+                    <div id="modal-summary-exclusions" class="text-rose-800 font-semibold">✕ Extra charges: Tolls and parking are charged at actual cost.</div>
                 </div>
             </div>
             

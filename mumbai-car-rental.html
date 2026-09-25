@@ -9,6 +9,7 @@
     <title>Mumbai Car Rental – With Driver &amp; Self Drive | Car with Driver India</title>
     <!-- Search Engine & Social Meta Tags -->
     <meta name="description" content="Explore car rental in Mumbai, Thane and Navi Mumbai: with-driver cabs, self-drive cars, airport transfers and outstation trips. Check rates and plan your ride.">
+    <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://carswithdriverindia.com/mumbai-car-rental">
     
     <!-- Open Graph (WhatsApp / Social Preview) -->
@@ -17,6 +18,8 @@
     <meta property="og:url" content="https://carswithdriverindia.com/mumbai-car-rental">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://carswithdriverindia.com/logo.png">
+    <meta property="og:image:alt" content="Car with Driver India logo">
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://carswithdriverindia.com/#organization","name":"Car with Driver India","legalName":"Car with Driver Mobility LLP","url":"https://carswithdriverindia.com/","telephone":"+919702988465","logo":"https://carswithdriverindia.com/logo.png","areaServed":[{"@type":"City","name":"Mumbai"},{"@type":"City","name":"Thane"},{"@type":"City","name":"Navi Mumbai"}]},{"@type":"WebPage","@id":"https://carswithdriverindia.com/mumbai-car-rental#webpage","url":"https://carswithdriverindia.com/mumbai-car-rental","name":"Mumbai Car Rental – With Driver & Self Drive | Car with Driver India","about":{"@id":"https://carswithdriverindia.com/#organization"}}]}</script>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/logo.png">
@@ -33,7 +36,7 @@
     <link rel="stylesheet" href="/assets/css/site.css">
     <link rel="stylesheet" href="/assets/css/navigation.css">
     <meta name="robots" content="index, follow">
-    <meta property="og:image:alt" content="Car with Driver India logo">
+    <meta property="og:image:alt" content="Car with Driver Mobility LLP logo">
     <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"AutoRental","@id":"https://carswithdriverindia.com/#business","name":"Car with Driver India","legalName":"Car with Driver Mobility LLP","url":"https://carswithdriverindia.com/","telephone":"+919702988465","logo":"https://carswithdriverindia.com/logo.png","address":{"@type":"PostalAddress","streetAddress":"Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West","addressLocality":"Mumbai","addressRegion":"Maharashtra","postalCode":"400079","addressCountry":"IN"}},{"@type":"Service","@id":"https://carswithdriverindia.com/mumbai-car-rental#service","name":"Mumbai car rental with driver and self drive","serviceType":["Chauffeur-driven car rental","Self-drive car rental"],"url":"https://carswithdriverindia.com/mumbai-car-rental","provider":{"@id":"https://carswithdriverindia.com/#business"},"areaServed":[{"@type":"City","name":"Mumbai"},{"@type":"City","name":"Thane"},{"@type":"City","name":"Navi Mumbai"}]},{"@type":"BreadcrumbList","@id":"https://carswithdriverindia.com/mumbai-car-rental#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://carswithdriverindia.com/"},{"@type":"ListItem","position":2,"name":"Mumbai Car Rental","item":"https://carswithdriverindia.com/mumbai-car-rental"}]}]}</script>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen" data-page="mumbai-car-rental" data-booking-mode="" data-booking-tab="">
@@ -230,12 +233,6 @@
       <span class="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Comfort Sedan</span>
       <span class="block font-bold text-sm text-slate-900">Sedan (Dzire / Aura)</span>
       <span class="block text-xs text-slate-500 mt-1">4+1 seats · 2 Bags</span>
-    </li>
-
-    <li class="rounded-xl bg-slate-50 border border-slate-200 p-4">
-      <span class="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Compact SUV</span>
-      <span class="block font-bold text-sm text-slate-900">Compact SUV (Punch / Brezza)</span>
-      <span class="block text-xs text-slate-500 mt-1">4+1 seats · 2 Large Bags</span>
     </li>
 
     <li class="rounded-xl bg-slate-50 border border-slate-200 p-4">
@@ -676,21 +673,23 @@
                         <h4 class="text-sm font-extrabold text-indigo-950 mt-1" id="modal-car-name">Car Name</h4>
                     </div>
                     <div class="text-right">
-                        <span class="text-slate-400 text-[10px] block">Approx Total Amount</span>
+                        <span class="text-slate-400 text-[10px] block">Estimated Fare</span>
                         <strong class="text-emerald-700 font-black text-base" id="modal-fare">₹0</strong>
+                        <span id="modal-summary-extra-note" class="block max-w-40 text-[10px] text-slate-500 leading-tight mt-1">Extra charges may apply.</span>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
                     <div><strong>Pickup Location:</strong> <span id="modal-summary-pickup" class="text-slate-900"></span></div>
-                    <div><strong>Destination / Route:</strong> <span id="modal-summary-dest" class="text-slate-900"></span></div>
+                    <div><strong id="modal-summary-dest-label">Destination / Route:</strong> <span id="modal-summary-dest" class="text-slate-900"></span></div>
+                    <div id="modal-summary-trip-type-row" class="hidden"><strong>Trip Type:</strong> <span id="modal-summary-trip-type" class="text-slate-900"></span></div>
                     <div><strong>Date &amp; Time:</strong> <span id="modal-summary-datetime" class="text-slate-900"></span></div>
                     <div><strong>Trip Package:</strong> <span id="modal-summary-package" class="text-slate-900"></span></div>
                 </div>
 
                 <div class="pt-2 border-t border-slate-200 space-y-1">
                     <div class="text-emerald-800 font-semibold">✓ Inclusions: Car rental, fuel &amp; driver allowance included.</div>
-                    <div class="text-rose-800 font-semibold">✕ Exclusions: Toll taxes, parking fees, and state entry permits are extra as actuals.</div>
+                    <div id="modal-summary-exclusions" class="text-rose-800 font-semibold">✕ Extra charges: Tolls and parking are charged at actual cost.</div>
                 </div>
             </div>
             
@@ -721,8 +720,6 @@
                         </button>
                         <p id="wd-current-location-status" class="text-[10px] text-slate-500 mt-1"></p>
                     </div>
-                </div> class="block text-xs font-semibold text-slate-600 mb-1">Exact Pickup Address / Landmark *</label>
-                    <textarea id="cust-address" rows="2" required placeholder="Building / Hotel / Gate / Landmark (you can edit this)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none"></textarea>
                 </div>
 
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm">

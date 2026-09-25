@@ -183,3 +183,5 @@ header .text-amber-300 { color: var(--ocean-tertiary) !important; }
     .explore-cabs-icon, .explore-cabs-progress span { animation: none; }
     .explore-cabs-overlay { transition: none; }
 }
+.location-current-action { display: none; }
+.location-entry:focus-within .location-current-action { display: inline-flex; }

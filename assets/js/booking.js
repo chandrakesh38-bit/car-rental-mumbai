@@ -665,6 +665,10 @@ function showCustomAlert(message) {
                         </div>
                     </div>
                     ${dateTimeHTML}
+                    <div>
+                        <label for="wd-airport-flight-number" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-ticket text-indigo-600 mr-1"></i> Flight Number (Optional)</label>
+                        <input type="text" id="wd-airport-flight-number" maxlength="30" autocomplete="off" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="e.g. AI 639">
+                    </div>
                 `;
             }
 
@@ -1326,6 +1330,10 @@ function onPickupDateChange() {
                         <div class="bg-indigo-50/60 border border-indigo-100 text-indigo-950 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg mb-4 flex items-center justify-between">
                             <span><i class="fa-solid fa-road text-indigo-600 mr-1"></i> ${kmIncludedText}</span>
                             <span><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> ${hrsIncludedText}</span>
+                        </div>
+                        <div class="text-[11px] leading-relaxed mb-4 space-y-1">
+                            <p class="text-emerald-800"><i class="fa-solid fa-check mr-1"></i> Includes car, fuel &amp; driver</p>
+                            <p class="text-rose-800"><i class="fa-solid fa-circle-info mr-1"></i> Extra as actuals: tolls, parking${currentWDSubTab === 'outstation' ? ' &amp; state tax' : ''}</p>
                         </div>
                     </div>
                     <button type="button" onclick="handleBookThisCarClick('${car.name}', ${fare})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs tracking-wide shadow-sm">
@@ -2368,6 +2376,9 @@ async function handleBookingSubmit(e) {
             hour,
             ampm
         );
+        const flightNumber = currentAirportType === 'pickup'
+            ? (document.getElementById('wd-airport-flight-number')?.value || '').trim().replace(/[^A-Za-z0-9 -]/g, '').slice(0, 30)
+            : '';
 
 
         if (currentAirportType === 'drop') {
@@ -2394,7 +2405,7 @@ async function handleBookingSubmit(e) {
 🚗 ${chosenCarName} | ₹${chosenFareAmount.toLocaleString('en-IN')}
 ✈️ From: ${airportName}
 📍 Drop: ${location} — ${address}
-📅 ${formatBookingDateTime(journeyDateTime)}
+${flightNumber ? `🛫 Flight: ${flightNumber}\n` : ''}📅 ${formatBookingDateTime(journeyDateTime)}
 
 ✓ Incl: Fuel, Driver
 ✕ Excl: Toll, Parking
@@ -2402,7 +2413,7 @@ async function handleBookingSubmit(e) {
         }
 
         subject = `New booking assigned to your car – ${chosenCarName}`;
-        bookingData = {tripType:'airport',carName:chosenCarName,pickupAt:journeyDateTime.toISOString(),pickupLocation:location,customerPlaceId:document.getElementById('wd-airport-pickup').dataset.googlePlaceId||'',pickupPlaceId:currentAirportType==='drop'?(document.getElementById('wd-airport-pickup').dataset.googlePlaceId||''):'',airportTerminal:airport,airportType:currentAirportType};
+        bookingData = {tripType:'airport',carName:chosenCarName,pickupAt:journeyDateTime.toISOString(),pickupLocation:location,customerPlaceId:document.getElementById('wd-airport-pickup').dataset.googlePlaceId||'',pickupPlaceId:currentAirportType==='drop'?(document.getElementById('wd-airport-pickup').dataset.googlePlaceId||''):'',airportTerminal:airport,airportType:currentAirportType,flightNumber:flightNumber||null};
     }
 
     bookingData = {

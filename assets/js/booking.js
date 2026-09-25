@@ -1487,6 +1487,23 @@ function onPickupDateChange() {
             openModal(carName, fare);
         }
 
+        async function showCabSearchTransition(updateResults, targetId) {
+            const overlay = document.getElementById('explore-cabs-overlay');
+            if (overlay?.classList.contains('visible')) return;
+            overlay?.classList.add('visible');
+            overlay?.setAttribute('aria-hidden', 'false');
+            try {
+                updateResults();
+                if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    await new Promise(resolve => setTimeout(resolve, 900));
+                }
+                document.getElementById(targetId).scrollIntoView({ behavior: 'auto' });
+            } finally {
+                overlay?.classList.remove('visible');
+                overlay?.setAttribute('aria-hidden', 'true');
+            }
+        }
+
         async function triggerFareSearch() {
             if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !wdOutstationRouteQuote) {
                 await updateOutstationRouteEstimate();
@@ -1495,8 +1512,7 @@ function onPickupDateChange() {
                 await updateAirportRouteEstimate();
             }
             if (currentMainMode === 'withdriver' && !validateJourneyAndOpenBooking()) return;
-            calculateDriverFare();
-            document.getElementById('fleet').scrollIntoView({ behavior: 'smooth' });
+            await showCabSearchTransition(calculateDriverFare, 'fleet');
         }
 
         function validateSelfDriveJourney() {
@@ -1523,10 +1539,9 @@ function onPickupDateChange() {
             return validateJourneyDateTimes(['sd-pdate', 'sd-phour', 'sd-pampm'], ['sd-rdate', 'sd-rhour', 'sd-rampm']);
         }
 
-        function triggerSDParseSearch() {
+        async function triggerSDParseSearch() {
             if (!validateSelfDriveJourney()) return;
-            applyAllSDFilters();
-            document.getElementById('selfdrive-cars-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            await showCabSearchTransition(applyAllSDFilters, 'selfdrive-cars-grid');
         }
 
         function toggleSDFiltersPanel() {

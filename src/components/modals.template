@@ -1,3 +1,14 @@
+<!-- EXPLORE CABS TRANSITION -->
+<div id="explore-cabs-overlay" class="explore-cabs-overlay" role="status" aria-live="polite" aria-hidden="true">
+    <div class="explore-cabs-content">
+        <div class="explore-cabs-icon" aria-hidden="true"><i class="fa-solid fa-car-side"></i></div>
+        <h2>Finding the right cab for you</h2>
+        <p>Checking options and fares for your journey...</p>
+        <div class="explore-cabs-progress" aria-hidden="true"><span></span></div>
+        <div class="explore-cabs-status">Getting your options ready</div>
+    </div>
+</div>
+
 <!-- WHY CHOOSE US DETAILS MODAL -->
 <div id="why-choose-modal"
     class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4">

@@ -1995,7 +1995,6 @@ function onPickupDateChange() {
             const label = document.getElementById('first-trip-offer-button-label');
             const icon = document.getElementById('first-trip-offer-icon');
             const badge = document.getElementById('first-trip-offer-badge');
-            const status = document.getElementById('first-trip-offer-status');
             const breakdown = document.getElementById('first-trip-offer-breakdown');
             const amount = document.getElementById('first-trip-offer-amount');
             const discount = Math.round(firstTripFareBeforeDiscount * 0.05);
@@ -2017,21 +2016,9 @@ function onPickupDateChange() {
             if (icon) icon.textContent = firstTripOfferApplied ? '✓' : '🎁';
             if (badge) badge.textContent = 'FIRST TRIP 5% OFF';
             if (badge) badge.classList.toggle('first-trip-offer-badge-applied', firstTripOfferApplied);
-            if (label) label.textContent = firstTripOfferApplied ? 'OFFER APPLIED · TAP TO REMOVE' : 'TAP TO APPLY';
-            if (status) status.textContent = firstTripOfferApplied
-                ? 'Offer applied to the estimated fare. We’ll confirm eligibility after mobile OTP; actual tolls, parking and applicable taxes are not discounted.'
-                : 'Tap to apply. We’ll verify first-trip eligibility after mobile OTP. Tolls, parking and applicable taxes stay extra.';
+            if (label) label.textContent = firstTripOfferApplied ? 'OFFER APPLIED ✓' : 'TAP TO APPLY';
             if (breakdown) breakdown.classList.toggle('hidden', !firstTripOfferApplied);
             if (amount) amount.textContent = '−₹' + discount.toLocaleString('en-IN');
-        }
-
-        function toggleFirstTripOffer() {
-            if (firstTripOfferApplied) {
-                firstTripOfferApplied = false;
-                renderFirstTripOffer();
-            } else {
-                applyFirstTripOffer();
-            }
         }
 
         function applyFirstTripOffer() {

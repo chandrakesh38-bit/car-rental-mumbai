@@ -601,8 +601,8 @@ function showCustomAlert(message) {
             tripTypeError?.classList.add('hidden');
             const oneWay = document.getElementById('wd-out-one-way');
             const roundTrip = document.getElementById('wd-out-round-trip');
-            const selectedClass = 'rounded-xl border-2 border-indigo-600 bg-indigo-50 px-3 py-3 text-left transition shadow-sm';
-            const defaultClass = 'rounded-xl border-2 border-slate-200 bg-white px-3 py-3 text-left transition hover:border-indigo-300';
+            const selectedClass = 'rounded-xl border-2 border-indigo-600 bg-indigo-50 px-3 py-3 text-center transition shadow-sm flex items-center justify-center';
+            const defaultClass = 'rounded-xl border-2 border-slate-200 bg-white px-3 py-3 text-center transition hover:border-indigo-300 flex items-center justify-center';
             if (oneWay) {
                 oneWay.className = type === 'one-way' ? selectedClass : defaultClass;
                 oneWay.setAttribute('aria-pressed', String(type === 'one-way'));

@@ -1575,7 +1575,7 @@
             } else if(trip==='airport'){
                 const isPickup=/AIRPORT PICKUP/i.test(details);
                 pickupDate=findLine('📅').replace(/^📅\s*/,'').trim();
-                finalDropDate=pickupDate;
+                finalDropDate='';
                 if(isPickup){
                     pickup=afterColon(findLine('✈️ From:'));
                     destination=afterColon(findLine('📍 Drop:'));

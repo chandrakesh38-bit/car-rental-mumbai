@@ -1672,6 +1672,10 @@
                 paymentLoadError = error?.message || 'Unable to load payment history.';
             }
             const fare=Number(b.total_fare||b.fare_amount||0), paid=Number(b.paid_amount||0), balance=Math.max(0,fare-paid);
+            const originalFare=Number(b.original_fare||b.fare_amount||b.total_fare||0);
+            const extraKm=Number(b.extra_km||0), extraKmRate=Number(b.extra_km_rate||0), extraKmCharge=Number(b.extra_km_charge||0);
+            const nightCharge=Number(b.night_charge||0), tollCharge=Number(b.toll_charge||0), parkingCharge=Number(b.parking_charge||0), stateTaxCharge=Number(b.state_tax_charge||0), otherCharge=Number(b.other_charge||0);
+            const extrasTotal=extraKmCharge+nightCharge+tollCharge+parkingCharge+stateTaxCharge+otherCharge;
             body.innerHTML=`
                 <div class="grid md:grid-cols-2 gap-4 text-xs">
                     <div class="border rounded-2xl p-4 space-y-2"><h4 class="font-black text-sm">Customer</h4><p><b>${escapeAdminHtml(b.customer_name)}</b></p><p>${escapeAdminHtml(b.customer_phone)}</p><p>${escapeAdminHtml(b.customer_email||'—')}</p></div>
@@ -1683,6 +1687,29 @@
                         <button onclick="saveBookingStatus()" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold">Save Status</button>
                     </div>
                     ${String(b.booking_status||'').toLowerCase()==='confirmed'?`<div class="mt-4 border-t pt-4"><p class="mb-2 text-[11px] font-bold uppercase tracking-wide text-emerald-700">Booking confirmed — customer confirmation ready</p><div class="flex flex-wrap gap-2"><button type="button" onclick="shareBookingConfirmationWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold"><i class="fa-brands fa-whatsapp mr-1"></i> Share Confirmation on WhatsApp</button><button type="button" id="copy-confirmation-btn" onclick="copyBookingConfirmation()" class="border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg text-xs font-bold"><i class="fa-regular fa-copy mr-1"></i> Copy Confirmation</button></div></div>`:''}
+                </div>
+                <div class="mt-4 border border-indigo-100 bg-indigo-50/40 rounded-2xl p-4">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <div><h4 class="font-black text-sm">Final Trip Charges</h4><p class="text-[11px] text-slate-500 mt-1">Add actual trip extras here. This updates the final fare and balance, but the Razorpay link amount stays manual.</p></div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <label class="text-xs font-bold">Extra KM<input id="final-extra-km" type="number" min="0" step="0.01" value="${extraKm}" class="block mt-1 border rounded-lg px-3 py-2 w-full"></label>
+                        <label class="text-xs font-bold">Rate / KM<input id="final-extra-km-rate" type="number" min="0" step="0.01" value="${extraKmRate}" class="block mt-1 border rounded-lg px-3 py-2 w-full"></label>
+                        <label class="text-xs font-bold">Night Charges<input id="final-night-charge" type="number" min="0" step="0.01" value="${nightCharge}" class="block mt-1 border rounded-lg px-3 py-2 w-full"></label>
+                        <label class="text-xs font-bold">Toll<input id="final-toll-charge" type="number" min="0" step="0.01" value="${tollCharge}" class="block mt-1 border rounded-lg px-3 py-2 w-full"></label>
+                        <label class="text-xs font-bold">Parking<input id="final-parking-charge" type="number" min="0" step="0.01" value="${parkingCharge}" class="block mt-1 border rounded-lg px-3 py-2 w-full"></label>
+                        <label class="text-xs font-bold">State Tax<input id="final-state-tax-charge" type="number" min="0" step="0.01" value="${stateTaxCharge}" class="block mt-1 border rounded-lg px-3 py-2 w-full"></label>
+                        <label class="text-xs font-bold">Other Charges<input id="final-other-charge" type="number" min="0" step="0.01" value="${otherCharge}" class="block mt-1 border rounded-lg px-3 py-2 w-full"></label>
+                    </div>
+                    <div class="mt-4 grid grid-cols-3 gap-3 border-t border-indigo-100 pt-3">
+                        <div><span class="text-[10px] text-slate-500">ORIGINAL FARE</span><b class="block">${money(originalFare)}</b></div>
+                        <div><span class="text-[10px] text-slate-500">EXTRAS</span><b class="block">${money(extrasTotal)}</b></div>
+                        <div><span class="text-[10px] text-slate-500">FINAL FARE</span><b class="block text-indigo-800">${money(fare)}</b></div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        <button type="button" id="save-final-charges-btn" onclick="saveFinalTripCharges()" class="bg-indigo-700 hover:bg-indigo-800 disabled:opacity-60 text-white px-4 py-2 rounded-lg text-xs font-bold">Save Final Charges</button>
+                        <span id="final-charges-message" class="text-xs font-semibold"></span>
+                    </div>
                 </div>
                 <div class="mt-4 bg-slate-50 border rounded-2xl p-4">
                     <h4 class="font-black text-sm mb-3">Payment</h4>
@@ -1724,6 +1751,27 @@
             }catch(e){alert(e.message||'Unable to delete booking.');}
         }
         async function saveBookingStatus(){ const value=document.getElementById('booking-status-select').value; const {error}=await supabaseClient.from('inquiries').update({booking_status:value,updated_at:new Date().toISOString()}).eq('booking_id',currentAdminBooking.booking_id); if(error)return alert(error.message); currentAdminBooking.booking_status=value; await loadInquiries(); await renderBookingDetail(); }
+        async function saveFinalTripCharges(){
+            const ids=['final-extra-km','final-extra-km-rate','final-night-charge','final-toll-charge','final-parking-charge','final-state-tax-charge','final-other-charge'];
+            const values=ids.map(id=>Number(document.getElementById(id)?.value||0));
+            if(values.some(v=>!Number.isFinite(v)||v<0)){ alert('All final charges must be valid non-negative numbers.'); return; }
+            const [extra_km,extra_km_rate,night_charge,toll_charge,parking_charge,state_tax_charge,other_charge]=values;
+            const btn=document.getElementById('save-final-charges-btn'), msg=document.getElementById('final-charges-message');
+            try{
+                if(btn){btn.disabled=true;btn.textContent='Saving…';}
+                if(msg){msg.textContent='Updating final fare…';msg.className='text-xs font-semibold text-indigo-700';}
+                const result=await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({
+                    action:'update_final_charges',booking_id:currentAdminBooking.booking_id,
+                    extra_km,extra_km_rate,night_charge,toll_charge,parking_charge,state_tax_charge,other_charge
+                })});
+                if(result.booking)currentAdminBooking=result.booking;
+                await loadInquiries();
+                await renderBookingDetail();
+            }catch(e){
+                if(msg){msg.textContent=e.message||'Unable to save final charges.';msg.className='text-xs font-semibold text-rose-600';}
+                if(btn){btn.disabled=false;btn.textContent='Save Final Charges';}
+            }
+        }
         async function generatePaymentLink(){
             const amountEl=document.getElementById('payment-amount'), typeEl=document.getElementById('payment-type');
             const btn=document.getElementById('generate-payment-link-btn'), msg=document.getElementById('payment-action-message');

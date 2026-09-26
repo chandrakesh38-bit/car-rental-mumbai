@@ -94,7 +94,10 @@ function durationSeconds(value) {
   return match ? Math.round(Number(match[1])) : 0;
 }
 
-async function computeRoute(pickupPlaceId, stopPlaceIds, finalDropPlaceId) {
+async function computeRoute(pickupPlaceId, stopPlaceIds, finalDropPlaceId, journeyType) {
+  if (!['one-way', 'round-trip'].includes(journeyType)) {
+    throw Object.assign(new Error('Choose one-way or round trip to calculate the fare.'), { status: 400 });
+  }
   const pickup = cleanPlaceId(pickupPlaceId);
   const finalDrop = cleanPlaceId(finalDropPlaceId);
   const stops = Array.isArray(stopPlaceIds) ? stopPlaceIds.map(cleanPlaceId) : [];
@@ -122,20 +125,23 @@ async function computeRoute(pickupPlaceId, stopPlaceIds, finalDropPlaceId) {
     })
   });
 
+  const returnRoute = {
+    origin: { placeId: finalDrop },
+    destination: { address: BASE_ADDRESS },
+    travelMode: 'DRIVE',
+    routingPreference: 'TRAFFIC_UNAWARE',
+    computeAlternativeRoutes: false,
+    languageCode: 'en-US',
+    units: 'METRIC'
+  };
+  if (journeyType === 'round-trip') returnRoute.intermediates = [{ placeId: pickup }];
+
   const back = await google('https://routes.googleapis.com/directions/v2:computeRoutes', {
     method: 'POST',
     headers: {
       'X-Goog-FieldMask': 'routes.distanceMeters,routes.duration,routes.legs.distanceMeters,routes.legs.duration'
     },
-    body: JSON.stringify({
-      origin: { placeId: finalDrop },
-      destination: { address: BASE_ADDRESS },
-      travelMode: 'DRIVE',
-      routingPreference: 'TRAFFIC_UNAWARE',
-      computeAlternativeRoutes: false,
-      languageCode: 'en-US',
-      units: 'METRIC'
-    })
+    body: JSON.stringify(returnRoute)
   });
 
   const first = outbound.routes?.[0];
@@ -158,7 +164,8 @@ async function computeRoute(pickupPlaceId, stopPlaceIds, finalDropPlaceId) {
     baseAddress: BASE_ADDRESS,
     distanceMeters,
     distanceKmExact: Math.round((distanceMeters / 1000) * 10) / 10,
-    billableRouteKm: Math.ceil(distanceMeters / 1000),
+    routeKmRoundedUp: Math.ceil(distanceMeters / 1000),
+    journeyType,
     durationSeconds: durationSeconds(first?.duration) + durationSeconds(second?.duration),
     legs
   };
@@ -365,7 +372,7 @@ async function reverseGeocode(lat, lng) {
     }
 
     if (action === 'route') {
-      const result = await computeRoute(body.pickupPlaceId, body.stopPlaceIds, body.finalDropPlaceId);
+      const result = await computeRoute(body.pickupPlaceId, body.stopPlaceIds, body.finalDropPlaceId, body.journeyType);
       return json({ success: true, ...result });
     }
 

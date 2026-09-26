@@ -445,6 +445,7 @@ let mumbaiMetroLocations = [
         let currentMainMode = 'withdriver';
         let currentWDSubTab = 'outstation';
         let currentAirportType = 'drop';
+        let currentOutstationJourneyType = '';
         const OUTSTATION_BASE_ADDRESS = 'Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai, Maharashtra 400079';
         const OUTSTATION_DRIVER_ALLOWANCE_PER_DAY = 500;
         let wdOutstationKm = 0;
@@ -458,6 +459,8 @@ let mumbaiMetroLocations = [
         const outstationSearchTimers = new Map();
         let chosenCarName = '';
         let chosenFareAmount = 0;
+        let firstTripFareBeforeDiscount = 0;
+        let firstTripOfferApplied = false;
         let selectedCarObj = null;
         let currentDeliveryMode = 'home';
         let withDriverCurrentLocation = null;
@@ -550,6 +553,7 @@ function showCustomAlert(message) {
             } else if (tab === 'airport') {
                 setAirportTransferType('drop');
             }
+            updateOutstationPricingCopy();
             calculateDriverFare();
         }
 
@@ -585,6 +589,60 @@ function showCustomAlert(message) {
             fromInput.value = toInput.value;
             toInput.value = temp;
             onWDDestinationInput();
+        }
+
+        function setOutstationJourneyType(type) {
+            if (!['one-way', 'round-trip'].includes(type)) return;
+            currentOutstationJourneyType = type;
+            const tripTypeFieldset = document.getElementById('wd-out-trip-type-fieldset');
+            const tripTypeError = document.getElementById('wd-out-trip-type-error');
+            tripTypeFieldset?.classList.remove('trip-type-selection-required');
+            tripTypeFieldset?.setAttribute('aria-invalid', 'false');
+            tripTypeError?.classList.add('hidden');
+            const oneWay = document.getElementById('wd-out-one-way');
+            const roundTrip = document.getElementById('wd-out-round-trip');
+            const selectedClass = 'rounded-xl border-2 border-indigo-600 bg-indigo-50 px-3 py-3 text-left transition shadow-sm';
+            const defaultClass = 'rounded-xl border-2 border-slate-200 bg-white px-3 py-3 text-left transition hover:border-indigo-300';
+            if (oneWay) {
+                oneWay.className = type === 'one-way' ? selectedClass : defaultClass;
+                oneWay.setAttribute('aria-pressed', String(type === 'one-way'));
+            }
+            if (roundTrip) {
+                roundTrip.className = type === 'round-trip' ? selectedClass : defaultClass;
+                roundTrip.setAttribute('aria-pressed', String(type === 'round-trip'));
+            }
+            invalidateOutstationRoute(type === 'one-way'
+                ? 'Choose your pickup and destination to calculate the one-way fare.'
+                : 'Choose your pickup and destination to calculate the round-trip fare.');
+            if (collectOutstationRouteSelections(false)) updateOutstationRouteEstimate();
+            updateOutstationPricingCopy();
+        }
+
+        function requireOutstationJourneyType() {
+            const fieldset = document.getElementById('wd-out-trip-type-fieldset');
+            const error = document.getElementById('wd-out-trip-type-error');
+            if (['one-way', 'round-trip'].includes(currentOutstationJourneyType)) {
+                fieldset?.classList.remove('trip-type-selection-required');
+                fieldset?.setAttribute('aria-invalid', 'false');
+                error?.classList.add('hidden');
+                return true;
+            }
+            fieldset?.classList.add('trip-type-selection-required');
+            fieldset?.setAttribute('aria-invalid', 'true');
+            error?.classList.remove('hidden');
+            showCustomAlert('Please select One-way or Round trip to view fares.');
+            fieldset?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('wd-out-one-way')?.focus({ preventScroll: true });
+            return false;
+        }
+
+        function updateOutstationPricingCopy() {
+            const policy = document.getElementById('wd-pricing-policy-copy');
+            if (!policy) return;
+            policy.innerHTML = '<strong>Pricing Includes:</strong> Car rental, fuel &amp; driver allowance. ' +
+                (currentWDSubTab === 'outstation'
+                    ? 'Extra: tolls, parking &amp; state tax at actual cost.'
+                    : 'Extra: tolls &amp; parking at actual cost.');
         }
 
         function setAirportTransferType(type) {
@@ -665,6 +723,10 @@ function showCustomAlert(message) {
                         </div>
                     </div>
                     ${dateTimeHTML}
+                    <div>
+                        <label for="wd-airport-flight-number" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-ticket text-indigo-600 mr-1"></i> Flight Number (Optional)</label>
+                        <input type="text" id="wd-airport-flight-number" maxlength="30" autocomplete="off" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none font-medium" placeholder="e.g. AI 639">
+                    </div>
                 `;
             }
 
@@ -836,6 +898,7 @@ function onPickupDateChange() {
         }
 
         function invalidateOutstationRoute(message = '') {
+            outstationRouteSequence += 1;
             wdOutstationRouteQuote = null;
             wdOutstationKm = 0;
             const km = document.getElementById('wd-metric-km');
@@ -1109,6 +1172,10 @@ function onPickupDateChange() {
         }
 
         async function updateOutstationRouteEstimate() {
+            if (!currentOutstationJourneyType) {
+                invalidateOutstationRoute('');
+                return;
+            }
             const selections = collectOutstationRouteSelections(false);
             if (!selections) return;
             const sequence = ++outstationRouteSequence;
@@ -1121,11 +1188,16 @@ function onPickupDateChange() {
                 const payload = await publicMapsRequest('route', {
                     pickupPlaceId: selections.pickup.placeId,
                     stopPlaceIds: selections.stops.map(stop => stop.placeId),
-                    finalDropPlaceId: selections.finalDrop.placeId
+                    finalDropPlaceId: selections.finalDrop.placeId,
+                    journeyType: currentOutstationJourneyType
                 });
                 if (sequence !== outstationRouteSequence) return;
                 wdOutstationRouteQuote = payload;
-                wdOutstationKm = Number(payload.billableRouteKm) || 0;
+                if (payload.journeyType !== currentOutstationJourneyType) {
+                    invalidateOutstationRoute('Route type changed. Please recalculate the fare.');
+                    return;
+                }
+                wdOutstationKm = Number(payload.routeKmRoundedUp) || 0;
                 const km = document.getElementById('wd-metric-km');
                 if (km) km.textContent = Number(payload.distanceKmExact || wdOutstationKm).toLocaleString('en-IN');
                 if (status) {
@@ -1150,7 +1222,8 @@ function onPickupDateChange() {
             return [
                 route.pickup.placeId,
                 ...route.stops.map(stop => stop.placeId),
-                route.finalDrop.placeId
+                route.finalDrop.placeId,
+                currentOutstationJourneyType
             ].join('|');
         }
 
@@ -1248,13 +1321,17 @@ function onPickupDateChange() {
                     wdOutstationDays = 1;
                 }
                 const minimumKm = wdOutstationDays * livePricingRules.minimumOutstationKmPerDay;
-                const billableKm = Math.max(wdOutstationKm || 0, minimumKm);
+                const includedKm = Math.max(wdOutstationKm || 0, minimumKm);
                 const daysEl = document.getElementById('wd-metric-days');
-                const billableEl = document.getElementById('wd-metric-billable-km');
+                const includedEl = document.getElementById('wd-metric-included-km');
                 const minimumEl = document.getElementById('wd-metric-minimum');
                 if (daysEl) daysEl.textContent = wdOutstationDays;
-                if (billableEl) billableEl.textContent = billableKm.toLocaleString('en-IN');
-                if (minimumEl) minimumEl.textContent = 'Minimum: ' + wdOutstationDays + ' × ' + livePricingRules.minimumOutstationKmPerDay + ' KM = ' + minimumKm.toLocaleString('en-IN') + ' KM';
+                if (includedEl) includedEl.textContent = currentOutstationJourneyType && wdOutstationRouteQuote
+                    ? includedKm.toLocaleString('en-IN')
+                    : '—';
+                if (minimumEl) minimumEl.textContent = currentOutstationJourneyType
+                    ? 'Minimum included distance: ' + wdOutstationDays + ' × ' + livePricingRules.minimumOutstationKmPerDay + ' km per day (' + minimumKm.toLocaleString('en-IN') + ' km minimum).'
+                    : 'Choose one-way or round trip and add your route to see the included distance.';
                 const nightBadge = document.getElementById('wd-metric-night-badge');
                 if (nightBadge) nightBadge.classList.toggle('hidden', currentQualifyingNightCount() === 0);
             }
@@ -1267,8 +1344,9 @@ function onPickupDateChange() {
                 const pkg = document.getElementById('wd-local-package').value;
                 return (car.rates.local[pkg] || 3000) + nightCharge;
             } else if (currentWDSubTab === 'outstation') {
-                const billableKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                return (billableKm * car.rates.outstationPerKm) + (wdOutstationDays * OUTSTATION_DRIVER_ALLOWANCE_PER_DAY) + nightCharge;
+                if (!currentOutstationJourneyType) return null;
+                const includedKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
+                return (includedKm * car.rates.outstationPerKm) + (wdOutstationDays * OUTSTATION_DRIVER_ALLOWANCE_PER_DAY) + nightCharge;
             } else if (currentWDSubTab === 'airport') {
                 const termInput = document.getElementById('wd-airport-terminal');
                 const term = termInput ? termInput.value : 't2';
@@ -1299,9 +1377,13 @@ function onPickupDateChange() {
                         hrsIncludedText = "10 Hours included";
                     }
                 } else if (currentWDSubTab === 'outstation') {
-                    const billableKm = Math.max(wdOutstationKm, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                    kmIncludedText = `${billableKm} KM included`;
-                    hrsIncludedText = `${wdOutstationDays * 24} Hours (${wdOutstationDays} Day) included`;
+                    const includedKm = Math.max(wdOutstationKm, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
+                    kmIncludedText = currentOutstationJourneyType && wdOutstationRouteQuote
+                        ? `${includedKm.toLocaleString('en-IN')} km included`
+                        : currentOutstationJourneyType ? 'Enter route to see included km' : 'Choose a trip type to see included km';
+                    hrsIncludedText = currentOutstationJourneyType
+                        ? `${wdOutstationDays * 24} hours (${wdOutstationDays} day${wdOutstationDays === 1 ? '' : 's'})`
+                        : 'Trip duration';
                 } else if (currentWDSubTab === 'airport') {
                     kmIncludedText = "Airport Transfer Drop/Pickup";
                     hrsIncludedText = "On-time Guaranteed";
@@ -1315,8 +1397,8 @@ function onPickupDateChange() {
                                 <h3 class="font-bold text-slate-900 text-base mt-1.5">${car.name}</h3>
                             </div>
                             <div class="text-right">
-                                <span class="text-[10px] text-slate-400 block font-semibold uppercase">Total Est.</span>
-                                <span class="text-xl font-black text-indigo-950">₹${fare.toLocaleString('en-IN')}</span>
+                                <span class="text-[10px] text-slate-400 block font-semibold">Estimated Fare</span>
+                                <span class="text-xl font-black text-indigo-950">${fare === null ? 'Choose trip type' : '₹' + fare.toLocaleString('en-IN')}</span>
                             </div>
                         </div>
                         <div class="flex items-center space-x-3 text-xs text-slate-500 my-2 py-2 border-y border-slate-100">
@@ -1327,9 +1409,13 @@ function onPickupDateChange() {
                             <span><i class="fa-solid fa-road text-indigo-600 mr-1"></i> ${kmIncludedText}</span>
                             <span><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> ${hrsIncludedText}</span>
                         </div>
+                        <div class="text-[11px] leading-relaxed mb-4 space-y-1">
+                            <p class="text-emerald-800"><i class="fa-solid fa-check mr-1"></i> Includes car, fuel &amp; driver</p>
+                            <p class="text-rose-800"><i class="fa-solid fa-circle-info mr-1"></i> Extra as actuals: tolls, parking${currentWDSubTab === 'outstation' ? ' &amp; state tax' : ''}</p>
+                        </div>
                     </div>
-                    <button type="button" onclick="handleBookThisCarClick('${car.name}', ${fare})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-white font-bold py-2.5 rounded-xl transition text-xs tracking-wide shadow-sm">
-                        Book This Car
+                    <button type="button" ${fare === null ? 'disabled' : ''} onclick="handleBookThisCarClick('${car.name}', ${fare === null ? 0 : fare})" class="w-full ${fare === null ? 'bg-slate-300 cursor-not-allowed' : 'bg-indigo-950 hover:bg-indigo-900'} text-white font-bold py-2.5 rounded-xl transition text-xs tracking-wide shadow-sm">
+                        ${fare === null ? 'Choose Trip Type' : 'Book This Car'}
                     </button>
                 `;
                 container.appendChild(card);
@@ -1394,6 +1480,8 @@ function onPickupDateChange() {
                 const outDestInput = document.getElementById('wd-out-destination');
                 const outPDateInput = document.getElementById('wd-out-pdate');
                 const outRDateInput = document.getElementById('wd-out-rdate');
+
+                if (!requireOutstationJourneyType()) return false;
                 
                 if (!outPickupInput || !outPickupInput.value.trim()) { 
                     if(outPickupInput) outPickupInput.classList.add('border-red-500'); 
@@ -1505,6 +1593,7 @@ function onPickupDateChange() {
         }
 
         async function triggerFareSearch() {
+            if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !requireOutstationJourneyType()) return;
             if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !wdOutstationRouteQuote) {
                 await updateOutstationRouteEstimate();
             }
@@ -1695,16 +1784,19 @@ function onPickupDateChange() {
             const contentBox = document.getElementById('fare-breakdown-content');
             if (!contentBox) return;
             const outstationExtra = currentWDSubTab === 'outstation'
-                ? `<li><strong>Outstation:</strong> Minimum billing is ${livePricingRules.minimumOutstationKmPerDay} KM per booked day.</li>
+                ? `<li><strong>Included distance:</strong> The fare includes the route distance or ${livePricingRules.minimumOutstationKmPerDay} km per booked day, whichever is higher.</li>
                    <li><strong>Driver allowance:</strong> ₹${OUTSTATION_DRIVER_ALLOWANCE_PER_DAY} per booked day.</li>
                    <li><strong>Night service:</strong> Charged only if the pickup or final drop falls between 11 PM and 4 AM — ₹400 for Hatchback/Sedan or ₹600 for SUV/MUV per qualifying night.</li>`
                 : '';
+            const extraCharges = currentWDSubTab === 'outstation'
+                ? '<li><strong>Extra charges:</strong> Tolls, parking and applicable state taxes are charged at actual cost.</li>'
+                : '<li><strong>Extra charges:</strong> Tolls and parking are charged at actual cost.</li>';
             contentBox.innerHTML = `
                 <p class="font-bold text-slate-900">Transparent Fare & Inclusions Details:</p>
                 <ul class="list-disc pl-4 space-y-1.5 pt-1">
                     <li><strong>Fuel & Driver:</strong> Included in the displayed fare.</li>
                     ${outstationExtra}
-                    <li><strong>Toll, Parking & State Tax:</strong> Extra as per actual.</li>
+                    ${extraCharges}
                 </ul>
             `;
             document.getElementById('fare-breakdown-modal').classList.remove('hidden'); syncModalState(document.getElementById('fare-breakdown-modal'), true);
@@ -1855,9 +1947,14 @@ function onPickupDateChange() {
             }
             const locationStatus = document.getElementById('wd-current-location-status');
             if (locationStatus) locationStatus.textContent = '';
-            chosenFareAmount = fare;
+            firstTripFareBeforeDiscount = Number(fare) || 0;
+            firstTripOfferApplied = false;
+            const couponInput = document.getElementById('first-trip-coupon-code');
+            if (couponInput) couponInput.value = '';
+            document.getElementById('first-trip-coupon-error')?.classList.add('hidden');
+            chosenFareAmount = firstTripFareBeforeDiscount;
             document.getElementById('modal-car-name').innerText = name;
-            document.getElementById('modal-fare').innerText = '₹' + fare.toLocaleString('en-IN');
+            renderFirstTripOffer();
             
             let pickupLoc = '';
             let destLoc = '';
@@ -1881,8 +1978,8 @@ function onPickupDateChange() {
                     return `${date.getDate()} ${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}, ${Number(hour)}:00 ${ampm}`;
                 };
                 dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nFinal Drop: ${formatReviewTime('wd-out-r')}`;
-                const billable = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                pkgStr = `Outstation · Billable ${billable} KM · ${wdOutstationDays} Day(s)`;
+                const includedKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
+                pkgStr = `${currentOutstationJourneyType === 'one-way' ? 'One-way' : 'Round trip'} · ${includedKm.toLocaleString('en-IN')} km included · ${wdOutstationDays} day(s)`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
                 destLoc = document.getElementById('wd-airport-terminal').value.toUpperCase() + ' Airport';
@@ -1892,11 +1989,98 @@ function onPickupDateChange() {
 
             document.getElementById('modal-summary-pickup').innerText = pickupLoc;
             document.getElementById('modal-summary-dest').innerText = destLoc;
+            const destinationLabel = document.getElementById('modal-summary-dest-label');
+            const tripTypeRow = document.getElementById('modal-summary-trip-type-row');
+            const tripTypeValue = document.getElementById('modal-summary-trip-type');
+            const exclusions = document.getElementById('modal-summary-exclusions');
+            const extraNote = document.getElementById('modal-summary-extra-note');
+            if (destinationLabel) destinationLabel.textContent = currentWDSubTab === 'local' ? 'Trip Type:' : 'Destination / Route:';
+            if (currentWDSubTab === 'local') document.getElementById('modal-summary-dest').innerText = 'Local City';
+            if (tripTypeRow) tripTypeRow.classList.toggle('hidden', currentWDSubTab !== 'outstation');
+            if (tripTypeValue) tripTypeValue.textContent = currentOutstationJourneyType === 'one-way' ? 'One-way' : 'Round trip';
+            if (exclusions) exclusions.textContent = currentWDSubTab === 'outstation'
+                ? '✕ Extra charges: Tolls, parking and applicable state taxes are charged at actual cost.'
+                : '✕ Extra charges: Tolls and parking are charged at actual cost.';
+            if (extraNote) extraNote.textContent = currentWDSubTab === 'outstation'
+                ? 'Tolls, parking and applicable state taxes extra at actual cost.'
+                : 'Tolls and parking extra at actual cost.';
             document.getElementById('modal-summary-datetime').innerText = dateTimeStr;
             document.getElementById('modal-summary-datetime').previousElementSibling.hidden = currentWDSubTab === 'outstation';
             document.getElementById('modal-summary-package').innerText = pkgStr;
 
             document.getElementById('booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('booking-modal'), true);
+        }
+
+        function renderFirstTripOffer(animate = false) {
+            const fare = document.getElementById('modal-fare');
+            const original = document.getElementById('modal-original-fare');
+            const button = document.getElementById('first-trip-coupon-apply');
+            const codeInput = document.getElementById('first-trip-coupon-code');
+            const badge = document.getElementById('first-trip-offer-badge');
+            const error = document.getElementById('first-trip-coupon-error');
+            const breakdown = document.getElementById('first-trip-offer-breakdown');
+            const amount = document.getElementById('first-trip-offer-amount');
+            const discount = Math.round(firstTripFareBeforeDiscount * 0.05);
+            chosenFareAmount = firstTripOfferApplied ? firstTripFareBeforeDiscount - discount : firstTripFareBeforeDiscount;
+            if (fare) fare.textContent = '₹' + chosenFareAmount.toLocaleString('en-IN');
+            if (original) {
+                original.textContent = '₹' + firstTripFareBeforeDiscount.toLocaleString('en-IN');
+                original.classList.toggle('hidden', !firstTripOfferApplied);
+            }
+            if (button) {
+                button.disabled = firstTripOfferApplied;
+                button.textContent = firstTripOfferApplied ? 'APPLIED ✓' : 'APPLY COUPON';
+                if (animate) {
+                    button.classList.remove('first-trip-offer-applied');
+                    void button.offsetWidth;
+                    button.classList.add('first-trip-offer-applied');
+                    window.setTimeout(() => button.classList.remove('first-trip-offer-applied'), 550);
+                }
+            }
+            if (codeInput) codeInput.disabled = firstTripOfferApplied;
+            if (badge) badge.classList.toggle('first-trip-offer-badge-applied', firstTripOfferApplied);
+            if (error && firstTripOfferApplied) error.classList.add('hidden');
+            if (breakdown) breakdown.classList.toggle('hidden', !firstTripOfferApplied);
+            if (amount) amount.textContent = '−₹' + discount.toLocaleString('en-IN');
+        }
+
+        function applyFirstTripCoupon() {
+            if (firstTripOfferApplied) return;
+            const codeInput = document.getElementById('first-trip-coupon-code');
+            const error = document.getElementById('first-trip-coupon-error');
+            const code = String(codeInput?.value || '').trim().toUpperCase();
+            if (code !== 'FIRSTTRIP') {
+                if (error) {
+                    error.textContent = code ? 'Coupon code is not valid. Please check and try again.' : 'Enter a coupon code to apply.';
+                    error.classList.remove('hidden');
+                }
+                codeInput?.focus();
+                return;
+            }
+            error?.classList.add('hidden');
+            firstTripOfferApplied = true;
+            renderFirstTripOffer(true);
+            celebrateFirstTripOffer();
+        }
+
+        function celebrateFirstTripOffer() {
+            if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+            const layer = document.createElement('div');
+            layer.className = 'first-trip-confetti-layer';
+            layer.setAttribute('aria-hidden', 'true');
+            const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#ef4444'];
+            for (let i = 0; i < 64; i++) {
+                const piece = document.createElement('span');
+                piece.className = 'first-trip-confetti-piece';
+                piece.style.left = `${Math.random() * 100}%`;
+                piece.style.setProperty('--confetti-drift', `${Math.round(Math.random() * 220 - 110)}px`);
+                piece.style.setProperty('--confetti-spin', `${Math.round(Math.random() * 900 - 450)}deg`);
+                piece.style.setProperty('--confetti-delay', `${Math.random() * 420}ms`);
+                piece.style.backgroundColor = colors[i % colors.length];
+                layer.appendChild(piece);
+            }
+            document.body.appendChild(layer);
+            window.setTimeout(() => layer.remove(), 2400);
         }
         function closeModal() { document.getElementById('booking-modal').classList.add('hidden'); syncModalState(document.getElementById('booking-modal'), false); }
 
@@ -2295,7 +2479,7 @@ async function handleBookingSubmit(e) {
             returnAmPm
         );
 
-        const billableKm = Math.max(
+        const includedKm = Math.max(
             wdOutstationKm,
             wdOutstationDays * livePricingRules.minimumOutstationKmPerDay
         );
@@ -2312,10 +2496,12 @@ async function handleBookingSubmit(e) {
 
 👤 ${name} | ${phone}
 🚗 ${chosenCarName} | ₹${chosenFareAmount.toLocaleString('en-IN')}
+🔁 Trip Type: ${currentOutstationJourneyType === 'one-way' ? 'One-way' : 'Round trip'}
 📍 Vehicle Route: ${routeText}
 📅 Start: ${formatBookingDateTime(startDateTime)}
 📅 Final Drop: ${formatBookingDateTime(returnDateTime)}
-⏱ ${wdOutstationDays} Day${wdOutstationDays > 1 ? 's' : ''} | Google ${wdOutstationRouteQuote?.distanceKmExact || wdOutstationKm} KM | Billable ${billableKm} KM
+⏱ ${wdOutstationDays} Day${wdOutstationDays > 1 ? 's' : ''} | ${includedKm.toLocaleString('en-IN')} km included
+${currentOutstationJourneyType === 'one-way' ? '↩️ One-way fare includes the vehicle’s empty return distance; driver allowance applies to trip days only.\n' : ''}🗺 Route distance: ${wdOutstationRouteQuote?.distanceKmExact || wdOutstationKm} km
 💰 ₹${extraKmRate}/KM | Driver ₹${driverAllowance}/Day
 🌙 Night: ₹400 Hatchback/Sedan · ₹600 SUV/MUV when 11 PM–4 AM applies
 
@@ -2329,6 +2515,7 @@ async function handleBookingSubmit(e) {
             carName: chosenCarName,
             pickupAt: startDateTime.toISOString(),
             returnAt: returnDateTime.toISOString(),
+            journeyType: currentOutstationJourneyType,
             pickupLocation,
             pickupPlaceId: selections.pickup.placeId,
             destination,
@@ -2368,6 +2555,9 @@ async function handleBookingSubmit(e) {
             hour,
             ampm
         );
+        const flightNumber = currentAirportType === 'pickup'
+            ? (document.getElementById('wd-airport-flight-number')?.value || '').trim().replace(/[^A-Za-z0-9 -]/g, '').slice(0, 30)
+            : '';
 
 
         if (currentAirportType === 'drop') {
@@ -2394,7 +2584,7 @@ async function handleBookingSubmit(e) {
 🚗 ${chosenCarName} | ₹${chosenFareAmount.toLocaleString('en-IN')}
 ✈️ From: ${airportName}
 📍 Drop: ${location} — ${address}
-📅 ${formatBookingDateTime(journeyDateTime)}
+${flightNumber ? `🛫 Flight: ${flightNumber}\n` : ''}📅 ${formatBookingDateTime(journeyDateTime)}
 
 ✓ Incl: Fuel, Driver
 ✕ Excl: Toll, Parking
@@ -2402,11 +2592,12 @@ async function handleBookingSubmit(e) {
         }
 
         subject = `New booking assigned to your car – ${chosenCarName}`;
-        bookingData = {tripType:'airport',carName:chosenCarName,pickupAt:journeyDateTime.toISOString(),pickupLocation:location,customerPlaceId:document.getElementById('wd-airport-pickup').dataset.googlePlaceId||'',pickupPlaceId:currentAirportType==='drop'?(document.getElementById('wd-airport-pickup').dataset.googlePlaceId||''):'',airportTerminal:airport,airportType:currentAirportType};
+        bookingData = {tripType:'airport',carName:chosenCarName,pickupAt:journeyDateTime.toISOString(),pickupLocation:location,customerPlaceId:document.getElementById('wd-airport-pickup').dataset.googlePlaceId||'',pickupPlaceId:currentAirportType==='drop'?(document.getElementById('wd-airport-pickup').dataset.googlePlaceId||''):'',airportTerminal:airport,airportType:currentAirportType,flightNumber:flightNumber||null};
     }
 
     bookingData = {
         ...bookingData,
+        ...(firstTripOfferApplied ? { couponCode: 'FIRSTTRIP' } : {}),
         customerAddress: address,
         currentLocation: withDriverCurrentLocation ? {
             latitude: withDriverCurrentLocation.latitude,

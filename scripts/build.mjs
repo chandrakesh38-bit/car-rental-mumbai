@@ -44,13 +44,16 @@ function buildStructuredData(page) {
       provider:{'@id':site+'/#organization'},
       areaServed:(page.slug === 'thane-car-rental-with-driver' ? ['Thane'] : page.slug === 'navi-mumbai-car-rental-with-driver' ? ['Navi Mumbai'] : ['Mumbai','Thane','Navi Mumbai']).map(name => ({'@type':'City',name}))
     });
-    if (page.slug === 'with-driver' || page.slug === 'thane-car-rental-with-driver' || page.slug === 'navi-mumbai-car-rental-with-driver') {
+    if (page.slug === 'with-driver' || page.slug === 'outstation' || page.slug === 'thane-car-rental-with-driver' || page.slug === 'navi-mumbai-car-rental-with-driver') {
       const faqBySlug = {
         'with-driver':[
           ['Do you provide car rental with driver in Mumbai, Thane and Navi Mumbai?','Yes. Pickup is available across Mumbai, Thane and Navi Mumbai for local and outstation trips, subject to vehicle availability.'],
           ['Can I book a car with driver for one day?','Yes. For city use, select a local package such as 8 Hours / 80 KM or 12 Hours / 120 KM. For an outstation trip, billing is based on the applicable distance and day rules.'],
           ['Are toll and parking included in the fare?','Toll, parking and applicable state taxes are normally charged as per actuals unless your confirmed quotation specifically states otherwise.'],
           ['Is this a driver-only service?','No. This service provides a car together with a driver. We do not offer a driver-only booking for a customer\'s own vehicle.']
+        ],
+        'outstation':[
+          ['How are one-way and round-trip fares calculated?','For a one-way trip, the fare includes the vehicle\'s empty return distance to its Vikhroli base. Driver allowance applies to your trip days, not the empty return. A round-trip fare assumes the vehicle returns you to your pickup location. The online fare does not change if a different final drop is arranged. The displayed fare includes the applicable minimum distance per day; tolls, parking and state taxes are extra at actual cost.']
         ],
         'thane-car-rental-with-driver':[
           ['Do you provide car rental with driver pickup in Thane?','Yes. With-driver pickup is available in Thane, subject to vehicle availability for your selected date and time.'],

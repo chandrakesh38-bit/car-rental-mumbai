@@ -185,3 +185,26 @@ header .text-amber-300 { color: var(--ocean-tertiary) !important; }
 }
 .location-current-action { display: none; }
 .location-entry:focus-within .location-current-action { display: inline-flex; }
+.trip-type-selection-required { border-color: #e11d48 !important; background-color: #fff1f2; }
+
+#first-trip-offer-panel:has(#first-trip-coupon-apply:disabled) { border-color: #a7f3d0; background: #ecfdf5; }
+#first-trip-coupon-apply:disabled { border-color: #059669; background: #059669; cursor: default; }
+.first-trip-offer-badge-applied { border-color: #059669 !important; background: #d1fae5 !important; color: #065f46 !important; }
+.first-trip-offer-applied { animation: first-trip-offer-pop .48s cubic-bezier(.2,.8,.2,1); }
+@keyframes first-trip-offer-pop {
+    0% { transform: scale(.96); }
+    55% { transform: scale(1.035); }
+    100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .first-trip-offer-applied { animation: none; }
+}
+.first-trip-confetti-layer { position: fixed; inset: 0; z-index: 10000; overflow: hidden; pointer-events: none; }
+.first-trip-confetti-piece { position: absolute; top: -16px; width: 8px; height: 13px; border-radius: 2px; opacity: .95; animation: first-trip-confetti-fall 1.8s cubic-bezier(.15,.65,.45,1) var(--confetti-delay) forwards; }
+@keyframes first-trip-confetti-fall {
+    0% { transform: translate3d(0,-5vh,0) rotate(0); opacity: 1; }
+    100% { transform: translate3d(var(--confetti-drift),110vh,0) rotate(var(--confetti-spin)); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .first-trip-confetti-layer { display: none; }
+}

@@ -9,8 +9,8 @@
     <title>Mumbai Car Rental with Driver &amp; Self Drive | Car with Driver India</title>
     <!-- Search Engine & Social Meta Tags -->
     <meta name="description" content="Book car rental with driver or self-drive cars across Mumbai, Thane and Navi Mumbai for local, airport and outstation travel with transparent pricing.">
-        <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://carswithdriverindia.com/">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://carswithdriverindia.com/">
     
     <!-- Open Graph (WhatsApp / Social Preview) -->
     <meta property="og:title" content="Mumbai Car Rental with Driver &amp; Self Drive | Car with Driver India">
@@ -18,10 +18,10 @@
     <meta property="og:url" content="https://carswithdriverindia.com/">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://carswithdriverindia.com/logo.png">
-
-        <meta property="og:image:alt" content="Car with Driver India logo">
+    <meta property="og:image:alt" content="Car with Driver India logo">
     <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://carswithdriverindia.com/#organization","name":"Car with Driver India","legalName":"Car with Driver Mobility LLP","url":"https://carswithdriverindia.com/","telephone":"+919702988465","logo":"https://carswithdriverindia.com/logo.png","areaServed":[{"@type":"City","name":"Mumbai"},{"@type":"City","name":"Thane"},{"@type":"City","name":"Navi Mumbai"}]},{"@type":"WebSite","@id":"https://carswithdriverindia.com/#website","url":"https://carswithdriverindia.com/","name":"Car with Driver India","publisher":{"@id":"https://carswithdriverindia.com/#organization"}}]}</script>
-<!-- Favicon -->
+
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="/logo.png">
 
     <!-- Tailwind CSS -->
@@ -161,8 +161,8 @@
                                 <label for="wd-local-date" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
                                 <div class="grid grid-cols-3 gap-1.5 booking-datetime">
                                     <div class="relative">
-    <input type="date" id="wd-local-date" onclick="this.showPicker()" class="date-input-custom w-full bg-slate-50 border border-slate-300 rounded-lg px-1 py-2 text-xs font-medium outline-none cursor-pointer">
-    <span aria-hidden="true" id="wd-local-date-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">
+    <input type="date" id="wd-local-date" onclick="this.showPicker()" class="date-input-custom w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer">
+    <span aria-hidden="true" id="wd-local-date-placeholder" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
         DD/MM/YY
     </span>
 </div>
@@ -209,6 +209,18 @@
 
                     <!-- OUTSTATION FIELDS -->
                     <div id="wd-outstation-fields" class="space-y-4 hidden">
+                        <fieldset id="wd-out-trip-type-fieldset" class="space-y-2 rounded-xl border border-transparent p-1 -m-1 transition-colors" aria-invalid="false" aria-describedby="wd-out-trip-type-error">
+                            <legend class="block text-xs font-bold text-slate-700 uppercase"><i class="fa-solid fa-route text-indigo-600 mr-1"></i> Trip Type *</legend>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" id="wd-out-one-way" aria-pressed="false" onclick="setOutstationJourneyType('one-way')" class="rounded-xl border-2 border-slate-200 bg-white px-3 py-3 text-left transition hover:border-indigo-300">
+                                    <span class="block text-sm font-bold text-slate-800">One-way</span>
+                                </button>
+                                <button type="button" id="wd-out-round-trip" aria-pressed="false" onclick="setOutstationJourneyType('round-trip')" class="rounded-xl border-2 border-slate-200 bg-white px-3 py-3 text-left transition hover:border-indigo-300">
+                                    <span class="block text-sm font-bold text-slate-800">Round trip</span>
+                                </button>
+                            </div>
+                            <p id="wd-out-trip-type-error" class="hidden text-xs font-semibold text-rose-700" role="alert">Select One-way or Round trip to view fares.</p>
+                        </fieldset>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-start">
                             <div class="relative location-entry">
                                 <label for="wd-out-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> From *</label>
@@ -286,8 +298,8 @@
                         <!-- Outstation Calculation Strip -->
                         <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-2 text-xs sm:text-sm text-indigo-950 gap-2">
                             <div>Billed Days: <strong id="wd-metric-days">1</strong> Day(s)</div>
-                            <div>Billable Distance: <strong id="wd-metric-billable-km">300</strong> KM</div>
-                            <div id="wd-metric-minimum" class="sm:col-span-2 text-[10px] text-indigo-700">Minimum billing: 300 KM/day</div>
+                            <div>Distance Included: <strong id="wd-metric-included-km">—</strong> km</div>
+                            <div id="wd-metric-minimum" class="sm:col-span-2 text-[10px] text-indigo-700">Minimum distance included: 300 km per day</div>
                             <div id="wd-metric-night-badge" class="hidden sm:col-span-2 bg-amber-200 border border-amber-300 text-amber-950 font-bold px-2.5 py-1 rounded text-[10px]">
                                 <i class="fa-solid fa-moon mr-1"></i> Night service charge applies only when pickup or final drop falls between 11 PM and 4 AM.
                             </div>
@@ -313,7 +325,7 @@
                     <div class="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 mt-5 text-xs text-amber-950 flex items-center justify-between flex-wrap gap-2">
                         <div class="flex items-center gap-2">
                             <i class="fa-solid fa-shield-check text-amber-600"></i>
-                            <span><strong>Pricing Includes:</strong> Car rental, Fuel & Driver Allowance. Extra: Tolls & Parking as actual receipts.</span>
+                            <span id="wd-pricing-policy-copy"><strong>Pricing Includes:</strong> Car rental, fuel &amp; driver allowance.</span>
                         </div>
                         <button type="button" onclick="openFareBreakdownModal()" class="text-indigo-700 font-bold hover:underline flex items-center gap-1">
                             <i class="fa-solid fa-circle-info"></i> View Fare Breakdown
@@ -338,8 +350,8 @@
                                 <label for="sd-pdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Choose Pickup Date & Time *</label>
                                 <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
-    <input type="date" id="sd-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-1 py-2 text-xs font-medium outline-none cursor-pointer">
-    <span aria-hidden="true" id="sd-pdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none">
+    <input type="date" id="sd-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-medium outline-none cursor-pointer">
+    <span aria-hidden="true" id="sd-pdate-placeholder" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
         DD/MM/YY
     </span>
 </div>
@@ -682,6 +694,17 @@
 
 </section>
 
+<!-- HOMEPAGE WITH DRIVER SUPPORTING CONTENT -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 py-8" id="home-with-driver">
+  <div class="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-5 sm:p-7 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+    <div class="max-w-3xl">
+      <h2 class="text-xl sm:text-2xl font-black text-slate-900">Car Rental with Driver in Mumbai, Thane & Navi Mumbai</h2>
+      <p class="text-sm text-slate-600 mt-2 leading-6">Book a chauffeur-driven car for local city travel or outstation trips with pickup across Mumbai, Thane and Navi Mumbai. Choose your trip details and vehicle to view the applicable fare.</p>
+    </div>
+    <a href="/with-driver" class="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-950 text-white px-5 py-3 text-sm font-bold hover:bg-indigo-900 transition">Explore With Driver <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i></a>
+  </div>
+</section>
+
 <!-- GOOGLE BUSINESS PROFILE RATING & BEST REVIEWS SECTION -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 py-12" id="reviews">
         <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -690,19 +713,18 @@
                     <i class="fa-brands fa-google text-[#4285F4]"></i>
                 </div>
                 <div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl font-black text-slate-900">5.0</span>
-                        <div class="flex text-amber-400 text-sm">
+                    <div class="font-black text-slate-900">500+ Happy Customers</div>
+                    <div class="flex items-center gap-2 mt-1">
+                        <div class="flex text-amber-400 text-sm" aria-hidden="true">
                             <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
                         </div>
-                        <span class="text-xs font-bold text-slate-400">(500+ Verified Reviews)</span>
+                        <span class="text-xs font-bold text-slate-600">5.0★ Rated on Google</span>
                     </div>
-                    <h3 class="text-sm font-bold text-slate-700 mt-0.5">Car with Driver India - Google Business Profile</h3>
                 </div>
             </div>
             <a href="https://maps.google.com/?q=Car+With+Driver+India+Vikhroli+Mumbai" target="_blank" class="bg-slate-900 hover:bg-indigo-950 text-white font-bold px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition shadow-sm whitespace-nowrap">
                 <i class="fa-brands fa-google text-amber-400"></i>
-                <span>View on Google Maps</span>
+                <span>Read Customer Reviews</span>
                 <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400 ml-1"></i>
             </a>
         </div>
@@ -796,17 +818,6 @@
             </div>
         </div>
     </section>
-
-<!-- HOMEPAGE WITH DRIVER SUPPORTING CONTENT -->
-<section class="max-w-6xl mx-auto px-4 sm:px-6 py-8" id="home-with-driver">
-  <div class="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-5 sm:p-7 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-    <div class="max-w-3xl">
-      <h2 class="text-xl sm:text-2xl font-black text-slate-900">Car Rental with Driver in Mumbai, Thane & Navi Mumbai</h2>
-      <p class="text-sm text-slate-600 mt-2 leading-6">Book a chauffeur-driven car for local city travel or outstation trips with pickup across Mumbai, Thane and Navi Mumbai. Choose your trip details and vehicle to view the applicable fare.</p>
-    </div>
-    <a href="/with-driver" class="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-950 text-white px-5 py-3 text-sm font-bold hover:bg-indigo-900 transition">Explore With Driver <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i></a>
-  </div>
-</section>
 
 </main>
 <!-- SEO Outstation Routes Cluster -->
@@ -999,21 +1010,40 @@
                         <h4 class="text-sm font-extrabold text-indigo-950 mt-1" id="modal-car-name">Car Name</h4>
                     </div>
                     <div class="text-right">
-                        <span class="text-slate-400 text-[10px] block">Approx Total Amount</span>
+                        <span class="text-slate-400 text-[10px] block">Estimated Fare</span>
+                        <span id="modal-original-fare" class="hidden text-[11px] text-slate-400 line-through"></span>
                         <strong class="text-emerald-700 font-black text-base" id="modal-fare">₹0</strong>
+                        <span id="modal-summary-extra-note" class="block max-w-40 text-[10px] text-slate-500 leading-tight mt-1">Extra charges may apply.</span>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
                     <div><strong>Pickup Location:</strong> <span id="modal-summary-pickup" class="text-slate-900"></span></div>
-                    <div><strong>Destination / Route:</strong> <span id="modal-summary-dest" class="text-slate-900"></span></div>
+                    <div><strong id="modal-summary-dest-label">Destination / Route:</strong> <span id="modal-summary-dest" class="text-slate-900"></span></div>
+                    <div id="modal-summary-trip-type-row" class="hidden"><strong>Trip Type:</strong> <span id="modal-summary-trip-type" class="text-slate-900"></span></div>
                     <div><strong>Date &amp; Time:</strong> <span id="modal-summary-datetime" class="text-slate-900"></span></div>
                     <div><strong>Trip Package:</strong> <span id="modal-summary-package" class="text-slate-900"></span></div>
                 </div>
 
                 <div class="pt-2 border-t border-slate-200 space-y-1">
                     <div class="text-emerald-800 font-semibold">✓ Inclusions: Car rental, fuel &amp; driver allowance included.</div>
-                    <div class="text-rose-800 font-semibold">✕ Exclusions: Toll taxes, parking fees, and state entry permits are extra as actuals.</div>
+                    <div id="modal-summary-exclusions" class="text-rose-800 font-semibold">✕ Extra charges: Tolls and parking are charged at actual cost.</div>
+                </div>
+            </div>
+
+            <div id="first-trip-offer-panel" class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                <div class="mb-2 flex items-center justify-between gap-2">
+                    <span class="text-xs font-extrabold text-slate-900">Have a coupon code?</span>
+                    <span id="first-trip-offer-badge" class="shrink-0 rounded-full bg-amber-100 px-3 py-1.5 text-[10px] font-black text-amber-900">FIRSTTRIP · 5% OFF</span>
+                </div>
+                <div class="flex items-stretch gap-2">
+                    <label class="sr-only" for="first-trip-coupon-code">Coupon code</label>
+                    <input id="first-trip-coupon-code" type="text" maxlength="40" autocomplete="off" autocapitalize="characters" placeholder="Enter coupon code" onkeydown="if(event.key==='Enter'){event.preventDefault();applyFirstTripCoupon()}" class="min-w-0 flex-1 rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-sm font-semibold uppercase tracking-wide text-slate-900 outline-none focus:ring-2 focus:ring-amber-400">
+                    <button type="button" id="first-trip-coupon-apply" onclick="applyFirstTripCoupon()" class="rounded-lg border border-amber-500 bg-amber-500 px-4 py-2.5 text-xs font-black text-white transition hover:bg-amber-600">APPLY COUPON</button>
+                </div>
+                <p id="first-trip-coupon-error" class="hidden mt-2 text-[11px] font-semibold text-rose-700" role="status" aria-live="polite"></p>
+                <div id="first-trip-offer-breakdown" class="hidden mt-2 border-t border-amber-200 pt-2 text-[11px] font-bold text-emerald-800">
+                    <span>First Trip discount</span><span id="first-trip-offer-amount" class="float-right">−₹0</span>
                 </div>
             </div>
             

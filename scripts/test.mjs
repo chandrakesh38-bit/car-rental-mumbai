@@ -67,6 +67,36 @@ const snapshot=()=>page.evaluate(()=>({
 }));
 
 try {
+  await check('outstation search explains missing trip type before route calculation',async()=>{
+    await go('outstation');
+    await page.evaluate(()=>triggerFareSearch());
+    assert.equal(await page.locator('#wd-out-trip-type-fieldset').getAttribute('aria-invalid'),'true');
+    assert.equal(await page.locator('#wd-out-trip-type-error').isVisible(),true);
+    assert.match(await page.locator('#custom-floating-alert').innerText(),/select One-way or Round trip to view fares/i);
+    assert.equal(await page.evaluate(()=>currentOutstationJourneyType),'');
+    assert.equal(await page.evaluate(()=>wdOutstationRouteQuote),null);
+    assert.equal(await page.locator('#wd-out-route-status').innerText(),'');
+    await page.locator('#wd-out-one-way').click();
+    assert.equal(await page.locator('#wd-out-trip-type-fieldset').getAttribute('aria-invalid'),'false');
+    assert.equal(await page.locator('#wd-out-trip-type-error').isVisible(),false);
+  });
+  await check('coupon requires a typed code and applies First Trip discount',async()=>{
+    await go('with-driver');
+    await page.evaluate(()=>{
+      firstTripFareBeforeDiscount=7385;
+      document.getElementById('booking-modal').classList.remove('hidden');
+      renderFirstTripOffer();
+    });
+    await page.locator('#first-trip-coupon-code').fill('wrong-code');
+    await page.locator('#first-trip-coupon-apply').click();
+    assert.equal(await page.locator('#first-trip-coupon-error').isVisible(),true);
+    assert.equal(await page.evaluate(()=>firstTripOfferApplied),false);
+    await page.locator('#first-trip-coupon-code').fill('firsttrip');
+    await page.locator('#first-trip-coupon-apply').click();
+    assert.equal(await page.evaluate(()=>firstTripOfferApplied),true);
+    assert.equal(await page.locator('#first-trip-coupon-apply').innerText(),'APPLIED ✓');
+    assert.equal(await page.locator('#modal-fare').innerText(),'₹7,016');
+  });
   if(baseline) await check('original CSS, all inline scripts, Supabase/API, admin and destination pages preserved',async()=>{
     const html=(await readFile(path.join(baseline,'index.html'),'utf8')).replace(/\r\n/g,'\n');
     const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);

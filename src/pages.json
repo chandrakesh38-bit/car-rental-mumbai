@@ -65,13 +65,14 @@
     "label": "Outstation",
     "icon": "fa-route",
     "title": "Outstation Cabs from Mumbai | Car with Driver India",
-    "description": "Plan an outstation trip from Mumbai with a driver. Select your destination and travel dates to review distance, billed days and available cab fares.",
+    "description": "Plan a one-way or round-trip outstation journey from Mumbai with a driver. Choose your trip type and travel details to see the included distance and estimated fare.",
     "h1": "Outstation Car Rental from Mumbai",
     "mode": "withdriver",
     "tab": "outstation",
     "sections": [
       "quick-routes",
-      "fleet"
+      "fleet",
+      "outstation-faq"
     ]
   },
   {

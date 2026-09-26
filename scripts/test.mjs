@@ -76,6 +76,7 @@ try {
     assert.equal(await page.evaluate(()=>currentOutstationJourneyType),'');
     assert.equal(await page.evaluate(()=>wdOutstationRouteQuote),null);
     assert.equal(await page.locator('#wd-out-route-status').innerText(),'');
+    assert.equal(await page.locator('#fleet').isVisible(),false);
     await page.locator('#wd-out-one-way').click();
     assert.equal(await page.locator('#wd-out-trip-type-fieldset').getAttribute('aria-invalid'),'false');
     assert.equal(await page.locator('#wd-out-trip-type-error').isVisible(),false);
@@ -120,6 +121,7 @@ try {
       assert.equal(await page.evaluate(()=>currentMainMode),config.mode);
       assert.equal(await page.evaluate(()=>currentWDSubTab),config.tab);
       await visible(config.mode==='selfdrive'?'self-drive-block':`wd-${config.tab}-fields`);
+      assert.equal(await page.locator('#fleet').isVisible(),false,'with-driver fleet stays hidden before Explore Cabs');
       assert.equal(await page.locator('#fleet-container > div').count(),6);
       assert.equal(await page.locator('#selfdrive-cars-grid > div').count(),6);
     } else assert.equal(await page.locator('#booking-widget').count(),0);
@@ -178,6 +180,8 @@ try {
       await fill('wd-airport-pickup','Thane');await fill('wd-airport-date','2026-12-10');
       await page.selectOption('#wd-airport-terminal','nmia');
     }
+    await page.evaluate(()=>showCabSearchTransition(calculateDriverFare,'fleet'));
+    await visible('fleet');
     await page.locator('#fleet-container button').filter({hasText:'Book'}).first().click();
     await visible('booking-modal');
     assert.equal(await page.locator('#wd-booking-form').evaluate(f=>f.checkValidity()),false);
@@ -190,6 +194,16 @@ try {
   for(const [slug,tab] of [['with-driver','local'],['outstation','outstation'],['airport-transfer','airport']]) await check(`${tab} validation, fares, booking modal and mocked email; baseline parity`,async()=>{
     const updated=await driverScenario(slug,tab,testPort);
     if(baseline) assert.deepEqual(updated,await driverScenario('',tab,4174));
+  });
+  await check('Explore Cabs reveals the with-driver fleet only after valid trip details',async()=>{
+    await go('with-driver');
+    assert.equal(await page.locator('#fleet').isVisible(),false);
+    await fill('wd-local-pickup','Vikhroli West, Mumbai');
+    await page.locator('#wd-local-pickup').evaluate(input=>{input.dataset.googlePlaceId='test-pickup';input.dataset.pickupAllowed='true';});
+    await fill('wd-local-date','2026-12-10');
+    await page.locator('#search-btn-text').click();
+    await visible('fleet');
+    assert.match(await page.locator('#fleet-container').innerText(),/Estimated Fare/);
   });
   await check('local packages, all airport terminals/directions, quick routes and fare details',async()=>{
     await go('with-driver');

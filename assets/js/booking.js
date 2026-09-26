@@ -1578,6 +1578,12 @@ function onPickupDateChange() {
         async function showCabSearchTransition(updateResults, targetId) {
             const overlay = document.getElementById('explore-cabs-overlay');
             if (overlay?.classList.contains('visible')) return;
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            if (targetId === 'fleet') {
+                target.hidden = false;
+                target.setAttribute('aria-hidden', 'false');
+            }
             overlay?.classList.add('visible');
             overlay?.setAttribute('aria-hidden', 'false');
             try {
@@ -1585,7 +1591,7 @@ function onPickupDateChange() {
                 if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                     await new Promise(resolve => setTimeout(resolve, 900));
                 }
-                document.getElementById(targetId).scrollIntoView({ behavior: 'auto' });
+                target.scrollIntoView({ behavior: 'auto' });
             } finally {
                 overlay?.classList.remove('visible');
                 overlay?.setAttribute('aria-hidden', 'true');

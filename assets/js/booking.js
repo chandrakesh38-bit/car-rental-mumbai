@@ -594,6 +594,11 @@ function showCustomAlert(message) {
         function setOutstationJourneyType(type) {
             if (!['one-way', 'round-trip'].includes(type)) return;
             currentOutstationJourneyType = type;
+            const tripTypeFieldset = document.getElementById('wd-out-trip-type-fieldset');
+            const tripTypeError = document.getElementById('wd-out-trip-type-error');
+            tripTypeFieldset?.classList.remove('trip-type-selection-required');
+            tripTypeFieldset?.setAttribute('aria-invalid', 'false');
+            tripTypeError?.classList.add('hidden');
             const oneWay = document.getElementById('wd-out-one-way');
             const roundTrip = document.getElementById('wd-out-round-trip');
             const selectedClass = 'rounded-xl border-2 border-indigo-600 bg-indigo-50 px-3 py-3 text-left transition shadow-sm';
@@ -611,6 +616,24 @@ function showCustomAlert(message) {
                 : 'Choose your pickup and destination to calculate the round-trip fare.');
             if (collectOutstationRouteSelections(false)) updateOutstationRouteEstimate();
             updateOutstationPricingCopy();
+        }
+
+        function requireOutstationJourneyType() {
+            const fieldset = document.getElementById('wd-out-trip-type-fieldset');
+            const error = document.getElementById('wd-out-trip-type-error');
+            if (['one-way', 'round-trip'].includes(currentOutstationJourneyType)) {
+                fieldset?.classList.remove('trip-type-selection-required');
+                fieldset?.setAttribute('aria-invalid', 'false');
+                error?.classList.add('hidden');
+                return true;
+            }
+            fieldset?.classList.add('trip-type-selection-required');
+            fieldset?.setAttribute('aria-invalid', 'true');
+            error?.classList.remove('hidden');
+            showCustomAlert('Please select One-way or Round trip to view fares.');
+            fieldset?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('wd-out-one-way')?.focus({ preventScroll: true });
+            return false;
         }
 
         function updateOutstationPricingCopy() {
@@ -1458,11 +1481,7 @@ function onPickupDateChange() {
                 const outPDateInput = document.getElementById('wd-out-pdate');
                 const outRDateInput = document.getElementById('wd-out-rdate');
 
-                if (!['one-way', 'round-trip'].includes(currentOutstationJourneyType)) {
-                    showCustomAlert('Please choose one-way or round trip.');
-                    document.getElementById('wd-out-one-way')?.focus();
-                    return false;
-                }
+                if (!requireOutstationJourneyType()) return false;
                 
                 if (!outPickupInput || !outPickupInput.value.trim()) { 
                     if(outPickupInput) outPickupInput.classList.add('border-red-500'); 
@@ -1574,6 +1593,7 @@ function onPickupDateChange() {
         }
 
         async function triggerFareSearch() {
+            if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !requireOutstationJourneyType()) return;
             if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !wdOutstationRouteQuote) {
                 await updateOutstationRouteEstimate();
             }

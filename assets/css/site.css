@@ -185,6 +185,7 @@ header .text-amber-300 { color: var(--ocean-tertiary) !important; }
 }
 .location-current-action { display: none; }
 .location-entry:focus-within .location-current-action { display: inline-flex; }
+.trip-type-selection-required { border-color: #e11d48 !important; background-color: #fff1f2; }
 
 #first-trip-offer-button[aria-pressed="true"] {
     border-color: #059669;

@@ -91,7 +91,7 @@
 
                     <!-- OUTSTATION FIELDS -->
                     <div id="wd-outstation-fields" class="space-y-4 hidden">
-                        <fieldset class="space-y-2">
+                        <fieldset id="wd-out-trip-type-fieldset" class="space-y-2 rounded-xl border border-transparent p-1 -m-1 transition-colors" aria-invalid="false" aria-describedby="wd-out-trip-type-error">
                             <legend class="block text-xs font-bold text-slate-700 uppercase"><i class="fa-solid fa-route text-indigo-600 mr-1"></i> Trip Type *</legend>
                             <div class="grid grid-cols-2 gap-2">
                                 <button type="button" id="wd-out-one-way" aria-pressed="false" onclick="setOutstationJourneyType('one-way')" class="rounded-xl border-2 border-slate-200 bg-white px-3 py-3 text-left transition hover:border-indigo-300">
@@ -101,6 +101,7 @@
                                     <span class="block text-sm font-bold text-slate-800">Round trip</span>
                                 </button>
                             </div>
+                            <p id="wd-out-trip-type-error" class="hidden text-xs font-semibold text-rose-700" role="alert">Select One-way or Round trip to view fares.</p>
                         </fieldset>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-start">
                             <div class="relative location-entry">

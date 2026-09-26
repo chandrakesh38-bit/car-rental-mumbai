@@ -40,7 +40,6 @@ function ensureModal() {
   document.body.append(modal);
   modal.querySelector('[data-close]').onclick = cancelModal;
   modal.querySelector('[data-cancel]').onclick = cancelModal;
-  modal.addEventListener('click', event => { if (event.target === modal) cancelModal(); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && state.open) cancelModal(); });
   modal.querySelector('[data-verify]').onclick = verifyAndFinish;
   modal.querySelector('[data-resend]').onclick = () => sendOtp(true);

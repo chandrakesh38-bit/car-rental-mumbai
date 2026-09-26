@@ -126,6 +126,15 @@
         <div id="alert" class="alert" role="alert"></div>
 
         <div class="grid">
+          <div class="full">
+            <label for="journey-type">Trip Type *</label>
+            <select id="journey-type">
+              <option value="">Select one-way or round trip</option>
+              <option value="one-way">One-way</option>
+              <option value="round-trip">Round trip</option>
+            </select>
+            <div class="hint" id="journey-hint">Choose your trip type to calculate the fare.</div>
+          </div>
           <div class="datetime-card">
             <div class="datetime-title">📅 PICKUP DATE &amp; TIME *</div>
             <label for="pickup-date">Pickup Date</label>
@@ -316,7 +325,7 @@
   let dropSelection = null;
   let routeQuote = null;
   let searchTimers = {};
-  let calculating = false;
+  let fareRequestId = 0;
 
   const $ = id => document.getElementById(id);
   const alertBox = $('alert');
@@ -434,6 +443,8 @@
       if (type === 'pickup') pickupSelection = null;
       else dropSelection = null;
       routeQuote = null;
+      ++fareRequestId;
+      $('result').style.display = 'none';
       setStatus(type, '');
       clearFare();
       clearTimeout(searchTimers[type]);
@@ -558,21 +569,28 @@
 
   async function ensureRoute() {
     if (!pickupSelection || !dropSelection) return null;
-    const signature = pickupSelection.placeId + '|' + dropSelection.placeId;
+    const journeyType = $('journey-type').value;
+    if (!['one-way', 'round-trip'].includes(journeyType)) throw new Error('Please select one-way or round trip.');
+    const signature = pickupSelection.placeId + '|' + dropSelection.placeId + '|' + journeyType;
     if (routeQuote && routeQuote.signature === signature) return routeQuote;
     const payload = await mapsRequest('route', {
       pickupPlaceId: pickupSelection.placeId,
       stopPlaceIds: [],
-      finalDropPlaceId: dropSelection.placeId
+      finalDropPlaceId: dropSelection.placeId,
+      journeyType
     });
-    routeQuote = { ...payload, signature };
-    return routeQuote;
+    const result = { ...payload, signature };
+    if (pickupSelection && dropSelection && signature === pickupSelection.placeId + '|' + dropSelection.placeId + '|' + $('journey-type').value) routeQuote = result;
+    return result;
   }
 
   async function refreshAutoFare() {
+    const requestId = ++fareRequestId;
+    $('result').style.display = 'none';
+    clearFare();
     const carIndex = Number($('vehicle').value);
     const car = Number.isInteger(carIndex) ? fleet[carIndex] : null;
-    if (!car || !pickupSelection || !dropSelection || !$('pickup-date').value || !$('return-date').value) {
+    if (!$('journey-type').value || !car || !pickupSelection || !dropSelection || !$('pickup-date').value || !$('return-date').value) {
       clearFare();
       return;
     }
@@ -583,10 +601,10 @@
       return;
     }
 
-    if (calculating) return;
-    calculating = true;
     try {
       const route = await ensureRoute();
+      if (requestId !== fareRequestId) return;
+      setStatus('drop', 'Route calculated.', 'ok');
       const days = tripDays();
       const billableKm = Math.max(Number(route.billableRouteKm) || 0, days * minimumKmPerDay);
       const fare = (billableKm * car.outstationPerKm) + (days * car.driverAllowance) + (nightCount() * nightRate(car));
@@ -596,15 +614,15 @@
       $('trip-days').textContent = String(days);
       $('metrics').style.display = 'block';
     } catch (error) {
+      if (requestId !== fareRequestId) return;
       clearFare();
       setStatus('drop', error.message || 'Unable to calculate route.', 'error');
-    } finally {
-      calculating = false;
     }
   }
 
   function validateTrip() {
     clearError();
+    if (!$('journey-type').value) throw new Error('Please select one-way or round trip.');
     const pickup = readDateTime('pickup-date', 'pickup-hour', 'pickup-ampm');
     const ret = readDateTime('return-date', 'return-hour', 'return-ampm');
     if (!pickup) throw new Error('Please select pickup date and time.');
@@ -659,9 +677,10 @@
         'Please find the quotation for your trip:',
         '',
         '🚘 *Vehicle:* ' + displayVehicleName(data.car.name),
-        '📍 *Route:* ' + pickupSelection.mainText + ' | ' + dropSelection.mainText,
+        '🚗 *Trip Type:* ' + ($('journey-type').value === 'one-way' ? 'One-way' : 'Round trip'),
+        '📍 *Route:* ' + pickupSelection.mainText + ' → ' + dropSelection.mainText + ($('journey-type').value === 'round-trip' ? ' → ' + pickupSelection.mainText : ''),
         '📅 *Date:* ' + formatDate(data.pickup) + ' | ' + formatTime(data.pickup),
-        '🕙 *Return Date:* ' + formatDate(data.ret) + ' | ' + formatTime(data.ret),
+        '🕙 *Final Drop Date:* ' + formatDate(data.ret) + ' | ' + formatTime(data.ret),
         '',
         '💰 *Total Rent: Rs. ' + money(data.rent) + '/-*',
         '',
@@ -670,6 +689,7 @@
         '• Fuel',
         '• Driver Allowance',
         '',
+        ...($('journey-type').value === 'one-way' ? ['One-way billing includes return km; no driver allowance for the empty return.'] : []),
         'Note: Toll & Parking will be as per actual',
         'KM limit: ' + money(billableKm) + ' beyond Rs.' + money(extraRate) + '/km will be charged.',
         '',
@@ -883,6 +903,18 @@
       button.textContent = 'Generate Quotation';
     }
   }
+
+  $('journey-type').addEventListener('change', () => {
+    routeQuote = null;
+    clearError();
+    setStatus('drop', '');
+    $('journey-hint').textContent = $('journey-type').value === 'one-way'
+      ? 'One-way billing includes return km; no driver allowance for the empty return.'
+      : $('journey-type').value === 'round-trip'
+        ? 'Round trip returns to your pickup location. Enter the destination below.'
+        : 'Choose your trip type to calculate the fare.';
+    refreshAutoFare();
+  });
 
   $('generate').addEventListener('click', generateQuote);
   $('copy').addEventListener('click', async () => {

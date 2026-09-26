@@ -567,6 +567,14 @@
     $('metrics').style.display = 'none';
   }
 
+  function routeKmRoundedUp(route) {
+    const km = Number(route?.routeKmRoundedUp);
+    if (!Number.isFinite(km) || km <= 0) {
+      throw new Error('Route distance is unavailable. Please reselect the pickup and drop locations and try again.');
+    }
+    return km;
+  }
+
   async function ensureRoute() {
     if (!pickupSelection || !dropSelection) return null;
     const journeyType = $('journey-type').value;
@@ -606,10 +614,11 @@
       if (requestId !== fareRequestId) return;
       setStatus('drop', 'Route calculated.', 'ok');
       const days = tripDays();
-      const billableKm = Math.max(Number(route.billableRouteKm) || 0, days * minimumKmPerDay);
+      const routeKm = routeKmRoundedUp(route);
+      const billableKm = Math.max(routeKm, days * minimumKmPerDay);
       const fare = (billableKm * car.outstationPerKm) + (days * car.driverAllowance) + (nightCount() * nightRate(car));
       $('total-rent').value = Math.round(fare);
-      $('route-km').textContent = Number(route.distanceKmExact || route.billableRouteKm || 0).toLocaleString('en-IN');
+      $('route-km').textContent = routeKm.toLocaleString('en-IN');
       $('billable-km').textContent = billableKm.toLocaleString('en-IN');
       $('trip-days').textContent = String(days);
       $('metrics').style.display = 'block';
@@ -666,7 +675,8 @@
       const data = validateTrip();
       const route = await ensureRoute();
       const days = tripDays();
-      const billableKm = Math.max(Number(route.billableRouteKm) || 0, days * minimumKmPerDay);
+      const routeKm = routeKmRoundedUp(route);
+      const billableKm = Math.max(routeKm, days * minimumKmPerDay);
       const extraRate = 15;
 
       const quote = [

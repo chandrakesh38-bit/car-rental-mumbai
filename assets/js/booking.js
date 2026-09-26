@@ -1173,7 +1173,7 @@ function onPickupDateChange() {
 
         async function updateOutstationRouteEstimate() {
             if (!currentOutstationJourneyType) {
-                invalidateOutstationRoute('Choose one-way or round trip to calculate the fare.');
+                invalidateOutstationRoute('');
                 return;
             }
             const selections = collectOutstationRouteSelections(false);
@@ -1949,6 +1949,9 @@ function onPickupDateChange() {
             if (locationStatus) locationStatus.textContent = '';
             firstTripFareBeforeDiscount = Number(fare) || 0;
             firstTripOfferApplied = false;
+            const couponInput = document.getElementById('first-trip-coupon-code');
+            if (couponInput) couponInput.value = '';
+            document.getElementById('first-trip-coupon-error')?.classList.add('hidden');
             chosenFareAmount = firstTripFareBeforeDiscount;
             document.getElementById('modal-car-name').innerText = name;
             renderFirstTripOffer();
@@ -2011,10 +2014,10 @@ function onPickupDateChange() {
         function renderFirstTripOffer(animate = false) {
             const fare = document.getElementById('modal-fare');
             const original = document.getElementById('modal-original-fare');
-            const button = document.getElementById('first-trip-offer-button');
-            const label = document.getElementById('first-trip-offer-button-label');
-            const icon = document.getElementById('first-trip-offer-icon');
+            const button = document.getElementById('first-trip-coupon-apply');
+            const codeInput = document.getElementById('first-trip-coupon-code');
             const badge = document.getElementById('first-trip-offer-badge');
+            const error = document.getElementById('first-trip-coupon-error');
             const breakdown = document.getElementById('first-trip-offer-breakdown');
             const amount = document.getElementById('first-trip-offer-amount');
             const discount = Math.round(firstTripFareBeforeDiscount * 0.05);
@@ -2025,7 +2028,8 @@ function onPickupDateChange() {
                 original.classList.toggle('hidden', !firstTripOfferApplied);
             }
             if (button) {
-                button.setAttribute('aria-pressed', String(firstTripOfferApplied));
+                button.disabled = firstTripOfferApplied;
+                button.textContent = firstTripOfferApplied ? 'APPLIED ✓' : 'APPLY COUPON';
                 if (animate) {
                     button.classList.remove('first-trip-offer-applied');
                     void button.offsetWidth;
@@ -2033,16 +2037,27 @@ function onPickupDateChange() {
                     window.setTimeout(() => button.classList.remove('first-trip-offer-applied'), 550);
                 }
             }
-            if (icon) icon.textContent = firstTripOfferApplied ? '✓' : '🎁';
-            if (badge) badge.textContent = 'FIRST TRIP 5% OFF';
+            if (codeInput) codeInput.disabled = firstTripOfferApplied;
             if (badge) badge.classList.toggle('first-trip-offer-badge-applied', firstTripOfferApplied);
-            if (label) label.textContent = firstTripOfferApplied ? 'OFFER APPLIED ✓' : 'TAP TO APPLY';
+            if (error && firstTripOfferApplied) error.classList.add('hidden');
             if (breakdown) breakdown.classList.toggle('hidden', !firstTripOfferApplied);
             if (amount) amount.textContent = '−₹' + discount.toLocaleString('en-IN');
         }
 
-        function applyFirstTripOffer() {
+        function applyFirstTripCoupon() {
             if (firstTripOfferApplied) return;
+            const codeInput = document.getElementById('first-trip-coupon-code');
+            const error = document.getElementById('first-trip-coupon-error');
+            const code = String(codeInput?.value || '').trim().toUpperCase();
+            if (code !== 'FIRSTTRIP') {
+                if (error) {
+                    error.textContent = code ? 'Coupon code is not valid. Please check and try again.' : 'Enter a coupon code to apply.';
+                    error.classList.remove('hidden');
+                }
+                codeInput?.focus();
+                return;
+            }
+            error?.classList.add('hidden');
             firstTripOfferApplied = true;
             renderFirstTripOffer(true);
             celebrateFirstTripOffer();

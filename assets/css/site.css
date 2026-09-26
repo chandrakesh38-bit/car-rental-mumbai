@@ -187,13 +187,8 @@ header .text-amber-300 { color: var(--ocean-tertiary) !important; }
 .location-entry:focus-within .location-current-action { display: inline-flex; }
 .trip-type-selection-required { border-color: #e11d48 !important; background-color: #fff1f2; }
 
-#first-trip-offer-button[aria-pressed="true"] {
-    border-color: #059669;
-    background: #ecfdf5;
-}
-#first-trip-offer-button[aria-pressed="true"] { border-color: #059669; background: #ecfdf5; }
-#first-trip-offer-button[aria-pressed="true"] #first-trip-offer-icon,
-#first-trip-offer-button[aria-pressed="true"] #first-trip-offer-button-label { color: #047857; }
+#first-trip-offer-panel:has(#first-trip-coupon-apply:disabled) { border-color: #a7f3d0; background: #ecfdf5; }
+#first-trip-coupon-apply:disabled { border-color: #059669; background: #059669; cursor: default; }
 .first-trip-offer-badge-applied { border-color: #059669 !important; background: #d1fae5 !important; color: #065f46 !important; }
 .first-trip-offer-applied { animation: first-trip-offer-pop .48s cubic-bezier(.2,.8,.2,1); }
 @keyframes first-trip-offer-pop {

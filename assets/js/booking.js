@@ -1410,8 +1410,8 @@ function onPickupDateChange() {
                             <span><i class="fa-solid fa-clock text-indigo-600 mr-1"></i> ${hrsIncludedText}</span>
                         </div>
                         <div class="text-[11px] leading-relaxed mb-4 space-y-1">
-                            <p class="text-emerald-800"><i class="fa-solid fa-check mr-1"></i> Includes car, fuel &amp; driver</p>
-                            <p class="text-rose-800"><i class="fa-solid fa-circle-info mr-1"></i> Extra as actuals: tolls, parking${currentWDSubTab === 'outstation' ? ' &amp; state tax' : ''}</p>
+                            <p class="text-emerald-800"><i class="fa-solid fa-check mr-1"></i> <strong>Includes:</strong> car, fuel &amp; driver</p>
+                            <p class="text-slate-600"><i class="fa-solid fa-circle-info text-amber-600 mr-1"></i> <strong>Extra charges:</strong> tolls, parking${currentWDSubTab === 'outstation' ? ' &amp; state tax' : ''} at actual cost</p>
                         </div>
                     </div>
                     <button type="button" ${fare === null ? 'disabled' : ''} onclick="handleBookThisCarClick('${car.name}', ${fare === null ? 0 : fare})" class="w-full ${fare === null ? 'bg-slate-300 cursor-not-allowed' : 'bg-indigo-950 hover:bg-indigo-900'} text-white font-bold py-2.5 rounded-xl transition text-xs tracking-wide shadow-sm">
@@ -1795,12 +1795,12 @@ function onPickupDateChange() {
                    <li><strong>Night service:</strong> Charged only if the pickup or final drop falls between 11 PM and 4 AM — ₹400 for Hatchback/Sedan or ₹600 for SUV/MUV per qualifying night.</li>`
                 : '';
             const extraCharges = currentWDSubTab === 'outstation'
-                ? '<li><strong>Extra charges:</strong> Tolls, parking and applicable state taxes are charged at actual cost.</li>'
-                : '<li><strong>Extra charges:</strong> Tolls and parking are charged at actual cost.</li>';
+                ? '<li class="text-slate-600"><i class="fa-solid fa-circle-info text-amber-600 mr-1" aria-hidden="true"></i><strong>Extra charges:</strong> Tolls, parking and applicable state taxes are charged at actual cost.</li>'
+                : '<li class="text-slate-600"><i class="fa-solid fa-circle-info text-amber-600 mr-1" aria-hidden="true"></i><strong>Extra charges:</strong> Tolls and parking are charged at actual cost.</li>';
             contentBox.innerHTML = `
                 <p class="font-bold text-slate-900">Transparent Fare & Inclusions Details:</p>
-                <ul class="list-disc pl-4 space-y-1.5 pt-1">
-                    <li><strong>Fuel & Driver:</strong> Included in the displayed fare.</li>
+                <ul class="list-disc pl-4 space-y-1.5 pt-1 text-slate-700">
+                    <li class="text-emerald-800"><strong>Fuel &amp; Driver:</strong> Included in the displayed fare.</li>
                     ${outstationExtra}
                     ${extraCharges}
                 </ul>
@@ -2004,9 +2004,9 @@ function onPickupDateChange() {
             if (currentWDSubTab === 'local') document.getElementById('modal-summary-dest').innerText = 'Local City';
             if (tripTypeRow) tripTypeRow.classList.toggle('hidden', currentWDSubTab !== 'outstation');
             if (tripTypeValue) tripTypeValue.textContent = currentOutstationJourneyType === 'one-way' ? 'One-way' : 'Round trip';
-            if (exclusions) exclusions.textContent = currentWDSubTab === 'outstation'
-                ? '✕ Extra charges: Tolls, parking and applicable state taxes are charged at actual cost.'
-                : '✕ Extra charges: Tolls and parking are charged at actual cost.';
+            if (exclusions) exclusions.innerHTML = currentWDSubTab === 'outstation'
+                ? '<span class="text-amber-600" aria-hidden="true">ⓘ</span> <strong>Extra charges:</strong> Tolls, parking and applicable state taxes are charged at actual cost.'
+                : '<span class="text-amber-600" aria-hidden="true">ⓘ</span> <strong>Extra charges:</strong> Tolls and parking are charged at actual cost.';
             if (extraNote) extraNote.textContent = currentWDSubTab === 'outstation'
                 ? 'Tolls, parking and applicable state taxes extra at actual cost.'
                 : 'Tolls and parking extra at actual cost.';

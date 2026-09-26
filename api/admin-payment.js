@@ -117,6 +117,59 @@ async function handle(request) {
     }
     const bookings = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&limit=1');
     const booking = bookings?.[0]; if (!booking) return json({success:false,message:'Booking not found.'},404);
+    if (action === 'update_final_charges') {
+      const nonNegative = value => {
+        const n = Number(value || 0);
+        return Number.isFinite(n) && n >= 0 ? n : null;
+      };
+      const extraKm = nonNegative(body.extra_km);
+      const extraKmRate = nonNegative(body.extra_km_rate);
+      const nightCharge = nonNegative(body.night_charge);
+      const tollCharge = nonNegative(body.toll_charge);
+      const parkingCharge = nonNegative(body.parking_charge);
+      const stateTaxCharge = nonNegative(body.state_tax_charge);
+      const otherCharge = nonNegative(body.other_charge);
+      if ([extraKm, extraKmRate, nightCharge, tollCharge, parkingCharge, stateTaxCharge, otherCharge].some(v => v === null)) {
+        return json({success:false,message:'Final charges must be valid non-negative amounts.'},400);
+      }
+
+      const storedOriginal = Number(booking.original_fare || 0);
+      const originalFare = storedOriginal > 0
+        ? storedOriginal
+        : Number(booking.fare_amount || booking.total_fare || 0);
+      if (!Number.isFinite(originalFare) || originalFare < 0) {
+        return json({success:false,message:'Original booking fare is invalid.'},400);
+      }
+
+      const extraKmCharge = Math.round((extraKm * extraKmRate + Number.EPSILON) * 100) / 100;
+      const finalFare = Math.round((
+        originalFare + extraKmCharge + nightCharge + tollCharge +
+        parkingCharge + stateTaxCharge + otherCharge + Number.EPSILON
+      ) * 100) / 100;
+
+      await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId), {
+        method:'PATCH',
+        headers:{Prefer:'return=representation'},
+        body:JSON.stringify({
+          original_fare: originalFare,
+          extra_km: extraKm,
+          extra_km_rate: extraKmRate,
+          extra_km_charge: extraKmCharge,
+          night_charge: nightCharge,
+          toll_charge: tollCharge,
+          parking_charge: parkingCharge,
+          state_tax_charge: stateTaxCharge,
+          other_charge: otherCharge,
+          total_fare: finalFare,
+          final_charges_updated_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+      });
+      const summary = await syncBooking(bookingId);
+      const refreshed = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&limit=1');
+      return json({success:true,booking:refreshed?.[0],summary});
+    }
+
     if (action === 'record_offline') {
       const amount = Number(body.amount), method = String(body.payment_method || '').toLowerCase();
       if (!Number.isFinite(amount) || amount <= 0 || !['cash','bank_transfer','offline_upi'].includes(method)) return json({success:false,message:'Invalid offline payment.'},400);

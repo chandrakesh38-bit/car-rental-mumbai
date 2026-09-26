@@ -1,5 +1,6 @@
 import { requireMobileOtp, consumeMobileOtp } from '../lib/mobile-otp.mjs';
 import { validateBookingData } from '../lib/booking-validation.mjs';
+import { applyFirstTripOffer } from '../lib/first-trip-offer.mjs';
 import { createVerification } from '../lib/self-drive-documents.mjs';
 import { sendNotifications, validEmail } from '../lib/notifications.mjs';
 
@@ -68,6 +69,17 @@ const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status, headers: { 'Content-Type': 'application/json' },
 });
 
+function verifiedBookingDetails(details, validated) {
+  const fare = validated?.normalized;
+  if (!fare?.couponCode) return details;
+  const money = value => '₹' + Number(value).toLocaleString('en-IN');
+  return `${details.trim()}\n\n🎁 First Trip Offer (${fare.couponPercent}%): ${fare.couponCode}\n` +
+    `Fare before discount: ${money(fare.fareBeforeDiscount)}\n` +
+    `First Trip discount: −${money(fare.couponDiscountAmount)}\n` +
+    `Estimated fare after discount: ${money(fare.totalFare)}\n` +
+    `Tolls, parking and applicable taxes remain extra at actual cost.`;
+}
+
 
 
 export default async function handler(request) {
@@ -85,15 +97,17 @@ export default async function handler(request) {
       return json({ success: false, message: 'Please check your enquiry details and email address.' }, 400);
     }
     await requireMobileOtp(otpProof, phone, 'booking', new URL(request.url).origin);
-    const validated = await validateBookingData(serviceMode, bookingData);
+    const baseValidated = await validateBookingData(serviceMode, bookingData);
+    const validated = await applyFirstTripOffer({ serviceMode, phone, bookingData, validated: baseValidated });
+    const finalDetails = verifiedBookingDetails(details, validated);
     await consumeMobileOtp(otpProof, phone, 'booking', new URL(request.url).origin);
     const uploadUrl = serviceMode === 'selfdrive'
-      ? await createVerification({ bookingId, submissionKey, name, phone, email, details }, new URL(request.url).origin)
+      ? await createVerification({ bookingId, submissionKey, name, phone, email, details: finalDetails }, new URL(request.url).origin)
       : undefined;
-    await saveInquiry(extractInquiry({ bookingId, name, phone, email, details, serviceMode, validated }));
+    await saveInquiry(extractInquiry({ bookingId, name, phone, email, details: finalDetails, serviceMode, validated }));
     const notifications = await sendNotifications({
       kind: 'booking', reference: bookingId, email, uploadUrl,
-      details: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\n\n${details}`,
+      details: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\n\n${finalDetails}`,
     });
     return json({
       success: true,

@@ -459,6 +459,8 @@ let mumbaiMetroLocations = [
         const outstationSearchTimers = new Map();
         let chosenCarName = '';
         let chosenFareAmount = 0;
+        let firstTripFareBeforeDiscount = 0;
+        let firstTripOfferApplied = false;
         let selectedCarObj = null;
         let currentDeliveryMode = 'home';
         let withDriverCurrentLocation = null;
@@ -1929,9 +1931,11 @@ function onPickupDateChange() {
             }
             const locationStatus = document.getElementById('wd-current-location-status');
             if (locationStatus) locationStatus.textContent = '';
-            chosenFareAmount = fare;
+            firstTripFareBeforeDiscount = Number(fare) || 0;
+            firstTripOfferApplied = false;
+            chosenFareAmount = firstTripFareBeforeDiscount;
             document.getElementById('modal-car-name').innerText = name;
-            document.getElementById('modal-fare').innerText = '₹' + fare.toLocaleString('en-IN');
+            renderFirstTripOffer();
             
             let pickupLoc = '';
             let destLoc = '';
@@ -1986,6 +1990,47 @@ function onPickupDateChange() {
             document.getElementById('modal-summary-package').innerText = pkgStr;
 
             document.getElementById('booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('booking-modal'), true);
+        }
+
+        function renderFirstTripOffer(animate = false) {
+            const fare = document.getElementById('modal-fare');
+            const original = document.getElementById('modal-original-fare');
+            const button = document.getElementById('first-trip-offer-button');
+            const label = document.getElementById('first-trip-offer-button-label');
+            const icon = document.getElementById('first-trip-offer-icon');
+            const badge = document.getElementById('first-trip-offer-badge');
+            const status = document.getElementById('first-trip-offer-status');
+            const breakdown = document.getElementById('first-trip-offer-breakdown');
+            const amount = document.getElementById('first-trip-offer-amount');
+            const discount = Math.round(firstTripFareBeforeDiscount * 0.2);
+            chosenFareAmount = firstTripOfferApplied ? firstTripFareBeforeDiscount - discount : firstTripFareBeforeDiscount;
+            if (fare) fare.textContent = '₹' + chosenFareAmount.toLocaleString('en-IN');
+            if (original) {
+                original.textContent = '₹' + firstTripFareBeforeDiscount.toLocaleString('en-IN');
+                original.classList.toggle('hidden', !firstTripOfferApplied);
+            }
+            if (button) {
+                button.setAttribute('aria-pressed', String(firstTripOfferApplied));
+                if (animate) {
+                    button.classList.remove('first-trip-offer-applied');
+                    void button.offsetWidth;
+                    button.classList.add('first-trip-offer-applied');
+                    window.setTimeout(() => button.classList.remove('first-trip-offer-applied'), 550);
+                }
+            }
+            if (label) label.textContent = firstTripOfferApplied ? 'First Trip offer applied' : 'Apply First Trip Offer';
+            if (icon) icon.textContent = firstTripOfferApplied ? '✓' : '🎁';
+            if (badge) badge.textContent = firstTripOfferApplied ? 'APPLIED' : '20% OFF';
+            if (status) status.textContent = firstTripOfferApplied
+                ? 'Offer applied to the estimated fare. We’ll confirm eligibility after mobile OTP; actual tolls, parking and applicable taxes are not discounted.'
+                : 'Tap to apply. We’ll verify first-trip eligibility after mobile OTP. Tolls, parking and applicable taxes stay extra.';
+            if (breakdown) breakdown.classList.toggle('hidden', !firstTripOfferApplied);
+            if (amount) amount.textContent = '−₹' + discount.toLocaleString('en-IN');
+        }
+
+        function toggleFirstTripOffer() {
+            firstTripOfferApplied = !firstTripOfferApplied;
+            renderFirstTripOffer(true);
         }
         function closeModal() { document.getElementById('booking-modal').classList.add('hidden'); syncModalState(document.getElementById('booking-modal'), false); }
 
@@ -2502,6 +2547,7 @@ ${flightNumber ? `🛫 Flight: ${flightNumber}\n` : ''}📅 ${formatBookingDateT
 
     bookingData = {
         ...bookingData,
+        ...(firstTripOfferApplied ? { couponCode: 'FIRSTTRIP' } : {}),
         customerAddress: address,
         currentLocation: withDriverCurrentLocation ? {
             latitude: withDriverCurrentLocation.latitude,

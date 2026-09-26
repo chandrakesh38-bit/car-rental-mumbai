@@ -185,3 +185,19 @@ header .text-amber-300 { color: var(--ocean-tertiary) !important; }
 }
 .location-current-action { display: none; }
 .location-entry:focus-within .location-current-action { display: inline-flex; }
+
+#first-trip-offer-button[aria-pressed="true"] {
+    border-color: #059669;
+    background: #ecfdf5;
+}
+#first-trip-offer-button[aria-pressed="true"] #first-trip-offer-button-label { color: #047857; }
+#first-trip-offer-button[aria-pressed="true"] #first-trip-offer-badge { background: #d1fae5; color: #065f46; }
+.first-trip-offer-applied { animation: first-trip-offer-pop .48s cubic-bezier(.2,.8,.2,1); }
+@keyframes first-trip-offer-pop {
+    0% { transform: scale(.96); }
+    55% { transform: scale(1.035); }
+    100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .first-trip-offer-applied { animation: none; }
+}

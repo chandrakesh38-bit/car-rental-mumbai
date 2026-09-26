@@ -177,16 +177,6 @@
                             </div>
                         </div>
 
-                        <!-- Outstation Calculation Strip -->
-                        <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-2 text-xs sm:text-sm text-indigo-950 gap-2">
-                            <div>Billed Days: <strong id="wd-metric-days">1</strong> Day(s)</div>
-                            <div>Distance Included: <strong id="wd-metric-included-km">—</strong> km</div>
-                            <div id="wd-metric-minimum" class="sm:col-span-2 text-[10px] text-indigo-700">Minimum distance included: 300 km per day</div>
-                            <div id="wd-metric-night-badge" class="hidden sm:col-span-2 bg-amber-200 border border-amber-300 text-amber-950 font-bold px-2.5 py-1 rounded text-[10px]">
-                                <i class="fa-solid fa-moon mr-1"></i> Night service charge applies only when pickup or final drop falls between 11 PM and 4 AM.
-                            </div>
-                            <strong id="wd-metric-km" class="hidden">0</strong>
-                        </div>
                     </div>
 
                     <!-- AIRPORT FIELDS -->
@@ -201,17 +191,6 @@
                         </div>
 
                         <div id="airport-dynamic-form" class="space-y-4"></div>
-                    </div>
-
-                    <!-- Policy Banner -->
-                    <div class="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 mt-5 text-xs text-amber-950 flex items-center justify-between flex-wrap gap-2">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-shield-check text-amber-600"></i>
-                            <span id="wd-pricing-policy-copy"><strong>Pricing Includes:</strong> Car rental, fuel &amp; driver allowance.</span>
-                        </div>
-                        <button type="button" onclick="openFareBreakdownModal()" class="text-indigo-700 font-bold hover:underline flex items-center gap-1">
-                            <i class="fa-solid fa-circle-info"></i> View Fare Breakdown
-                        </button>
                     </div>
 
                     <!-- Search Button -->

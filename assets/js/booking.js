@@ -553,7 +553,6 @@ function showCustomAlert(message) {
             } else if (tab === 'airport') {
                 setAirportTransferType('drop');
             }
-            updateOutstationPricingCopy();
             calculateDriverFare();
         }
 
@@ -615,7 +614,6 @@ function showCustomAlert(message) {
                 ? 'Choose your pickup and destination to calculate the one-way fare.'
                 : 'Choose your pickup and destination to calculate the round-trip fare.');
             if (collectOutstationRouteSelections(false)) updateOutstationRouteEstimate();
-            updateOutstationPricingCopy();
         }
 
         function requireOutstationJourneyType() {
@@ -634,15 +632,6 @@ function showCustomAlert(message) {
             fieldset?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             document.getElementById('wd-out-one-way')?.focus({ preventScroll: true });
             return false;
-        }
-
-        function updateOutstationPricingCopy() {
-            const policy = document.getElementById('wd-pricing-policy-copy');
-            if (!policy) return;
-            policy.innerHTML = '<strong>Pricing Includes:</strong> Car rental, fuel &amp; driver allowance. ' +
-                (currentWDSubTab === 'outstation'
-                    ? 'Extra: tolls, parking &amp; state tax at actual cost.'
-                    : 'Extra: tolls &amp; parking at actual cost.');
         }
 
         function setAirportTransferType(type) {
@@ -901,8 +890,6 @@ function onPickupDateChange() {
             outstationRouteSequence += 1;
             wdOutstationRouteQuote = null;
             wdOutstationKm = 0;
-            const km = document.getElementById('wd-metric-km');
-            if (km) km.textContent = '—';
             const status = document.getElementById('wd-out-route-status');
             if (status) {
                 status.textContent = message;
@@ -1198,8 +1185,6 @@ function onPickupDateChange() {
                     return;
                 }
                 wdOutstationKm = Number(payload.routeKmRoundedUp) || 0;
-                const km = document.getElementById('wd-metric-km');
-                if (km) km.textContent = Number(payload.distanceKmExact || wdOutstationKm).toLocaleString('en-IN');
                 if (status) {
                     status.textContent = '';
                     status.classList.add('hidden');
@@ -1320,20 +1305,6 @@ function onPickupDateChange() {
                 } else {
                     wdOutstationDays = 1;
                 }
-                const minimumKm = wdOutstationDays * livePricingRules.minimumOutstationKmPerDay;
-                const includedKm = Math.max(wdOutstationKm || 0, minimumKm);
-                const daysEl = document.getElementById('wd-metric-days');
-                const includedEl = document.getElementById('wd-metric-included-km');
-                const minimumEl = document.getElementById('wd-metric-minimum');
-                if (daysEl) daysEl.textContent = wdOutstationDays;
-                if (includedEl) includedEl.textContent = currentOutstationJourneyType && wdOutstationRouteQuote
-                    ? includedKm.toLocaleString('en-IN')
-                    : '—';
-                if (minimumEl) minimumEl.textContent = currentOutstationJourneyType
-                    ? 'Minimum included distance: ' + wdOutstationDays + ' × ' + livePricingRules.minimumOutstationKmPerDay + ' km per day (' + minimumKm.toLocaleString('en-IN') + ' km minimum).'
-                    : 'Choose one-way or round trip and add your route to see the included distance.';
-                const nightBadge = document.getElementById('wd-metric-night-badge');
-                if (nightBadge) nightBadge.classList.toggle('hidden', currentQualifyingNightCount() === 0);
             }
             renderWDFleet();
         }
@@ -1785,29 +1756,6 @@ function onPickupDateChange() {
                 !!document.querySelector('[id$="-modal"].active') ||
                 document.getElementById('nav-drawer')?.getAttribute('aria-hidden') === 'false');
         }
-
-        function openFareBreakdownModal() {
-            const contentBox = document.getElementById('fare-breakdown-content');
-            if (!contentBox) return;
-            const outstationExtra = currentWDSubTab === 'outstation'
-                ? `<li><strong>Included distance:</strong> The fare includes the route distance or ${livePricingRules.minimumOutstationKmPerDay} km per booked day, whichever is higher.</li>
-                   <li><strong>Driver allowance:</strong> ₹${OUTSTATION_DRIVER_ALLOWANCE_PER_DAY} per booked day.</li>
-                   <li><strong>Night service:</strong> Charged only if the pickup or final drop falls between 11 PM and 4 AM — ₹400 for Hatchback/Sedan or ₹600 for SUV/MUV per qualifying night.</li>`
-                : '';
-            const extraCharges = currentWDSubTab === 'outstation'
-                ? '<li class="text-slate-600"><i class="fa-solid fa-circle-info text-amber-600 mr-1" aria-hidden="true"></i><strong>Extra charges:</strong> Tolls, parking and applicable state taxes are charged at actual cost.</li>'
-                : '<li class="text-slate-600"><i class="fa-solid fa-circle-info text-amber-600 mr-1" aria-hidden="true"></i><strong>Extra charges:</strong> Tolls and parking are charged at actual cost.</li>';
-            contentBox.innerHTML = `
-                <p class="font-bold text-slate-900">Transparent Fare & Inclusions Details:</p>
-                <ul class="list-disc pl-4 space-y-1.5 pt-1 text-slate-700">
-                    <li class="text-emerald-800"><strong>Fuel &amp; Driver:</strong> Included in the displayed fare.</li>
-                    ${outstationExtra}
-                    ${extraCharges}
-                </ul>
-            `;
-            document.getElementById('fare-breakdown-modal').classList.remove('hidden'); syncModalState(document.getElementById('fare-breakdown-modal'), true);
-        }
-        function closeFareBreakdownModal() { document.getElementById('fare-breakdown-modal').classList.add('hidden'); syncModalState(document.getElementById('fare-breakdown-modal'), false); }
 
         async function useBookingPickupCurrentLocation(mode) {
             const config = mode === 'local'
@@ -3511,7 +3459,6 @@ function closeWhyChooseModal() {
 
 function closeExistingModal(modal) {
     const close = {
-        'fare-breakdown-modal': closeFareBreakdownModal,
         'booking-modal': closeModal,
         'sd-booking-modal': closeSDModal,
         'partner-modal': closePartnerModal,

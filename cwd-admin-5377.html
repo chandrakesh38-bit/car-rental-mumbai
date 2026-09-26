@@ -1538,6 +1538,121 @@
             }catch{alert('Could not copy the Booking ID. Please select and copy it manually.');}
         }
 
+        function bookingConfirmationText(b) {
+            const details=String(b?.booking_details||'');
+            const lines=details.split('\n').map(v=>v.trim()).filter(Boolean);
+            const findLine=prefix=>lines.find(line=>line.toLowerCase().startsWith(prefix.toLowerCase()))||'';
+            const afterColon=line=>line.includes(':')?line.split(':').slice(1).join(':').trim():line.replace(/^[^\w₹]+/,'').trim();
+            const trip=String(b?.trip_type||'').toLowerCase();
+            const fare=Number(b?.total_fare||b?.fare_amount||0);
+            const paid=Number(b?.paid_amount||0);
+            const balance=Math.max(0,fare-paid);
+
+            let pickup='', destination='', pickupDate='', finalDropDate='', journeyType='', packageText='', includedKm='', tripDuration='';
+
+            if(trip==='outstation'){
+                journeyType=afterColon(findLine('🔁 Trip Type:'));
+                pickupDate=afterColon(findLine('📅 Start:'));
+                finalDropDate=afterColon(findLine('📅 Final Drop:'));
+                const durationText=findLine('⏱').replace(/^⏱\s*/,'').trim();
+                const durationParts=durationText.split('|').map(v=>v.trim());
+                tripDuration=durationParts[0]||'';
+                const kmMatch=durationText.match(/([\d,]+)\s*km\s*included/i);
+                includedKm=kmMatch?kmMatch[1].replace(/,/g,''):'';
+                let points=String(b?.route||'').split(/\s*→\s*/).map(v=>v.trim()).filter(Boolean);
+                const isBase=value=>/vikhroli base|lal bahadur shastri marg|godrej hillside colony/i.test(value||'');
+                if(points.length&&isBase(points[0]))points.shift();
+                if(points.length&&isBase(points[points.length-1]))points.pop();
+                pickup=points[0]||'';
+                destination=points.length>1?points.slice(1).join(' → '):(points[0]||'');
+            } else if(trip==='local'){
+                pickup=String(b?.route||'').trim();
+                const dateText=findLine('📅').replace(/^📅\s*/,'').trim();
+                const dateParts=dateText.split(/\s+[–-]\s+/);
+                pickupDate=dateParts[0]||dateText;
+                finalDropDate=dateParts[1]||'';
+                packageText=findLine('⏱').replace(/^⏱\s*/,'').trim();
+            } else if(trip==='airport'){
+                const isPickup=/AIRPORT PICKUP/i.test(details);
+                pickupDate=findLine('📅').replace(/^📅\s*/,'').trim();
+                finalDropDate=pickupDate;
+                if(isPickup){
+                    pickup=afterColon(findLine('✈️ From:'));
+                    destination=afterColon(findLine('📍 Drop:'));
+                } else {
+                    pickup=afterColon(findLine('📍 Pickup:'));
+                    destination=findLine('✈️').replace(/^✈️\s*/,'').trim();
+                }
+                if(!pickup)pickup=String(b?.route||'').trim();
+            } else {
+                pickup=String(b?.route||'').trim();
+                pickupDate=afterColon(findLine('Pickup'));
+                finalDropDate=afterColon(findLine('Return'));
+            }
+
+            const text=[
+                '✅ *BOOKING CONFIRMED*','',
+                'Thank you for choosing *Car With Driver India.*','',
+                '*Booking ID:* '+String(b?.booking_id||''),
+                '*Customer Name:* '+String(b?.customer_name||''),
+                '*Contact No:* '+String(b?.customer_phone||''),'',
+                '🚗 *Vehicle:* '+String(b?.car_name||''),
+                '🧭 *Trip Type:* '+String(b?.trip_type||'')
+            ];
+            if(trip==='outstation'&&journeyType)text.push('🔁 *Journey Type:* '+journeyType);
+            if(pickupDate)text.push('','📅 *Pickup:* '+pickupDate);
+            if(finalDropDate)text.push('📅 *Final Drop:* '+finalDropDate);
+            if(pickup)text.push('','📍 *Pickup Location:* '+pickup);
+            if(destination&&destination!==pickup)text.push('📍 *Destination / Route:* '+destination);
+            if(trip==='local'&&packageText)text.push('','⏱️ *Package:* '+packageText);
+            if(trip==='outstation'){
+                if(includedKm)text.push('','📏 *KM Included:* '+Number(includedKm).toLocaleString('en-IN')+' KM');
+                if(tripDuration)text.push('⏱️ *Trip Duration:* '+tripDuration);
+            }
+            text.push('','💰 *Total Fare:* '+money(fare));
+            if(balance<=0&&fare>0) text.push('✅ *Payment Status:* Fully Paid');
+            else {
+                text.push('✅ *Amount Received:* '+money(paid));
+                text.push('💳 *Balance Payable:* '+money(balance));
+            }
+            text.push('','*Important:*');
+            if(trip==='outstation'){
+                text.push('• Toll, parking and applicable state taxes will be charged as per actual.');
+                text.push('• Extra KM, if applicable, will be charged as per booking terms.');
+            } else if(trip==='local'){
+                text.push('• Toll and parking will be charged as per actual.');
+                text.push('• Extra KM / extra hours, if applicable, will be charged as per booking terms.');
+            } else {
+                text.push('• Toll and parking will be charged as per actual.');
+                text.push('• Any applicable extra charges will be as per booking terms.');
+            }
+            text.push('','Your booking is now confirmed. ✅','','Regards,','*Car With Driver India*','📞 9702988465','🌐 carswithdriverindia.com');
+            return text.join('\n');
+        }
+
+        async function copyBookingConfirmation() {
+            const text=bookingConfirmationText(currentAdminBooking);
+            try{
+                let copied=false;
+                if(window.isSecureContext&&navigator.clipboard?.writeText){try{await navigator.clipboard.writeText(text);copied=true;}catch{}}
+                if(!copied){
+                    const area=document.createElement('textarea'); area.value=text; area.setAttribute('readonly',''); area.style.position='fixed'; area.style.opacity='0'; document.body.appendChild(area); area.select();
+                    copied=document.execCommand('copy'); area.remove();
+                }
+                if(!copied)throw new Error('Clipboard unavailable');
+                const btn=document.getElementById('copy-confirmation-btn');
+                if(btn){const original=btn.innerHTML;btn.innerHTML='<i class="fa-solid fa-check mr-1"></i> Copied';setTimeout(()=>{if(btn.isConnected)btn.innerHTML=original;},1600);}
+            }catch{prompt('Copy booking confirmation:',text);}
+        }
+
+        function shareBookingConfirmationWhatsApp() {
+            const b=currentAdminBooking;if(!b)return;
+            const phone=String(b.customer_phone||'').replace(/\D/g,'').replace(/^0+/,'');
+            const mobile=phone.length===10?'91'+phone:phone;
+            const text=bookingConfirmationText(b);
+            window.open('https://wa.me/'+mobile+'?text='+encodeURIComponent(text),'_blank','noopener');
+        }
+
         async function renderBookingDetail() {
             const b=currentAdminBooking, body=document.getElementById('booking-detail-body'); if(!b)return;
             body.innerHTML='<p class="py-10 text-center text-slate-400">Loading booking...</p>';
@@ -1567,6 +1682,7 @@
                         <label class="text-xs font-bold">Booking Status<select id="booking-status-select" class="block mt-1 border rounded-lg px-3 py-2"><option value="received">Received</option><option value="availability_confirmed">Availability Confirmed</option><option value="confirmed">Confirmed</option><option value="ongoing">Ongoing</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
                         <button onclick="saveBookingStatus()" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold">Save Status</button>
                     </div>
+                    \${String(b.booking_status||'').toLowerCase()==='confirmed'?\`<div class="mt-4 border-t pt-4"><p class="mb-2 text-[11px] font-bold uppercase tracking-wide text-emerald-700">Booking confirmed — customer confirmation ready</p><div class="flex flex-wrap gap-2"><button type="button" onclick="shareBookingConfirmationWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold"><i class="fa-brands fa-whatsapp mr-1"></i> Share Confirmation on WhatsApp</button><button type="button" id="copy-confirmation-btn" onclick="copyBookingConfirmation()" class="border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg text-xs font-bold"><i class="fa-regular fa-copy mr-1"></i> Copy Confirmation</button></div></div>\`:''}
                 </div>
                 <div class="mt-4 bg-slate-50 border rounded-2xl p-4">
                     <h4 class="font-black text-sm mb-3">Payment</h4>

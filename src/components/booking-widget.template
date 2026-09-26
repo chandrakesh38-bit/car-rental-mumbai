@@ -96,14 +96,11 @@
                             <div class="grid grid-cols-2 gap-2">
                                 <button type="button" id="wd-out-one-way" aria-pressed="false" onclick="setOutstationJourneyType('one-way')" class="rounded-xl border-2 border-slate-200 bg-white px-3 py-3 text-left transition hover:border-indigo-300">
                                     <span class="block text-sm font-bold text-slate-800">One-way</span>
-                                    <span class="block text-[11px] text-slate-500 mt-0.5">Drop at destination</span>
                                 </button>
                                 <button type="button" id="wd-out-round-trip" aria-pressed="false" onclick="setOutstationJourneyType('round-trip')" class="rounded-xl border-2 border-slate-200 bg-white px-3 py-3 text-left transition hover:border-indigo-300">
                                     <span class="block text-sm font-bold text-slate-800">Round trip</span>
-                                    <span class="block text-[11px] text-slate-500 mt-0.5">Return to pickup location</span>
                                 </button>
                             </div>
-                            <p id="wd-out-trip-type-help" class="text-[11px] text-slate-500" aria-live="polite">Choose one-way or round trip to see the fare and included kilometres.</p>
                         </fieldset>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-start">
                             <div class="relative location-entry">

@@ -606,10 +606,6 @@ function showCustomAlert(message) {
                 roundTrip.className = type === 'round-trip' ? selectedClass : defaultClass;
                 roundTrip.setAttribute('aria-pressed', String(type === 'round-trip'));
             }
-            const help = document.getElementById('wd-out-trip-type-help');
-            if (help) help.textContent = type === 'one-way'
-                ? 'One-way fare includes the vehicle’s empty return distance. Driver allowance applies to your trip days only.'
-                : 'Round-trip fare assumes the vehicle returns you to your pickup location. A different final drop does not change this online fare.';
             invalidateOutstationRoute(type === 'one-way'
                 ? 'Choose your pickup and destination to calculate the one-way fare.'
                 : 'Choose your pickup and destination to calculate the round-trip fare.');
@@ -2002,7 +1998,7 @@ function onPickupDateChange() {
             const status = document.getElementById('first-trip-offer-status');
             const breakdown = document.getElementById('first-trip-offer-breakdown');
             const amount = document.getElementById('first-trip-offer-amount');
-            const discount = Math.round(firstTripFareBeforeDiscount * 0.2);
+            const discount = Math.round(firstTripFareBeforeDiscount * 0.05);
             chosenFareAmount = firstTripOfferApplied ? firstTripFareBeforeDiscount - discount : firstTripFareBeforeDiscount;
             if (fare) fare.textContent = '₹' + chosenFareAmount.toLocaleString('en-IN');
             if (original) {
@@ -2018,9 +2014,10 @@ function onPickupDateChange() {
                     window.setTimeout(() => button.classList.remove('first-trip-offer-applied'), 550);
                 }
             }
-            if (label) label.textContent = firstTripOfferApplied ? 'First Trip offer applied' : 'Apply First Trip Offer';
             if (icon) icon.textContent = firstTripOfferApplied ? '✓' : '🎁';
-            if (badge) badge.textContent = firstTripOfferApplied ? 'APPLIED' : '20% OFF';
+            if (badge) badge.textContent = 'FIRST TRIP 5% OFF';
+            if (badge) badge.classList.toggle('first-trip-offer-badge-applied', firstTripOfferApplied);
+            if (label) label.textContent = firstTripOfferApplied ? 'OFFER APPLIED · TAP TO REMOVE' : 'TAP TO APPLY';
             if (status) status.textContent = firstTripOfferApplied
                 ? 'Offer applied to the estimated fare. We’ll confirm eligibility after mobile OTP; actual tolls, parking and applicable taxes are not discounted.'
                 : 'Tap to apply. We’ll verify first-trip eligibility after mobile OTP. Tolls, parking and applicable taxes stay extra.';
@@ -2029,8 +2026,39 @@ function onPickupDateChange() {
         }
 
         function toggleFirstTripOffer() {
-            firstTripOfferApplied = !firstTripOfferApplied;
+            if (firstTripOfferApplied) {
+                firstTripOfferApplied = false;
+                renderFirstTripOffer();
+            } else {
+                applyFirstTripOffer();
+            }
+        }
+
+        function applyFirstTripOffer() {
+            if (firstTripOfferApplied) return;
+            firstTripOfferApplied = true;
             renderFirstTripOffer(true);
+            celebrateFirstTripOffer();
+        }
+
+        function celebrateFirstTripOffer() {
+            if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+            const layer = document.createElement('div');
+            layer.className = 'first-trip-confetti-layer';
+            layer.setAttribute('aria-hidden', 'true');
+            const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#ef4444'];
+            for (let i = 0; i < 64; i++) {
+                const piece = document.createElement('span');
+                piece.className = 'first-trip-confetti-piece';
+                piece.style.left = `${Math.random() * 100}%`;
+                piece.style.setProperty('--confetti-drift', `${Math.round(Math.random() * 220 - 110)}px`);
+                piece.style.setProperty('--confetti-spin', `${Math.round(Math.random() * 900 - 450)}deg`);
+                piece.style.setProperty('--confetti-delay', `${Math.random() * 420}ms`);
+                piece.style.backgroundColor = colors[i % colors.length];
+                layer.appendChild(piece);
+            }
+            document.body.appendChild(layer);
+            window.setTimeout(() => layer.remove(), 2400);
         }
         function closeModal() { document.getElementById('booking-modal').classList.add('hidden'); syncModalState(document.getElementById('booking-modal'), false); }
 

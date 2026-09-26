@@ -15,10 +15,11 @@ const discounted = await applyFirstTripOffer({
   serviceMode: 'withdriver', phone: '+91 98765-43210',
   bookingData: { couponCode: 'FIRSTTRIP' }, validated,
 });
-assert.equal(discounted.fare, 5908);
+assert.equal(discounted.fare, 7016);
 assert.equal(discounted.normalized.fareBeforeDiscount, 7385);
-assert.equal(discounted.normalized.couponDiscountAmount, 1477);
-assert.equal(discounted.normalized.totalFare, 5908);
+assert.equal(discounted.normalized.couponDiscountAmount, 369);
+assert.equal(discounted.normalized.couponPercent, 5);
+assert.equal(discounted.normalized.totalFare, 7016);
 assert.match(requestedUrl, /service_type=eq\.With\+Driver/);
 assert.match(requestedUrl, /booking_status=eq\.completed/);
 
@@ -39,4 +40,4 @@ await assert.rejects(
   error => error.status === 400 && /With Driver/.test(error.message),
 );
 
-console.log('PASS First Trip discount is calculated from server fare, restricted to With Driver, and rejected for an existing completed trip.');
+console.log('PASS First Trip 5% discount is calculated from server fare, restricted to With Driver, and rejected for an existing completed trip.');

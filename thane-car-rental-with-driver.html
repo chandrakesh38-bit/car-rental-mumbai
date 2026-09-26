@@ -214,14 +214,11 @@
                             <div class="grid grid-cols-2 gap-2">
                                 <button type="button" id="wd-out-one-way" aria-pressed="false" onclick="setOutstationJourneyType('one-way')" class="rounded-xl border-2 border-slate-200 bg-white px-3 py-3 text-left transition hover:border-indigo-300">
                                     <span class="block text-sm font-bold text-slate-800">One-way</span>
-                                    <span class="block text-[11px] text-slate-500 mt-0.5">Drop at destination</span>
                                 </button>
                                 <button type="button" id="wd-out-round-trip" aria-pressed="false" onclick="setOutstationJourneyType('round-trip')" class="rounded-xl border-2 border-slate-200 bg-white px-3 py-3 text-left transition hover:border-indigo-300">
                                     <span class="block text-sm font-bold text-slate-800">Round trip</span>
-                                    <span class="block text-[11px] text-slate-500 mt-0.5">Return to pickup location</span>
                                 </button>
                             </div>
-                            <p id="wd-out-trip-type-help" class="text-[11px] text-slate-500" aria-live="polite">Choose one-way or round trip to see the fare and included kilometres.</p>
                         </fieldset>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative items-start">
                             <div class="relative location-entry">
@@ -793,13 +790,13 @@
             </div>
 
             <div id="first-trip-offer-panel" class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
-                <button type="button" id="first-trip-offer-button" onclick="toggleFirstTripOffer()" aria-pressed="false" class="first-trip-offer-button w-full flex items-center justify-between gap-3 rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-left shadow-sm transition hover:bg-amber-100 active:scale-[0.98]">
-                    <span class="flex items-center gap-2 min-w-0">
+                <div class="flex items-center gap-2">
+                    <button type="button" id="first-trip-offer-button" onclick="toggleFirstTripOffer()" aria-pressed="false" class="first-trip-offer-button flex-1 flex items-center justify-center gap-2 rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-left shadow-sm transition hover:bg-amber-100 active:scale-[0.98]">
                         <span id="first-trip-offer-icon" class="text-lg">🎁</span>
-                        <span id="first-trip-offer-button-label" class="text-xs font-extrabold text-slate-900">Apply First Trip Offer</span>
-                    </span>
-                    <span id="first-trip-offer-badge" class="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-black text-amber-900">20% OFF</span>
-                </button>
+                        <span id="first-trip-offer-button-label" class="text-xs font-extrabold text-slate-900">TAP TO APPLY</span>
+                    </button>
+                    <button type="button" id="first-trip-offer-badge" onclick="applyFirstTripOffer()" class="shrink-0 rounded-lg border border-amber-300 bg-amber-100 px-3 py-2.5 text-[10px] font-black text-amber-900 transition hover:bg-amber-200">FIRST TRIP 5% OFF</button>
+                </div>
                 <p id="first-trip-offer-status" class="mt-2 text-[10px] leading-relaxed text-slate-600" aria-live="polite">Tap to apply. We’ll verify first-trip eligibility after mobile OTP. Tolls, parking and applicable taxes stay extra.</p>
                 <div id="first-trip-offer-breakdown" class="hidden mt-2 border-t border-amber-200 pt-2 text-[11px] font-bold text-emerald-800">
                     <span>First Trip discount</span><span id="first-trip-offer-amount" class="float-right">−₹0</span>

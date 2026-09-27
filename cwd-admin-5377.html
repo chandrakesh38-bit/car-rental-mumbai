@@ -1750,7 +1750,28 @@
                 closeBookingDetail(); await loadInquiries(); alert('Booking deleted.');
             }catch(e){alert(e.message||'Unable to delete booking.');}
         }
-        async function saveBookingStatus(){ const value=document.getElementById('booking-status-select').value; const {error}=await supabaseClient.from('inquiries').update({booking_status:value,updated_at:new Date().toISOString()}).eq('booking_id',currentAdminBooking.booking_id); if(error)return alert(error.message); currentAdminBooking.booking_status=value; await loadInquiries(); await renderBookingDetail(); }
+        async function saveBookingStatus(){
+            const value=document.getElementById('booking-status-select').value;
+            const fare=Number(currentAdminBooking?.total_fare||currentAdminBooking?.fare_amount||0);
+            const paid=Number(currentAdminBooking?.paid_amount||0);
+            const balance=Math.max(0,fare-paid);
+
+            if(value==='confirmed' && paid<=0){
+                const ok=confirm('No payment has been recorded for this booking.\n\nDo you still want to mark it as Confirmed?');
+                if(!ok)return;
+            }
+
+            if(value==='completed' && balance>0){
+                const ok=confirm('There is still a pending balance of '+money(balance)+'.\n\nDo you still want to mark this booking as Completed?');
+                if(!ok)return;
+            }
+
+            const {error}=await supabaseClient.from('inquiries').update({booking_status:value,updated_at:new Date().toISOString()}).eq('booking_id',currentAdminBooking.booking_id);
+            if(error)return alert(error.message);
+            currentAdminBooking.booking_status=value;
+            await loadInquiries();
+            await renderBookingDetail();
+        }
         async function saveFinalTripCharges(){
             const ids=['final-extra-km','final-extra-km-rate','final-night-charge','final-toll-charge','final-parking-charge','final-state-tax-charge','final-other-charge'];
             const values=ids.map(id=>Number(document.getElementById(id)?.value||0));

@@ -1814,8 +1814,18 @@
             const originalFare=Number(b.original_fare||b.fare_amount||b.total_fare||0);
             const finalFare=Number(b.total_fare||b.fare_amount||0);
             const paid=Number(b.paid_amount||0);
-            const extras=Math.max(0,finalFare-originalFare);
             const balance=Math.max(0,finalFare-paid);
+
+            const extraKm=Number(b.extra_km||0);
+            const extraKmRate=Number(b.extra_km_rate||0);
+            const extraKmCharge=Number(b.extra_km_charge||0);
+            const nightCharge=Number(b.night_charge||0);
+            const tollCharge=Number(b.toll_charge||0);
+            const parkingCharge=Number(b.parking_charge||0);
+            const stateTaxCharge=Number(b.state_tax_charge||0);
+            const otherCharge=Number(b.other_charge||0);
+            const extrasTotal=extraKmCharge+nightCharge+tollCharge+parkingCharge+stateTaxCharge+otherCharge;
+
             const lines=[
                 'Hello'+(b.customer_name?' '+b.customer_name:'')+',',
                 '',
@@ -1825,11 +1835,19 @@
                 '',
                 'Booking ID: '+(b.booking_id||'')
             ];
-            if(extras>0){
+
+            if(extrasTotal>0){
+                lines.push('', 'Original Fare: '+money(originalFare), '', 'Additional Charges:');
+                if(extraKmCharge>0) lines.push('• Extra KM: '+extraKm+' KM × '+money(extraKmRate).replace('₹','₹')+' = '+money(extraKmCharge));
+                if(nightCharge>0) lines.push('• Night Charges: '+money(nightCharge));
+                if(tollCharge>0) lines.push('• Toll Charges: '+money(tollCharge));
+                if(parkingCharge>0) lines.push('• Parking Charges: '+money(parkingCharge));
+                if(stateTaxCharge>0) lines.push('• State Tax: '+money(stateTaxCharge));
+                if(otherCharge>0) lines.push('• Other Charges: '+money(otherCharge));
                 lines.push(
                     '',
-                    'Original Fare: '+money(originalFare),
-                    'Additional Charges: '+money(extras),
+                    'Total Additional Charges: '+money(extrasTotal),
+                    '',
                     'Final Fare: '+money(finalFare),
                     'Amount Paid: '+money(paid),
                     'Balance Payable: '+money(balance)
@@ -1842,6 +1860,7 @@
                     'Balance Payable: '+money(balance)
                 );
             }
+
             lines.push(
                 '',
                 'Kindly make the balance payment using the secure Razorpay link below:',

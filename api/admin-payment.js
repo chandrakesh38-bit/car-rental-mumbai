@@ -183,6 +183,64 @@ async function handle(request) {
       const updated = await syncBooking(bookingId);
       return json({success:true,payment:rows?.[0],summary:updated});
     }
+    if (action === 'remove_offline') {
+      const paymentId = String(body.payment_id || '');
+      if (!paymentId) return json({success:false,message:'Payment entry is required.'},400);
+      const rows = await db('booking_payments?id=eq.'+encodeURIComponent(paymentId)+'&booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&limit=1');
+      const payment = rows?.[0];
+      if (!payment) return json({success:false,message:'Payment entry not found.'},404);
+      const method = String(payment.payment_method || '').toLowerCase();
+      const isOffline = ['cash','bank_transfer','offline_upi'].includes(method) &&
+        !payment.razorpay_payment_link_id && !payment.razorpay_payment_id;
+      if (!isOffline) return json({success:false,message:'Only manually recorded offline payments can be removed.'},403);
+      await db('booking_payments?id=eq.'+encodeURIComponent(payment.id),{method:'DELETE',headers:{Prefer:'return=minimal'}});
+      const updated = await syncBooking(bookingId);
+      return json({success:true,summary:updated});
+    }
+    if (action === 'remove_invalid_link') {
+      const paymentId = String(body.payment_id || '');
+      if (!paymentId) return json({success:false,message:'Payment entry is required.'},400);
+      const rows = await db('booking_payments?id=eq.'+encodeURIComponent(paymentId)+'&booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&limit=1');
+      const payment = rows?.[0];
+      if (!payment) return json({success:false,message:'Payment entry not found.'},404);
+      const isInvalidCandidate = payment.status === 'paid' &&
+        Boolean(payment.razorpay_payment_link_id) &&
+        !payment.razorpay_payment_id;
+      if (!isInvalidCandidate) return json({success:false,message:'Only paid payment-link entries with a missing Razorpay Payment ID can be removed this way.'},403);
+
+      let confirmedMissing = false;
+      try {
+        const link = await razor('payment_links/' + encodeURIComponent(payment.razorpay_payment_link_id));
+        const captured = Array.isArray(link.payments) ? link.payments.find(p => p.status === 'captured') : null;
+        if (captured || link.status === 'paid') {
+          return json({success:false,message:'Razorpay reports a real paid transaction for this link. It cannot be removed.'},409);
+        }
+      } catch (error) {
+        if (/id provided does not exist/i.test(String(error?.message || ''))) confirmedMissing = true;
+        else throw error;
+      }
+      if (!confirmedMissing) return json({success:false,message:'This payment-link entry could not be verified as invalid.'},409);
+
+      await db('booking_payments?id=eq.'+encodeURIComponent(payment.id),{method:'DELETE',headers:{Prefer:'return=minimal'}});
+      const updated = await syncBooking(bookingId);
+      return json({success:true,summary:updated});
+    }
+    if (action === 'force_remove_invalid_link') {
+      const paymentId = String(body.payment_id || '');
+      const confirmation = String(body.confirmation || '');
+      if (!paymentId) return json({success:false,message:'Payment entry is required.'},400);
+      if (confirmation !== 'I VERIFIED NO REAL PAYMENT') return json({success:false,message:'Explicit confirmation is required.'},400);
+      const rows = await db('booking_payments?id=eq.'+encodeURIComponent(paymentId)+'&booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&limit=1');
+      const payment = rows?.[0];
+      if (!payment) return json({success:false,message:'Payment entry not found.'},404);
+      const eligible = payment.status === 'paid' &&
+        Boolean(payment.razorpay_payment_link_id) &&
+        !payment.razorpay_payment_id;
+      if (!eligible) return json({success:false,message:'This entry is not eligible for manual invalid/test removal.'},403);
+      await db('booking_payments?id=eq.'+encodeURIComponent(payment.id),{method:'DELETE',headers:{Prefer:'return=minimal'}});
+      const updated = await syncBooking(bookingId);
+      return json({success:true,summary:updated});
+    }
     if (action === 'create') {
       const amount = Number(body.amount), type = String(body.payment_type || '');
       if (!Number.isFinite(amount) || amount <= 0 || !['advance','full','balance'].includes(type)) return json({success:false,message:'Invalid payment request.'},400);

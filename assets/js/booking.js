@@ -1963,6 +1963,29 @@ function onPickupDateChange() {
             document.getElementById('modal-summary-package').innerText = pkgStr;
 
             document.getElementById('booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('booking-modal'), true);
+            window.cwdTrackEvent?.('fare_calculated', {
+                service_type: 'with_driver',
+                trip_type: currentWDSubTab,
+                currency: 'INR',
+                value: Number(chosenFareAmount) || undefined,
+                page_path: location.pathname
+            });
+            window.cwdTrackEvent?.('booking_form_opened', {
+                service_type: 'with_driver',
+                trip_type: currentWDSubTab,
+                page_path: location.pathname
+            });
+            ensureFirstTripOfferTerms();
+        }
+
+        function ensureFirstTripOfferTerms() {
+            const panel = document.getElementById('first-trip-offer-panel');
+            if (!panel || document.getElementById('first-trip-offer-terms')) return;
+            const terms = document.createElement('p');
+            terms.id = 'first-trip-offer-terms';
+            terms.className = 'mt-2 text-[10px] leading-relaxed text-slate-600';
+            terms.textContent = 'FIRSTTRIP gives 5% off once per customer on the first booking. Available across Car with Driver India services with no minimum fare. Offer may be changed or withdrawn for future bookings; already confirmed bookings are unaffected.';
+            panel.appendChild(terms);
         }
 
         function renderFirstTripOffer(animate = false) {
@@ -2060,6 +2083,16 @@ function onPickupDateChange() {
 
             updateSDFareReview();
             document.getElementById('sd-booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('sd-booking-modal'), true);
+            window.cwdTrackEvent?.('fare_calculated', {
+                service_type: 'self_drive',
+                trip_type: 'self_drive',
+                page_path: location.pathname
+            });
+            window.cwdTrackEvent?.('booking_form_opened', {
+                service_type: 'self_drive',
+                trip_type: 'self_drive',
+                page_path: location.pathname
+            });
         }
         function closeSDModal() { document.getElementById('sd-booking-modal').classList.add('hidden'); syncModalState(document.getElementById('sd-booking-modal'), false); }
 
@@ -3221,6 +3254,11 @@ showSuccessModal(result.application_number, result);
                 const result = await response.json();
                 if (response.status === 409) { delete form.dataset.bookingId; delete form.dataset.submissionKey; }
                 if (!response.ok || !result.success) throw new Error(result.message || 'Unable to submit enquiry. Please try again.');
+                window.cwdTrackEvent?.('booking_request_submitted', {
+                    service_type: serviceMode === 'selfdrive' ? 'self_drive' : 'with_driver',
+                    trip_type: bookingData?.tripType || (serviceMode === 'selfdrive' ? 'self_drive' : currentWDSubTab),
+                    page_path: location.pathname
+                });
                 showSuccessModal(result.booking_id, result, true);
                 closeBookingModal();
                 hideBookingSubmittingOverlay();
@@ -3351,13 +3389,13 @@ const whyChooseData = {
     },
 
     pricing: {
-        heading: "100% Transparent Fare Policy",
+        heading: "Transparent Fare Estimate",
         icon: "fa-receipt",
         details: [
-            "<strong>No Hidden Costs:</strong> What you see is what you pay. No last-minute surprises.",
-            "<strong>Clear Breakup:</strong> Fare clearly segregates per-km/rental charges, driver allowance, and toll/parking terms.",
-            "<strong>Flexible Billing:</strong> Easy options for local packages, outstation trips, and airport transfers.",
-            "<strong>Simple Invoices:</strong> Standard digital bills/receipts provided for all completed rides."
+            "<strong>Clear Fare Estimate:</strong> Your car fare and included kilometres are shown before you submit the booking request.",
+            "<strong>Clearly Listed Extras:</strong> Toll, parking and applicable state taxes are charged separately as stated in the fare summary.",
+            "<strong>Clear Breakup:</strong> Fare shows the applicable rental/per-km charges, driver allowance and package limits.",
+            "<strong>Simple Invoices:</strong> Standard digital bills/receipts are provided for completed rides."
         ]
     },
 

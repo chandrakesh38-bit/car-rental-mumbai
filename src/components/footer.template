@@ -1,6 +1,11 @@
 <!-- FOOTER -->
     <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-center text-xs">
         <nav aria-label="Footer navigation" class="max-w-5xl mx-auto px-4 mb-6 flex flex-wrap justify-center gap-x-5 gap-y-3">{{footerLinks}}</nav>
+        <div class="max-w-5xl mx-auto px-4 mb-5 flex flex-wrap justify-center gap-x-5 gap-y-3">
+            <a href="/privacy-policy" class="hover:text-amber-400 transition">Privacy Policy</a>
+            <a href="/terms-and-conditions" class="hover:text-amber-400 transition">Terms &amp; Conditions</a>
+            <a href="/cancellation-refund-policy" class="hover:text-amber-400 transition">Cancellation &amp; Refund Policy</a>
+        </div>
         <p class="font-semibold text-slate-300">Car with Driver Mobility LLP</p>
         <p class="mt-1 text-slate-400">Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai 400079</p>
         <p class="mt-2 text-slate-500">Phone / WhatsApp: +91 9702988465 • &copy; 2026 Car with Driver Mobility LLP. All rights reserved.</p>

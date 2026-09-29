@@ -3522,6 +3522,13 @@ function closeExistingModal(modal) {
 document.addEventListener('click', function(event) {
     const modal = event.target.closest('[id$="-modal"].active');
     if (!modal) return;
+
+    // Keep booking forms open if the user accidentally clicks the backdrop.
+    // These forms can contain several completed fields, so closing on an outside
+    // click risks losing progress. They can still be closed intentionally via
+    // their close/cancel controls or the Escape key.
+    if (modal.id === 'booking-modal' || modal.id === 'sd-booking-modal') return;
+
     const content = modal.querySelector('.modal-content') || modal.firstElementChild;
     if (!content?.contains(event.target)) closeExistingModal(modal);
 });

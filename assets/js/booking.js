@@ -1944,7 +1944,7 @@ function onPickupDateChange() {
                 };
                 dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nFinal Drop: ${formatReviewTime('wd-out-r')}`;
                 const includedKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                pkgStr = `${wdOutstationDays}-Day Dedicated Cab Package · ${includedKm.toLocaleString('en-IN')} KM included (300 KM/day)\nCar + Fuel + Driver Allowance included · Dedicated car & driver for your complete trip\n${currentOutstationJourneyType === 'one-way' ? 'One-way' : 'Round trip'}`;
+                pkgStr = `${wdOutstationDays}-Day Dedicated Cab Package · ${includedKm.toLocaleString('en-IN')} KM included (300 KM/day)\nCar + Fuel + Driver Allowance included · Dedicated car & driver for your complete trip`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
                 destLoc = document.getElementById('wd-airport-terminal').value.toUpperCase() + ' Airport';
@@ -2028,10 +2028,22 @@ function onPickupDateChange() {
                 }
             }
             if (codeInput) codeInput.disabled = firstTripOfferApplied;
-            if (badge) badge.classList.toggle('first-trip-offer-badge-applied', firstTripOfferApplied);
+            const couponControls = codeInput?.parentElement;
+            const couponHeading = document.querySelector('#first-trip-offer-panel h3, #first-trip-offer-panel h4, #first-trip-offer-panel .coupon-title');
+            const isAutoAppliedOutstation = currentWDSubTab === 'outstation' && firstTripOfferApplied;
+            if (couponControls) couponControls.classList.toggle('hidden', isAutoAppliedOutstation);
+            if (couponHeading && isAutoAppliedOutstation) couponHeading.textContent = 'FIRSTTRIP · 5% OFF — Automatically Applied';
+            if (badge) {
+                badge.classList.toggle('first-trip-offer-badge-applied', firstTripOfferApplied);
+                badge.classList.toggle('hidden', isAutoAppliedOutstation);
+            }
             if (error && firstTripOfferApplied) error.classList.add('hidden');
             if (breakdown) breakdown.classList.toggle('hidden', !firstTripOfferApplied);
             if (amount) amount.textContent = '−₹' + discount.toLocaleString('en-IN');
+            if (breakdown && isAutoAppliedOutstation) {
+                const label = breakdown.querySelector('span, p, div');
+                if (label) label.textContent = 'You saved';
+            }
         }
 
         function applyFirstTripCoupon() {

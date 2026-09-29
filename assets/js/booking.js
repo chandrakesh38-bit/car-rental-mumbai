@@ -1911,9 +1911,11 @@ function onPickupDateChange() {
             const locationStatus = document.getElementById('wd-current-location-status');
             if (locationStatus) locationStatus.textContent = '';
             firstTripFareBeforeDiscount = Number(fare) || 0;
-            firstTripOfferApplied = false;
+            // CWD-FIRSTTRIP-VALUE-02: auto-apply the existing 5% FIRSTTRIP offer
+            // on Outstation fare review so paid-traffic visitors see the effective fare immediately.
+            firstTripOfferApplied = currentWDSubTab === 'outstation' && firstTripFareBeforeDiscount > 0;
             const couponInput = document.getElementById('first-trip-coupon-code');
-            if (couponInput) couponInput.value = '';
+            if (couponInput) couponInput.value = firstTripOfferApplied ? 'FIRSTTRIP' : '';
             document.getElementById('first-trip-coupon-error')?.classList.add('hidden');
             chosenFareAmount = firstTripFareBeforeDiscount;
             document.getElementById('modal-car-name').innerText = name;
@@ -1942,7 +1944,7 @@ function onPickupDateChange() {
                 };
                 dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nFinal Drop: ${formatReviewTime('wd-out-r')}`;
                 const includedKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                pkgStr = `${currentOutstationJourneyType === 'one-way' ? 'One-way' : 'Round trip'} · ${includedKm.toLocaleString('en-IN')} km included · ${wdOutstationDays} day(s)`;
+                pkgStr = `${wdOutstationDays}-Day Dedicated Cab Package · ${includedKm.toLocaleString('en-IN')} KM included (300 KM/day)\nCar + Fuel + Driver Allowance included · Dedicated car & driver for your complete trip\n${currentOutstationJourneyType === 'one-way' ? 'One-way' : 'Round trip'}`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
                 destLoc = document.getElementById('wd-airport-terminal').value.toUpperCase() + ' Airport';
@@ -1993,7 +1995,9 @@ function onPickupDateChange() {
             const terms = document.createElement('p');
             terms.id = 'first-trip-offer-terms';
             terms.className = 'mt-2 text-[10px] leading-relaxed text-slate-600';
-            terms.textContent = 'FIRSTTRIP gives 5% off once per customer on the first booking. Available across Car with Driver India services with no minimum fare. Offer may be changed or withdrawn for future bookings; already confirmed bookings are unaffected.';
+            terms.textContent = currentWDSubTab === 'outstation'
+                ? 'First Trip Offer: 5% discount is applied automatically. FIRSTTRIP is valid once per customer on the first booking.'
+                : 'FIRSTTRIP gives 5% off once per customer on the first booking. Available across Car with Driver India services with no minimum fare. Offer may be changed or withdrawn for future bookings; already confirmed bookings are unaffected.';
             panel.appendChild(terms);
         }
 

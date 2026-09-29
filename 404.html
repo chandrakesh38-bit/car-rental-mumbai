@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google Analytics (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQH1RQ70WV"></script>
+  <script src="/assets/js/analytics.js"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found | Car with Driver India</title>
+  <meta name="description" content="The page you are looking for could not be found. Return to Car with Driver India to book local, airport or outstation car rental services.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="icon" type="image/png" href="/logo.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(99, 102, 241, .16), transparent 28rem),
+        radial-gradient(circle at 85% 82%, rgba(245, 158, 11, .12), transparent 24rem),
+        #f8fafc;
+      color: #1e293b;
+      overflow-x: hidden;
+    }
+
+    .hero-shell {
+      min-height: calc(100vh - 81px);
+      display: grid;
+      place-items: center;
+      position: relative;
+      padding: 40px 16px 56px;
+      isolation: isolate;
+    }
+
+    .hero-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(15, 23, 42, .025) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(15, 23, 42, .025) 1px, transparent 1px);
+      background-size: 30px 30px;
+      z-index: -2;
+      mask-image: linear-gradient(to bottom, black, transparent 82%);
+    }
+
+    .error-card {
+      width: min(760px, 100%);
+      background: rgba(255, 255, 255, .94);
+      border: 1px solid rgba(226, 232, 240, .95);
+      border-radius: 28px;
+      box-shadow: 0 30px 90px rgba(15, 23, 42, .12);
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .scene {
+      position: relative;
+      height: 235px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #172554 0%, #312e81 60%, #4338ca 100%);
+    }
+
+    .moon {
+      position: absolute;
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      right: 9%;
+      top: 26px;
+      background: #fde68a;
+      box-shadow: 0 0 34px rgba(253, 230, 138, .45);
+    }
+
+    .star {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: white;
+      opacity: .75;
+      animation: twinkle 2.2s ease-in-out infinite alternate;
+    }
+
+    .city {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 61px;
+      height: 76px;
+      opacity: .34;
+      background:
+        linear-gradient(to right,
+          transparent 0 3%, #0f172a 3% 10%, transparent 10% 12%,
+          #0f172a 12% 18%, transparent 18% 22%,
+          #0f172a 22% 31%, transparent 31% 35%,
+          #0f172a 35% 41%, transparent 41% 45%,
+          #0f172a 45% 56%, transparent 56% 60%,
+          #0f172a 60% 68%, transparent 68% 71%,
+          #0f172a 71% 80%, transparent 80% 84%,
+          #0f172a 84% 94%, transparent 94% 100%);
+      clip-path: polygon(0 54%, 3% 54%, 3% 25%, 10% 25%, 10% 62%, 12% 62%, 12% 40%, 18% 40%, 18% 66%, 22% 66%, 22% 10%, 31% 10%, 31% 58%, 35% 58%, 35% 34%, 41% 34%, 41% 64%, 45% 64%, 45% 18%, 56% 18%, 56% 56%, 60% 56%, 60% 31%, 68% 31%, 68% 64%, 71% 64%, 71% 7%, 80% 7%, 80% 59%, 84% 59%, 84% 27%, 94% 27%, 94% 62%, 100% 62%, 100% 100%, 0 100%);
+    }
+
+    .road {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 67px;
+      background: #0f172a;
+      border-top: 4px solid #334155;
+    }
+
+    .road-line {
+      position: absolute;
+      left: -120px;
+      right: -120px;
+      bottom: 29px;
+      height: 4px;
+      background: repeating-linear-gradient(90deg, transparent 0 38px, #fbbf24 38px 88px);
+      animation: roadMove 1.15s linear infinite;
+    }
+
+    .car-wrap {
+      position: absolute;
+      left: 50%;
+      bottom: 38px;
+      transform: translateX(-50%);
+      width: 190px;
+      height: 80px;
+      animation: carFloat 1.8s ease-in-out infinite;
+    }
+
+    .car {
+      position: absolute;
+      left: 7px;
+      bottom: 8px;
+      width: 176px;
+      height: 48px;
+      border-radius: 28px 38px 13px 13px;
+      background: linear-gradient(135deg, #f8fafc, #cbd5e1);
+      box-shadow: 0 9px 22px rgba(0, 0, 0, .28);
+    }
+
+    .car::before {
+      content: "";
+      position: absolute;
+      width: 92px;
+      height: 36px;
+      left: 35px;
+      top: -24px;
+      border-radius: 35px 34px 4px 4px;
+      background: linear-gradient(145deg, #f8fafc 0 48%, #94a3b8 49% 100%);
+      clip-path: polygon(20% 0, 78% 0, 100% 100%, 0 100%);
+    }
+
+    .car::after {
+      content: "";
+      position: absolute;
+      width: 14px;
+      height: 8px;
+      right: -2px;
+      top: 15px;
+      border-radius: 2px 7px 7px 2px;
+      background: #fde68a;
+      box-shadow: 13px 0 22px rgba(253, 230, 138, .6);
+    }
+
+    .wheel {
+      position: absolute;
+      bottom: 0;
+      width: 33px;
+      height: 33px;
+      border-radius: 50%;
+      background: #020617;
+      border: 7px solid #334155;
+      box-shadow: inset 0 0 0 3px #94a3b8;
+      z-index: 2;
+      animation: wheelSpin .65s linear infinite;
+    }
+
+    .wheel.one { left: 31px; }
+    .wheel.two { right: 27px; }
+
+    .pin {
+      position: absolute;
+      right: 20%;
+      top: 76px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      background: #f59e0b;
+      box-shadow: 0 10px 25px rgba(245, 158, 11, .28);
+      animation: pinBounce 1.7s ease-in-out infinite;
+    }
+
+    .pin::after {
+      content: "";
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      left: 15px;
+      top: 15px;
+      background: #172554;
+    }
+
+    .dust {
+      position: absolute;
+      left: calc(50% - 115px);
+      bottom: 51px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .dust span {
+      display: block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .35);
+      animation: dustTrail 1.2s ease-out infinite;
+    }
+
+    .dust span:nth-child(2) { animation-delay: .22s; }
+    .dust span:nth-child(3) { animation-delay: .44s; }
+
+    .content {
+      padding: 32px 28px 30px;
+      text-align: center;
+    }
+
+    .code {
+      font-size: clamp(52px, 13vw, 92px);
+      line-height: .9;
+      font-weight: 800;
+      letter-spacing: -.06em;
+      color: #172554;
+      margin: 0;
+    }
+
+    .content h1 {
+      margin: 14px 0 8px;
+      font-size: clamp(24px, 5vw, 34px);
+      line-height: 1.2;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .content p {
+      max-width: 540px;
+      margin: 0 auto;
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .actions {
+      margin-top: 25px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 11px;
+    }
+
+    .btn {
+      min-height: 46px;
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn-primary {
+      background: #172554;
+      color: white;
+      box-shadow: 0 10px 24px rgba(23, 37, 84, .22);
+    }
+
+    .btn-primary:hover { background: #1e1b4b; }
+
+    .btn-secondary {
+      color: #172554;
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+    }
+
+    .support {
+      margin-top: 20px;
+      padding-top: 19px;
+      border-top: 1px solid #e2e8f0;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .support a {
+      color: #475569;
+      text-decoration: none;
+    }
+
+    @keyframes roadMove {
+      to { transform: translateX(88px); }
+    }
+
+    @keyframes carFloat {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-3px); }
+    }
+
+    @keyframes wheelSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pinBounce {
+      0%, 100% { transform: rotate(-45deg) translate(0, 0); }
+      50% { transform: rotate(-45deg) translate(-5px, -5px); }
+    }
+
+    @keyframes dustTrail {
+      0% { transform: translateX(15px) scale(.5); opacity: 0; }
+      30% { opacity: .6; }
+      100% { transform: translateX(-28px) scale(1.4); opacity: 0; }
+    }
+
+    @keyframes twinkle {
+      from { opacity: .25; transform: scale(.8); }
+      to { opacity: .9; transform: scale(1.2); }
+    }
+
+    @media (max-width: 520px) {
+      .hero-shell { padding: 24px 13px 40px; }
+      .error-card { border-radius: 22px; }
+      .scene { height: 200px; }
+      .content { padding: 27px 18px 24px; }
+      .actions { display: grid; grid-template-columns: 1fr; }
+      .btn { width: 100%; }
+      .pin { right: 12%; top: 62px; transform: scale(.85) rotate(-45deg); }
+      .car-wrap { transform: translateX(-50%) scale(.9); }
+      @keyframes carFloat {
+        0%, 100% { transform: translateX(-50%) scale(.9) translateY(0); }
+        50% { transform: translateX(-50%) scale(.9) translateY(-3px); }
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3" aria-label="Car with Driver India home">
+        <img src="/logo.png" alt="Car with Driver India logo" class="h-12 w-12 sm:h-14 sm:w-14 rounded-lg object-contain">
+        <div>
+          <span class="text-xl font-black text-indigo-950 tracking-tight block leading-none">Car with Driver India</span>
+          <span class="text-[10px] text-slate-500 font-semibold tracking-wider block mt-1">Mumbai • Thane • Navi Mumbai</span>
+        </div>
+      </a>
+      <a href="tel:+919702988465" class="hidden sm:inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+        <i class="fa-solid fa-phone text-indigo-600"></i> Call Us
+      </a>
+    </div>
+  </nav>
+
+  <main class="hero-shell">
+    <section class="error-card" aria-labelledby="error-title">
+      <div class="scene" aria-hidden="true">
+        <div class="moon"></div>
+        <span class="star" style="left:11%;top:25px"></span>
+        <span class="star" style="left:26%;top:55px;animation-delay:.5s"></span>
+        <span class="star" style="left:43%;top:29px;animation-delay:1s"></span>
+        <span class="star" style="left:63%;top:53px;animation-delay:.2s"></span>
+        <span class="star" style="left:90%;top:85px;animation-delay:.8s"></span>
+        <div class="city"></div>
+        <div class="pin"></div>
+        <div class="dust"><span></span><span></span><span></span></div>
+        <div class="car-wrap">
+          <div class="car"></div>
+          <div class="wheel one"></div>
+          <div class="wheel two"></div>
+        </div>
+        <div class="road"><div class="road-line"></div></div>
+      </div>
+
+      <div class="content">
+        <p class="code">404</p>
+        <h1 id="error-title">Oops! Looks like we took a wrong turn.</h1>
+        <p>
+          The page you're looking for doesn't exist or may have moved.
+          No worries — we'll get you back on the right route.
+        </p>
+
+        <div class="actions">
+          <a class="btn btn-primary" href="/">
+            <i class="fa-solid fa-house"></i>
+            Back to Home
+          </a>
+          <a class="btn btn-secondary" href="/outstation">
+            <i class="fa-solid fa-route"></i>
+            Book Outstation
+          </a>
+        </div>
+
+        <div class="support">
+          Need help? <a href="tel:+919702988465">+91 9702988465</a>
+          &nbsp;•&nbsp;
+          <a href="https://wa.me/919702988465">WhatsApp us</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

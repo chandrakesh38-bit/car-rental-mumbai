@@ -2,7 +2,19 @@
   window.dataLayer = window.dataLayer || [];
   window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
   window.gtag('js', new Date());
-  window.gtag('config', 'G-TQH1RQ70WV');
+
+  // Prevent deployment/preview tooling from taking credit for real sessions.
+  // This keeps GA4 acquisition reports clean when we open production from Vercel.
+  let ignoreDeploymentReferrer = false;
+  try {
+    const referrerHost = new URL(document.referrer || location.href).hostname.toLowerCase();
+    ignoreDeploymentReferrer =
+      referrerHost === 'vercel.com' ||
+      referrerHost.endsWith('.vercel.com') ||
+      referrerHost.endsWith('.vercel.app');
+  } catch (_) {}
+
+  window.gtag('config', 'G-TQH1RQ70WV', ignoreDeploymentReferrer ? { ignore_referrer: true } : {});
 
   window.cwdTrackEvent = function (name, params = {}) {
     if (!/^[a-zA-Z][a-zA-Z0-9_]{0,39}$/.test(String(name || ''))) return;

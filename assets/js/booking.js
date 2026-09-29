@@ -990,6 +990,15 @@ function onPickupDateChange() {
             const dropdown = document.getElementById(dropdownId);
             if (!input || !dropdown) return;
             outstationPlaceSelections.delete(inputId);
+            if (inputId === 'wd-out-pickup') {
+                delete input.dataset.pickupAllowed;
+                input.classList.remove('border-red-500');
+                const pickupStatus = pickupStatusElement(inputId);
+                if (pickupStatus) {
+                    pickupStatus.textContent = '';
+                    pickupStatus.className = 'text-[10px] text-slate-500 mt-1';
+                }
+            }
             invalidateOutstationRoute('');
             const existing = outstationSearchTimers.get(inputId);
             if (existing) clearTimeout(existing);

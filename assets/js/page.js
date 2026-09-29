@@ -4,8 +4,14 @@
     window.onload = null;
 
     document.addEventListener('DOMContentLoaded', () => {
-        if (document.getElementById('booking-widget') || document.getElementById('mumbai-selfdrive-fleet')) loadWebsiteFleet();
-        if (!document.getElementById('booking-widget')) return;
+        const bookingWidget = document.getElementById('booking-widget');
+        const selfDriveLandingFleet = document.getElementById('mumbai-selfdrive-fleet');
+        const isSelfDrivePage = document.body.dataset.bookingMode === 'selfdrive';
+
+        // Avoid fetching the Self Drive fleet on With Driver landing pages.
+        // This saves a Supabase request and unnecessary rendering work for paid Outstation traffic.
+        if (selfDriveLandingFleet || (bookingWidget && isSelfDrivePage)) loadWebsiteFleet();
+        if (!bookingWidget) return;
         // Run the original initializer only on pages that contain its required DOM.
         initializeBooking.call(window);
         const { bookingMode, bookingTab } = document.body.dataset;

@@ -2029,7 +2029,7 @@ function onPickupDateChange() {
             }
             if (codeInput) codeInput.disabled = firstTripOfferApplied;
             const couponControls = codeInput?.parentElement;
-            const couponHeading = document.querySelector('#first-trip-offer-panel h3, #first-trip-offer-panel h4, #first-trip-offer-panel .coupon-title');
+            const couponHeading = document.getElementById('first-trip-offer-title');
             const isAutoAppliedOutstation = currentWDSubTab === 'outstation' && firstTripOfferApplied;
             if (couponControls) couponControls.classList.toggle('hidden', isAutoAppliedOutstation);
             if (couponHeading && isAutoAppliedOutstation) couponHeading.textContent = 'FIRSTTRIP · 5% OFF — Automatically Applied';

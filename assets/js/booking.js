@@ -529,6 +529,12 @@ function showCustomAlert(message) {
                 blockWD.classList.add('hidden');
                 fleetSec.classList.add('hidden');
                 quickPlan.classList.add('hidden');
+
+                // Homepage starts in With Driver mode, so page.js intentionally skips the
+                // Self Drive fleet request. Load it lazily when the user opens this tab.
+                if (!excelCarsData.length && document.getElementById('selfdrive-cars-grid')) {
+                    loadWebsiteFleet();
+                }
             }
             calculateDriverFare();
         }
@@ -1616,6 +1622,14 @@ function onPickupDateChange() {
 
         async function triggerSDParseSearch() {
             if (!validateSelfDriveJourney()) return;
+
+            // If the user entered Self Drive from the homepage, the fleet may still be
+            // loading (or may not have been requested yet). Wait for it before filtering.
+            if (!excelCarsData.length && document.getElementById('selfdrive-cars-grid')) {
+                await loadWebsiteFleet();
+            }
+            if (!excelCarsData.length) return;
+
             await showCabSearchTransition(applyAllSDFilters, 'selfdrive-cars-grid');
         }
 

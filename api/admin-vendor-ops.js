@@ -173,6 +173,41 @@ async function handler(request){
     return json({success:true,original_customer_fare:original,negotiated_customer_fare:negotiated});
   }
 
+  if(action==='save_customer_fleet_vehicle'){
+    const v=body.vehicle||{},id=String(v.id||'').trim();
+    const payload={
+      full_name:String(v.full_name||'').trim(),
+      segment:String(v.segment||'').trim(),
+      seating_capacity:Math.max(1,Math.floor(n(v.seating_capacity,1))),
+      bag_capacity:Math.max(0,Math.floor(n(v.bag_capacity,0))),
+      local_pkg_8hr_80km:n(v.local_pkg_8hr_80km),
+      local_extra_hour_rate:n(v.local_extra_hour_rate),
+      local_extra_km_rate:n(v.local_extra_km_rate),
+      outstation_rate_per_km:n(v.outstation_rate_per_km),
+      driver_allowance_per_day:n(v.driver_allowance_per_day),
+      customer_night_charge:n(v.customer_night_charge),
+      airport_t1_rate:n(v.airport_t1_rate),
+      airport_t2_rate:n(v.airport_t2_rate),
+      airport_nmia_rate:n(v.airport_nmia_rate),
+      display_order:Math.max(0,Math.floor(n(v.display_order,999))),
+      is_active:v.is_active!==false
+    };
+    if(!payload.full_name||!payload.segment)fail('Vehicle name and category are required.');
+    let saved;
+    if(id){
+      saved=await db('with_driver_rates?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify(payload)});
+    }else{
+      saved=await db('with_driver_rates',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify(payload)});
+    }
+    return json({success:true,vehicle:saved?.[0]||null});
+  }
+
+  if(action==='delete_customer_fleet_vehicle'){
+    const vehicleId=String(body.vehicle_id||'').trim();if(!vehicleId)fail('Vehicle ID required.');
+    await db('with_driver_rates?id=eq.'+encodeURIComponent(vehicleId),{method:'DELETE',headers:{Prefer:'return=minimal'}});
+    return json({success:true});
+  }
+
   if(action==='update_vendor_rate'){
     const r=body.rate||{},vehicleRateId=String(r.vehicle_rate_id||'').trim();
     if(!vehicleRateId)fail('Global Pricing vehicle is required.');

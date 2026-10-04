@@ -73,6 +73,14 @@
     .submit:disabled{opacity:.55}
     .status{display:none;margin-top:14px;padding:15px;border-radius:13px;font-weight:800}
     .ok{background:#dcfce7;color:#166534}.err{background:#fee2e2;color:#991b1b}
+    .success-card{display:none;background:#fff;border:1px solid #d9eee2;border-radius:22px;padding:26px;text-align:center;box-shadow:0 12px 34px rgba(15,23,42,.06)}
+    .success-icon{width:58px;height:58px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;background:#dcfce7;color:#15803d;font-size:28px;font-weight:900}
+    .success-card h2{font-size:24px;margin-bottom:8px}
+    .success-card p{font-size:12px;color:#64748b;line-height:1.6}
+    .vendor-code-box{margin:18px auto 14px;max-width:420px;background:#f8fafc;border:1px dashed #94a3b8;border-radius:14px;padding:14px}
+    .vendor-code-box small{display:block;color:#64748b;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+    .vendor-code-box strong{display:block;font-size:22px;color:#0b1739;margin-top:4px;letter-spacing:.02em}
+    .success-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
     .step-note{margin-top:14px;font-size:10px;color:#7a8699;text-align:center}
     @media(min-width:780px){
       .wrap{padding-top:24px}
@@ -198,7 +206,22 @@
       </div>
     </section>
   </form>
-  <div class="step-note">Your entered details stay in this form while you move between steps.</div>
+
+  <section id="registration-success" class="success-card">
+    <div class="success-icon">✓</div>
+    <h2>Registration Successful</h2>
+    <p>Your vendor registration has been submitted to Car With Driver India for review.</p>
+    <div class="vendor-code-box">
+      <small>Your Vendor Code</small>
+      <strong id="success-vendor-code">—</strong>
+    </div>
+    <div class="success-actions">
+      <button type="button" class="btn btn-primary" id="copy-vendor-code">Copy Vendor Code</button>
+      <a class="btn btn-secondary" href="https://wa.me/919702988465?text=Hi%20CWD%2C%20I%20have%20completed%20my%20vendor%20registration." target="_blank" rel="noopener">Contact CWD on WhatsApp</a>
+    </div>
+  </section>
+
+  <div class="step-note" id="form-note">Your entered details stay in this form while you move between steps.</div>
 </div>
 
 <script>
@@ -223,7 +246,7 @@
     box.className='vehicle';
     box.innerHTML='<div class="vehicle-head"><h3>Vehicle '+vehicleCount+'</h3><button class="remove" type="button">Remove</button></div>'+
       '<div class="grid">'+
-      field('Vehicle number *','vehicle_number','text','maxlength="30" placeholder="e.g. MH01AB1234" required')+
+      field('Vehicle number *','vehicle_number','text','maxlength="20" pattern="[A-Z0-9-]{6,20}" autocapitalize="characters" spellcheck="false" placeholder="e.g. MH01AB1234" required')+
       '<div><label>Make / model *</label><select data-field="make_model" class="make-model-select" required><option value="">Select make / model</option><option>Maruti Suzuki Dzire</option><option>Hyundai Aura</option><option>Maruti Suzuki Ertiga</option><option>Toyota Rumion</option><option>Kia Carens</option><option>Toyota Innova Crysta</option><option>Toyota Innova Hycross</option><option>Maruti Suzuki Ciaz</option><option>Honda City</option><option>Hyundai Verna</option><option>Toyota Etios</option><option>Tempo Traveller</option><option value="Other">Other</option></select><input class="other-model" maxlength="160" placeholder="Enter make / model" style="display:none;margin-top:8px"></div>'+
       '<div><label>Category *</label><select data-field="category" required><option value="">Select</option><option>Hatchback</option><option>Sedan</option><option>SUV</option><option>MUV</option><option>Premium Sedan</option><option>Premium SUV</option><option>Tempo Traveller</option><option>Other</option></select></div>'+
       '<div><label>Manufacturing year *</label><select data-field="manufacturing_year" required><option value="">Select year</option>'+Array.from({length:5},(_,i)=>{const y=new Date().getFullYear()-i;return '<option value="'+y+'">'+y+'</option>'}).join('')+'</select><div class="hint">Only vehicles up to 4 years old are accepted.</div></div>'+
@@ -243,6 +266,12 @@
       renumberVehicles();
     };
     vehicles.appendChild(box);
+    const vehicleNumberInput=box.querySelector('[data-field="vehicle_number"]');
+    if(vehicleNumberInput){
+      vehicleNumberInput.addEventListener('input',function(){
+        this.value=this.value.toUpperCase().replace(/\s+/g,'');
+      });
+    }
     const modelSelect=box.querySelector('.make-model-select');
     const otherModel=box.querySelector('.other-model');
     modelSelect.addEventListener('change',function(){
@@ -328,6 +357,16 @@
   payoutVisibility();
   showStep(0,false);
 
+  document.getElementById('copy-vendor-code').addEventListener('click',function(){
+    const code=document.getElementById('success-vendor-code').textContent.trim();
+    if(!code||code==='—')return;
+    if(navigator.clipboard?.writeText){
+      navigator.clipboard.writeText(code).then(()=>{this.textContent='Copied ✓';setTimeout(()=>this.textContent='Copy Vendor Code',1600)}).catch(()=>prompt('Copy Vendor Code:',code));
+    }else{
+      prompt('Copy Vendor Code:',code);
+    }
+  });
+
   form.addEventListener('submit',async function(e){
     e.preventDefault();
     status.style.display='none';
@@ -377,9 +416,15 @@
       const res=await fetch('/api/vendor-register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       const data=await res.json().catch(function(){return {};});
       if(!res.ok||!data.success)throw new Error(data.message||'Unable to submit registration.');
-      status.className='status ok';status.style.display='block';
-      status.innerHTML='✓ Registration submitted successfully.<br>Your Vendor Code: <strong>'+data.vendor_code+'</strong><br><span style="font-weight:600;font-size:12px">CWD team will review your details and contact you on WhatsApp.</span>';
       completedStep=3;
+      document.getElementById('success-vendor-code').textContent=data.vendor_code;
+      form.style.display='none';
+      document.getElementById('wizard-tabs').style.display='none';
+      document.querySelector('.hero').style.display='none';
+      document.getElementById('form-note').style.display='none';
+      const successCard=document.getElementById('registration-success');
+      successCard.style.display='block';
+      successCard.scrollIntoView({behavior:'smooth',block:'start'});
     }catch(err){
       status.className='status err';status.style.display='block';status.textContent=err.message||'Unable to submit registration.';
     }finally{

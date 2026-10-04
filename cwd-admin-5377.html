@@ -534,6 +534,35 @@
                 </div>
             </div>
 
+            <div id="vendor-detail-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[85] hidden items-center justify-center p-3 sm:p-5">
+                <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl max-h-[94vh] overflow-y-auto">
+                    <div class="sticky top-0 bg-white border-b px-5 sm:px-6 py-4 flex justify-between items-center z-10">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-900">Vendor Details</h3>
+                            <p id="vendor-detail-subtitle" class="text-xs text-slate-500 mt-0.5">Loading vendor profile...</p>
+                        </div>
+                        <button type="button" onclick="closeVendorDetail()" class="text-slate-400 hover:text-slate-800 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div id="vendor-detail-body" class="p-5 sm:p-6"></div>
+                </div>
+            </div>
+
+            <div id="vendor-change-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4">
+                <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl">
+                    <div class="border-b px-5 py-4 flex justify-between items-center">
+                        <div><h3 class="text-lg font-black text-slate-900">Request Changes</h3><p class="text-xs text-slate-500 mt-0.5">Select what the vendor needs to correct.</p></div>
+                        <button type="button" onclick="closeVendorChangeModal()" class="text-slate-400 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="p-5 space-y-3">
+                        <div id="vendor-change-options" class="grid sm:grid-cols-2 gap-2 text-xs">
+                            <label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="Business / contact details"><span>Business / contact details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="PAN details"><span>PAN details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="Payout details"><span>Payout details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="Vehicle details"><span>Vehicle details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="Insurance details"><span>Insurance details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="PUC details"><span>PUC details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="Permit / Fitness details"><span>Permit / Fitness details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="Other"><span>Other</span></label>
+                        </div>
+                        <textarea id="vendor-change-note" rows="3" placeholder="Optional note for vendor" class="w-full border border-slate-300 rounded-xl p-3 text-xs"></textarea>
+                        <button type="button" onclick="sendVendorChangeRequest()" class="w-full bg-amber-500 hover:bg-amber-600 text-white rounded-xl p-3 font-black text-xs"><i class="fa-brands fa-whatsapp mr-1"></i> Open WhatsApp With Request</button>
+                    </div>
+                </div>
+            </div>
+
             <div id="manual-self-drive-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[75] hidden items-center justify-center p-4">
                 <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl max-h-[92vh] overflow-y-auto">
                     <div class="sticky top-0 bg-white border-b px-5 sm:px-6 py-4 flex justify-between items-center z-10">
@@ -2452,11 +2481,11 @@ async function deleteWithDriverVehicle(id) {
             const accepted=offers.filter(o=>o.status==='accepted').length;
             const pendingPayout=settlements.filter(x=>x.payout_status!=='paid').reduce((a,x)=>a+Number(x.vendor_final_payout||0),0);
             document.getElementById('vendor-center-kpis').innerHTML=[
-                ['Registered Vendors',vendors.length,'fa-users'],
-                ['Pending Approval',pending,'fa-user-clock'],
-                ['Active Vendors',active,'fa-circle-check'],
-                ['Pending Vendor Payout',money(pendingPayout),'fa-wallet']
-            ].map(c=>'<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="flex justify-between gap-3"><div><p class="text-[10px] uppercase font-bold text-slate-400">'+c[0]+'</p><p class="text-2xl font-black text-indigo-950 mt-2">'+c[1]+'</p></div><i class="fa-solid '+c[2]+' text-emerald-500 text-xl"></i></div></div>').join('');
+                ['Registered Vendors',vendors.length,'fa-users',"setVendorFilter('all')"],
+                ['Pending Approval',pending,'fa-user-clock',"setVendorFilter('pending_review')"],
+                ['Active Vendors',active,'fa-circle-check',"setVendorFilter('active')"],
+                ['Pending Vendor Payout',money(pendingPayout),'fa-wallet',"focusPendingVendorPayouts()"]
+            ].map(c=>'<button type="button" onclick="'+c[3]+'" class="text-left bg-white hover:-translate-y-0.5 hover:shadow-md transition rounded-2xl border border-slate-200 shadow-sm p-5"><div class="flex justify-between gap-3"><div><p class="text-[10px] uppercase font-bold text-slate-400">'+c[0]+'</p><p class="text-2xl font-black text-indigo-950 mt-2">'+c[1]+'</p></div><i class="fa-solid '+c[2]+' text-emerald-500 text-xl"></i></div></button>').join('');
 
             renderVendorCenterTable();
             const vm=new Map(vendors.map(v=>[v.id,v]));
@@ -2479,8 +2508,91 @@ async function deleteWithDriverVehicle(id) {
             if(!rows.length){tbody.innerHTML='<tr><td colspan="6" class="py-8 text-center text-slate-400">No vendors in this view.</td></tr>';return;}
             tbody.innerHTML=rows.map(v=>{
                 const date=v.created_at?new Date(v.created_at).toLocaleDateString('en-IN'):'—';
-                return '<tr class="hover:bg-slate-50"><td class="py-3 px-3"><b>'+escapeAdminHtml(v.owner_business_name)+'</b><div class="text-[9px] text-indigo-700 font-bold">'+escapeAdminHtml(v.vendor_code)+'</div></td><td class="py-3 px-3"><a class="text-emerald-700 font-bold" target="_blank" href="https://wa.me/91'+escapeAdminHtml(String(v.primary_whatsapp||'').replace(/\D/g,''))+'">'+escapeAdminHtml(v.primary_whatsapp||'—')+'</a></td><td class="py-3 px-3">'+escapeAdminHtml(v.base_location||'—')+'</td><td class="py-3 px-3">'+escapeAdminHtml(date)+'</td><td class="py-3 px-3">'+vendorStatusBadge(v.status)+'</td><td class="py-3 px-3 text-right"><div class="flex justify-end gap-1">'+(v.status!=='active'?'<button onclick="updateVendorStatus(\''+v.id+'\',\'active\')" class="bg-emerald-600 text-white rounded-lg px-2.5 py-1.5 text-[9px] font-bold">Approve</button>':'')+(v.status==='active'?'<button onclick="updateVendorStatus(\''+v.id+'\',\'suspended\')" class="bg-rose-50 text-rose-700 rounded-lg px-2.5 py-1.5 text-[9px] font-bold">Suspend</button>':'')+(v.status==='suspended'?'<button onclick="updateVendorStatus(\''+v.id+'\',\'active\')" class="bg-emerald-50 text-emerald-700 rounded-lg px-2.5 py-1.5 text-[9px] font-bold">Reactivate</button>':'')+'</div></td></tr>';
+                return '<tr class="hover:bg-slate-50 cursor-pointer" onclick="openVendorDetail(\''+v.id+'\')"><td class="py-3 px-3"><b>'+escapeAdminHtml(v.owner_business_name)+'</b><div class="text-[9px] text-indigo-700 font-bold">'+escapeAdminHtml(v.vendor_code)+'</div></td><td class="py-3 px-3"><a onclick="event.stopPropagation()" class="text-emerald-700 font-bold" target="_blank" href="https://wa.me/91'+escapeAdminHtml(String(v.primary_whatsapp||'').replace(/\D/g,''))+'">'+escapeAdminHtml(v.primary_whatsapp||'—')+'</a></td><td class="py-3 px-3">'+escapeAdminHtml(v.base_location||'—')+'</td><td class="py-3 px-3">'+escapeAdminHtml(date)+'</td><td class="py-3 px-3">'+vendorStatusBadge(v.status)+'</td><td class="py-3 px-3 text-right"><button onclick="event.stopPropagation();openVendorDetail(\''+v.id+'\')" class="bg-indigo-950 text-white rounded-lg px-3 py-2 text-[9px] font-bold">View Details</button></td></tr>';
             }).join('');
+        }
+
+        let cwdSelectedVendorDetail = null;
+
+        function focusPendingVendorPayouts() {
+            const box=document.getElementById('vendor-center-allocations');
+            if(!box)return;
+            box.scrollIntoView({behavior:'smooth',block:'center'});
+            box.parentElement.classList.add('ring-2','ring-amber-300');
+            setTimeout(()=>box.parentElement.classList.remove('ring-2','ring-amber-300'),1800);
+        }
+
+        async function openVendorDetail(vendorId) {
+            const modal=document.getElementById('vendor-detail-modal');
+            const body=document.getElementById('vendor-detail-body');
+            modal.classList.remove('hidden');modal.classList.add('flex');
+            body.innerHTML='<div class="py-12 text-center text-slate-400">Loading complete vendor profile...</div>';
+            try{
+                const d=await adminApi('/api/admin-vendor-ops?dashboard=1&vendor_id='+encodeURIComponent(vendorId));
+                cwdSelectedVendorDetail=d;
+                renderVendorDetail(d);
+            }catch(e){body.innerHTML='<div class="bg-rose-50 text-rose-700 rounded-xl p-4 font-bold">'+escapeAdminHtml(e.message)+'</div>'}
+        }
+
+        function closeVendorDetail(){const m=document.getElementById('vendor-detail-modal');m.classList.add('hidden');m.classList.remove('flex');cwdSelectedVendorDetail=null}
+
+        function detailRow(label,value){
+            return '<div class="bg-slate-50 border border-slate-100 rounded-xl p-3"><div class="text-[9px] uppercase font-black tracking-wide text-slate-400">'+escapeAdminHtml(label)+'</div><div class="text-xs font-bold text-slate-800 mt-1 break-words">'+escapeAdminHtml(value??'—')+'</div></div>';
+        }
+
+        function maskAccount(value){
+            const s=String(value||'');if(!s)return '—';return s.length<=4?s:'••••••'+s.slice(-4);
+        }
+
+        function renderVendorDetail(d){
+            const v=d.vendor||{},p=d.payout||{},vehicles=d.vehicles||[],terms=d.terms||[];
+            document.getElementById('vendor-detail-subtitle').textContent=(v.owner_business_name||'Vendor')+' · '+(v.vendor_code||'');
+            const vehicleCards=vehicles.map((x,i)=>'<div class="border border-slate-200 rounded-2xl p-4"><div class="flex justify-between gap-3"><h5 class="font-black text-slate-900">Vehicle '+(i+1)+' · '+escapeAdminHtml(x.vehicle_number)+'</h5><span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(x.category||'')+'</span></div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">'+
+              detailRow('Make / Model',x.make_model)+detailRow('Manufacturing Year',x.manufacturing_year)+detailRow('Fuel',x.fuel)+detailRow('Seating',({'5':'4+1','7':'6+1','8':'7+1','13':'12+1','18':'17+1'}[String(x.seating)]||x.seating))+detailRow('Permit Type',x.commercial_permit_type)+detailRow('Insurance Policy',x.insurance_policy_number)+detailRow('Insurance Expiry',x.insurance_expiry)+detailRow('PUC Number',x.puc_number)+detailRow('PUC Expiry',x.puc_expiry)+detailRow('Permit / Fitness No.',x.permit_fitness_number)+detailRow('Permit / Fitness Expiry',x.permit_fitness_expiry)+'</div></div>').join('')||'<p class="text-slate-400 text-xs">No vehicles found.</p>';
+
+            const lastTerms=terms[0];
+            document.getElementById('vendor-detail-body').innerHTML=
+              '<div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-5"><div><div class="flex items-center gap-2"><h4 class="text-xl font-black text-slate-900">'+escapeAdminHtml(v.owner_business_name||'')+'</h4>'+vendorStatusBadge(v.status)+'</div><p class="text-xs text-slate-500 mt-1">'+escapeAdminHtml(v.vendor_code||'')+' · Registered '+escapeAdminHtml(v.created_at?new Date(v.created_at).toLocaleString('en-IN'):'—')+'</p></div><div class="flex flex-wrap gap-2">'+
+              (v.status!=='active'?'<button class="bg-emerald-600 text-white rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'active\')">Approve Vendor</button>':'<button class="bg-rose-50 text-rose-700 rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'suspended\')">Suspend</button>')+
+              '<button class="bg-amber-100 text-amber-800 rounded-xl px-4 py-2.5 text-xs font-black" onclick="openVendorChangeModal()">Request Changes</button>'+
+              (v.status!=='rejected'?'<button class="bg-rose-600 text-white rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'rejected\')">Reject</button>':'')+
+              '</div></div>'+
+              '<div class="space-y-5"><section><h5 class="font-black text-slate-900 mb-3">Business & Contact</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">'+detailRow('Owner / Business',v.owner_business_name)+detailRow('Primary WhatsApp',v.primary_whatsapp)+detailRow('Alternate Mobile',v.alternate_mobile)+detailRow('Email',v.email)+detailRow('Base Location',v.base_location)+detailRow('PAN',v.pan)+'<div class="sm:col-span-2 lg:col-span-3">'+detailRow('Address',v.address)+'</div></div></section>'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Payout Details</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">'+detailRow('Payout Mode',String(p.payout_mode||'').replaceAll('_',' / '))+detailRow('UPI ID',p.upi_id)+detailRow('Account Holder',p.account_holder_name)+detailRow('Bank',p.bank_name)+detailRow('Account Number',maskAccount(p.account_number))+detailRow('IFSC',p.ifsc)+'</div></section>'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Vehicles</h5><div class="space-y-3">'+vehicleCards+'</div></section>'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Consent & Terms</h5><div class="grid sm:grid-cols-2 gap-2">'+detailRow('Terms Version',lastTerms?.terms_version)+detailRow('Accepted At',lastTerms?.accepted_at?new Date(lastTerms.accepted_at).toLocaleString('en-IN'):'—')+'</div></section></div>';
+        }
+
+        async function updateVendorStatusFromDetail(status){
+            const v=cwdSelectedVendorDetail?.vendor;if(!v)return;
+            const words={active:'approve this vendor',suspended:'suspend this vendor',rejected:'reject this vendor'};
+            if(!confirm('Confirm '+(words[status]||status)+'?'))return;
+            try{
+                await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'set_vendor_status',vendor_id:v.id,status})});
+                await loadVendorControlCenter();
+                await openVendorDetail(v.id);
+            }catch(e){alert(e.message)}
+        }
+
+        function openVendorChangeModal(){
+            if(!cwdSelectedVendorDetail?.vendor)return;
+            document.querySelectorAll('.vendor-change-reason').forEach(x=>x.checked=false);
+            document.getElementById('vendor-change-note').value='';
+            const m=document.getElementById('vendor-change-modal');m.classList.remove('hidden');m.classList.add('flex');
+        }
+        function closeVendorChangeModal(){const m=document.getElementById('vendor-change-modal');m.classList.add('hidden');m.classList.remove('flex')}
+
+        function sendVendorChangeRequest(){
+            const v=cwdSelectedVendorDetail?.vendor;if(!v)return;
+            const reasons=[...document.querySelectorAll('.vendor-change-reason:checked')].map(x=>x.value);
+            const note=document.getElementById('vendor-change-note').value.trim();
+            if(!reasons.length&&!note)return alert('Select at least one correction or add a note.');
+            const msg='Hello '+(v.owner_business_name||'')+',\n\nThank you for registering with *Car With Driver India*. We reviewed your vendor registration and need the following details corrected/updated:\n\n'+
+              reasons.map(x=>'• '+x).join('\n')+
+              (note?'\n\nNote: '+note:'')+
+              '\n\nPlease reply on WhatsApp with the corrected details/documents. Once updated, we will review your registration again.\n\nRegards,\n*Car With Driver India*';
+            closeVendorChangeModal();
+            window.open('https://wa.me/91'+String(v.primary_whatsapp||'').replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank');
         }
 
         async function updateVendorStatus(vendorId,status) {

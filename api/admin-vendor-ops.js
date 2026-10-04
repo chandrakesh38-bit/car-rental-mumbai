@@ -110,59 +110,82 @@ function bookingScheduleFromDetails(b){
  }
  return {start,end};
 }
+function bookingIncludedKm(b){
+ const text=String(b?.booking_details||'');
+ const m=text.match(/KM Included:\s*([\d,]+)/i)||text.match(/([\d,]+)\s*km included/i);
+ return m?Number(String(m[1]).replace(/,/g,''))||0:0;
+}
 async function snapshot(id){
- const b=await booking(id),schedule=bookingScheduleFromDetails(b);
- return {booking_id:b.booking_id,trip_type:b.trip_type||'',vehicle:b.car_name||'',route:b.route||'',start_at:schedule.start||null,final_drop_at:schedule.end||null,customer_name:b.customer_name||'',customer_phone:b.customer_phone||'',customer_email:b.customer_email||'',paid_amount:n(b.paid_amount),total_fare:n(b.total_fare||b.fare_amount)}
+ const raw=await booking(id),schedule=bookingScheduleFromDetails(raw);
+ return {
+  booking_id:raw.booking_id,trip_type:raw.trip_type||'',vehicle:raw.car_name||'',route:raw.route||'',
+  start_at:schedule.start||null,final_drop_at:schedule.end||null,
+  customer_name:raw.customer_name||'',customer_phone:raw.customer_phone||'',customer_email:raw.customer_email||'',
+  paid_amount:n(raw.paid_amount),total_fare:n(raw.total_fare||raw.fare_amount),
+  original_fare:n(raw.original_fare||raw.fare_amount||raw.total_fare),
+  fare_amount:n(raw.fare_amount||raw.original_fare||raw.total_fare),
+  included_km:bookingIncludedKm(raw),
+  booking_details:raw.booking_details||''
+ }
 }
 async function buildLedgers(b,a,t,over={}){
  const snap=a?.pricing_snapshot||{};
  const trip=String(b.trip_type||'').toLowerCase();
  const days=Math.max(1,Math.floor(n(over.duty_days||snap.duty_days,1)));
  const actualKm=n(over.billable_km,t.calculated_trip_km);
- const minKm=n(snap.minimum_km_per_day,240);
- const billableKm=trip.includes('local')?actualKm:Math.max(actualKm,days*minKm);
+ const vendorMinKm=n(snap.minimum_km_per_day,240);
  const actuals={toll:n(over.toll,t.toll),parking:n(over.parking,t.parking),state_tax:n(over.state_tax,t.state_tax),other:n(over.other_amount,t.other_amount)};
  const night=Boolean(over.night_charge??t.night_charge);
- let customerBase=0,vendorBase=0,customerDa=0,vendorDa=0;
- let customerKmRate=n(snap.customer_km_rate);
- let vendorKmRate=n(snap.vendor_km_rate);
+ const negotiated=over.negotiated_customer_fare!==null&&over.negotiated_customer_fare!==undefined?n(over.negotiated_customer_fare):null;
+ const bookingFare=negotiated!==null?negotiated:n(b.original_fare||b.fare_amount||b.total_fare);
+ let customerKmRate=n(snap.customer_km_rate),vendorKmRate=n(snap.vendor_km_rate);
+ let customerDa=0,vendorDa=0,customerExtraKm=0,customerExtraHours=0,customerExtraKmCharge=0,customerExtraHourCharge=0;
+ let customerIncludedKm=n(b.included_km||snap.estimated_km||0),customerBillableKm=actualKm;
+ let vendorBillableKm=actualKm,vendorBase=0;
 
  if(trip.includes('local')){
    const pack=String(snap.local_package||'8hr_80km');
-   const customerPackages={
-     '8hr_80km':n(snap.customer_local_8h_80km),
-     '10hr_100km':n(snap.customer_local_10h_100km),
-     '12hr_120km':n(snap.customer_local_12h_120km)
-   };
+   const packageKm={ '8hr_80km':80,'10hr_100km':100,'12hr_120km':120 }[pack]||80;
    const vendorPackages={
      '8hr_80km':n(snap.local_8h_80km),
      '10hr_100km':n(snap.local_10h_100km),
      '12hr_120km':n(snap.local_12h_120km)
    };
-   const ek=n(snap.extra_km),eh=n(snap.extra_hours);
-   customerBase=n(customerPackages[pack])+ek*n(snap.customer_local_extra_km)+eh*n(snap.customer_local_extra_hour);
-   vendorBase=n(vendorPackages[pack])+ek*n(snap.local_extra_km)+eh*n(snap.local_extra_hour);
+   customerIncludedKm=packageKm;
+   customerExtraKm=Math.max(n(snap.extra_km),Math.max(0,actualKm-packageKm));
+   customerExtraHours=n(snap.extra_hours);
    customerKmRate=n(snap.customer_local_extra_km);
+   customerExtraKmCharge=customerExtraKm*customerKmRate;
+   customerExtraHourCharge=customerExtraHours*n(snap.customer_local_extra_hour);
    vendorKmRate=n(snap.local_extra_km);
+   vendorBillableKm=actualKm;
+   vendorBase=n(vendorPackages[pack])+customerExtraKm*vendorKmRate+customerExtraHours*n(snap.local_extra_hour);
  }else{
-   customerBase=billableKm*customerKmRate;
-   vendorBase=billableKm*vendorKmRate;
+   if(!customerIncludedKm)customerIncludedKm=Math.max(n(snap.estimated_km),days*240);
+   customerExtraKm=Math.max(0,actualKm-customerIncludedKm);
+   customerExtraKmCharge=customerExtraKm*customerKmRate;
+   customerBillableKm=Math.max(customerIncludedKm,actualKm);
+   vendorBillableKm=Math.max(actualKm,days*vendorMinKm);
+   vendorBase=vendorBillableKm*vendorKmRate;
    customerDa=days*n(snap.customer_da);
    vendorDa=days*n(snap.vendor_da);
  }
  const customerNight=night?n(snap.customer_night):0;
  const vendorNight=night?n(snap.vendor_night):0;
- const standardCustomerPreActual=customerBase+customerDa+customerNight;
- const agreedCustomerPreActual=over.negotiated_customer_fare!==null&&over.negotiated_customer_fare!==undefined?n(over.negotiated_customer_fare):standardCustomerPreActual;
- const customerTotal=agreedCustomerPreActual+actuals.toll+actuals.parking+actuals.state_tax+actuals.other;
+ const customerTotal=bookingFare+customerExtraKmCharge+customerExtraHourCharge+customerNight+actuals.toll+actuals.parking+actuals.state_tax+actuals.other;
  const advance=n(b.paid_amount),balance=Math.max(0,customerTotal-advance);
  const standardVendorPreActual=vendorBase+vendorDa+vendorNight;
  const agreedVendorPreActual=snap.vendor_final_payout_override!==null&&snap.vendor_final_payout_override!==undefined?n(snap.vendor_final_payout_override):standardVendorPreActual;
  const vendorTotal=agreedVendorPreActual+actuals.toll+actuals.parking+actuals.state_tax+actuals.other-n(over.penalty);
  const due=new Date();due.setUTCDate(due.getUTCDate()+1);due.setUTCHours(10,30,0,0);
  return {
-  customer:{booking_id:b.booking_id,customer_km_rate:customerKmRate,billable_km:billableKm,customer_da:customerDa,customer_night:customerNight,toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,customer_advance:advance,customer_total:customerTotal,customer_balance:balance,updated_at:new Date().toISOString()},
-  vendor:{booking_id:b.booking_id,vendor_id:a.vendor_id,vendor_km_rate:vendorKmRate,billable_km:billableKm,vendor_da:vendorDa,vendor_night:vendorNight,toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,penalty:n(over.penalty),vendor_final_payout:Math.max(0,vendorTotal),payout_due_at:due.toISOString(),updated_at:new Date().toISOString()}
+  customer:{
+   booking_id:b.booking_id,customer_km_rate:customerKmRate,billable_km:customerBillableKm,customer_da:customerDa,customer_night:customerNight,
+   toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,
+   customer_advance:advance,customer_total:customerTotal,customer_balance:balance,updated_at:new Date().toISOString(),
+   _invoice:{booking_fare:bookingFare,included_km:customerIncludedKm,actual_km:actualKm,extra_km:customerExtraKm,extra_km_rate:customerKmRate,extra_km_charge:customerExtraKmCharge,extra_hours:customerExtraHours,extra_hour_charge:customerExtraHourCharge}
+  },
+  vendor:{booking_id:b.booking_id,vendor_id:a.vendor_id,vendor_km_rate:vendorKmRate,billable_km:vendorBillableKm,vendor_da:vendorDa,vendor_night:vendorNight,toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,penalty:n(over.penalty),vendor_final_payout:Math.max(0,vendorTotal),payout_due_at:due.toISOString(),updated_at:new Date().toISOString()}
  };
 }
 async function handler(request){

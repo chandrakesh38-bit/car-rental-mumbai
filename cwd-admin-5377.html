@@ -2641,7 +2641,7 @@ async function deleteWithDriverVehicle(id) {
             const lastTerms=terms[0];
             document.getElementById('vendor-detail-body').innerHTML=
               '<div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-5"><div><div class="flex items-center gap-2"><h4 class="text-xl font-black text-slate-900">'+escapeAdminHtml(v.owner_business_name||'')+'</h4>'+vendorStatusBadge(v.status)+'</div><p class="text-xs text-slate-500 mt-1">'+escapeAdminHtml(v.vendor_code||'')+' · Registered '+escapeAdminHtml(v.created_at?new Date(v.created_at).toLocaleString('en-IN'):'—')+'</p></div><div class="flex flex-wrap gap-2">'+
-              (v.status!=='active'?'<button class="bg-emerald-600 text-white rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'active\')">Approve Vendor</button>':'<button class="bg-rose-50 text-rose-700 rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'suspended\')">Suspend</button>')+
+              (v.status!=='active'?'<button class="bg-emerald-600 text-white rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'active\')">Approve Vendor</button>':'<button class="bg-emerald-100 text-emerald-800 rounded-xl px-4 py-2.5 text-xs font-black" onclick="openVendorApprovalWhatsApp(cwdSelectedVendorDetail.vendor)">Send Approval WhatsApp</button><button class="bg-rose-50 text-rose-700 rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'suspended\')">Suspend</button>')+
               
               '<button class="bg-amber-100 text-amber-800 rounded-xl px-4 py-2.5 text-xs font-black" onclick="openVendorChangeModal()">Request Changes</button>'+
               (v.status!=='rejected'?'<button class="bg-rose-600 text-white rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'rejected\')">Reject</button>':'')+
@@ -2652,12 +2652,40 @@ async function deleteWithDriverVehicle(id) {
               '<section><h5 class="font-black text-slate-900 mb-3">Consent & Terms</h5><div class="grid sm:grid-cols-2 gap-2">'+detailRow('Terms Version',lastTerms?.terms_version)+detailRow('Accepted At',lastTerms?.accepted_at?new Date(lastTerms.accepted_at).toLocaleString('en-IN'):'—')+'</div></section></div>';
         }
 
+        function cwdVendorApprovalMessage(v){
+            return 'Hello '+(v.owner_business_name||'')+',\n\n✅ *Your CWD Vendor Registration is Approved*\n\n'+
+              '*Vendor Code:* '+(v.vendor_code||'')+'\n\n'+
+              'You are now active in the *Car With Driver India* vendor network.\n\n'+
+              '*Current Vendor Rates*\n'+
+              '• Outstation: ₹11/km\n'+
+              '• Driver Allowance: ₹500/day\n'+
+              '• Minimum Billing: 240 KM/day\n'+
+              '• Night Charge: ₹300 (only when vehicle is actually driven between 10 PM–6 AM)\n'+
+              '• Local: 8H/80KM ₹2,000 | 10H/100KM ₹2,300 | 12H/120KM ₹2,600\n'+
+              '• Local Extra KM: ₹13/km | Extra Hour: ₹100/hr\n'+
+              '• Toll / Parking / State Tax: Actual\n\n'+
+              '*Payout:* After booking completion, next calendar day on or before 4:00 PM.\n\n'+
+              'Booking offers will be shared on WhatsApp through a secure CWD link. Accepting an offer confirms availability only; final allocation will be confirmed separately by CWD.\n\n'+
+              'Regards,\n*Car With Driver India*';
+        }
+
+        function openVendorApprovalWhatsApp(v){
+            if(!v?.primary_whatsapp)return alert('Vendor WhatsApp number is missing.');
+            const msg=cwdVendorApprovalMessage(v);
+            window.open('https://wa.me/91'+String(v.primary_whatsapp).replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank');
+        }
+
         async function updateVendorStatusFromDetail(status){
             const v=cwdSelectedVendorDetail?.vendor;if(!v)return;
             const words={active:'approve this vendor',suspended:'suspend this vendor',rejected:'reject this vendor'};
             if(!confirm('Confirm '+(words[status]||status)+'?'))return;
             try{
                 await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'set_vendor_status',vendor_id:v.id,status})});
+                if(status==='active'){
+                    const approvalVendor={...v,status:'active'};
+                    const sendNow=confirm('Vendor approved successfully.\n\nOpen WhatsApp now and send the approval message?');
+                    if(sendNow)openVendorApprovalWhatsApp(approvalVendor);
+                }
                 await loadVendorControlCenter();
                 await openVendorDetail(v.id);
             }catch(e){alert(e.message)}

@@ -62,7 +62,17 @@ export default async function handler(request){
  try{
   const user=await requireAdmin(request);
   if(request.method==='GET'){
-   const u=new URL(request.url),id=u.searchParams.get('booking_id');if(!id)fail('Booking ID required.');
+   const u=new URL(request.url),id=u.searchParams.get('booking_id');
+   if(u.searchParams.get('dashboard')==='1'){
+    const [vendors,offers,allocations,settlements]=await Promise.all([
+      db('cwd_vendors?select=id,vendor_code,owner_business_name,primary_whatsapp,alternate_mobile,email,base_location,status,created_at&order=created_at.desc'),
+      db('cwd_vendor_offers?select=id,vendor_id,booking_id,status,estimated_vendor_payout,responded_at,created_at&order=created_at.desc&limit=300'),
+      db('cwd_vendor_allocations?select=id,booking_id,vendor_id,status,vehicle_number,driver_name,driver_mobile,allocated_at,updated_at&order=allocated_at.desc&limit=300'),
+      db('cwd_vendor_settlement_ledger?select=booking_id,vendor_id,vendor_final_payout,payout_status,payout_due_at,paid_at,utr_reference,updated_at&order=updated_at.desc&limit=300')
+    ]);
+    return json({success:true,vendors:vendors||[],offers:offers||[],allocations:allocations||[],settlements:settlements||[]});
+   }
+   if(!id)fail('Booking ID required.');
    const b=await snapshot(id);
    const [vendors,offers,alloc,trip,customer,vendorSet,invoice]=await Promise.all([
     db('cwd_vendors?status=in.(pending_review,active)&select=id,vendor_code,owner_business_name,primary_whatsapp,base_location,status&order=created_at.desc'),

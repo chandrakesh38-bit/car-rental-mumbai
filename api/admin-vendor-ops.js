@@ -175,8 +175,26 @@ async function handler(request){
 
   if(action==='save_customer_fleet_vehicle'){
     const v=body.vehicle||{},id=String(v.id||'').trim();
+    const fullName=String(v.full_name||'').trim();
+    let brand='',model=fullName;
+    if(/^(maruti suzuki\s+|maruti\s+)?(wagon\s*r|wagonr|dzire|ertiga|ciaz|swift|baleno|alto|celerio|brezza)/i.test(fullName)){
+      brand='Maruti Suzuki';
+      model=fullName.replace(/^(maruti suzuki\s+|maruti\s+)?/i,'').trim();
+      if(/^wagonr$/i.test(model))model='Wagon R';
+    }else{
+      const brands=['Hyundai','Toyota','Kia','Honda','Tata','Mahindra'];
+      const match=brands.find(b=>fullName.toLowerCase().startsWith(b.toLowerCase()+' '));
+      if(match){brand=match;model=fullName.slice(match.length).trim();}
+    }
+    if(!brand){
+      const parts=fullName.split(/\s+/).filter(Boolean);
+      brand=parts[0]||'Other';
+      model=parts.slice(1).join(' ')||fullName||'Other';
+    }
     const payload={
-      full_name:String(v.full_name||'').trim(),
+      full_name:fullName,
+      brand,
+      model,
       segment:String(v.segment||'').trim(),
       seating_capacity:Math.max(1,Math.floor(n(v.seating_capacity,1))),
       bag_capacity:Math.max(0,Math.floor(n(v.bag_capacity,0))),

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>With Driver Vendor Registration | Car With Driver India</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#0f172a;background:#f8fafc}
+    *{box-sizing:border-box}body{margin:0}.wrap{max-width:760px;margin:auto;padding:18px}.hero{background:#0f172a;color:#fff;border-radius:22px;padding:22px;margin:8px 0 16px}.hero h1{font-size:25px;margin:0 0 6px}.hero p{margin:0;color:#cbd5e1;line-height:1.5}.card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 8px 24px rgba(15,23,42,.05)}h2{font-size:19px;margin:0 0 14px}h3{font-size:16px;margin:12px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}label{font-size:13px;font-weight:700;display:block;margin-bottom:5px}input,select,textarea{width:100%;border:1px solid #cbd5e1;border-radius:12px;padding:12px;font:inherit;background:#fff}textarea{min-height:88px;resize:vertical}.rate{border:1px solid #dbeafe;background:#eff6ff;border-radius:14px;padding:13px;margin:10px 0}.rate strong{display:block;margin-bottom:5px}.rate small{display:block;color:#475569;line-height:1.5}.vehicle{border:1px solid #e2e8f0;border-radius:16px;padding:14px;margin:12px 0;background:#f8fafc}.vehicle-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.remove{border:0;background:#fee2e2;color:#991b1b;border-radius:10px;padding:8px 10px;font-weight:700}.add{width:100%;border:1px dashed #64748b;background:#fff;border-radius:12px;padding:12px;font-weight:800}.terms{max-height:220px;overflow:auto;border:1px solid #e2e8f0;border-radius:12px;padding:12px;background:#f8fafc;font-size:13px;line-height:1.55}.check{display:flex;gap:10px;align-items:flex-start;margin-top:14px}.check input{width:20px;height:20px;margin-top:2px}.submit{width:100%;border:0;border-radius:14px;padding:15px;background:#0f172a;color:#fff;font-size:16px;font-weight:900}.submit:disabled{opacity:.55}.note{font-size:12px;color:#64748b;line-height:1.45}.status{display:none;margin-top:12px;padding:12px;border-radius:12px;font-weight:700}.ok{background:#dcfce7;color:#166534}.err{background:#fee2e2;color:#991b1b}.bank{display:none}@media(max-width:620px){.wrap{padding:12px}.grid{grid-template-columns:1fr}.hero{border-radius:16px}.card{padding:15px}.full{grid-column:auto}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <h1>CWD With Driver Vendor Registration</h1>
+    <p>No OTP, no password. Register your business and vehicles for Car With Driver India vendor operations.</p>
+  </section>
+
+  <section class="card">
+    <h2>Current Vendor Rate Card</h2>
+    <div class="rate"><strong>Outstation — CWD-VENDOR-RATE-V2</strong><small>Minimum 240 KM/day • Vendor ₹11/km • Driver Allowance ₹500/day • Night ₹300 when vehicle is actually driven between 10 PM–6 AM • Toll/Parking/State Tax actual.</small></div>
+    <div class="rate"><strong>Local — CWD-VENDOR-LOCAL-V1</strong><small>8 Hrs/80 KM ₹2,000 • 10 Hrs/100 KM ₹2,300 • 12 Hrs/120 KM ₹2,600 • Extra KM ₹13/km • Extra Hour ₹100/hr • Night ₹300 • Toll/Parking actual.</small></div>
+    <div class="rate"><strong>One-Way — CWD-ONEWAY-RULE-V1</strong><small>Customer drop KM + empty return KM = billable KM • Vendor ₹11/km • Minimum 240 KM/day • Driver allowance ₹500 only for customer-service/duty day • Empty return does not add another DA • Both-side toll applies.</small></div>
+  </section>
+
+  <form id="vendor-form">
+    <section class="card">
+      <h2>Owner / Business</h2>
+      <div class="grid">
+        <div><label>Owner / business name *</label><input name="owner_business_name" maxlength="160" required></div>
+        <div><label>Primary WhatsApp mobile *</label><input name="primary_whatsapp" inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" required></div>
+        <div><label>Alternate mobile</label><input name="alternate_mobile" inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}"></div>
+        <div><label>Email</label><input name="email" type="email" maxlength="254"></div>
+        <div><label>Base location / area *</label><input name="base_location" maxlength="160" placeholder="e.g. Vikhroli, Mumbai" required></div>
+        <div><label>PAN *</label><input name="pan" maxlength="10" autocapitalize="characters" required></div>
+        <div class="full"><label>Address *</label><textarea name="address" maxlength="1000" required></textarea></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Payout Details</h2>
+      <div class="grid">
+        <div><label>Payout method *</label>
+          <select name="payout_mode" id="payout-mode" required>
+            <option value="">Select</option><option value="upi">UPI</option><option value="bank">Bank account</option><option value="bank_upi">Bank + UPI</option>
+          </select>
+        </div>
+        <div id="upi-wrap" class="bank"><label>UPI ID</label><input name="upi_id" placeholder="name@bank"></div>
+        <div class="bank bank-field"><label>Account holder name</label><input name="account_holder_name" maxlength="160"></div>
+        <div class="bank bank-field"><label>Bank name</label><input name="bank_name" maxlength="160"></div>
+        <div class="bank bank-field"><label>Account number</label><input name="account_number" inputmode="numeric" maxlength="40"></div>
+        <div class="bank bank-field"><label>IFSC</label><input name="ifsc" maxlength="11" autocapitalize="characters"></div>
+      </div>
+      <p class="note">Payout details are stored server-side and are not shown on public vendor links.</p>
+    </section>
+
+    <section class="card">
+      <div class="vehicle-head"><h2 style="margin:0">Vehicles</h2><span class="note">Driver details are not required now.</span></div>
+      <div id="vehicles"></div>
+      <button type="button" class="add" id="add-vehicle">+ Add another vehicle</button>
+    </section>
+
+    <section class="card">
+      <h2>Vendor Terms & Conditions</h2>
+      <div class="terms">
+        <strong>Version: CWD-VENDOR-TERMS-V1</strong>
+        <ol>
+          <li>Vendor payout is processed after booking completion on the next calendar day on or before 4:00 PM.</li>
+          <li>The allocated vendor must arrange an equivalent replacement vehicle in case of breakdown or cancellation.</li>
+          <li>If there is a last-minute cancellation/breakdown and the vendor cannot provide an equivalent replacement vehicle, a ₹500 penalty applies.</li>
+          <li>CWD does not promise or guarantee booking volume or earnings.</li>
+          <li>Toll, parking and state tax are actual/as applicable.</li>
+          <li>Night charge applies only when the vehicle is actually driven between 10 PM–6 AM.</li>
+          <li>You confirm that submitted registration, vehicle and payout details are accurate.</li>
+        </ol>
+      </div>
+      <label class="check"><input type="checkbox" id="terms" required><span>I have read and agree to the CWD Vendor Terms & Conditions.</span></label>
+    </section>
+
+    <button class="submit" id="submit-btn" type="submit">Submit Vendor Registration</button>
+    <div id="status" class="status"></div>
+  </form>
+</div>
+
+<script>
+(function(){
+  const form=document.getElementById('vendor-form');
+  const vehicles=document.getElementById('vehicles');
+  const status=document.getElementById('status');
+  const submit=document.getElementById('submit-btn');
+  let count=0;
+
+  function field(label,name,type,attrs){
+    return '<div><label>'+label+'</label><input data-field="'+name+'" type="'+(type||'text')+'" '+(attrs||'')+'></div>';
+  }
+
+  function addVehicle(){
+    count++;
+    const box=document.createElement('div');
+    box.className='vehicle';
+    box.innerHTML='<div class="vehicle-head"><h3>Vehicle '+count+'</h3><button class="remove" type="button">Remove</button></div>'+
+      '<div class="grid">'+
+      field('Vehicle number *','vehicle_number','text','maxlength="30" required')+
+      field('Make / model *','make_model','text','maxlength="160" required')+
+      '<div><label>Category *</label><select data-field="category" required><option value="">Select</option><option>Hatchback</option><option>Sedan</option><option>SUV</option><option>MUV</option><option>Premium Sedan</option><option>Premium SUV</option><option>Tempo Traveller</option><option>Other</option></select></div>'+
+      field('Manufacturing year *','manufacturing_year','number','min="1990" max="2100" required')+
+      '<div><label>Fuel *</label><select data-field="fuel" required><option value="">Select</option><option>Petrol</option><option>Diesel</option><option>CNG</option><option>Petrol+CNG</option><option>Electric</option><option>Hybrid</option><option>Other</option></select></div>'+
+      field('Seating *','seating','number','min="2" max="20" required')+
+      field('Commercial / permit type *','commercial_permit_type','text','maxlength="120" placeholder="e.g. T-Permit" required')+
+      field('RC number *','rc_number','text','maxlength="80" required')+
+      field('Insurance policy number *','insurance_policy_number','text','maxlength="120" required')+
+      field('Insurance expiry','insurance_expiry','date','')+
+      field('PUC number *','puc_number','text','maxlength="100" required')+
+      field('PUC expiry','puc_expiry','date','')+
+      field('Permit / Fitness number','permit_fitness_number','text','maxlength="120"')+
+      field('Permit / Fitness expiry','permit_fitness_expiry','date','')+
+      '</div>';
+    box.querySelector('.remove').onclick=function(){
+      if(vehicles.children.length===1){alert('At least one vehicle is required.');return;}
+      box.remove();
+    };
+    vehicles.appendChild(box);
+  }
+
+  function payoutVisibility(){
+    const mode=document.getElementById('payout-mode').value;
+    document.getElementById('upi-wrap').style.display=(mode==='upi'||mode==='bank_upi')?'block':'none';
+    document.querySelectorAll('.bank-field').forEach(function(el){el.style.display=(mode==='bank'||mode==='bank_upi')?'block':'none';});
+  }
+
+  document.getElementById('payout-mode').addEventListener('change',payoutVisibility);
+  document.getElementById('add-vehicle').addEventListener('click',addVehicle);
+  addVehicle();
+
+  form.addEventListener('submit',async function(e){
+    e.preventDefault();
+    status.style.display='none';
+    if(!form.reportValidity())return;
+
+    const fd=new FormData(form);
+    const vehicleRows=[];
+    vehicles.querySelectorAll('.vehicle').forEach(function(box){
+      const row={};
+      box.querySelectorAll('[data-field]').forEach(function(el){row[el.dataset.field]=el.value.trim();});
+      vehicleRows.push(row);
+    });
+
+    const payload={
+      owner_business_name:fd.get('owner_business_name'),
+      primary_whatsapp:fd.get('primary_whatsapp'),
+      alternate_mobile:fd.get('alternate_mobile'),
+      email:fd.get('email'),
+      base_location:fd.get('base_location'),
+      address:fd.get('address'),
+      pan:fd.get('pan'),
+      payout_mode:fd.get('payout_mode'),
+      account_holder_name:fd.get('account_holder_name'),
+      bank_name:fd.get('bank_name'),
+      account_number:fd.get('account_number'),
+      ifsc:fd.get('ifsc'),
+      upi_id:fd.get('upi_id'),
+      vehicles:vehicleRows,
+      terms_accepted:document.getElementById('terms').checked,
+      terms_version:'CWD-VENDOR-TERMS-V1'
+    };
+
+    submit.disabled=true;
+    submit.textContent='Submitting...';
+    try{
+      const res=await fetch('/api/vendor-register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const data=await res.json().catch(function(){return {};});
+      if(!res.ok||!data.success)throw new Error(data.message||'Unable to submit registration.');
+      status.className='status ok';status.style.display='block';
+      status.textContent='Registration submitted. Your Vendor Code is '+data.vendor_code+'. CWD will review your details.';
+      form.reset();vehicles.innerHTML='';count=0;addVehicle();payoutVisibility();
+      window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+    }catch(err){
+      status.className='status err';status.style.display='block';status.textContent=err.message||'Unable to submit registration.';
+    }finally{
+      submit.disabled=false;submit.textContent='Submit Vendor Registration';
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -95,7 +95,8 @@ async function buildLedgers(b,a,t,over={}){
  const vendorNight=night?n(snap.vendor_night):0;
  const customerTotal=customerBase+customerDa+customerNight+actuals.toll+actuals.parking+actuals.state_tax+actuals.other;
  const advance=n(b.paid_amount),balance=Math.max(0,customerTotal-advance);
- const vendorTotal=vendorBase+vendorDa+vendorNight+actuals.toll+actuals.parking+actuals.state_tax+actuals.other-n(over.penalty);
+ const computedVendorTotal=vendorBase+vendorDa+vendorNight+actuals.toll+actuals.parking+actuals.state_tax+actuals.other-n(over.penalty);
+ const vendorTotal=snap.vendor_final_payout_override!==null&&snap.vendor_final_payout_override!==undefined?n(snap.vendor_final_payout_override):computedVendorTotal;
  const due=new Date();due.setUTCDate(due.getUTCDate()+1);due.setUTCHours(10,30,0,0);
  return {
   customer:{booking_id:b.booking_id,customer_km_rate:customerKmRate,billable_km:billableKm,customer_da:customerDa,customer_night:customerNight,toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,customer_advance:advance,customer_total:customerTotal,customer_balance:balance,updated_at:new Date().toISOString()},
@@ -140,18 +141,35 @@ async function handler(request){
    }
    if(!id)fail('Booking ID required.');
    const b=await snapshot(id);
-   const [vendors,offers,alloc,trip,customer,vendorSet,invoice]=await Promise.all([
+   const [vendors,offers,alloc,trip,customer,vendorSet,invoice,commercialOverride]=await Promise.all([
     db('cwd_vendors?status=in.(pending_review,active)&select=id,vendor_code,owner_business_name,primary_whatsapp,base_location,status&order=created_at.desc'),
     db('cwd_vendor_offers?booking_id=eq.'+encodeURIComponent(id)+'&select=*&order=created_at.desc'),
     db('cwd_vendor_allocations?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),
     db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),
     db('cwd_customer_billing_ledger?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),
     db('cwd_vendor_settlement_ledger?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),
-    db('cwd_customer_invoices?booking_id=eq.'+encodeURIComponent(id)+'&select=id,booking_id,payment_url,created_at&limit=1')
+    db('cwd_customer_invoices?booking_id=eq.'+encodeURIComponent(id)+'&select=id,booking_id,payment_url,created_at&limit=1'),
+    db('cwd_booking_commercial_overrides?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1')
    ]);
-   const tripRow=trip?.[0]||null;if(tripRow){tripRow.start_photo_url=await signedPhoto(tripRow.starting_photo_path);tripRow.end_photo_url=await signedPhoto(tripRow.closing_photo_path);}return json({success:true,booking:b,vendors:vendors||[],offers:offers||[],allocation:alloc?.[0]||null,trip:tripRow,customer_ledger:customer?.[0]||null,vendor_ledger:vendorSet?.[0]||null,invoice:invoice?.[0]||null});
+   const tripRow=trip?.[0]||null;if(tripRow){tripRow.start_photo_url=await signedPhoto(tripRow.starting_photo_path);tripRow.end_photo_url=await signedPhoto(tripRow.closing_photo_path);}return json({success:true,booking:b,vendors:vendors||[],offers:offers||[],allocation:alloc?.[0]||null,trip:tripRow,customer_ledger:customer?.[0]||null,vendor_ledger:vendorSet?.[0]||null,invoice:invoice?.[0]||null,commercial_override:commercialOverride?.[0]||null});
   }
   const body=await request.json(),action=String(body.action||''),id=String(body.booking_id||'');
+  if(action==='update_customer_fare'){
+    if(!id)fail('Booking ID required.');
+    const current=await booking(id);
+    const original=n(body.original_customer_fare, current.original_fare||current.fare_amount||current.total_fare);
+    const negotiated=n(body.negotiated_customer_fare,-1);
+    const reason=String(body.reason||'').trim();
+    if(negotiated<0)fail('Negotiated fare must be a valid non-negative amount.');
+    if(!reason)fail('Reason is required.');
+    const now=new Date().toISOString();
+    await db('cwd_booking_commercial_overrides',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({
+      booking_id:id,original_customer_fare:original,negotiated_customer_fare:negotiated,customer_override_reason:reason.slice(0,500),customer_overridden_at:now,customer_overridden_by:String(user.email||''),updated_at:now
+    })});
+    await db('inquiries?booking_id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({total_fare:negotiated,updated_at:now})});
+    return json({success:true,original_customer_fare:original,negotiated_customer_fare:negotiated});
+  }
+
   if(action==='update_vendor_rate'){
     const r=body.rate||{},vehicleRateId=String(r.vehicle_rate_id||'').trim();
     if(!vehicleRateId)fail('Global Pricing vehicle is required.');
@@ -255,12 +273,27 @@ async function handler(request){
   if(action==='create_offer'){
     const ids=Array.isArray(body.vendor_ids)?[...new Set(body.vendor_ids.map(String))]:[];if(!ids.length)fail('Select at least one vendor.');
     const p={trip_type:b.trip_type,estimated_km:n(body.estimated_km),duty_days:Math.max(1,Math.floor(n(body.duty_days,1))),night_count:Math.floor(n(body.night_count)),local_package:body.local_package||null,extra_km:n(body.extra_km),extra_hours:n(body.extra_hours)};
-    const vr=await vendorRateForVehicle(b.vehicle), payout=vendorPayoutFromRate(p,vr.rate),created=[];
+    const vr=await vendorRateForVehicle(b.vehicle);
+    const vendorRateOverride=body.vendor_rate_per_km_override===null||body.vendor_rate_per_km_override===''?null:n(body.vendor_rate_per_km_override);
+    const vendorFinalOverride=body.vendor_final_payout_override===null||body.vendor_final_payout_override===''?null:n(body.vendor_final_payout_override);
+    const vendorOverrideReason=String(body.vendor_override_reason||'').trim();
+    if((vendorRateOverride!==null||vendorFinalOverride!==null)&&!vendorOverrideReason)fail('Vendor override reason is required.');
+    const rateForOffer={...vr.rate};
+    if(vendorRateOverride!==null)rateForOffer.outstation_rate_per_km=vendorRateOverride;
+    let payout=vendorPayoutFromRate(p,rateForOffer);
+    if(vendorFinalOverride!==null)payout=vendorFinalOverride;
+    if(vendorRateOverride!==null||vendorFinalOverride!==null){
+      const now=new Date().toISOString();
+      await db('cwd_booking_commercial_overrides',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({
+        booking_id:id,vendor_rate_per_km_override:vendorRateOverride,vendor_final_payout_override:vendorFinalOverride,vendor_override_reason:vendorOverrideReason.slice(0,500),vendor_overridden_at:now,vendor_overridden_by:String(user.email||''),updated_at:now
+      })});
+    }
+    const created=[];
     for(const vid of ids){
       const vendor=(await db('cwd_vendors?id=eq.'+encodeURIComponent(vid)+'&select=id,vendor_code,owner_business_name,primary_whatsapp,status&limit=1'))?.[0];
       if(!vendor)continue;
       const raw=token(),h=await hashToken(raw);
-      const rows=await db('cwd_vendor_offers',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({vendor_id:vid,booking_id:id,offer_token_hash:h,status:'offered',trip_type:b.trip_type||'',vehicle_required:b.vehicle||'',route_summary:b.route||'',start_at:iso(b.start_at),final_drop_at:iso(b.final_drop_at),estimated_km:p.estimated_km,duty_days:p.duty_days,night_count:p.night_count,local_package:p.local_package,extra_km:p.extra_km,extra_hours:p.extra_hours,estimated_vendor_payout:payout,pricing_snapshot:{...p,vehicle_rate_id:String(vr.car.id),vehicle_name:vr.car.full_name,customer_km_rate:n(vr.car.outstation_rate_per_km),customer_da:n(vr.car.driver_allowance_per_day),customer_night:400,customer_local_8h_80km:n(vr.car.local_pkg_8hr_80km),customer_local_10h_100km:n(vr.car.local_pkg_8hr_80km)+n(vr.car.local_extra_hour_rate)*2,customer_local_12h_120km:n(vr.car.local_pkg_8hr_80km)+n(vr.car.local_extra_hour_rate)*4,customer_local_extra_km:n(vr.car.local_extra_km_rate),customer_local_extra_hour:n(vr.car.local_extra_hour_rate),vendor_km_rate:n(vr.rate.outstation_rate_per_km),vendor_da:n(vr.rate.driver_allowance_per_day),vendor_night:n(vr.rate.night_charge),minimum_km_per_day:n(vr.rate.minimum_outstation_km_per_day),local_8h_80km:n(vr.rate.local_pkg_8hr_80km),local_10h_100km:n(vr.rate.local_pkg_10hr_100km),local_12h_120km:n(vr.rate.local_pkg_12hr_120km),local_extra_km:n(vr.rate.local_extra_km_rate),local_extra_hour:n(vr.rate.local_extra_hour_rate)},created_by:String(user.email||'')})});
+      const rows=await db('cwd_vendor_offers',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({vendor_id:vid,booking_id:id,offer_token_hash:h,status:'offered',trip_type:b.trip_type||'',vehicle_required:b.vehicle||'',route_summary:b.route||'',start_at:iso(b.start_at),final_drop_at:iso(b.final_drop_at),estimated_km:p.estimated_km,duty_days:p.duty_days,night_count:p.night_count,local_package:p.local_package,extra_km:p.extra_km,extra_hours:p.extra_hours,estimated_vendor_payout:payout,pricing_snapshot:{...p,vehicle_rate_id:String(vr.car.id),vehicle_name:vr.car.full_name,customer_km_rate:n(vr.car.outstation_rate_per_km),customer_da:n(vr.car.driver_allowance_per_day),customer_night:400,customer_local_8h_80km:n(vr.car.local_pkg_8hr_80km),customer_local_10h_100km:n(vr.car.local_pkg_8hr_80km)+n(vr.car.local_extra_hour_rate)*2,customer_local_12h_120km:n(vr.car.local_pkg_8hr_80km)+n(vr.car.local_extra_hour_rate)*4,customer_local_extra_km:n(vr.car.local_extra_km_rate),customer_local_extra_hour:n(vr.car.local_extra_hour_rate),vendor_km_rate:n(rateForOffer.outstation_rate_per_km),vendor_da:n(rateForOffer.driver_allowance_per_day),vendor_night:n(rateForOffer.night_charge),minimum_km_per_day:n(rateForOffer.minimum_outstation_km_per_day),local_8h_80km:n(rateForOffer.local_pkg_8hr_80km),local_10h_100km:n(rateForOffer.local_pkg_10hr_100km),local_12h_120km:n(rateForOffer.local_pkg_12hr_120km),local_extra_km:n(rateForOffer.local_extra_km_rate),local_extra_hour:n(rateForOffer.local_extra_hour_rate),vendor_rate_override:vendorRateOverride,vendor_final_payout_override:vendorFinalOverride,vendor_override_reason:vendorOverrideReason||null},created_by:String(user.email||'')})});
       created.push({...rows?.[0],vendor_name:vendor.owner_business_name,vendor_code:vendor.vendor_code,vendor_whatsapp:vendor.primary_whatsapp,view_url:publicBase(request)+'/vendor-booking?offer='+raw});
     } return json({success:true,offers:created});
   }

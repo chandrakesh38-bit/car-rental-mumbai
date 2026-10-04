@@ -2554,22 +2554,100 @@ async function deleteWithDriverVehicle(id) {
             const s=String(value||'');if(!s)return '—';return s.length<=4?s:'••••••'+s.slice(-4);
         }
 
+        function inlineField(label,key,value,type='text',extra=''){
+            return '<div class="vendor-inline-field bg-slate-50 border border-slate-100 rounded-xl p-3 cursor-pointer hover:border-indigo-300 transition" data-key="'+key+'" onclick="enableInlineEdit(this)"><div class="text-[9px] uppercase font-black tracking-wide text-slate-400">'+escapeAdminHtml(label)+'</div><div class="vendor-display text-xs font-bold text-slate-800 mt-1 break-words">'+escapeAdminHtml(value??'—')+'</div><input class="vendor-input hidden mt-2 w-full border border-slate-300 rounded-lg px-2.5 py-2 text-xs" type="'+type+'" value="'+escapeAdminHtml(value??'')+'" '+extra+' onclick="event.stopPropagation()"><div class="vendor-inline-actions hidden mt-2 flex gap-2"><button type="button" onclick="event.stopPropagation();saveInlineField(this)" class="bg-indigo-950 text-white rounded-lg px-3 py-1.5 text-[9px] font-bold">Save</button><button type="button" onclick="event.stopPropagation();cancelInlineEdit(this)" class="bg-white border rounded-lg px-3 py-1.5 text-[9px] font-bold">Cancel</button></div></div>';
+        }
+
+        function enableInlineEdit(card){
+            card.querySelector('.vendor-display')?.classList.add('hidden');
+            card.querySelector('.vendor-input')?.classList.remove('hidden');
+            card.querySelector('.vendor-inline-actions')?.classList.remove('hidden');
+            const input=card.querySelector('.vendor-input');if(input){input.focus();input.select?.();}
+        }
+
+        function cancelInlineEdit(btn){
+            const card=btn.closest('.vendor-inline-field');
+            card.querySelector('.vendor-input')?.classList.add('hidden');
+            card.querySelector('.vendor-inline-actions')?.classList.add('hidden');
+            card.querySelector('.vendor-display')?.classList.remove('hidden');
+        }
+
+        async function saveInlineField(btn){
+            const card=btn.closest('.vendor-inline-field'), key=card.dataset.key, input=card.querySelector('.vendor-input');
+            if(!cwdSelectedVendorDetail?.vendor||!input)return;
+            const d=cwdSelectedVendorDetail;
+            const profile={...d.vendor};
+            const payout={...(d.payout||{})};
+            const vehicles=(d.vehicles||[]).map(x=>({...x}));
+            let value=input.value.trim();
+
+            if(key.startsWith('profile.')){
+                const k=key.split('.')[1];
+                if(k==='primary_whatsapp'||k==='alternate_mobile')value=value.replace(/\D/g,'').slice(-10);
+                if(k==='pan')value=value.toUpperCase();
+                profile[k]=value||null;
+            }else if(key.startsWith('payout.')){
+                const k=key.split('.')[1];
+                if(k==='ifsc')value=value.toUpperCase();
+                payout[k]=value||null;
+            }else if(key.startsWith('vehicle.')){
+                const parts=key.split('.'), idx=Number(parts[1]), k=parts[2];
+                if(!vehicles[idx])return;
+                if(k==='vehicle_number')value=value.toUpperCase().replace(/\s+/g,'');
+                vehicles[idx][k]=value;
+            }else return;
+
+            const payload={
+              action:'update_vendor_profile',
+              vendor_id:d.vendor.id,
+              profile:{
+                owner_business_name:profile.owner_business_name,
+                primary_whatsapp:profile.primary_whatsapp,
+                alternate_mobile:profile.alternate_mobile||'',
+                email:profile.email||'',
+                base_location:profile.base_location,
+                pan:profile.pan,
+                address:profile.address
+              },
+              payout:{
+                payout_mode:payout.payout_mode,
+                upi_id:payout.upi_id||'',
+                account_holder_name:payout.account_holder_name||'',
+                bank_name:payout.bank_name||'',
+                account_number:payout.account_number||'',
+                ifsc:payout.ifsc||''
+              },
+              vehicles:vehicles.map(v=>({
+                id:v.id,vehicle_number:v.vehicle_number,make_model:v.make_model,category:v.category,
+                manufacturing_year:Number(v.manufacturing_year),fuel:v.fuel,seating:Number(v.seating),
+                commercial_permit_type:v.commercial_permit_type,insurance_policy_number:v.insurance_policy_number,
+                insurance_expiry:v.insurance_expiry||null,puc_number:v.puc_number,puc_expiry:v.puc_expiry||null,
+                permit_fitness_number:v.permit_fitness_number||null,permit_fitness_expiry:v.permit_fitness_expiry||null
+              }))
+            };
+            try{
+              await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify(payload)});
+              await loadVendorControlCenter();
+              await openVendorDetail(d.vendor.id);
+            }catch(e){alert(e.message)}
+        }
+
         function renderVendorDetail(d){
             const v=d.vendor||{},p=d.payout||{},vehicles=d.vehicles||[],terms=d.terms||[];
             document.getElementById('vendor-detail-subtitle').textContent=(v.owner_business_name||'Vendor')+' · '+(v.vendor_code||'');
-            const vehicleCards=vehicles.map((x,i)=>'<div class="border border-slate-200 rounded-2xl p-4"><div class="flex justify-between gap-3"><h5 class="font-black text-slate-900">Vehicle '+(i+1)+' · '+escapeAdminHtml(x.vehicle_number)+'</h5><span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(x.category||'')+'</span></div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">'+
-              detailRow('Make / Model',x.make_model)+detailRow('Manufacturing Year',x.manufacturing_year)+detailRow('Fuel',x.fuel)+detailRow('Seating',({'5':'4+1','7':'6+1','8':'7+1','13':'12+1','18':'17+1'}[String(x.seating)]||x.seating))+detailRow('Permit Type',x.commercial_permit_type)+detailRow('Insurance Policy',x.insurance_policy_number)+detailRow('Insurance Expiry',x.insurance_expiry)+detailRow('PUC Number',x.puc_number)+detailRow('PUC Expiry',x.puc_expiry)+detailRow('Permit / Fitness No.',x.permit_fitness_number)+detailRow('Permit / Fitness Expiry',x.permit_fitness_expiry)+'</div></div>').join('')||'<p class="text-slate-400 text-xs">No vehicles found.</p>';
+            const vehicleCards=vehicles.map((x,i)=>'<div class="border border-slate-200 rounded-2xl p-4"><div class="flex justify-between gap-3"><h5 class="font-black text-slate-900">Vehicle '+(i+1)+'</h5><span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(x.category||'')+'</span></div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">'+inlineField('Vehicle Number','vehicle.'+i+'.vehicle_number',x.vehicle_number,'text','maxlength="20" style="text-transform:uppercase"')+
+              inlineField('Make / Model','vehicle.'+i+'.make_model',x.make_model)+inlineField('Manufacturing Year','vehicle.'+i+'.manufacturing_year',x.manufacturing_year,'number')+inlineField('Fuel','vehicle.'+i+'.fuel',x.fuel)+inlineField('Seating','vehicle.'+i+'.seating',x.seating,'number')+inlineField('Permit Type','vehicle.'+i+'.commercial_permit_type',x.commercial_permit_type)+inlineField('Insurance Policy','vehicle.'+i+'.insurance_policy_number',x.insurance_policy_number)+inlineField('Insurance Expiry','vehicle.'+i+'.insurance_expiry',x.insurance_expiry||'','date')+inlineField('PUC Number','vehicle.'+i+'.puc_number',x.puc_number)+inlineField('PUC Expiry','vehicle.'+i+'.puc_expiry',x.puc_expiry||'','date')+inlineField('Permit / Fitness No.','vehicle.'+i+'.permit_fitness_number',x.permit_fitness_number||'')+inlineField('Permit / Fitness Expiry','vehicle.'+i+'.permit_fitness_expiry',x.permit_fitness_expiry||'','date')+'</div></div>').join('')||'<p class="text-slate-400 text-xs">No vehicles found.</p>';
 
             const lastTerms=terms[0];
             document.getElementById('vendor-detail-body').innerHTML=
               '<div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-5"><div><div class="flex items-center gap-2"><h4 class="text-xl font-black text-slate-900">'+escapeAdminHtml(v.owner_business_name||'')+'</h4>'+vendorStatusBadge(v.status)+'</div><p class="text-xs text-slate-500 mt-1">'+escapeAdminHtml(v.vendor_code||'')+' · Registered '+escapeAdminHtml(v.created_at?new Date(v.created_at).toLocaleString('en-IN'):'—')+'</p></div><div class="flex flex-wrap gap-2">'+
               (v.status!=='active'?'<button class="bg-emerald-600 text-white rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'active\')">Approve Vendor</button>':'<button class="bg-rose-50 text-rose-700 rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'suspended\')">Suspend</button>')+
-              '<button class="bg-indigo-100 text-indigo-800 rounded-xl px-4 py-2.5 text-xs font-black" onclick="openVendorEditModal()">Edit Details</button>'+
+              
               '<button class="bg-amber-100 text-amber-800 rounded-xl px-4 py-2.5 text-xs font-black" onclick="openVendorChangeModal()">Request Changes</button>'+
               (v.status!=='rejected'?'<button class="bg-rose-600 text-white rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'rejected\')">Reject</button>':'')+
               '</div></div>'+
-              '<div class="space-y-5"><section><h5 class="font-black text-slate-900 mb-3">Business & Contact</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">'+detailRow('Owner / Business',v.owner_business_name)+detailRow('Primary WhatsApp',v.primary_whatsapp)+detailRow('Alternate Mobile',v.alternate_mobile)+detailRow('Email',v.email)+detailRow('Base Location',v.base_location)+detailRow('PAN',v.pan)+'<div class="sm:col-span-2 lg:col-span-3">'+detailRow('Address',v.address)+'</div></div></section>'+
-              '<section><h5 class="font-black text-slate-900 mb-3">Payout Details</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">'+detailRow('Payout Mode',({upi:'UPI',bank:'Bank Account',bank_upi:'Bank + UPI'}[p.payout_mode]||p.payout_mode||'—'))+detailRow('UPI ID',p.upi_id)+detailRow('Account Holder',p.account_holder_name)+detailRow('Bank',p.bank_name)+detailRow('Account Number',maskAccount(p.account_number))+detailRow('IFSC',p.ifsc)+'</div></section>'+
+              '<div class="space-y-5"><section><h5 class="font-black text-slate-900 mb-3">Business & Contact</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">'+inlineField('Owner / Business','profile.owner_business_name',v.owner_business_name)+inlineField('Primary WhatsApp','profile.primary_whatsapp',v.primary_whatsapp,'tel','maxlength="10"')+inlineField('Alternate Mobile','profile.alternate_mobile',v.alternate_mobile||'','tel','maxlength="10"')+inlineField('Email','profile.email',v.email||'','email')+inlineField('Base Location','profile.base_location',v.base_location)+inlineField('PAN','profile.pan',v.pan,'text','maxlength="10" style="text-transform:uppercase"')+'<div class="sm:col-span-2 lg:col-span-3">'+inlineField('Address','profile.address',v.address)+'</div></div></section>'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Payout Details</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">'+detailRow('Payout Mode',({upi:'UPI',bank:'Bank Account',bank_upi:'Bank + UPI'}[p.payout_mode]||p.payout_mode||'—'))+inlineField('UPI ID','payout.upi_id',p.upi_id||'')+inlineField('Account Holder','payout.account_holder_name',p.account_holder_name||'')+inlineField('Bank','payout.bank_name',p.bank_name||'')+inlineField('Account Number','payout.account_number',p.account_number||'')+inlineField('IFSC','payout.ifsc',p.ifsc||'','text','style="text-transform:uppercase"')+'</div></section>'+
               '<section><h5 class="font-black text-slate-900 mb-3">Vehicles</h5><div class="space-y-3">'+vehicleCards+'</div></section>'+
               '<section><h5 class="font-black text-slate-900 mb-3">Consent & Terms</h5><div class="grid sm:grid-cols-2 gap-2">'+detailRow('Terms Version',lastTerms?.terms_version)+detailRow('Accepted At',lastTerms?.accepted_at?new Date(lastTerms.accepted_at).toLocaleString('en-IN'):'—')+'</div></section></div>';
         }

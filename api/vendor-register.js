@@ -120,7 +120,7 @@ function validateVehicle(raw, index) {
   const fuel = text(raw?.fuel, 30, 'Vehicle ' + (index + 1) + ' fuel');
   const allowedFuel = new Set(['Petrol','Diesel','CNG','Petrol+CNG','Electric','Hybrid','Other']);
   if (!allowedFuel.has(fuel)) fail('Vehicle ' + (index + 1) + ' has an invalid fuel type.');
-  if (!Number.isInteger(year) || year < 1990 || year > currentYear + 1) fail('Vehicle ' + (index + 1) + ' manufacturing year is invalid.');
+  if (!Number.isInteger(year) || year < currentYear - 4 || year > currentYear) fail('Vehicle ' + (index + 1) + ' must be manufactured between ' + (currentYear - 4) + ' and ' + currentYear + '.');
   if (!Number.isInteger(seating) || seating < 2 || seating > 20) fail('Vehicle ' + (index + 1) + ' seating is invalid.');
 
   const vehicleNumber = text(raw?.vehicle_number, 30, 'Vehicle number').toUpperCase().replace(/\s+/g, '');
@@ -135,7 +135,7 @@ function validateVehicle(raw, index) {
     fuel,
     seating,
     commercial_permit_type: text(raw?.commercial_permit_type, 120, 'Commercial / permit type'),
-    rc_number: text(raw?.rc_number, 80, 'RC number').toUpperCase(),
+    rc_number: vehicleNumber,
     insurance_policy_number: text(raw?.insurance_policy_number, 120, 'Insurance policy number'),
     insurance_expiry: optionalText(raw?.insurance_expiry, 10, 'Insurance expiry'),
     puc_number: text(raw?.puc_number, 100, 'PUC number'),

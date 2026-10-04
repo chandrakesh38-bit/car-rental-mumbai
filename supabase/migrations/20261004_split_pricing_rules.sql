@@ -8,6 +8,11 @@ set rule_name = 'Customer Driver Allowance / Day',
     rule_value = 600
 where lower(rule_name) like '%driver%night%allowance%';
 
+update public.pricing_rules
+set rule_value = 240,
+    description = 'With Driver customer minimum billed KM per day for outstation trips'
+where lower(rule_name) like '%minimum%outstation%';
+
 insert into public.pricing_rules (rule_name, rule_value, description)
 select 'Customer Night Charge', 400, 'With Driver customer night charge when applicable between 10 PM and 6 AM'
 where not exists (

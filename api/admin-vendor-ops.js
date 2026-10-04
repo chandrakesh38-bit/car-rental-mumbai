@@ -85,12 +85,14 @@ export default async function handler(request){
    ]);
    const tripRow=trip?.[0]||null;if(tripRow){tripRow.start_photo_url=await signedPhoto(tripRow.starting_photo_path);tripRow.end_photo_url=await signedPhoto(tripRow.closing_photo_path);}return json({success:true,booking:b,vendors:vendors||[],offers:offers||[],allocation:alloc?.[0]||null,trip:tripRow,customer_ledger:customer?.[0]||null,vendor_ledger:vendorSet?.[0]||null,invoice:invoice?.[0]||null});
   }
-  const body=await request.json(),action=String(body.action||''),id=String(body.booking_id||'');if(!id)fail('Booking ID required.');
-  const b=await snapshot(id);
+  const body=await request.json(),action=String(body.action||''),id=String(body.booking_id||'');
   if(action==='set_vendor_status'){
     if(!['active','suspended','rejected','pending_review'].includes(body.status))fail('Invalid vendor status.');
+    if(!body.vendor_id)fail('Vendor is required.');
     await db('cwd_vendors?id=eq.'+encodeURIComponent(body.vendor_id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status:body.status,updated_at:new Date().toISOString()})});return json({success:true});
   }
+  if(!id)fail('Booking ID required.');
+  const b=await snapshot(id);
   if(action==='create_offer'){
     const ids=Array.isArray(body.vendor_ids)?[...new Set(body.vendor_ids.map(String))]:[];if(!ids.length)fail('Select at least one vendor.');
     const p={trip_type:b.trip_type,estimated_km:n(body.estimated_km),duty_days:Math.max(1,Math.floor(n(body.duty_days,1))),night_count:Math.floor(n(body.night_count)),local_package:body.local_package||null,extra_km:n(body.extra_km),extra_hours:n(body.extra_hours)};

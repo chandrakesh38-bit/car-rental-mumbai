@@ -300,11 +300,11 @@ let mumbaiMetroLocations = [
 
         // 6 WITH DRIVER CARS
         let wdFleet = [
-            { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
-            { name: 'Maruti Ertiga', category: 'Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 }, outstationPerKm: 19, driverAllowance: 500, airport: { t1: 2200, t2: 2400, nmia: 2800 } } },
-            { name: 'Kia Carens', category: 'Premium Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 4000, '10hr_100km': 4700, '12hr_120km': 5400, extraKm: 20 }, outstationPerKm: 20, driverAllowance: 500, airport: { t1: 2400, t2: 2600, nmia: 3000 } } },
-            { name: 'Toyota Innova', category: 'Executive MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 4400, '10hr_100km': 5200, '12hr_120km': 6000, extraKm: 22 }, outstationPerKm: 22, driverAllowance: 500, airport: { t1: 2700, t2: 2900, nmia: 3400 } } },
-            { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
+            { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, nightCharge: 400, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
+            { name: 'Maruti Ertiga', category: 'Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 }, outstationPerKm: 19, driverAllowance: 500, nightCharge: 400, airport: { t1: 2200, t2: 2400, nmia: 2800 } } },
+            { name: 'Kia Carens', category: 'Premium Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 4000, '10hr_100km': 4700, '12hr_120km': 5400, extraKm: 20 }, outstationPerKm: 20, driverAllowance: 500, nightCharge: 400, airport: { t1: 2400, t2: 2600, nmia: 3000 } } },
+            { name: 'Toyota Innova', category: 'Executive MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 4400, '10hr_100km': 5200, '12hr_120km': 6000, extraKm: 22 }, outstationPerKm: 22, driverAllowance: 500, nightCharge: 400, airport: { t1: 2700, t2: 2900, nmia: 3400 } } },
+            { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, nightCharge: 400, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
         ];
 
 
@@ -2527,7 +2527,7 @@ async function handleBookingSubmit(e) {
 ⏱ ${wdOutstationDays} Day${wdOutstationDays > 1 ? 's' : ''} | ${includedKm.toLocaleString('en-IN')} km included
 ${currentOutstationJourneyType === 'one-way' ? '↩️ One-way fare includes the vehicle’s empty return distance; driver allowance applies to trip days only.\n' : ''}🗺 Route distance: ${wdOutstationRouteQuote?.distanceKmExact || wdOutstationKm} km
 💰 ₹${extraKmRate}/KM | Driver ₹${driverAllowance}/Day
-🌙 Night: ₹400 when vehicle is actually driven between 10 PM–6 AM
+🌙 Night: ₹${Number(car?.rates?.nightCharge || 0).toLocaleString('en-IN')} when vehicle is actually driven between 10 PM–6 AM
 
 ✓ Incl: Fuel, Driver
 ✕ Excl: Toll, Parking, State Tax (as per actual)

@@ -84,7 +84,36 @@ function vendorPayoutFromRate(p,rate){
  return km*n(rate.outstation_rate_per_km)+days*n(rate.driver_allowance_per_day)+night*n(rate.night_charge);
 }
 async function signedPhoto(path){if(!path)return null;try{const r=await fetch(base()+'/storage/v1/object/sign/cwd-vendor-trip-photos/'+path,{method:'POST',headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':'application/json'},body:JSON.stringify({expiresIn:900})});const d=await r.json();if(!r.ok)return null;const u=d.signedURL||d.signedUrl;return u?(u.startsWith('http')?u:base()+'/storage/v1'+u):null}catch{return null}}
-async function snapshot(id){const b=await booking(id);return {booking_id:b.booking_id,trip_type:b.trip_type||'',vehicle:b.car_name||'',route:b.route||'',start_at:b.pickup_date||b.trip_date||b.start_date||null,final_drop_at:b.final_drop_date||b.return_date||b.end_date||null,customer_name:b.customer_name||'',customer_phone:b.customer_phone||'',customer_email:b.customer_email||'',paid_amount:n(b.paid_amount),total_fare:n(b.total_fare||b.fare_amount)}}
+function parseCwdBookingDate(value){
+ const raw=String(value||'').trim().replace(/(\d{1,2})(st|nd|rd|th)/i,'$1');
+ const m=raw.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4}),\s*(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+ if(!m)return null;
+ const months={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+ const month=months[m[2].toLowerCase()];if(!month)return null;
+ let hour=Number(m[4])%12;if(String(m[6]).toUpperCase()==='PM')hour+=12;
+ const d=new Date(`${m[3]}-${String(month).padStart(2,'0')}-${String(Number(m[1])).padStart(2,'0')}T${String(hour).padStart(2,'0')}:${m[5]}:00+05:30`);
+ return Number.isFinite(d.getTime())?d.toISOString():null;
+}
+function bookingScheduleFromDetails(b){
+ const text=String(b?.booking_details||'');
+ let start=b?.pickup_date||b?.trip_date||b?.start_date||null;
+ let end=b?.final_drop_date||b?.return_date||b?.end_date||null;
+ if(!start){
+   const out=text.match(/📅\s*Start:\s*([^\n]+)/i)?.[1];
+   const generic=text.match(/📅\s*([^\n]+)/)?.[1];
+   start=parseCwdBookingDate(out||generic?.split(/\s+[–-]\s+/)?.[0]||'');
+ }
+ if(!end){
+   const out=text.match(/📅\s*Final Drop:\s*([^\n]+)/i)?.[1];
+   const generic=text.match(/📅\s*([^\n]+)/)?.[1];
+   end=parseCwdBookingDate(out||generic?.split(/\s+[–-]\s+/)?.[1]||'');
+ }
+ return {start,end};
+}
+async function snapshot(id){
+ const b=await booking(id),schedule=bookingScheduleFromDetails(b);
+ return {booking_id:b.booking_id,trip_type:b.trip_type||'',vehicle:b.car_name||'',route:b.route||'',start_at:schedule.start||null,final_drop_at:schedule.end||null,customer_name:b.customer_name||'',customer_phone:b.customer_phone||'',customer_email:b.customer_email||'',paid_amount:n(b.paid_amount),total_fare:n(b.total_fare||b.fare_amount)}
+}
 async function buildLedgers(b,a,t,over={}){
  const snap=a?.pricing_snapshot||{};
  const trip=String(b.trip_type||'').toLowerCase();

@@ -2653,17 +2653,10 @@ async function deleteWithDriverVehicle(id) {
         }
 
         function cwdVendorApprovalMessage(v){
-            return 'Hello '+(v.owner_business_name||'')+',\n\n✅ *Your CWD Vendor Registration is Approved*\n\n'+
+            return 'Hello '+(v.owner_business_name||'')+',\n\n*Your CWD Vendor Registration is Approved*\n\n'+
               '*Vendor Code:* '+(v.vendor_code||'')+'\n\n'+
               'You are now active in the *Car With Driver India* vendor network.\n\n'+
-              '*Current Vendor Rates*\n'+
-              '• Outstation: ₹11/km\n'+
-              '• Driver Allowance: ₹500/day\n'+
-              '• Minimum Billing: 240 KM/day\n'+
-              '• Night Charge: ₹300 (only when vehicle is actually driven between 10 PM–6 AM)\n'+
-              '• Local: 8H/80KM ₹2,000 | 10H/100KM ₹2,300 | 12H/120KM ₹2,600\n'+
-              '• Local Extra KM: ₹13/km | Extra Hour: ₹100/hr\n'+
-              '• Toll / Parking / State Tax: Actual\n\n'+
+              '*Vendor Rates:* Vehicle-wise rates and estimated payout will be shown clearly in each booking offer before you accept it.\n\n'+
               '*Payout:* After booking completion, next calendar day on or before 4:00 PM.\n\n'+
               'Booking offers will be shared on WhatsApp through a secure CWD link. Accepting an offer confirms availability only; final allocation will be confirmed separately by CWD.\n\n'+
               'Regards,\n*Car With Driver India*';

@@ -146,6 +146,14 @@ function validateVehicle(raw, index) {
 }
 
 export default async function handler(request) {
+  if (request.method === 'GET') {
+    try {
+      const rows = await db('with_driver_rates?select=id,full_name,segment&is_active=eq.true&order=display_order.asc,full_name.asc');
+      return json({ success: true, vehicles: rows || [] });
+    } catch (error) {
+      return json({ success: false, message: error?.message || 'Unable to load vehicle list.' }, error?.status || 500);
+    }
+  }
   if (request.method !== 'POST') return json({ success: false, message: 'Method not allowed.' }, 405);
 
   try {

@@ -9,7 +9,8 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
             baseDeliveryCharge: 500,
             extraDeliveryChargePerKm: 25,
             freeThresholdKm: 25,
-            driverNightAllowance: 500,
+            customerDriverAllowancePerDay: 600,
+            customerNightCharge: 400,
             minimumOutstationKmPerDay: 240,
         };
 
@@ -18,7 +19,8 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
             if (n.includes('base') && n.includes('delivery')) return 'baseDeliveryCharge';
             if (n.includes('extra') && n.includes('delivery')) return 'extraDeliveryChargePerKm';
             if (n.includes('threshold')) return 'freeThresholdKm';
-            if (n.includes('night') && n.includes('allowance')) return 'driverNightAllowance';
+            if (n.includes('customer') && n.includes('driver') && n.includes('allowance')) return 'customerDriverAllowancePerDay';
+            if (n.includes('customer') && n.includes('night') && n.includes('charge')) return 'customerNightCharge';
             if (n.includes('minimum') && n.includes('outstation')) return 'minimumOutstationKmPerDay';
             return null;
         }
@@ -447,7 +449,7 @@ let mumbaiMetroLocations = [
         let currentAirportType = 'drop';
         let currentOutstationJourneyType = '';
         const OUTSTATION_BASE_ADDRESS = 'Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai, Maharashtra 400079';
-        const OUTSTATION_DRIVER_ALLOWANCE_PER_DAY = 600;
+        const OUTSTATION_DRIVER_ALLOWANCE_PER_DAY_FALLBACK = 600;
         let wdOutstationKm = 0;
         let wdOutstationDays = 1;
         let wdOutstationRouteQuote = null;
@@ -1301,7 +1303,7 @@ function onPickupDateChange() {
         }
 
         function nightRateForCar() {
-            return 400;
+            return Number(livePricingRules.customerNightCharge || 400);
         }
 
         function currentDriverNightCharge(car) {
@@ -1332,7 +1334,7 @@ function onPickupDateChange() {
             } else if (currentWDSubTab === 'outstation') {
                 if (!currentOutstationJourneyType) return null;
                 const includedKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                return (includedKm * car.rates.outstationPerKm) + (wdOutstationDays * OUTSTATION_DRIVER_ALLOWANCE_PER_DAY) + nightCharge;
+                return (includedKm * car.rates.outstationPerKm) + (wdOutstationDays * Number(livePricingRules.customerDriverAllowancePerDay || OUTSTATION_DRIVER_ALLOWANCE_PER_DAY_FALLBACK)) + nightCharge;
             } else if (currentWDSubTab === 'airport') {
                 const termInput = document.getElementById('wd-airport-terminal');
                 const term = termInput ? termInput.value : 't2';
@@ -2491,7 +2493,7 @@ async function handleBookingSubmit(e) {
         const returnAmPm = document.getElementById('wd-out-rampm').value;
 
         const extraKmRate = car?.rates?.outstationPerKm || 0;
-        const driverAllowance = OUTSTATION_DRIVER_ALLOWANCE_PER_DAY;
+        const driverAllowance = Number(livePricingRules.customerDriverAllowancePerDay || OUTSTATION_DRIVER_ALLOWANCE_PER_DAY_FALLBACK);
 
         const startDateTime = createLocalDateTime(
             pickupDate,

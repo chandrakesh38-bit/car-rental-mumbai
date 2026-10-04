@@ -56,27 +56,51 @@ function vendorPayoutFromRate(p,rate){
 async function signedPhoto(path){if(!path)return null;try{const r=await fetch(base()+'/storage/v1/object/sign/cwd-vendor-trip-photos/'+path,{method:'POST',headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':'application/json'},body:JSON.stringify({expiresIn:900})});const d=await r.json();if(!r.ok)return null;const u=d.signedURL||d.signedUrl;return u?(u.startsWith('http')?u:base()+'/storage/v1'+u):null}catch{return null}}
 async function snapshot(id){const b=await booking(id);return {booking_id:b.booking_id,trip_type:b.trip_type||'',vehicle:b.car_name||'',route:b.route||'',start_at:b.pickup_date||b.trip_date||b.start_date||null,final_drop_at:b.final_drop_date||b.return_date||b.end_date||null,customer_name:b.customer_name||'',customer_phone:b.customer_phone||'',customer_email:b.customer_email||'',paid_amount:n(b.paid_amount),total_fare:n(b.total_fare||b.fare_amount)}}
 async function buildLedgers(b,a,t,over={}){
- const trip=String(b.trip_type||'').toLowerCase(),days=Math.max(1,Math.floor(n(over.duty_days||a?.pricing_snapshot?.duty_days,1)));
- const actualKm=n(over.billable_km,t.calculated_trip_km),oneway=trip.includes('one');
- const billableKm=trip.includes('local')?actualKm:Math.max(actualKm,days*240);
+ const snap=a?.pricing_snapshot||{};
+ const trip=String(b.trip_type||'').toLowerCase();
+ const days=Math.max(1,Math.floor(n(over.duty_days||snap.duty_days,1)));
+ const actualKm=n(over.billable_km,t.calculated_trip_km);
+ const minKm=n(snap.minimum_km_per_day,240);
+ const billableKm=trip.includes('local')?actualKm:Math.max(actualKm,days*minKm);
  const actuals={toll:n(over.toll,t.toll),parking:n(over.parking,t.parking),state_tax:n(over.state_tax,t.state_tax),other:n(over.other_amount,t.other_amount)};
  const night=Boolean(over.night_charge??t.night_charge);
  let customerBase=0,vendorBase=0,customerDa=0,vendorDa=0;
+ let customerKmRate=n(snap.customer_km_rate);
+ let vendorKmRate=n(snap.vendor_km_rate);
+
  if(trip.includes('local')){
-   const pack=String(a?.pricing_snapshot?.local_package||'8hr_80km');
-   const cb={'8hr_80km':2500,'10hr_100km':2900,'12hr_120km':3300}[pack]||2500;
-   const vb={'8hr_80km':2000,'10hr_100km':2300,'12hr_120km':2600}[pack]||2000;
-   const ek=n(a?.pricing_snapshot?.extra_km),eh=n(a?.pricing_snapshot?.extra_hours);
-   customerBase=cb+ek*17+eh*200; vendorBase=vb+ek*13+eh*100;
+   const pack=String(snap.local_package||'8hr_80km');
+   const customerPackages={
+     '8hr_80km':n(snap.customer_local_8h_80km),
+     '10hr_100km':n(snap.customer_local_10h_100km),
+     '12hr_120km':n(snap.customer_local_12h_120km)
+   };
+   const vendorPackages={
+     '8hr_80km':n(snap.local_8h_80km),
+     '10hr_100km':n(snap.local_10h_100km),
+     '12hr_120km':n(snap.local_12h_120km)
+   };
+   const ek=n(snap.extra_km),eh=n(snap.extra_hours);
+   customerBase=n(customerPackages[pack])+ek*n(snap.customer_local_extra_km)+eh*n(snap.customer_local_extra_hour);
+   vendorBase=n(vendorPackages[pack])+ek*n(snap.local_extra_km)+eh*n(snap.local_extra_hour);
+   customerKmRate=n(snap.customer_local_extra_km);
+   vendorKmRate=n(snap.local_extra_km);
  }else{
-   customerBase=billableKm*13;vendorBase=billableKm*11;customerDa=days*600;vendorDa=days*500;
+   customerBase=billableKm*customerKmRate;
+   vendorBase=billableKm*vendorKmRate;
+   customerDa=days*n(snap.customer_da);
+   vendorDa=days*n(snap.vendor_da);
  }
- const customerNight=night?400:0,vendorNight=night?300:0;
+ const customerNight=night?n(snap.customer_night):0;
+ const vendorNight=night?n(snap.vendor_night):0;
  const customerTotal=customerBase+customerDa+customerNight+actuals.toll+actuals.parking+actuals.state_tax+actuals.other;
  const advance=n(b.paid_amount),balance=Math.max(0,customerTotal-advance);
  const vendorTotal=vendorBase+vendorDa+vendorNight+actuals.toll+actuals.parking+actuals.state_tax+actuals.other-n(over.penalty);
  const due=new Date();due.setUTCDate(due.getUTCDate()+1);due.setUTCHours(10,30,0,0);
- return {customer:{booking_id:b.booking_id,customer_km_rate:trip.includes('local')?17:13,billable_km:billableKm,customer_da:customerDa,customer_night:customerNight,toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,customer_advance:advance,customer_total:customerTotal,customer_balance:balance,updated_at:new Date().toISOString()},vendor:{booking_id:b.booking_id,vendor_id:a.vendor_id,vendor_km_rate:trip.includes('local')?13:11,billable_km:billableKm,vendor_da:vendorDa,vendor_night:vendorNight,toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,penalty:n(over.penalty),vendor_final_payout:Math.max(0,vendorTotal),payout_due_at:due.toISOString(),updated_at:new Date().toISOString()}}
+ return {
+  customer:{booking_id:b.booking_id,customer_km_rate:customerKmRate,billable_km:billableKm,customer_da:customerDa,customer_night:customerNight,toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,customer_advance:advance,customer_total:customerTotal,customer_balance:balance,updated_at:new Date().toISOString()},
+  vendor:{booking_id:b.booking_id,vendor_id:a.vendor_id,vendor_km_rate:vendorKmRate,billable_km:billableKm,vendor_da:vendorDa,vendor_night:vendorNight,toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,penalty:n(over.penalty),vendor_final_payout:Math.max(0,vendorTotal),payout_due_at:due.toISOString(),updated_at:new Date().toISOString()}
+ };
 }
 async function handler(request){
  if(!['GET','POST'].includes(request.method))return json({success:false,message:'Method not allowed.'},405);
@@ -236,7 +260,7 @@ async function handler(request){
       const vendor=(await db('cwd_vendors?id=eq.'+encodeURIComponent(vid)+'&select=id,vendor_code,owner_business_name,primary_whatsapp,status&limit=1'))?.[0];
       if(!vendor)continue;
       const raw=token(),h=await hashToken(raw);
-      const rows=await db('cwd_vendor_offers',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({vendor_id:vid,booking_id:id,offer_token_hash:h,status:'offered',trip_type:b.trip_type||'',vehicle_required:b.vehicle||'',route_summary:b.route||'',start_at:iso(b.start_at),final_drop_at:iso(b.final_drop_at),estimated_km:p.estimated_km,duty_days:p.duty_days,night_count:p.night_count,local_package:p.local_package,extra_km:p.extra_km,extra_hours:p.extra_hours,estimated_vendor_payout:payout,pricing_snapshot:{...p,vehicle_rate_id:String(vr.car.id),vehicle_name:vr.car.full_name,vendor_km_rate:n(vr.rate.outstation_rate_per_km),vendor_da:n(vr.rate.driver_allowance_per_day),vendor_night:n(vr.rate.night_charge),minimum_km_per_day:n(vr.rate.minimum_outstation_km_per_day),local_8h_80km:n(vr.rate.local_pkg_8hr_80km),local_10h_100km:n(vr.rate.local_pkg_10hr_100km),local_12h_120km:n(vr.rate.local_pkg_12hr_120km),local_extra_km:n(vr.rate.local_extra_km_rate),local_extra_hour:n(vr.rate.local_extra_hour_rate)},created_by:String(user.email||'')})});
+      const rows=await db('cwd_vendor_offers',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({vendor_id:vid,booking_id:id,offer_token_hash:h,status:'offered',trip_type:b.trip_type||'',vehicle_required:b.vehicle||'',route_summary:b.route||'',start_at:iso(b.start_at),final_drop_at:iso(b.final_drop_at),estimated_km:p.estimated_km,duty_days:p.duty_days,night_count:p.night_count,local_package:p.local_package,extra_km:p.extra_km,extra_hours:p.extra_hours,estimated_vendor_payout:payout,pricing_snapshot:{...p,vehicle_rate_id:String(vr.car.id),vehicle_name:vr.car.full_name,customer_km_rate:n(vr.car.outstation_rate_per_km),customer_da:n(vr.car.driver_allowance_per_day),customer_night:400,customer_local_8h_80km:n(vr.car.local_pkg_8hr_80km),customer_local_10h_100km:n(vr.car.local_pkg_8hr_80km)+n(vr.car.local_extra_hour_rate)*2,customer_local_12h_120km:n(vr.car.local_pkg_8hr_80km)+n(vr.car.local_extra_hour_rate)*4,customer_local_extra_km:n(vr.car.local_extra_km_rate),customer_local_extra_hour:n(vr.car.local_extra_hour_rate),vendor_km_rate:n(vr.rate.outstation_rate_per_km),vendor_da:n(vr.rate.driver_allowance_per_day),vendor_night:n(vr.rate.night_charge),minimum_km_per_day:n(vr.rate.minimum_outstation_km_per_day),local_8h_80km:n(vr.rate.local_pkg_8hr_80km),local_10h_100km:n(vr.rate.local_pkg_10hr_100km),local_12h_120km:n(vr.rate.local_pkg_12hr_120km),local_extra_km:n(vr.rate.local_extra_km_rate),local_extra_hour:n(vr.rate.local_extra_hour_rate)},created_by:String(user.email||'')})});
       created.push({...rows?.[0],vendor_name:vendor.owner_business_name,vendor_code:vendor.vendor_code,vendor_whatsapp:vendor.primary_whatsapp,view_url:publicBase(request)+'/vendor-booking?offer='+raw});
     } return json({success:true,offers:created});
   }
@@ -252,6 +276,8 @@ async function handler(request){
   }
   if(action==='review'){
     const ar=await db('cwd_vendor_allocations?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),a=ar?.[0];if(!a)fail('No allocation found.');
+    const sourceOffer=(await db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a.offer_id)+'&select=pricing_snapshot&limit=1'))?.[0];
+    a.pricing_snapshot=sourceOffer?.pricing_snapshot||{};
     const tr=await db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),t=tr?.[0];if(!t||!t.ended_at)fail('Trip closure has not been submitted.');
     if(body.review_action==='query'){
       await db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({review_status:'query_vendor',admin_notes:String(body.admin_notes||'').slice(0,1000),reviewed_at:new Date().toISOString(),reviewed_by:String(user.email||'')})});return json({success:true});

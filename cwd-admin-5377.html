@@ -1554,7 +1554,7 @@
         async function openBookingDetailById(id){try{const result=await adminApi('/api/admin-payment?dashboard=1');const b=(result.bookings||[]).find(x=>x.booking_id===id);if(b)openBookingDetail(b);}catch(e){alert(e.message)}}
         async function refreshBookingDetail(){
             if(!currentAdminBooking)return; const btn=document.getElementById('booking-refresh-btn');
-            try{if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Refreshing…';}const result=await adminApi('/api/admin-payment?dashboard=1');const fresh=(result.bookings||[]).find(x=>x.booking_id===currentAdminBooking.booking_id);if(fresh)currentAdminBooking=fresh;await renderBookingDetail();}catch(e){alert(e.message)}finally{const b=document.getElementById('booking-refresh-btn');if(b){b.disabled=false;b.innerHTML='<i class="fa-solid fa-check mr-1"></i> Updated';setTimeout(()=>{if(b)b.innerHTML='<i class="fa-solid fa-rotate mr-1"></i> Refresh'},900);}}}
+            try{if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Refreshing…';}const result=await adminApi('/api/admin-payment?dashboard=1');const fresh=(result.bookings||[]).find(x=>x.booking_id===currentAdminBooking.booking_id);if(fresh)currentAdminBooking=fresh;await renderBookingDetail();await loadVendorOpsPanel();}catch(e){alert(e.message)}finally{const b=document.getElementById('booking-refresh-btn');if(b){b.disabled=false;b.innerHTML='<i class="fa-solid fa-check mr-1"></i> Updated';setTimeout(()=>{if(b)b.innerHTML='<i class="fa-solid fa-rotate mr-1"></i> Refresh'},900);}}}
         let bookingsAutoRefreshTimer = null;
         function setBookingsAutoRefresh(enabled) {
             if (bookingsAutoRefreshTimer) { clearInterval(bookingsAutoRefreshTimer); bookingsAutoRefreshTimer = null; }
@@ -1716,6 +1716,7 @@
             const copyBtn=document.getElementById('copy-booking-id-btn'); if(copyBtn)copyBtn.innerHTML='<i class="fa-regular fa-copy"></i> Copy ID';
             const modal=document.getElementById('booking-detail-modal'); modal.classList.remove('hidden'); modal.classList.add('flex');
             await renderBookingDetail();
+            await loadVendorOpsPanel();
         }
         function closeBookingDetail(){ const m=document.getElementById('booking-detail-modal');m.classList.add('hidden');m.classList.remove('flex');currentAdminBooking=null; }
         async function copyCurrentBookingId(){
@@ -2336,6 +2337,81 @@ async function deleteWithDriverVehicle(id) {
    window.addEventListener('DOMContentLoaded', () => {
     loadWithDriverRates();
 });
-    </script>
+    
+        let cwdLastGeneratedOffers = [];
+        let cwdLastAllocationUrl = '';
+        function cwdCopyText(value){
+            if(!value)return;
+            if(navigator.clipboard?.writeText) navigator.clipboard.writeText(value).catch(()=>prompt('Copy:',value));
+            else prompt('Copy:',value);
+        }
+        function cwdVendorOfferMessage(o){
+            return '🚨 *CWD BOOKING OFFER*\n\n*Booking ID:* '+o.booking_id+
+              '\n*Vehicle:* '+(o.vehicle_required||'')+'\n*Trip Type:* '+(o.trip_type||'')+
+              '\n*Route:* '+(o.route_summary||'')+'\n*Estimated KM:* '+Number(o.estimated_km||0).toLocaleString('en-IN')+
+              '\n*Estimated Vendor Payout:* '+money(o.estimated_vendor_payout)+
+              '\n\nView / Accept / Decline:\n'+o.view_url+
+              '\n\nAccepting does not allocate the booking. CWD will confirm allocation separately.';
+        }
+        async function loadVendorOpsPanel(){
+            const b=currentAdminBooking,body=document.getElementById('booking-detail-body');
+            if(!b||!body)return;
+            const existing=document.getElementById('cwd-vendor-ops-card');if(existing)existing.remove();
+            if(!/with driver/i.test(String(b.service_type||'')) && /self/i.test(String(b.trip_type||'')))return;
+            const card=document.createElement('div');card.id='cwd-vendor-ops-card';card.className='mt-4 border-2 border-indigo-100 rounded-2xl p-4 bg-indigo-50/40';
+            card.innerHTML='<div class="flex justify-between items-center gap-2"><div><h4 class="font-black text-sm text-indigo-950">With Driver Vendor Operations</h4><p class="text-[10px] text-slate-500">Offer → Accept/Decline → Allocate → Trip → Review → Invoice → Vendor Payout</p></div><button type="button" id="cwd-vendor-refresh" class="text-[10px] font-bold bg-white border rounded-lg px-3 py-2">Refresh</button></div><div id="cwd-vendor-ops-content" class="mt-4 text-xs">Loading vendor operations…</div>';
+            body.appendChild(card);document.getElementById('cwd-vendor-refresh').onclick=loadVendorOpsPanel;
+            try{
+                const d=await adminApi('/api/admin-vendor-ops?booking_id='+encodeURIComponent(b.booking_id));
+                renderVendorOps(d);
+            }catch(e){document.getElementById('cwd-vendor-ops-content').innerHTML='<div class="bg-rose-50 text-rose-700 rounded-xl p-3 font-bold">'+escapeAdminHtml(e.message)+'</div>'}
+        }
+        function renderVendorOps(d){
+            const box=document.getElementById('cwd-vendor-ops-content');if(!box)return;
+            const vendors=d.vendors||[],offers=d.offers||[],a=d.allocation,t=d.trip,cl=d.customer_ledger,vl=d.vendor_ledger;
+            const vendorRows=vendors.map(v=>'<label class="flex items-start gap-2 p-2 bg-white border rounded-xl"><input type="checkbox" data-vendor-id="'+escapeAdminHtml(v.id)+'" class="mt-1"><span><b>'+escapeAdminHtml(v.owner_business_name)+'</b> · '+escapeAdminHtml(v.vendor_code)+'<br><span class="text-[10px] text-slate-500">'+escapeAdminHtml(v.primary_whatsapp)+' · '+escapeAdminHtml(v.base_location)+' · '+escapeAdminHtml(v.status)+'</span></span></label>').join('')||'<p class="text-slate-500">No registered vendors yet.</p>';
+            const offerRows=offers.map(o=>'<div class="p-2 bg-white border rounded-xl flex items-center justify-between gap-2"><div><b>'+escapeAdminHtml(o.status.toUpperCase())+'</b> · '+money(o.estimated_vendor_payout)+'<br><span class="text-[10px] text-slate-500">'+escapeAdminHtml(o.vendor_id)+'</span></div>'+(o.status==='accepted'?'<button class="bg-emerald-600 text-white rounded-lg px-3 py-2 font-bold" onclick="cwdAllocate(\''+o.id+'\')">ALLOCATE</button>':'')+'</div>').join('');
+            box.innerHTML=
+              '<div class="grid lg:grid-cols-2 gap-3"><div class="bg-white rounded-xl p-3 border"><h5 class="font-black mb-2">1. Select Vendors</h5><div class="space-y-2 max-h-56 overflow-auto">'+vendorRows+'</div></div>'+
+              '<div class="bg-white rounded-xl p-3 border"><h5 class="font-black mb-2">2. Offer Pricing Inputs</h5><div class="grid grid-cols-2 gap-2"><label>Estimated/Billable KM<input id="cwd-est-km" type="number" min="0" value="240" class="w-full border rounded-lg p-2 mt-1"></label><label>Duty Days<input id="cwd-duty-days" type="number" min="1" value="1" class="w-full border rounded-lg p-2 mt-1"></label><label>Night Count<input id="cwd-night-count" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label><label>Local Package<select id="cwd-local-package" class="w-full border rounded-lg p-2 mt-1"><option value="8hr_80km">8H/80KM</option><option value="10hr_100km">10H/100KM</option><option value="12hr_120km">12H/120KM</option></select></label><label>Extra KM<input id="cwd-extra-km" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label><label>Extra Hours<input id="cwd-extra-hours" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label></div><button class="mt-3 w-full bg-indigo-950 text-white rounded-xl p-3 font-black" onclick="cwdGenerateOffers()">Generate Vendor Offer</button></div></div>'+
+              (cwdLastGeneratedOffers.length?'<div class="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3"><h5 class="font-black">New Offer Links</h5>'+cwdLastGeneratedOffers.map((o,i)=>'<div class="mt-2 flex gap-2"><button class="flex-1 bg-white border rounded-lg p-2 font-bold" onclick="cwdCopyText(cwdVendorOfferMessage(cwdLastGeneratedOffers['+i+']))">Copy Offer</button><a class="flex-1 text-center bg-emerald-600 text-white rounded-lg p-2 font-bold" target="_blank" href="https://wa.me/?text='+encodeURIComponent(cwdVendorOfferMessage(o))+'">Open WhatsApp</a></div>').join('')+'</div>':'')+
+              '<div class="mt-3 bg-white border rounded-xl p-3"><h5 class="font-black mb-2">Offer Status</h5><div class="space-y-2">'+(offerRows||'<p class="text-slate-500">No offers yet.</p>')+'</div></div>'+
+              (a?'<div class="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h5 class="font-black">Allocated Vendor</h5><p>Status: <b>'+escapeAdminHtml(a.status)+'</b></p><p>Vehicle: '+escapeAdminHtml(a.vehicle_number||'Not entered')+' · Driver: '+escapeAdminHtml(a.driver_name||'Not entered')+' '+escapeAdminHtml(a.driver_mobile||'')+'</p>'+(cwdLastAllocationUrl?'<button class="mt-2 bg-white border rounded-lg p-2 font-bold" onclick="cwdCopyText(cwdLastAllocationUrl)">Copy Allocated Vendor Link</button>':'')+'</div>':'')+
+              (t?'<div class="mt-3 bg-white border rounded-xl p-3"><h5 class="font-black">Trip Closure / Review</h5><div class="grid md:grid-cols-2 gap-2 mt-2"><div>Starting KM: <b>'+escapeAdminHtml(t.starting_odometer||'—')+'</b>'+(t.start_photo_url?'<br><a class="text-indigo-700 underline" target="_blank" href="'+t.start_photo_url+'">View starting photo</a>':'')+'</div><div>Closing KM: <b>'+escapeAdminHtml(t.closing_odometer||'—')+'</b>'+(t.end_photo_url?'<br><a class="text-indigo-700 underline" target="_blank" href="'+t.end_photo_url+'">View closing photo</a>':'')+'</div></div><p class="mt-2">Calculated KM: <b>'+escapeAdminHtml(t.calculated_trip_km||'—')+'</b> · Toll '+money(t.toll)+' · Parking '+money(t.parking)+' · State Tax '+money(t.state_tax)+' · Night '+(t.night_charge?'YES':'NO')+' · Other '+money(t.other_amount)+'</p><p>Status: <b>'+escapeAdminHtml(t.review_status)+'</b></p>'+(t.ended_at?'<div class="grid grid-cols-3 gap-2 mt-3"><button class="bg-emerald-600 text-white rounded-lg p-2 font-bold" onclick="cwdReview(\'approve\')">APPROVE</button><button class="bg-amber-500 text-white rounded-lg p-2 font-bold" onclick="cwdReview(\'correct\')">CORRECT</button><button class="bg-rose-600 text-white rounded-lg p-2 font-bold" onclick="cwdReview(\'query\')">QUERY VENDOR</button></div>':'')+'</div>':'')+
+              (cl?'<div class="mt-3 grid md:grid-cols-2 gap-3"><div class="bg-blue-50 border border-blue-200 rounded-xl p-3"><h5 class="font-black">Customer Billing</h5><p>Total: <b>'+money(cl.customer_total)+'</b> · Advance: '+money(cl.customer_advance)+' · Balance: <b>'+money(cl.customer_balance)+'</b></p><button class="mt-2 w-full bg-indigo-950 text-white rounded-lg p-2 font-bold" onclick="cwdGenerateInvoice('+Number(cl.customer_balance||0)+')">Generate Final Invoice + PAY NOW</button></div><div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h5 class="font-black">Vendor Settlement</h5><p>Final payout: <b>'+money(vl?.vendor_final_payout||0)+'</b> · '+escapeAdminHtml(vl?.payout_status||'pending')+'</p>'+(vl?.payout_status!=='paid'?'<button class="mt-2 w-full bg-emerald-700 text-white rounded-lg p-2 font-bold" onclick="cwdMarkVendorPaid()">Mark Vendor Payout PAID</button>':'<p>UTR: '+escapeAdminHtml(vl?.utr_reference||'')+'</p>')+'</div></div>':'')+
+              (d.invoice?'<div class="mt-3 text-[10px] text-emerald-700 font-bold">Final invoice already generated.</div>':'');
+        }
+        async function cwdGenerateOffers(){
+            const ids=[...document.querySelectorAll('#cwd-vendor-ops-content [data-vendor-id]:checked')].map(x=>x.dataset.vendorId);if(!ids.length)return alert('Select at least one vendor.');
+            try{const d=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'create_offer',booking_id:currentAdminBooking.booking_id,vendor_ids:ids,estimated_km:Number(document.getElementById('cwd-est-km').value||0),duty_days:Number(document.getElementById('cwd-duty-days').value||1),night_count:Number(document.getElementById('cwd-night-count').value||0),local_package:document.getElementById('cwd-local-package').value,extra_km:Number(document.getElementById('cwd-extra-km').value||0),extra_hours:Number(document.getElementById('cwd-extra-hours').value||0)})});cwdLastGeneratedOffers=d.offers||[];await loadVendorOpsPanel()}catch(e){alert(e.message)}
+        }
+        async function cwdAllocate(offerId){if(!confirm('Allocate this accepted vendor? Any previous vendor access will be revoked.'))return;try{const d=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'allocate',booking_id:currentAdminBooking.booking_id,offer_id:offerId})});cwdLastAllocationUrl=d.allocated_url||'';await loadVendorOpsPanel();if(cwdLastAllocationUrl)cwdCopyText(cwdLastAllocationUrl)}catch(e){alert(e.message)}}
+        async function cwdReview(action){
+            const payload={action:'review',booking_id:currentAdminBooking.booking_id,review_action:action};
+            if(action==='query')payload.admin_notes=prompt('Query / note for vendor:','')||'';
+            if(action==='correct'){
+                payload.corrections={};
+                const km=prompt('Correct billable/trip KM (leave blank to keep submitted):','');if(km!=='')payload.corrections.billable_km=Number(km);
+                const toll=prompt('Correct Toll ₹ (leave blank to keep):','');if(toll!=='')payload.corrections.toll=Number(toll);
+                const parking=prompt('Correct Parking ₹ (leave blank to keep):','');if(parking!=='')payload.corrections.parking=Number(parking);
+                const tax=prompt('Correct State Tax ₹ (leave blank to keep):','');if(tax!=='')payload.corrections.state_tax=Number(tax);
+                payload.admin_notes=prompt('Correction note:','')||'';
+            }
+            try{await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify(payload)});await loadVendorOpsPanel()}catch(e){alert(e.message)}
+        }
+        async function cwdGenerateInvoice(balance){
+            try{
+                let paymentUrl='';
+                if(balance>0){
+                    const pay=await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'create',booking_id:currentAdminBooking.booking_id,payment_type:'balance',amount:balance})});
+                    paymentUrl=pay.payment?.razorpay_payment_link_url||'';
+                }
+                const inv=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'generate_invoice',booking_id:currentAdminBooking.booking_id,payment_url:paymentUrl})});
+                cwdCopyText(inv.invoice_url);alert('Invoice link copied.');await loadVendorOpsPanel();
+            }catch(e){alert(e.message)}
+        }
+        async function cwdMarkVendorPaid(){const utr=prompt('Enter UTR / payment reference:','');if(!utr)return;try{await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'mark_vendor_paid',booking_id:currentAdminBooking.booking_id,utr_reference:utr})});await loadVendorOpsPanel()}catch(e){alert(e.message)}}
+
+</script>
 </body>
 </html>

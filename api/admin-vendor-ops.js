@@ -100,6 +100,75 @@ async function handler(request){
    const tripRow=trip?.[0]||null;if(tripRow){tripRow.start_photo_url=await signedPhoto(tripRow.starting_photo_path);tripRow.end_photo_url=await signedPhoto(tripRow.closing_photo_path);}return json({success:true,booking:b,vendors:vendors||[],offers:offers||[],allocation:alloc?.[0]||null,trip:tripRow,customer_ledger:customer?.[0]||null,vendor_ledger:vendorSet?.[0]||null,invoice:invoice?.[0]||null});
   }
   const body=await request.json(),action=String(body.action||''),id=String(body.booking_id||'');
+  if(action==='update_vendor_profile'){
+    const vendorId=String(body.vendor_id||'').trim();
+    if(!vendorId)fail('Vendor is required.');
+    const profile=body.profile||{}, payout=body.payout||{}, vehicles=Array.isArray(body.vehicles)?body.vehicles:[];
+    const mobile=String(profile.primary_whatsapp||'').replace(/\D/g,'').slice(-10);
+    const alt=String(profile.alternate_mobile||'').replace(/\D/g,'').slice(-10);
+    if(!/^[6-9][0-9]{9}$/.test(mobile))fail('Valid primary WhatsApp mobile is required.');
+    if(alt && !/^[6-9][0-9]{9}$/.test(alt))fail('Alternate mobile is invalid.');
+    const pan=String(profile.pan||'').trim().toUpperCase();
+    if(!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan))fail('Valid PAN is required.');
+    const owner=String(profile.owner_business_name||'').trim();
+    const baseLocation=String(profile.base_location||'').trim();
+    const address=String(profile.address||'').trim();
+    if(!owner||!baseLocation||!address)fail('Business name, base location and address are required.');
+    const email=String(profile.email||'').trim().toLowerCase()||null;
+    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))fail('Email is invalid.');
+    const payoutMode=String(payout.payout_mode||'').trim();
+    if(!['upi','bank','bank_upi'].includes(payoutMode))fail('Payout method is required.');
+    const upi=String(payout.upi_id||'').trim()||null;
+    const holder=String(payout.account_holder_name||'').trim()||null;
+    const bank=String(payout.bank_name||'').trim()||null;
+    const account=String(payout.account_number||'').trim()||null;
+    const ifsc=String(payout.ifsc||'').trim().toUpperCase()||null;
+    if((payoutMode==='upi'||payoutMode==='bank_upi')&&!upi)fail('UPI ID is required.');
+    if((payoutMode==='bank'||payoutMode==='bank_upi')&&(!holder||!account||!ifsc))fail('Bank account holder, account number and IFSC are required.');
+    if(!vehicles.length)fail('At least one vehicle is required.');
+    const currentYear=new Date().getFullYear();
+    const cleanedVehicles=vehicles.map((v,i)=>{
+      const vehicleNumber=String(v.vehicle_number||'').trim().toUpperCase().replace(/\s+/g,'');
+      const year=Number(v.manufacturing_year), seating=Number(v.seating);
+      if(!/^[A-Z0-9-]{6,20}$/.test(vehicleNumber))fail('Vehicle '+(i+1)+' number is invalid.');
+      if(!Number.isInteger(year)||year<currentYear-4||year>currentYear)fail('Vehicle '+(i+1)+' manufacturing year must be within the last 4 years.');
+      if(!Number.isInteger(seating)||seating<2||seating>20)fail('Vehicle '+(i+1)+' seating is invalid.');
+      return {
+        id:String(v.id||'').trim(),
+        vehicle_number:vehicleNumber,
+        make_model:String(v.make_model||'').trim(),
+        category:String(v.category||'').trim(),
+        manufacturing_year:year,
+        fuel:String(v.fuel||'').trim(),
+        seating,
+        commercial_permit_type:String(v.commercial_permit_type||'').trim(),
+        rc_number:vehicleNumber,
+        insurance_policy_number:String(v.insurance_policy_number||'').trim(),
+        insurance_expiry:v.insurance_expiry||null,
+        puc_number:String(v.puc_number||'').trim(),
+        puc_expiry:v.puc_expiry||null,
+        permit_fitness_number:String(v.permit_fitness_number||'').trim()||null,
+        permit_fitness_expiry:v.permit_fitness_expiry||null
+      };
+    });
+    await db('cwd_vendors?id=eq.'+encodeURIComponent(vendorId),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({
+      vendor_code:'CWD'+mobile,owner_business_name:owner,primary_whatsapp:mobile,alternate_mobile:alt||null,email,base_location:baseLocation,address,pan,updated_at:new Date().toISOString()
+    })});
+    await db('cwd_vendor_payout_accounts?vendor_id=eq.'+encodeURIComponent(vendorId),{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({
+      vendor_id:vendorId,payout_mode:payoutMode,account_holder_name:holder,bank_name:bank,account_number:account,ifsc,upi_id:upi
+    })});
+    const existing=await db('cwd_vendor_vehicles?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id');
+    const keepIds=new Set(cleanedVehicles.filter(v=>v.id).map(v=>v.id));
+    for(const old of existing||[]){
+      if(!keepIds.has(old.id))await db('cwd_vendor_vehicles?id=eq.'+old.id,{method:'DELETE',headers:{Prefer:'return=minimal'}});
+    }
+    for(const v of cleanedVehicles){
+      const payload={...v,vendor_id:vendorId};delete payload.id;
+      if(v.id)await db('cwd_vendor_vehicles?id=eq.'+encodeURIComponent(v.id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify(payload)});
+      else await db('cwd_vendor_vehicles',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(payload)});
+    }
+    return json({success:true});
+  }
   if(action==='set_vendor_status'){
     if(!['active','suspended','rejected','pending_review'].includes(body.status))fail('Invalid vendor status.');
     if(!body.vendor_id)fail('Vendor is required.');

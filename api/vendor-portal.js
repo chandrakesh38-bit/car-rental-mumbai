@@ -12,8 +12,47 @@ const BUCKET='cwd-vendor-trip-photos';
 async function byOffer(raw){const h=await hashToken(raw),r=await db('cwd_vendor_offers?offer_token_hash=eq.'+h+'&select=*&limit=1');return r?.[0]||null}
 async function byAlloc(raw){const h=await hashToken(raw),r=await db('cwd_vendor_allocations?allocation_token_hash=eq.'+h+'&select=*&limit=1');return r?.[0]||null}
 async function booking(id){return (await db('inquiries?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'))?.[0]||null}
+
+function parseCwdDateText(value){
+ const raw=String(value||'').trim().replace(/(\d{1,2})(st|nd|rd|th)/i,'$1');
+ const m=raw.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4}),\s*(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+ if(!m)return null;
+ const months={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+ const month=months[m[2].toLowerCase()];if(!month)return null;
+ let hour=Number(m[4])%12;if(String(m[6]).toUpperCase()==='PM')hour+=12;
+ const iso=`${m[3]}-${String(month).padStart(2,'0')}-${String(Number(m[1])).padStart(2,'0')}T${String(hour).padStart(2,'0')}:${m[5]}:00+05:30`;
+ const d=new Date(iso);return Number.isFinite(d.getTime())?d:null;
+}
+function bookingSchedule(b){
+ const directStart=b?.pickup_date||b?.trip_date||b?.start_date||null;
+ const directEnd=b?.final_drop_date||b?.return_date||b?.end_date||null;
+ let start=directStart?new Date(directStart):null,end=directEnd?new Date(directEnd):null;
+ if(start&&!Number.isFinite(start.getTime()))start=null;
+ if(end&&!Number.isFinite(end.getTime()))end=null;
+ const text=String(b?.booking_details||'');
+ if(!start){
+   const out=text.match(/📅\s*Start:\s*([^\n]+)/i)?.[1];
+   const generic=text.match(/📅\s*([^\n]+)/)?.[1];
+   const localStart=generic?.split(/\s+[–-]\s+/)?.[0];
+   start=parseCwdDateText(out||localStart||'');
+ }
+ if(!end){
+   const outEnd=text.match(/📅\s*Final Drop:\s*([^\n]+)/i)?.[1];
+   const generic=text.match(/📅\s*([^\n]+)/)?.[1];
+   const localEnd=generic?.split(/\s+[–-]\s+/)?.[1];
+   end=parseCwdDateText(outEnd||localEnd||'');
+ }
+ return {start,end};
+}
+function formatIndiaDateTime(d){
+ if(!d||!Number.isFinite(d.getTime()))return '';
+ return new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true}).format(d);
+}
 async function upload(file,path){if(!file||typeof file.arrayBuffer!=='function')fail('Odometer photo is required.');if(file.size<=0||file.size>5242880)fail('Photo must be under 5 MB.');if(!['image/jpeg','image/png','image/webp'].includes(file.type))fail('Use JPG, PNG or WEBP photo.');const r=await fetch(base()+'/storage/v1/object/'+BUCKET+'/'+path,{method:'POST',headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':file.type,'x-upsert':'false'},body:await file.arrayBuffer()});if(!r.ok)fail('Photo upload failed.',503);return path}
-function piiBooking(b){return {booking_id:b.booking_id,customer_name:b.customer_name,customer_mobile:b.customer_phone,exact_pickup:b.pickup_location||b.route||'',exact_drop:b.destination||b.route||'',route:b.route||'',pickup_date_time:b.pickup_date||b.trip_date||b.start_date||'',final_drop_date_time:b.final_drop_date||b.return_date||b.end_date||'',trip_type:b.trip_type||'',vehicle:b.car_name||''}}
+function piiBooking(b){
+ const schedule=bookingSchedule(b);
+ return {booking_id:b.booking_id,customer_name:b.customer_name,customer_mobile:b.customer_phone,exact_pickup:b.pickup_location||b.route||'',exact_drop:b.destination||b.route||'',route:b.route||'',pickup_date_time:formatIndiaDateTime(schedule.start),final_drop_date_time:formatIndiaDateTime(schedule.end),trip_type:b.trip_type||'',vehicle:b.car_name||''}
+}
 async function handler(request){
  try{
   const u=new URL(request.url);
@@ -30,6 +69,13 @@ async function handler(request){
     if(action==='start'){
       if(t?.started_at)fail('Trip has already been started.',409);
       if(!a.vehicle_number||!a.driver_name||!a.driver_mobile)fail('Enter vehicle and driver details before starting trip.');
+      const b=await booking(a.booking_id);
+      const schedule=bookingSchedule(b);
+      if(!schedule.start)fail('Trip start time is missing in this booking. Please contact CWD before starting the trip.',409);
+      const now=Date.now(),windowOpens=schedule.start.getTime()-(3*60*60*1000);
+      if(now<windowOpens){
+        fail('Trip Start is locked. You can start this trip only within 3 hours of pickup time ('+formatIndiaDateTime(schedule.start)+').',409);
+      }
       const km=n(f.get('odometer'),-1);if(km<0)fail('Starting odometer is required.');
       const path=a.booking_id+'/start-'+crypto.randomUUID();await upload(f.get('photo'),path);
       await db('cwd_vendor_trip_events',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({booking_id:a.booking_id,starting_odometer:km,starting_photo_path:path,started_at:new Date().toISOString(),review_status:'not_submitted'})});

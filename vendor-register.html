@@ -224,13 +224,12 @@
     box.innerHTML='<div class="vehicle-head"><h3>Vehicle '+vehicleCount+'</h3><button class="remove" type="button">Remove</button></div>'+
       '<div class="grid">'+
       field('Vehicle number *','vehicle_number','text','maxlength="30" placeholder="e.g. MH01AB1234" required')+
-      field('Make / model *','make_model','text','maxlength="160" placeholder="e.g. Toyota Innova" required')+
+      '<div><label>Make / model *</label><select data-field="make_model" class="make-model-select" required><option value="">Select make / model</option><option>Maruti Suzuki Dzire</option><option>Hyundai Aura</option><option>Maruti Suzuki Ertiga</option><option>Toyota Rumion</option><option>Kia Carens</option><option>Toyota Innova Crysta</option><option>Toyota Innova Hycross</option><option>Maruti Suzuki Ciaz</option><option>Honda City</option><option>Hyundai Verna</option><option>Toyota Etios</option><option>Tempo Traveller</option><option value="Other">Other</option></select><input class="other-model" maxlength="160" placeholder="Enter make / model" style="display:none;margin-top:8px"></div>'+
       '<div><label>Category *</label><select data-field="category" required><option value="">Select</option><option>Hatchback</option><option>Sedan</option><option>SUV</option><option>MUV</option><option>Premium Sedan</option><option>Premium SUV</option><option>Tempo Traveller</option><option>Other</option></select></div>'+
-      '<div><label>Manufacturing year *</label><select data-field="manufacturing_year" required><option value="">Select year</option>'+Array.from({length:(new Date().getFullYear()+1)-2004},(_,i)=>{const y=new Date().getFullYear()+1-i;return '<option value="'+y+'">'+y+'</option>'}).join('')+'</select></div>'+
+      '<div><label>Manufacturing year *</label><select data-field="manufacturing_year" required><option value="">Select year</option>'+Array.from({length:5},(_,i)=>{const y=new Date().getFullYear()-i;return '<option value="'+y+'">'+y+'</option>'}).join('')+'</select><div class="hint">Only vehicles up to 4 years old are accepted.</div></div>'+
       '<div><label>Fuel *</label><select data-field="fuel" required><option value="">Select</option><option>Petrol</option><option>Diesel</option><option>CNG</option><option>Petrol+CNG</option><option>Electric</option><option>Hybrid</option><option>Other</option></select></div>'+
       '<div><label>Seating capacity *</label><select data-field="seating" required><option value="">Select</option><option value="5">4+1</option><option value="7">6+1</option><option value="8">7+1</option><option value="13">12+1</option><option value="18">17+1</option></select></div>'+
       '<div><label>Permit type *</label><select data-field="commercial_permit_type" required><option value="">Select permit type</option><option value="Tourist Permit / T-Permit">Tourist Permit / T-Permit</option><option value="Contract Carriage">Contract Carriage</option><option value="All India Tourist Permit">All India Tourist Permit</option><option value="Local Commercial Permit">Local Commercial Permit</option><option value="Other">Other</option></select></div>'+
-      field('RC number *','rc_number','text','maxlength="80" placeholder="e.g. MH01AB1234" required')+
       field('Insurance policy number *','insurance_policy_number','text','maxlength="120" placeholder="Policy number" required')+
       field('Insurance expiry','insurance_expiry','date','')+
       field('PUC number *','puc_number','text','maxlength="100" placeholder="PUC number" required')+
@@ -244,6 +243,14 @@
       renumberVehicles();
     };
     vehicles.appendChild(box);
+    const modelSelect=box.querySelector('.make-model-select');
+    const otherModel=box.querySelector('.other-model');
+    modelSelect.addEventListener('change',function(){
+      const isOther=this.value==='Other';
+      otherModel.style.display=isOther?'block':'none';
+      otherModel.required=isOther;
+      if(!isOther)otherModel.value='';
+    });
     if(values){
       Object.entries(values).forEach(function([key,val]){
         const el=box.querySelector('[data-field="'+key+'"]');
@@ -328,11 +335,22 @@
 
     const fd=new FormData(form);
     const vehicleRows=[];
-    vehicles.querySelectorAll('.vehicle').forEach(function(box){
-      const row={};
-      box.querySelectorAll('[data-field]').forEach(function(el){row[el.dataset.field]=el.value.trim();});
-      vehicleRows.push(row);
-    });
+    try{
+      vehicles.querySelectorAll('.vehicle').forEach(function(box){
+        const row={};
+        box.querySelectorAll('[data-field]').forEach(function(el){row[el.dataset.field]=el.value.trim();});
+        if(row.make_model==='Other'){
+          const custom=box.querySelector('.other-model')?.value.trim()||'';
+          if(!custom)throw new Error('Please enter the vehicle make / model.');
+          row.make_model=custom;
+        }
+        row.rc_number=row.vehicle_number;
+        vehicleRows.push(row);
+      });
+    }catch(err){
+      alert(err.message);
+      return;
+    }
 
     const payload={
       owner_business_name:fd.get('owner_business_name'),

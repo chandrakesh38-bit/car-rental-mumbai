@@ -10,7 +10,7 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
             extraDeliveryChargePerKm: 25,
             freeThresholdKm: 25,
             driverNightAllowance: 500,
-            minimumOutstationKmPerDay: 300,
+            minimumOutstationKmPerDay: 240,
         };
 
         function pricingRuleKey(name) {
@@ -447,7 +447,7 @@ let mumbaiMetroLocations = [
         let currentAirportType = 'drop';
         let currentOutstationJourneyType = '';
         const OUTSTATION_BASE_ADDRESS = 'Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai, Maharashtra 400079';
-        const OUTSTATION_DRIVER_ALLOWANCE_PER_DAY = 500;
+        const OUTSTATION_DRIVER_ALLOWANCE_PER_DAY = 600;
         let wdOutstationKm = 0;
         let wdOutstationDays = 1;
         let wdOutstationRouteQuote = null;
@@ -1247,11 +1247,11 @@ function onPickupDateChange() {
             const hour = to24Hour(hourValue, ampmValue);
             const minute = Number(minuteValue) || 0;
             const totalMinutes = hour * 60 + minute;
-            // Night charge applies from 11:00 PM through 4:00 AM.
-            if (!(totalMinutes >= 23 * 60 || totalMinutes <= 4 * 60)) return null;
+            // Night charge applies from 10:00 PM through 6:00 AM.
+            if (!(totalMinutes >= 22 * 60 || totalMinutes <= 6 * 60)) return null;
             const date = new Date(dateValue + 'T12:00:00');
             if (!Number.isFinite(date.getTime())) return null;
-            if (totalMinutes <= 5 * 60) date.setDate(date.getDate() - 1);
+            if (totalMinutes <= 6 * 60) date.setDate(date.getDate() - 1);
             return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
         }
 
@@ -1300,8 +1300,8 @@ function onPickupDateChange() {
             return nights.size;
         }
 
-        function nightRateForCar(car) {
-            return /hatchback|sedan/i.test(String(car?.category || '')) ? 400 : 600;
+        function nightRateForCar() {
+            return 400;
         }
 
         function currentDriverNightCharge(car) {
@@ -1958,7 +1958,7 @@ function onPickupDateChange() {
                 };
                 dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nFinal Drop: ${formatReviewTime('wd-out-r')}`;
                 const includedKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                pkgStr = `${wdOutstationDays}-Day Dedicated Cab Package · ${includedKm.toLocaleString('en-IN')} KM included (300 KM/day)\nCar + Fuel + Driver Allowance included · Dedicated car & driver for your complete trip`;
+                pkgStr = `${wdOutstationDays}-Day Dedicated Cab Package · ${includedKm.toLocaleString('en-IN')} KM included (240 KM/day)\nCar + Fuel + Driver Allowance included · Dedicated car & driver for your complete trip`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
                 destLoc = document.getElementById('wd-airport-terminal').value.toUpperCase() + ' Airport';
@@ -2529,7 +2529,7 @@ async function handleBookingSubmit(e) {
 ⏱ ${wdOutstationDays} Day${wdOutstationDays > 1 ? 's' : ''} | ${includedKm.toLocaleString('en-IN')} km included
 ${currentOutstationJourneyType === 'one-way' ? '↩️ One-way fare includes the vehicle’s empty return distance; driver allowance applies to trip days only.\n' : ''}🗺 Route distance: ${wdOutstationRouteQuote?.distanceKmExact || wdOutstationKm} km
 💰 ₹${extraKmRate}/KM | Driver ₹${driverAllowance}/Day
-🌙 Night: ₹400 Hatchback/Sedan · ₹600 SUV/MUV when 11 PM–4 AM applies
+🌙 Night: ₹400 when vehicle is actually driven between 10 PM–6 AM
 
 ✓ Incl: Fuel, Driver
 ✕ Excl: Toll, Parking, State Tax (as per actual)

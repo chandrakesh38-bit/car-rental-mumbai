@@ -520,6 +520,29 @@ async function handler(request){
     })});
     return json({success:true,customer_ledger:led.customer,vendor_ledger:led.vendor});
   }
+  if(action==='refresh_invoice_totals'){
+    const [cl,a,co]=await Promise.all([
+      db('cwd_customer_billing_ledger?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),
+      db('cwd_vendor_allocations?booking_id=eq.'+encodeURIComponent(id)+'&select=offer_id&limit=1'),
+      db('cwd_booking_commercial_overrides?booking_id=eq.'+encodeURIComponent(id)+'&select=negotiated_customer_fare&limit=1')
+    ]);
+    const ledger=cl?.[0];if(!ledger)fail('Approve trip review first.');
+    const offer=a?.[0]?(await db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a[0].offer_id)+'&select=pricing_snapshot&limit=1'))?.[0]:null;
+    const ps=offer?.pricing_snapshot||{};
+    const bookingFare=co?.[0]?.negotiated_customer_fare!==null&&co?.[0]?.negotiated_customer_fare!==undefined?n(co[0].negotiated_customer_fare):n(b.original_fare||b.fare_amount||b.total_fare);
+    const trip=String(b.trip_type||'').toLowerCase();
+    const pack=String(ps.local_package||'8hr_80km');
+    const includedKm=trip.includes('local')?({'8hr_80km':80,'10hr_100km':100,'12hr_120km':120}[pack]||80):n(b.included_km||ps.estimated_km||240);
+    const extraKm=Math.max(0,n(ledger.billable_km)-includedKm);
+    const extraKmCharge=extraKm*n(ledger.customer_km_rate);
+    const extraHours=trip.includes('local')?n(ps.extra_hours):0;
+    const extraHourCharge=extraHours*n(ps.customer_local_extra_hour);
+    const total=bookingFare+extraKmCharge+extraHourCharge+n(ledger.customer_night)+n(ledger.toll)+n(ledger.parking)+n(ledger.state_tax)+n(ledger.approved_other);
+    const balance=Math.max(0,total-n(ledger.customer_advance));
+    await db('cwd_customer_billing_ledger?booking_id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({customer_total:total,customer_balance:balance,updated_at:new Date().toISOString()})});
+    await db('inquiries?booking_id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({extra_km:extraKm,extra_km_rate:n(ledger.customer_km_rate),extra_km_charge:extraKmCharge,night_charge:n(ledger.customer_night),toll_charge:n(ledger.toll),parking_charge:n(ledger.parking),state_tax_charge:n(ledger.state_tax),other_charge:n(ledger.approved_other),total_fare:total,final_charges_updated_at:new Date().toISOString(),updated_at:new Date().toISOString()})});
+    return json({success:true,total,balance,booking_fare:bookingFare});
+  }
   if(action==='generate_invoice'){
     const [cl,a,co]=await Promise.all([
       db('cwd_customer_billing_ledger?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),

@@ -547,6 +547,16 @@
                 </div>
             </div>
 
+            <div id="vendor-edit-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[90] hidden items-center justify-center p-3 sm:p-5">
+                <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl max-h-[94vh] overflow-y-auto">
+                    <div class="sticky top-0 bg-white border-b px-5 sm:px-6 py-4 flex justify-between items-center z-10">
+                        <div><h3 class="text-lg font-black text-slate-900">Edit Vendor Details</h3><p class="text-xs text-slate-500 mt-0.5">Use corrected details received from the vendor.</p></div>
+                        <button type="button" onclick="closeVendorEditModal()" class="text-slate-400 hover:text-slate-800 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div id="vendor-edit-body" class="p-5 sm:p-6"></div>
+                </div>
+            </div>
+
             <div id="vendor-change-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4">
                 <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl">
                     <div class="border-b px-5 py-4 flex justify-between items-center">
@@ -2554,11 +2564,12 @@ async function deleteWithDriverVehicle(id) {
             document.getElementById('vendor-detail-body').innerHTML=
               '<div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-5"><div><div class="flex items-center gap-2"><h4 class="text-xl font-black text-slate-900">'+escapeAdminHtml(v.owner_business_name||'')+'</h4>'+vendorStatusBadge(v.status)+'</div><p class="text-xs text-slate-500 mt-1">'+escapeAdminHtml(v.vendor_code||'')+' · Registered '+escapeAdminHtml(v.created_at?new Date(v.created_at).toLocaleString('en-IN'):'—')+'</p></div><div class="flex flex-wrap gap-2">'+
               (v.status!=='active'?'<button class="bg-emerald-600 text-white rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'active\')">Approve Vendor</button>':'<button class="bg-rose-50 text-rose-700 rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'suspended\')">Suspend</button>')+
+              '<button class="bg-indigo-100 text-indigo-800 rounded-xl px-4 py-2.5 text-xs font-black" onclick="openVendorEditModal()">Edit Details</button>'+
               '<button class="bg-amber-100 text-amber-800 rounded-xl px-4 py-2.5 text-xs font-black" onclick="openVendorChangeModal()">Request Changes</button>'+
               (v.status!=='rejected'?'<button class="bg-rose-600 text-white rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'rejected\')">Reject</button>':'')+
               '</div></div>'+
               '<div class="space-y-5"><section><h5 class="font-black text-slate-900 mb-3">Business & Contact</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">'+detailRow('Owner / Business',v.owner_business_name)+detailRow('Primary WhatsApp',v.primary_whatsapp)+detailRow('Alternate Mobile',v.alternate_mobile)+detailRow('Email',v.email)+detailRow('Base Location',v.base_location)+detailRow('PAN',v.pan)+'<div class="sm:col-span-2 lg:col-span-3">'+detailRow('Address',v.address)+'</div></div></section>'+
-              '<section><h5 class="font-black text-slate-900 mb-3">Payout Details</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">'+detailRow('Payout Mode',String(p.payout_mode||'').replaceAll('_',' / '))+detailRow('UPI ID',p.upi_id)+detailRow('Account Holder',p.account_holder_name)+detailRow('Bank',p.bank_name)+detailRow('Account Number',maskAccount(p.account_number))+detailRow('IFSC',p.ifsc)+'</div></section>'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Payout Details</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">'+detailRow('Payout Mode',({upi:'UPI',bank:'Bank Account',bank_upi:'Bank + UPI'}[p.payout_mode]||p.payout_mode||'—'))+detailRow('UPI ID',p.upi_id)+detailRow('Account Holder',p.account_holder_name)+detailRow('Bank',p.bank_name)+detailRow('Account Number',maskAccount(p.account_number))+detailRow('IFSC',p.ifsc)+'</div></section>'+
               '<section><h5 class="font-black text-slate-900 mb-3">Vehicles</h5><div class="space-y-3">'+vehicleCards+'</div></section>'+
               '<section><h5 class="font-black text-slate-900 mb-3">Consent & Terms</h5><div class="grid sm:grid-cols-2 gap-2">'+detailRow('Terms Version',lastTerms?.terms_version)+detailRow('Accepted At',lastTerms?.accepted_at?new Date(lastTerms.accepted_at).toLocaleString('en-IN'):'—')+'</div></section></div>';
         }
@@ -2571,6 +2582,112 @@ async function deleteWithDriverVehicle(id) {
                 await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'set_vendor_status',vendor_id:v.id,status})});
                 await loadVendorControlCenter();
                 await openVendorDetail(v.id);
+            }catch(e){alert(e.message)}
+        }
+
+        function editField(label,id,value,type='text',extra=''){
+            return '<div><label class="block text-[10px] font-black text-slate-600 mb-1">'+escapeAdminHtml(label)+'</label><input id="'+id+'" type="'+type+'" value="'+escapeAdminHtml(value??'')+'" '+extra+' class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs"></div>';
+        }
+
+        function editSelect(label,id,value,options){
+            return '<div><label class="block text-[10px] font-black text-slate-600 mb-1">'+escapeAdminHtml(label)+'</label><select id="'+id+'" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs">'+options.map(o=>'<option value="'+escapeAdminHtml(o[0])+'" '+(String(o[0])===String(value)?'selected':'')+'>'+escapeAdminHtml(o[1])+'</option>').join('')+'</select></div>';
+        }
+
+        function openVendorEditModal(){
+            const d=cwdSelectedVendorDetail;if(!d?.vendor)return;
+            const v=d.vendor,p=d.payout||{},vehicles=d.vehicles||[];
+            const body=document.getElementById('vendor-edit-body');
+            const currentYear=new Date().getFullYear();
+            const years=Array.from({length:5},(_,i)=>[String(currentYear-i),String(currentYear-i)]);
+            const models=['Maruti Suzuki Dzire','Hyundai Aura','Maruti Suzuki Ertiga','Toyota Rumion','Kia Carens','Toyota Innova Crysta','Toyota Innova Hycross','Maruti Suzuki Ciaz','Honda City','Hyundai Verna','Toyota Etios','Tempo Traveller'];
+            const vehicleHtml=vehicles.map((x,i)=>'<div class="vendor-edit-vehicle border border-slate-200 rounded-2xl p-4" data-id="'+escapeAdminHtml(x.id)+'"><div class="flex justify-between items-center gap-2 mb-3"><h5 class="font-black text-slate-900">Vehicle '+(i+1)+'</h5></div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">'+
+              editField('Vehicle Number','ev-num-'+i,x.vehicle_number,'text','maxlength="20" style="text-transform:uppercase"')+
+              editSelect('Make / Model','ev-model-'+i,x.make_model,[['','Select make / model'],...models.map(m=>[m,m]),[x.make_model,x.make_model]].filter((o,idx,arr)=>o[0]===''||arr.findIndex(z=>z[0]===o[0])===idx))+
+              editSelect('Category','ev-cat-'+i,x.category,[['','Select'],['Hatchback','Hatchback'],['Sedan','Sedan'],['SUV','SUV'],['MUV','MUV'],['Premium Sedan','Premium Sedan'],['Premium SUV','Premium SUV'],['Tempo Traveller','Tempo Traveller'],['Other','Other']])+
+              editSelect('Manufacturing Year','ev-year-'+i,x.manufacturing_year,[['','Select year'],...years])+
+              editSelect('Fuel','ev-fuel-'+i,x.fuel,[['','Select'],['Petrol','Petrol'],['Diesel','Diesel'],['CNG','CNG'],['Petrol+CNG','Petrol+CNG'],['Electric','Electric'],['Hybrid','Hybrid'],['Other','Other']])+
+              editSelect('Seating','ev-seat-'+i,x.seating,[['','Select'],['5','4+1'],['7','6+1'],['8','7+1'],['13','12+1'],['18','17+1']])+
+              editSelect('Permit Type','ev-permit-'+i,x.commercial_permit_type,[['','Select'],['Tourist Permit / T-Permit','Tourist Permit / T-Permit'],['Contract Carriage','Contract Carriage'],['All India Tourist Permit','All India Tourist Permit'],['Local Commercial Permit','Local Commercial Permit'],['Other','Other']])+
+              editField('Insurance Policy','ev-ins-'+i,x.insurance_policy_number)+
+              editField('Insurance Expiry','ev-insexp-'+i,x.insurance_expiry||'','date')+
+              editField('PUC Number','ev-puc-'+i,x.puc_number)+
+              editField('PUC Expiry','ev-pucexp-'+i,x.puc_expiry||'','date')+
+              editField('Permit / Fitness No.','ev-fit-'+i,x.permit_fitness_number||'')+
+              editField('Permit / Fitness Expiry','ev-fitexp-'+i,x.permit_fitness_expiry||'','date')+
+              '</div></div>').join('');
+
+            body.innerHTML='<div class="space-y-5">'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Business & Contact</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">'+
+              editField('Owner / Business Name','edit-owner',v.owner_business_name)+
+              editField('Primary WhatsApp','edit-primary',v.primary_whatsapp,'tel','maxlength="10"')+
+              editField('Alternate Mobile','edit-alt',v.alternate_mobile||'','tel','maxlength="10"')+
+              editField('Email','edit-email',v.email||'','email')+
+              editField('Base Location','edit-base',v.base_location)+
+              editField('PAN','edit-pan',v.pan,'text','maxlength="10" style="text-transform:uppercase"')+
+              '<div class="sm:col-span-2 lg:col-span-3"><label class="block text-[10px] font-black text-slate-600 mb-1">Address</label><textarea id="edit-address" rows="3" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs">'+escapeAdminHtml(v.address||'')+'</textarea></div></div></section>'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Payout Details</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">'+
+              editSelect('Payout Mode','edit-payout-mode',p.payout_mode,[['upi','UPI'],['bank','Bank Account'],['bank_upi','Bank + UPI']])+
+              editField('UPI ID','edit-upi',p.upi_id||'')+
+              editField('Account Holder','edit-holder',p.account_holder_name||'')+
+              editField('Bank Name','edit-bank',p.bank_name||'')+
+              editField('Account Number','edit-account',p.account_number||'')+
+              editField('IFSC','edit-ifsc',p.ifsc||'','text','style="text-transform:uppercase"')+
+              '</div></section>'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Vehicles</h5><div id="vendor-edit-vehicles" class="space-y-3">'+vehicleHtml+'</div></section>'+
+              '<div class="flex justify-end gap-2 pt-2"><button type="button" onclick="closeVendorEditModal()" class="bg-white border rounded-xl px-4 py-2.5 text-xs font-bold">Cancel</button><button type="button" onclick="saveVendorEdits()" class="bg-indigo-950 text-white rounded-xl px-5 py-2.5 text-xs font-black">Save Corrected Details</button></div>'+
+              '</div>';
+            const m=document.getElementById('vendor-edit-modal');m.classList.remove('hidden');m.classList.add('flex');
+        }
+
+        function closeVendorEditModal(){const m=document.getElementById('vendor-edit-modal');m.classList.add('hidden');m.classList.remove('flex')}
+
+        async function saveVendorEdits(){
+            const d=cwdSelectedVendorDetail;if(!d?.vendor)return;
+            const vehicles=[...document.querySelectorAll('.vendor-edit-vehicle')].map((box,i)=>({
+              id:box.dataset.id,
+              vehicle_number:document.getElementById('ev-num-'+i).value.trim().toUpperCase().replace(/\s+/g,''),
+              make_model:document.getElementById('ev-model-'+i).value,
+              category:document.getElementById('ev-cat-'+i).value,
+              manufacturing_year:Number(document.getElementById('ev-year-'+i).value),
+              fuel:document.getElementById('ev-fuel-'+i).value,
+              seating:Number(document.getElementById('ev-seat-'+i).value),
+              commercial_permit_type:document.getElementById('ev-permit-'+i).value,
+              insurance_policy_number:document.getElementById('ev-ins-'+i).value.trim(),
+              insurance_expiry:document.getElementById('ev-insexp-'+i).value||null,
+              puc_number:document.getElementById('ev-puc-'+i).value.trim(),
+              puc_expiry:document.getElementById('ev-pucexp-'+i).value||null,
+              permit_fitness_number:document.getElementById('ev-fit-'+i).value.trim()||null,
+              permit_fitness_expiry:document.getElementById('ev-fitexp-'+i).value||null
+            }));
+            const payload={
+              action:'update_vendor_profile',
+              vendor_id:d.vendor.id,
+              profile:{
+                owner_business_name:document.getElementById('edit-owner').value.trim(),
+                primary_whatsapp:document.getElementById('edit-primary').value.trim(),
+                alternate_mobile:document.getElementById('edit-alt').value.trim(),
+                email:document.getElementById('edit-email').value.trim(),
+                base_location:document.getElementById('edit-base').value.trim(),
+                pan:document.getElementById('edit-pan').value.trim().toUpperCase(),
+                address:document.getElementById('edit-address').value.trim()
+              },
+              payout:{
+                payout_mode:document.getElementById('edit-payout-mode').value,
+                upi_id:document.getElementById('edit-upi').value.trim(),
+                account_holder_name:document.getElementById('edit-holder').value.trim(),
+                bank_name:document.getElementById('edit-bank').value.trim(),
+                account_number:document.getElementById('edit-account').value.trim(),
+                ifsc:document.getElementById('edit-ifsc').value.trim().toUpperCase()
+              },
+              vehicles
+            };
+            if(!confirm('Save these corrected vendor details?'))return;
+            try{
+              await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify(payload)});
+              closeVendorEditModal();
+              await loadVendorControlCenter();
+              await openVendorDetail(d.vendor.id);
+              alert('Vendor details updated successfully.');
             }catch(e){alert(e.message)}
         }
 

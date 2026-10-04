@@ -255,6 +255,8 @@
                             <th class="py-2.5 px-3">Vehicle</th>
                             <th class="py-2.5 px-3">Outstation (/KM)</th>
                             <th class="py-2.5 px-3">Local 8H/80KM</th>
+                            <th class="py-2.5 px-3">Local 10H/100KM</th>
+                            <th class="py-2.5 px-3">Local 12H/120KM</th>
                             <th class="py-2.5 px-3">Extra Hr</th>
                             <th class="py-2.5 px-3">Extra KM</th>
                             <th class="py-2.5 px-3">Allowance</th>
@@ -2407,6 +2409,8 @@ async function loadWithDriverRates() {
             <td class="py-2 px-3 font-semibold text-slate-800"><input id="wd_name_${car.id}" value="${escapeAdminHtml(car.full_name || '')}" class="w-36 border rounded px-1 py-0.5 font-bold"><input id="wd_segment_${car.id}" value="${escapeAdminHtml(car.segment || '')}" class="w-36 border rounded px-1 py-0.5 text-[10px] text-slate-500 block mt-1"></td>
             <td class="py-2 px-3">₹<input type="number" id="wd_outstation_${car.id}" value="${car.outstation_rate_per_km}" class="w-16 border rounded px-1 py-0.5"></td>
             <td class="py-2 px-3">₹<input type="number" id="wd_local_${car.id}" value="${car.local_pkg_8hr_80km}" class="w-20 border rounded px-1 py-0.5"></td>
+            <td class="py-2 px-3 font-bold text-slate-700">₹${(Number(car.local_pkg_8hr_80km||0)+(Number(car.local_extra_hour_rate||0)*2)).toLocaleString('en-IN')}</td>
+            <td class="py-2 px-3 font-bold text-slate-700">₹${(Number(car.local_pkg_8hr_80km||0)+(Number(car.local_extra_hour_rate||0)*4)).toLocaleString('en-IN')}</td>
             <td class="py-2 px-3">₹<input type="number" id="wd_ehr_${car.id}" value="${car.local_extra_hour_rate}" class="w-16 border rounded px-1 py-0.5"></td>
             <td class="py-2 px-3">₹<input type="number" id="wd_ekm_${car.id}" value="${car.local_extra_km_rate}" class="w-16 border rounded px-1 py-0.5"></td>
             <td class="py-2 px-3">₹<input type="number" id="wd_allowance_${car.id}" value="${car.driver_allowance_per_day}" class="w-16 border rounded px-1 py-0.5"></td>

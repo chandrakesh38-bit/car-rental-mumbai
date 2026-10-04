@@ -33,23 +33,44 @@ function payoutCalc(p){
 }
 function publicBase(request){return new URL(request.url).origin}
 function normVehicleName(v){return String(v||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,' ')}
-async function vendorRateForVehicle(vehicleName){
- const globals=await db('with_driver_rates?select=*&is_active=eq.true&order=display_order.asc,full_name.asc');
- const wanted=normVehicleName(vehicleName);
- let car=(globals||[]).find(x=>normVehicleName(x.full_name)===wanted) || (globals||[]).find(x=>wanted.includes(normVehicleName(x.full_name))||normVehicleName(x.full_name).includes(wanted));
-
- // Customer website intentionally groups Dzire and Aura under one public sedan label.
- // Resolve that public label back to a canonical Global Pricing vehicle for vendor costing.
- if(!car && wanted.includes('sedan') && wanted.includes('dzire') && wanted.includes('aura')){
-   const sedanCandidates=(globals||[]).filter(x=>String(x.segment||'').toLowerCase()==='sedan' && /dzire|aura/i.test(String(x.full_name||'')));
-   const preferred=sedanCandidates.find(x=>/dzire/i.test(String(x.full_name||''))) || sedanCandidates[0];
-   if(preferred)car=preferred;
+function compatibleGlobalCars(globals,bookingVehicle){
+ const wanted=normVehicleName(bookingVehicle);
+ const exact=(globals||[]).filter(x=>normVehicleName(x.full_name)===wanted);
+ if(exact.length)return exact;
+ if(wanted.includes('sedan')&&wanted.includes('dzire')&&wanted.includes('aura')){
+   return (globals||[]).filter(x=>String(x.segment||'').toLowerCase()==='sedan' && /dzire|aura/i.test(String(x.full_name||'')));
  }
-
- if(!car)fail('No matching Global Pricing vehicle found for '+vehicleName+'.',409);
+ return (globals||[]).filter(x=>wanted.includes(normVehicleName(x.full_name))||normVehicleName(x.full_name).includes(wanted));
+}
+async function vendorRateForVehicle(vehicleName,preferredGlobalId=null){
+ const globals=await db('with_driver_rates?select=*&is_active=eq.true&order=display_order.asc,full_name.asc');
+ let candidates=compatibleGlobalCars(globals,vehicleName);
+ if(preferredGlobalId)candidates=candidates.filter(x=>String(x.id)===String(preferredGlobalId));
+ if(!candidates.length)fail('No matching Global Pricing vehicle found for '+vehicleName+'.',409);
+ const car=candidates[0];
  const rate=(await db('cwd_vendor_rate_cards?vehicle_rate_id=eq.'+encodeURIComponent(String(car.id))+'&is_active=eq.true&select=*&limit=1'))?.[0];
  if(!rate)fail('Vendor Rate Card is not configured for '+car.full_name+'. Set the vendor rate first.',409);
- return {car,rate};
+ return {car,rate,candidates};
+}
+async function eligibleVendorVehicles(vendorId,bookingVehicle){
+ const [globals,vendorVehicles]=await Promise.all([
+   db('with_driver_rates?select=*&is_active=eq.true&order=display_order.asc,full_name.asc'),
+   db('cwd_vendor_vehicles?vendor_id=eq.'+encodeURIComponent(vendorId)+'&is_active=eq.true&select=id,make_model,vehicle_number,category&order=created_at.asc')
+ ]);
+ const candidates=compatibleGlobalCars(globals,bookingVehicle);
+ const out=[];
+ for(const car of candidates){
+   const token=normVehicleName(car.full_name);
+   const short=token.replace(/^maruti suzuki /,'').replace(/^hyundai /,'').replace(/^toyota /,'').replace(/^kia /,'').replace(/^honda /,'');
+   const vendorMatch=(vendorVehicles||[]).find(v=>{
+     const vm=normVehicleName(v.make_model);
+     return vm===token||vm.includes(short)||token.includes(vm);
+   });
+   if(!vendorMatch)continue;
+   const rate=(await db('cwd_vendor_rate_cards?vehicle_rate_id=eq.'+encodeURIComponent(String(car.id))+'&is_active=eq.true&select=*&limit=1'))?.[0];
+   if(rate)out.push({global_vehicle:car,vendor_vehicle:vendorMatch,rate});
+ }
+ return out;
 }
 function vendorPayoutFromRate(p,rate){
  const trip=String(p.trip_type||'').toLowerCase(),days=Math.max(1,Math.floor(n(p.duty_days,1))),night=Math.floor(n(p.night_count));
@@ -163,7 +184,14 @@ async function handler(request){
     db('cwd_customer_invoices?booking_id=eq.'+encodeURIComponent(id)+'&select=id,booking_id,payment_url,created_at&limit=1'),
     db('cwd_booking_commercial_overrides?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1')
    ]);
-   const tripRow=trip?.[0]||null;if(tripRow){tripRow.start_photo_url=await signedPhoto(tripRow.starting_photo_path);tripRow.end_photo_url=await signedPhoto(tripRow.closing_photo_path);}return json({success:true,booking:b,vendors:vendors||[],offers:offers||[],allocation:alloc?.[0]||null,trip:tripRow,customer_ledger:customer?.[0]||null,vendor_ledger:vendorSet?.[0]||null,invoice:invoice?.[0]||null,commercial_override:commercialOverride?.[0]||null});
+   const tripRow=trip?.[0]||null;if(tripRow){tripRow.start_photo_url=await signedPhoto(tripRow.starting_photo_path);tripRow.end_photo_url=await signedPhoto(tripRow.closing_photo_path);}
+   const vendor_vehicle_options={};
+   for(const v of vendors||[]){
+     try{
+       vendor_vehicle_options[v.id]=(await eligibleVendorVehicles(v.id,b.vehicle)).map(x=>({global_vehicle_id:String(x.global_vehicle.id),vehicle_name:x.global_vehicle.full_name,vendor_vehicle_number:x.vendor_vehicle.vehicle_number}));
+     }catch{vendor_vehicle_options[v.id]=[]}
+   }
+   return json({success:true,booking:b,vendors:vendors||[],vendor_vehicle_options,offers:offers||[],allocation:alloc?.[0]||null,trip:tripRow,customer_ledger:customer?.[0]||null,vendor_ledger:vendorSet?.[0]||null,invoice:invoice?.[0]||null,commercial_override:commercialOverride?.[0]||null});
   }
   const body=await request.json(),action=String(body.action||''),id=String(body.booking_id||'');
   if(action==='update_customer_fare'){
@@ -338,15 +366,11 @@ async function handler(request){
   if(action==='create_offer'){
     const ids=Array.isArray(body.vendor_ids)?[...new Set(body.vendor_ids.map(String))]:[];if(!ids.length)fail('Select at least one vendor.');
     const p={trip_type:b.trip_type,estimated_km:n(body.estimated_km),duty_days:Math.max(1,Math.floor(n(body.duty_days,1))),night_count:Math.floor(n(body.night_count)),local_package:body.local_package||null,extra_km:n(body.extra_km),extra_hours:n(body.extra_hours)};
-    const vr=await vendorRateForVehicle(b.vehicle);
+    const selectedVehicleByVendor=body.vendor_vehicle_ids&&typeof body.vendor_vehicle_ids==='object'?body.vendor_vehicle_ids:{};
     const vendorRateOverride=body.vendor_rate_per_km_override===null||body.vendor_rate_per_km_override===''?null:n(body.vendor_rate_per_km_override);
     const vendorFinalOverride=body.vendor_final_payout_override===null||body.vendor_final_payout_override===''?null:n(body.vendor_final_payout_override);
     const vendorOverrideReason=String(body.vendor_override_reason||'').trim();
     if((vendorRateOverride!==null||vendorFinalOverride!==null)&&!vendorOverrideReason)fail('Vendor override reason is required.');
-    const rateForOffer={...vr.rate};
-    if(vendorRateOverride!==null)rateForOffer.outstation_rate_per_km=vendorRateOverride;
-    let payout=vendorPayoutFromRate(p,rateForOffer);
-    if(vendorFinalOverride!==null)payout=vendorFinalOverride;
     if(vendorRateOverride!==null||vendorFinalOverride!==null){
       const now=new Date().toISOString();
       await db('cwd_booking_commercial_overrides',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({
@@ -358,8 +382,19 @@ async function handler(request){
       const vendor=(await db('cwd_vendors?id=eq.'+encodeURIComponent(vid)+'&select=id,vendor_code,owner_business_name,primary_whatsapp,status&limit=1'))?.[0];
       if(!vendor)continue;
       if(vendor.status!=='active')fail('Only active vendors can receive booking offers. Approve the vendor first.',409);
+      const eligible=await eligibleVendorVehicles(vid,b.vehicle);
+      if(!eligible.length)fail((vendor.owner_business_name||vendor.vendor_code)+' has no active registered vehicle compatible with '+b.vehicle+'.',409);
+      const preferredId=String(selectedVehicleByVendor[vid]||'');
+      let chosen=preferredId?eligible.find(x=>String(x.global_vehicle.id)===preferredId):null;
+      if(!chosen&&eligible.length===1)chosen=eligible[0];
+      if(!chosen&&eligible.length>1)fail('Choose the exact vehicle model for '+(vendor.owner_business_name||vendor.vendor_code)+' before generating the offer.',409);
+      const vr={car:chosen.global_vehicle,rate:chosen.rate};
+      const rateForOffer={...vr.rate};
+      if(vendorRateOverride!==null)rateForOffer.outstation_rate_per_km=vendorRateOverride;
+      let payout=vendorPayoutFromRate(p,rateForOffer);
+      if(vendorFinalOverride!==null)payout=vendorFinalOverride;
       const raw=token(),h=await hashToken(raw);
-      const rows=await db('cwd_vendor_offers',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({vendor_id:vid,booking_id:id,offer_token_hash:h,status:'offered',trip_type:b.trip_type||'',vehicle_required:b.vehicle||'',route_summary:b.route||'',start_at:iso(b.start_at),final_drop_at:iso(b.final_drop_at),estimated_km:p.estimated_km,duty_days:p.duty_days,night_count:p.night_count,local_package:p.local_package,extra_km:p.extra_km,extra_hours:p.extra_hours,estimated_vendor_payout:payout,pricing_snapshot:{...p,vehicle_rate_id:String(vr.car.id),vehicle_name:vr.car.full_name,customer_km_rate:n(vr.car.outstation_rate_per_km),customer_da:n(vr.car.driver_allowance_per_day),customer_night:n(vr.car.customer_night_charge),customer_local_8h_80km:n(vr.car.local_pkg_8hr_80km),customer_local_10h_100km:n(vr.car.local_pkg_8hr_80km)+n(vr.car.local_extra_hour_rate)*2,customer_local_12h_120km:n(vr.car.local_pkg_8hr_80km)+n(vr.car.local_extra_hour_rate)*4,customer_local_extra_km:n(vr.car.local_extra_km_rate),customer_local_extra_hour:n(vr.car.local_extra_hour_rate),vendor_km_rate:n(rateForOffer.outstation_rate_per_km),vendor_da:n(rateForOffer.driver_allowance_per_day),vendor_night:n(rateForOffer.night_charge),minimum_km_per_day:n(rateForOffer.minimum_outstation_km_per_day),local_8h_80km:n(rateForOffer.local_pkg_8hr_80km),local_10h_100km:n(rateForOffer.local_pkg_10hr_100km),local_12h_120km:n(rateForOffer.local_pkg_12hr_120km),local_extra_km:n(rateForOffer.local_extra_km_rate),local_extra_hour:n(rateForOffer.local_extra_hour_rate),vendor_rate_override:vendorRateOverride,vendor_final_payout_override:vendorFinalOverride,vendor_override_reason:vendorOverrideReason||null},created_by:String(user.email||'')})});
+      const rows=await db('cwd_vendor_offers',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({vendor_id:vid,booking_id:id,offer_token_hash:h,status:'offered',trip_type:b.trip_type||'',vehicle_required:vr.car.full_name||b.vehicle||'',route_summary:b.route||'',start_at:iso(b.start_at),final_drop_at:iso(b.final_drop_at),estimated_km:p.estimated_km,duty_days:p.duty_days,night_count:p.night_count,local_package:p.local_package,extra_km:p.extra_km,extra_hours:p.extra_hours,estimated_vendor_payout:payout,pricing_snapshot:{...p,vehicle_rate_id:String(vr.car.id),vehicle_name:vr.car.full_name,customer_km_rate:n(vr.car.outstation_rate_per_km),customer_da:n(vr.car.driver_allowance_per_day),customer_night:n(vr.car.customer_night_charge),customer_local_8h_80km:n(vr.car.local_pkg_8hr_80km),customer_local_10h_100km:n(vr.car.local_pkg_8hr_80km)+n(vr.car.local_extra_hour_rate)*2,customer_local_12h_120km:n(vr.car.local_pkg_8hr_80km)+n(vr.car.local_extra_hour_rate)*4,customer_local_extra_km:n(vr.car.local_extra_km_rate),customer_local_extra_hour:n(vr.car.local_extra_hour_rate),vendor_km_rate:n(rateForOffer.outstation_rate_per_km),vendor_da:n(rateForOffer.driver_allowance_per_day),vendor_night:n(rateForOffer.night_charge),minimum_km_per_day:n(rateForOffer.minimum_outstation_km_per_day),local_8h_80km:n(rateForOffer.local_pkg_8hr_80km),local_10h_100km:n(rateForOffer.local_pkg_10hr_100km),local_12h_120km:n(rateForOffer.local_pkg_12hr_120km),local_extra_km:n(rateForOffer.local_extra_km_rate),local_extra_hour:n(rateForOffer.local_extra_hour_rate),vendor_rate_override:vendorRateOverride,vendor_final_payout_override:vendorFinalOverride,vendor_override_reason:vendorOverrideReason||null},created_by:String(user.email||'')})});
       created.push({...rows?.[0],vendor_name:vendor.owner_business_name,vendor_code:vendor.vendor_code,vendor_whatsapp:vendor.primary_whatsapp,view_url:publicBase(request)+'/vendor-booking?offer='+raw});
     } return json({success:true,offers:created});
   }

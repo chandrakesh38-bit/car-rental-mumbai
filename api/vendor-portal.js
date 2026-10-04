@@ -73,8 +73,8 @@ async function handler(request){
       const schedule=bookingSchedule(b);
       if(!schedule.start)fail('Trip start time is missing in this booking. Please contact CWD before starting the trip.',409);
       const now=Date.now(),windowOpens=schedule.start.getTime()-(3*60*60*1000);
-      if(now<windowOpens){
-        fail('Trip Start is locked. You can start this trip only within 3 hours of pickup time ('+formatIndiaDateTime(schedule.start)+').',409);
+      if(now<windowOpens && !a.early_start_approved_at){
+        fail('Trip Start is locked. You can start this trip only within 3 hours of pickup time ('+formatIndiaDateTime(schedule.start)+'), unless CWD admin approves an early start.',409);
       }
       const km=n(f.get('odometer'),-1);if(km<0)fail('Starting odometer is required.');
       const path=a.booking_id+'/start-'+crypto.randomUUID();await upload(f.get('photo'),path);
@@ -99,6 +99,8 @@ async function handler(request){
   }
   if(action==='save_driver_vehicle'){
     const a=await byAlloc(body.allocation);if(!a||a.revoked_at)fail('Allocation link is invalid or revoked.',410);
+    const trip=(await db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(a.booking_id)+'&select=ended_at&limit=1'))?.[0];
+    if(trip?.ended_at)fail('Trip is closed. Vehicle and driver details are locked. Contact CWD for any correction.',409);
     const vehicle=String(body.vehicle_number||'').trim().toUpperCase(),name=String(body.driver_name||'').trim(),mobile=String(body.driver_mobile||'').replace(/\D/g,'').slice(-10);
     if(!vehicle||!name||!/^[6-9][0-9]{9}$/.test(mobile))fail('Valid vehicle number, driver name and mobile are required.');
     await db('cwd_vendor_allocations?booking_id=eq.'+encodeURIComponent(a.booking_id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({vehicle_number:vehicle,driver_name:name,driver_mobile:mobile,updated_at:new Date().toISOString()})});return json({success:true});

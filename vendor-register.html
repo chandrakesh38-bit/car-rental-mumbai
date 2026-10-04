@@ -6,27 +6,99 @@
   <title>With Driver Vendor Registration | Car With Driver India</title>
   <meta name="robots" content="noindex,nofollow">
   <style>
-    :root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#0f172a;background:#f8fafc}
-    *{box-sizing:border-box}body{margin:0}.wrap{max-width:760px;margin:auto;padding:18px}.hero{background:#0f172a;color:#fff;border-radius:22px;padding:22px;margin:8px 0 16px}.hero h1{font-size:25px;margin:0 0 6px}.hero p{margin:0;color:#cbd5e1;line-height:1.5}.card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 8px 24px rgba(15,23,42,.05)}h2{font-size:19px;margin:0 0 14px}h3{font-size:16px;margin:12px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}label{font-size:13px;font-weight:700;display:block;margin-bottom:5px}input,select,textarea{width:100%;border:1px solid #cbd5e1;border-radius:12px;padding:12px;font:inherit;background:#fff}textarea{min-height:88px;resize:vertical}.rate{border:1px solid #dbeafe;background:#eff6ff;border-radius:14px;padding:13px;margin:10px 0}.rate strong{display:block;margin-bottom:5px}.rate small{display:block;color:#475569;line-height:1.5}.vehicle{border:1px solid #e2e8f0;border-radius:16px;padding:14px;margin:12px 0;background:#f8fafc}.vehicle-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.remove{border:0;background:#fee2e2;color:#991b1b;border-radius:10px;padding:8px 10px;font-weight:700}.add{width:100%;border:1px dashed #64748b;background:#fff;border-radius:12px;padding:12px;font-weight:800}.terms{max-height:220px;overflow:auto;border:1px solid #e2e8f0;border-radius:12px;padding:12px;background:#f8fafc;font-size:13px;line-height:1.55}.check{display:flex;gap:10px;align-items:flex-start;margin-top:14px}.check input{width:20px;height:20px;margin-top:2px}.submit{width:100%;border:0;border-radius:14px;padding:15px;background:#0f172a;color:#fff;font-size:16px;font-weight:900}.submit:disabled{opacity:.55}.note{font-size:12px;color:#64748b;line-height:1.45}.status{display:none;margin-top:12px;padding:12px;border-radius:12px;font-weight:700}.ok{background:#dcfce7;color:#166534}.err{background:#fee2e2;color:#991b1b}.bank{display:none}@media(max-width:620px){.wrap{padding:12px}.grid{grid-template-columns:1fr}.hero{border-radius:16px}.card{padding:15px}.full{grid-column:auto}}
+    :root{
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:#0f172a;background:#f5f7fb;
+      --navy:#0b1739;--navy2:#122456;--gold:#d7a63a;--muted:#64748b;--line:#e7ebf3;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:
+      radial-gradient(circle at top right,rgba(215,166,58,.10),transparent 26rem),
+      linear-gradient(180deg,#f8fafc 0,#f4f6fb 100%);min-height:100vh}
+    .wrap{max-width:760px;margin:auto;padding:18px 14px 42px}
+    .brandbar{display:flex;align-items:center;justify-content:space-between;margin:5px 2px 14px}
+    .brand{display:flex;align-items:center;gap:11px}
+    .brand img{width:48px;height:48px;border-radius:13px;object-fit:contain;background:white;border:1px solid #e7ebf3;box-shadow:0 6px 18px rgba(15,23,42,.08)}
+    .brand-name{font-size:15px;font-weight:900;letter-spacing:-.01em;color:var(--navy)}
+    .secure{font-size:11px;font-weight:800;color:#166534;background:#ecfdf3;border:1px solid #bbf7d0;border-radius:999px;padding:7px 10px}
+    .hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;border-radius:26px;padding:26px 23px;margin:0 0 18px;box-shadow:0 20px 44px rgba(11,23,57,.20)}
+    .hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-70px;top:-80px;background:rgba(215,166,58,.15)}
+    .eyebrow{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#f6d987;font-weight:900;margin-bottom:8px}
+    .hero h1{font-size:27px;line-height:1.12;letter-spacing:-.03em;margin:0 0 8px;max-width:540px}
+    .hero p{margin:0;color:#dbe5ff;line-height:1.55;font-size:14px;max-width:580px}
+    .trustrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+    .trustpill{font-size:11px;color:#eef4ff;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:7px 10px}
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:0 0 16px}
+    .step{background:white;border:1px solid var(--line);border-radius:13px;padding:9px 7px;text-align:center;font-size:10px;font-weight:800;color:#64748b}
+    .step b{display:block;color:var(--navy);font-size:12px;margin-bottom:2px}
+    .card{background:rgba(255,255,255,.98);border:1px solid var(--line);border-radius:22px;padding:20px;margin:14px 0;box-shadow:0 10px 30px rgba(15,23,42,.055)}
+    .section-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
+    .section-icon{width:37px;height:37px;display:grid;place-items:center;background:#f3f6ff;border:1px solid #e1e8fb;border-radius:12px;font-size:17px}
+    h2{font-size:19px;letter-spacing:-.02em;margin:0;color:var(--navy)}
+    h3{font-size:16px;margin:12px 0;color:var(--navy)}
+    .subtitle{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.45}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .full{grid-column:1/-1}
+    label{font-size:12px;font-weight:800;display:block;margin-bottom:6px;color:#25324d}
+    input,select,textarea{width:100%;border:1px solid #d6ddea;border-radius:13px;padding:12px 13px;font:inherit;background:#fff;outline:none;transition:.2s}
+    input:focus,select:focus,textarea:focus{border-color:#7187c5;box-shadow:0 0 0 3px rgba(113,135,197,.12)}
+    textarea{min-height:92px;resize:vertical}
+    .vehicle{border:1px solid #dde4f0;border-radius:18px;padding:15px;margin:12px 0;background:linear-gradient(180deg,#fbfcff,#f7f9fd)}
+    .vehicle-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:9px;border-bottom:1px solid #e9edf5;margin-bottom:12px}
+    .vehicle:first-child .remove{display:none}
+    .remove{border:0;background:#fff1f2;color:#be123c;border-radius:10px;padding:8px 10px;font-weight:800}
+    .add{width:100%;border:1px dashed #8490aa;background:#fbfcff;border-radius:13px;padding:13px;font-weight:900;color:var(--navy)}
+    .terms{border:1px solid #e1e7f0;border-radius:14px;padding:14px;background:#f8fafc;font-size:12px;line-height:1.55;color:#475569}
+    .terms summary{cursor:pointer;font-weight:900;color:var(--navy);list-style:none}
+    .terms summary::-webkit-details-marker{display:none}
+    .terms summary:after{content:"View full terms";float:right;color:#3555a5;font-size:11px}
+    .terms[open] summary:after{content:"Hide terms"}
+    .terms ol{padding-left:20px;margin:13px 0 0}
+    .check{display:flex;gap:11px;align-items:flex-start;margin-top:15px;background:#fff;border:1px solid #dce3ef;border-radius:14px;padding:13px}
+    .check input{width:20px;height:20px;margin-top:1px;box-shadow:none}
+    .submit{width:100%;border:0;border-radius:15px;padding:16px;background:linear-gradient(135deg,var(--navy),#182f68);color:#fff;font-size:16px;font-weight:900;box-shadow:0 12px 26px rgba(11,23,57,.20)}
+    .submit:disabled{opacity:.55}
+    .note{font-size:11px;color:#64748b;line-height:1.5}
+    .hint{font-size:10px;color:#7c879e;margin-top:-4px;margin-bottom:8px}
+    .status{display:none;margin-top:12px;padding:14px;border-radius:13px;font-weight:800}
+    .ok{background:#dcfce7;color:#166534}.err{background:#fee2e2;color:#991b1b}.bank{display:none}
+    .privacy{display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 12px;background:#f8fafc;border-radius:11px;color:#64748b;font-size:10px}
+    @media(max-width:620px){
+      .wrap{padding:11px 11px 34px}.grid{grid-template-columns:1fr}.hero{border-radius:20px;padding:22px 19px}.hero h1{font-size:25px}.card{padding:17px;border-radius:18px}.full{grid-column:auto}.steps{gap:5px}.step{padding:8px 3px;font-size:9px}.step b{font-size:11px}.secure{display:none}
+    }
   </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="brandbar">
+    <div class="brand">
+      <img src="/logo-optimized.webp" alt="Car With Driver India">
+      <div><div class="brand-name">Car With Driver India</div><div class="subtitle">Vendor Operations</div></div>
+    </div>
+    <div class="secure">Secure Registration</div>
+  </div>
+
   <section class="hero">
-    <h1>CWD With Driver Vendor Registration</h1>
-    <p>No OTP, no password. Register your business and vehicles for Car With Driver India vendor operations.</p>
+    <div class="eyebrow">With Driver Vendor Network</div>
+    <h1>Partner with Car With Driver India</h1>
+    <p>Register your business and vehicles in a simple process. No OTP, password or app login required.</p>
+    <div class="trustrow">
+      <span class="trustpill">✓ No registration fee</span>
+      <span class="trustpill">✓ Secure details</span>
+      <span class="trustpill">✓ Simple WhatsApp operations</span>
+    </div>
   </section>
 
-  <section class="card">
-    <h2>Current Vendor Rate Card</h2>
-    <div class="rate"><strong>Outstation — CWD-VENDOR-RATE-V2</strong><small>Minimum 240 KM/day • Vendor ₹11/km • Driver Allowance ₹500/day • Night ₹300 when vehicle is actually driven between 10 PM–6 AM • Toll/Parking/State Tax actual.</small></div>
-    <div class="rate"><strong>Local — CWD-VENDOR-LOCAL-V1</strong><small>8 Hrs/80 KM ₹2,000 • 10 Hrs/100 KM ₹2,300 • 12 Hrs/120 KM ₹2,600 • Extra KM ₹13/km • Extra Hour ₹100/hr • Night ₹300 • Toll/Parking actual.</small></div>
-    <div class="rate"><strong>One-Way — CWD-ONEWAY-RULE-V1</strong><small>Customer drop KM + empty return KM = billable KM • Vendor ₹11/km • Minimum 240 KM/day • Driver allowance ₹500 only for customer-service/duty day • Empty return does not add another DA • Both-side toll applies.</small></div>
-  </section>
+  <div class="steps">
+    <div class="step"><b>01</b>Business</div>
+    <div class="step"><b>02</b>Payout</div>
+    <div class="step"><b>03</b>Vehicle</div>
+    <div class="step"><b>04</b>Terms</div>
+  </div>
 
   <form id="vendor-form">
     <section class="card">
-      <h2>Owner / Business</h2>
+      <div class="section-head"><div class="section-icon">👤</div><div><h2>Owner / Business</h2><div class="subtitle">Tell us who we will be working with.</div></div></div>
       <div class="grid">
         <div><label>Owner / business name *</label><input name="owner_business_name" maxlength="160" required></div>
         <div><label>Primary WhatsApp mobile *</label><input name="primary_whatsapp" inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" required></div>
@@ -39,32 +111,32 @@
     </section>
 
     <section class="card">
-      <h2>Payout Details</h2>
+      <div class="section-head"><div class="section-icon">₹</div><div><h2>Payout Details</h2><div class="subtitle">Choose how you would like to receive vendor payouts.</div></div></div>
       <div class="grid">
         <div><label>Payout method *</label>
           <select name="payout_mode" id="payout-mode" required>
             <option value="">Select</option><option value="upi">UPI</option><option value="bank">Bank account</option><option value="bank_upi">Bank + UPI</option>
           </select>
         </div>
-        <div id="upi-wrap" class="bank"><label>UPI ID</label><input name="upi_id" placeholder="name@bank"></div>
+        <div id="upi-wrap" class="bank"><label>UPI ID *</label><input name="upi_id" placeholder="e.g. 9876543210@upi"><div class="hint">Enter the UPI ID where you want to receive payouts.</div></div>
         <div class="bank bank-field"><label>Account holder name</label><input name="account_holder_name" maxlength="160"></div>
         <div class="bank bank-field"><label>Bank name</label><input name="bank_name" maxlength="160"></div>
         <div class="bank bank-field"><label>Account number</label><input name="account_number" inputmode="numeric" maxlength="40"></div>
         <div class="bank bank-field"><label>IFSC</label><input name="ifsc" maxlength="11" autocapitalize="characters"></div>
       </div>
-      <p class="note">Payout details are stored server-side and are not shown on public vendor links.</p>
+      <div class="privacy">🔒 Your payout details are stored securely and are never shown on public vendor booking links.</div>
     </section>
 
     <section class="card">
-      <div class="vehicle-head"><h2 style="margin:0">Vehicles</h2><span class="note">Driver details are not required now.</span></div>
+      <div class="section-head"><div class="section-icon">🚘</div><div><h2>Vehicle Details</h2><div class="subtitle">Add one or more vehicles. Driver details are not required during registration.</div></div></div>
       <div id="vehicles"></div>
       <button type="button" class="add" id="add-vehicle">+ Add another vehicle</button>
     </section>
 
     <section class="card">
-      <h2>Vendor Terms & Conditions</h2>
-      <div class="terms">
-        <strong>Version: CWD-VENDOR-TERMS-V1</strong>
+      <div class="section-head"><div class="section-icon">✓</div><div><h2>Vendor Terms & Conditions</h2><div class="subtitle">Please review the important operating terms before submitting.</div></div></div>
+      <details class="terms">
+        <summary>Important Vendor Terms</summary>
         <ol>
           <li>Vendor payout is processed after booking completion on the next calendar day on or before 4:00 PM.</li>
           <li>The allocated vendor must arrange an equivalent replacement vehicle in case of breakdown or cancellation.</li>
@@ -74,7 +146,7 @@
           <li>Night charge applies only when the vehicle is actually driven between 10 PM–6 AM.</li>
           <li>You confirm that submitted registration, vehicle and payout details are accurate.</li>
         </ol>
-      </div>
+      </details>
       <label class="check"><input type="checkbox" id="terms" required><span>I have read and agree to the CWD Vendor Terms & Conditions.</span></label>
     </section>
 
@@ -107,7 +179,7 @@
       field('Manufacturing year *','manufacturing_year','number','min="1990" max="2100" required')+
       '<div><label>Fuel *</label><select data-field="fuel" required><option value="">Select</option><option>Petrol</option><option>Diesel</option><option>CNG</option><option>Petrol+CNG</option><option>Electric</option><option>Hybrid</option><option>Other</option></select></div>'+
       field('Seating *','seating','number','min="2" max="20" required')+
-      field('Commercial / permit type *','commercial_permit_type','text','maxlength="120" placeholder="e.g. T-Permit" required')+
+      field('Permit type *','commercial_permit_type','text','maxlength="120" placeholder="e.g. Tourist Permit / T-Permit" required')+
       field('RC number *','rc_number','text','maxlength="80" required')+
       field('Insurance policy number *','insurance_policy_number','text','maxlength="120" required')+
       field('Insurance expiry','insurance_expiry','date','')+
@@ -172,7 +244,7 @@
       const data=await res.json().catch(function(){return {};});
       if(!res.ok||!data.success)throw new Error(data.message||'Unable to submit registration.');
       status.className='status ok';status.style.display='block';
-      status.textContent='Registration submitted. Your Vendor Code is '+data.vendor_code+'. CWD will review your details.';
+      status.innerHTML='✓ Registration submitted successfully.<br>Your Vendor Code: <strong>'+data.vendor_code+'</strong><br><span style="font-weight:600;font-size:12px">CWD team will review your details and contact you on WhatsApp.</span>';
       form.reset();vehicles.innerHTML='';count=0;addVehicle();payoutVisibility();
       window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
     }catch(err){

@@ -64,6 +64,20 @@ async function handler(request){
   if(request.method==='GET'){
    const u=new URL(request.url),id=u.searchParams.get('booking_id');
    if(u.searchParams.get('dashboard')==='1'){
+    const vendorId=u.searchParams.get('vendor_id');
+    if(vendorId){
+      const [vendor,payout,vehicles,terms,offers,allocations,settlements]=await Promise.all([
+        db('cwd_vendors?id=eq.'+encodeURIComponent(vendorId)+'&select=*&limit=1'),
+        db('cwd_vendor_payout_accounts?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=*&limit=1'),
+        db('cwd_vendor_vehicles?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=*&order=created_at.asc'),
+        db('cwd_vendor_terms_acceptances?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=*&order=accepted_at.desc'),
+        db('cwd_vendor_offers?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id,booking_id,status,estimated_vendor_payout,responded_at,created_at&order=created_at.desc'),
+        db('cwd_vendor_allocations?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id,booking_id,status,vehicle_number,driver_name,driver_mobile,allocated_at,updated_at&order=allocated_at.desc'),
+        db('cwd_vendor_settlement_ledger?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=booking_id,vendor_final_payout,payout_status,payout_due_at,paid_at,utr_reference,updated_at&order=updated_at.desc')
+      ]);
+      if(!vendor?.[0])fail('Vendor not found.',404);
+      return json({success:true,vendor:vendor[0],payout:payout?.[0]||null,vehicles:vehicles||[],terms:terms||[],offers:offers||[],allocations:allocations||[],settlements:settlements||[]});
+    }
     const [vendors,offers,allocations,settlements]=await Promise.all([
       db('cwd_vendors?select=id,vendor_code,owner_business_name,primary_whatsapp,alternate_mobile,email,base_location,status,created_at&order=created_at.desc'),
       db('cwd_vendor_offers?select=id,vendor_id,booking_id,status,estimated_vendor_payout,responded_at,created_at&order=created_at.desc&limit=300'),

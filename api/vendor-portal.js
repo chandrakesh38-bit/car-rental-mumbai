@@ -14,7 +14,7 @@ async function byAlloc(raw){const h=await hashToken(raw),r=await db('cwd_vendor_
 async function booking(id){return (await db('inquiries?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'))?.[0]||null}
 async function upload(file,path){if(!file||typeof file.arrayBuffer!=='function')fail('Odometer photo is required.');if(file.size<=0||file.size>5242880)fail('Photo must be under 5 MB.');if(!['image/jpeg','image/png','image/webp'].includes(file.type))fail('Use JPG, PNG or WEBP photo.');const r=await fetch(base()+'/storage/v1/object/'+BUCKET+'/'+path,{method:'POST',headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':file.type,'x-upsert':'false'},body:await file.arrayBuffer()});if(!r.ok)fail('Photo upload failed.',503);return path}
 function piiBooking(b){return {booking_id:b.booking_id,customer_name:b.customer_name,customer_mobile:b.customer_phone,exact_pickup:b.pickup_location||b.route||'',exact_drop:b.destination||b.route||'',route:b.route||'',pickup_date_time:b.pickup_date||b.trip_date||b.start_date||'',final_drop_date_time:b.final_drop_date||b.return_date||b.end_date||'',trip_type:b.trip_type||'',vehicle:b.car_name||''}}
-export default async function handler(request){
+async function handler(request){
  try{
   const u=new URL(request.url);
   if(request.method==='GET'){

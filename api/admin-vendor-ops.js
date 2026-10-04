@@ -145,7 +145,7 @@ async function handler(request){
    if(!id)fail('Booking ID required.');
    const b=await snapshot(id);
    const [vendors,offers,alloc,trip,customer,vendorSet,invoice,commercialOverride]=await Promise.all([
-    db('cwd_vendors?status=in.(pending_review,active)&select=id,vendor_code,owner_business_name,primary_whatsapp,base_location,status&order=created_at.desc'),
+    db('cwd_vendors?status=eq.active&select=id,vendor_code,owner_business_name,primary_whatsapp,base_location,status&order=created_at.desc'),
     db('cwd_vendor_offers?booking_id=eq.'+encodeURIComponent(id)+'&select=*&order=created_at.desc'),
     db('cwd_vendor_allocations?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),
     db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),
@@ -348,6 +348,7 @@ async function handler(request){
     for(const vid of ids){
       const vendor=(await db('cwd_vendors?id=eq.'+encodeURIComponent(vid)+'&select=id,vendor_code,owner_business_name,primary_whatsapp,status&limit=1'))?.[0];
       if(!vendor)continue;
+      if(vendor.status!=='active')fail('Only active vendors can receive booking offers. Approve the vendor first.',409);
       const raw=token(),h=await hashToken(raw);
       const rows=await db('cwd_vendor_offers',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({vendor_id:vid,booking_id:id,offer_token_hash:h,status:'offered',trip_type:b.trip_type||'',vehicle_required:b.vehicle||'',route_summary:b.route||'',start_at:iso(b.start_at),final_drop_at:iso(b.final_drop_at),estimated_km:p.estimated_km,duty_days:p.duty_days,night_count:p.night_count,local_package:p.local_package,extra_km:p.extra_km,extra_hours:p.extra_hours,estimated_vendor_payout:payout,pricing_snapshot:{...p,vehicle_rate_id:String(vr.car.id),vehicle_name:vr.car.full_name,customer_km_rate:n(vr.car.outstation_rate_per_km),customer_da:n(vr.car.driver_allowance_per_day),customer_night:n(vr.car.customer_night_charge),customer_local_8h_80km:n(vr.car.local_pkg_8hr_80km),customer_local_10h_100km:n(vr.car.local_pkg_8hr_80km)+n(vr.car.local_extra_hour_rate)*2,customer_local_12h_120km:n(vr.car.local_pkg_8hr_80km)+n(vr.car.local_extra_hour_rate)*4,customer_local_extra_km:n(vr.car.local_extra_km_rate),customer_local_extra_hour:n(vr.car.local_extra_hour_rate),vendor_km_rate:n(rateForOffer.outstation_rate_per_km),vendor_da:n(rateForOffer.driver_allowance_per_day),vendor_night:n(rateForOffer.night_charge),minimum_km_per_day:n(rateForOffer.minimum_outstation_km_per_day),local_8h_80km:n(rateForOffer.local_pkg_8hr_80km),local_10h_100km:n(rateForOffer.local_pkg_10hr_100km),local_12h_120km:n(rateForOffer.local_pkg_12hr_120km),local_extra_km:n(rateForOffer.local_extra_km_rate),local_extra_hour:n(rateForOffer.local_extra_hour_rate),vendor_rate_override:vendorRateOverride,vendor_final_payout_override:vendorFinalOverride,vendor_override_reason:vendorOverrideReason||null},created_by:String(user.email||'')})});
       created.push({...rows?.[0],vendor_name:vendor.owner_business_name,vendor_code:vendor.vendor_code,vendor_whatsapp:vendor.primary_whatsapp,view_url:publicBase(request)+'/vendor-booking?offer='+raw});

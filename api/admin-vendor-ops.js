@@ -36,7 +36,16 @@ function normVehicleName(v){return String(v||'').trim().toLowerCase().replace(/[
 async function vendorRateForVehicle(vehicleName){
  const globals=await db('with_driver_rates?select=*&is_active=eq.true&order=display_order.asc,full_name.asc');
  const wanted=normVehicleName(vehicleName);
- const car=(globals||[]).find(x=>normVehicleName(x.full_name)===wanted) || (globals||[]).find(x=>wanted.includes(normVehicleName(x.full_name))||normVehicleName(x.full_name).includes(wanted));
+ let car=(globals||[]).find(x=>normVehicleName(x.full_name)===wanted) || (globals||[]).find(x=>wanted.includes(normVehicleName(x.full_name))||normVehicleName(x.full_name).includes(wanted));
+
+ // Customer website intentionally groups Dzire and Aura under one public sedan label.
+ // Resolve that public label back to a canonical Global Pricing vehicle for vendor costing.
+ if(!car && wanted.includes('sedan') && wanted.includes('dzire') && wanted.includes('aura')){
+   const sedanCandidates=(globals||[]).filter(x=>String(x.segment||'').toLowerCase()==='sedan' && /dzire|aura/i.test(String(x.full_name||'')));
+   const preferred=sedanCandidates.find(x=>/dzire/i.test(String(x.full_name||''))) || sedanCandidates[0];
+   if(preferred)car=preferred;
+ }
+
  if(!car)fail('No matching Global Pricing vehicle found for '+vehicleName+'.',409);
  const rate=(await db('cwd_vendor_rate_cards?vehicle_rate_id=eq.'+encodeURIComponent(String(car.id))+'&is_active=eq.true&select=*&limit=1'))?.[0];
  if(!rate)fail('Vendor Rate Card is not configured for '+car.full_name+'. Set the vendor rate first.',409);

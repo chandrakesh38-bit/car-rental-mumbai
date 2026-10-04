@@ -235,6 +235,20 @@
   let currentStep=0;
   let completedStep=-1;
   let vehicleCount=0;
+  let vehicleMaster=[];
+
+  function modelOptionsHtml(){
+    const rows=vehicleMaster.map(v=>'<option value="'+String(v.full_name||'').replace(/"/g,'&quot;')+'">'+String(v.full_name||'')+'</option>').join('');
+    return '<option value="">Select make / model</option>'+rows+'<option value="Other">Other</option>';
+  }
+
+  async function loadVehicleMaster(){
+    try{
+      const res=await fetch('/api/vendor-register',{cache:'no-store'});
+      const data=await res.json();
+      if(res.ok&&data.success&&Array.isArray(data.vehicles))vehicleMaster=data.vehicles;
+    }catch(_){}
+  }
 
   function field(label,name,type,attrs){
     return '<div><label>'+label+'</label><input data-field="'+name+'" type="'+(type||'text')+'" '+(attrs||'')+'></div>';
@@ -247,7 +261,7 @@
     box.innerHTML='<div class="vehicle-head"><h3>Vehicle '+vehicleCount+'</h3><button class="remove" type="button">Remove</button></div>'+
       '<div class="grid">'+
       field('Vehicle number *','vehicle_number','text','maxlength="20" pattern="[A-Z0-9-]{6,20}" autocapitalize="characters" spellcheck="false" placeholder="e.g. MH01AB1234" required')+
-      '<div><label>Make / model *</label><select data-field="make_model" class="make-model-select" required><option value="">Select make / model</option><option>Maruti Suzuki Dzire</option><option>Hyundai Aura</option><option>Maruti Suzuki Ertiga</option><option>Toyota Rumion</option><option>Kia Carens</option><option>Toyota Innova Crysta</option><option>Toyota Innova Hycross</option><option>Maruti Suzuki Ciaz</option><option>Honda City</option><option>Hyundai Verna</option><option>Toyota Etios</option><option>Tempo Traveller</option><option value="Other">Other</option></select><input class="other-model" maxlength="160" placeholder="Enter make / model" style="display:none;margin-top:8px"></div>'+
+      '<div><label>Make / model *</label><select data-field="make_model" class="make-model-select" required>'+modelOptionsHtml()+'</select><input class="other-model" maxlength="160" placeholder="Enter make / model" style="display:none;margin-top:8px"></div>'+
       '<div><label>Category *</label><select data-field="category" required><option value="">Select</option><option>Hatchback</option><option>Sedan</option><option>SUV</option><option>MUV</option><option>Premium Sedan</option><option>Premium SUV</option><option>Tempo Traveller</option><option>Other</option></select></div>'+
       '<div><label>Manufacturing year *</label><select data-field="manufacturing_year" required><option value="">Select year</option>'+Array.from({length:5},(_,i)=>{const y=new Date().getFullYear()-i;return '<option value="'+y+'">'+y+'</option>'}).join('')+'</select><div class="hint">Only vehicles up to 4 years old are accepted.</div></div>'+
       '<div><label>Fuel *</label><select data-field="fuel" required><option value="">Select</option><option>Petrol</option><option>Diesel</option><option>CNG</option><option>Petrol+CNG</option><option>Electric</option><option>Hybrid</option><option>Other</option></select></div>'+
@@ -353,9 +367,12 @@
     }
   }));
 
-  addVehicle();
-  payoutVisibility();
-  showStep(0,false);
+  (async function initVendorForm(){
+    await loadVehicleMaster();
+    addVehicle();
+    payoutVisibility();
+    showStep(0,false);
+  })();
 
   document.getElementById('copy-vendor-code').addEventListener('click',function(){
     const code=document.getElementById('success-vendor-code').textContent.trim();

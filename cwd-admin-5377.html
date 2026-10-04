@@ -107,6 +107,9 @@
                     <button onclick="switchTab('inquiries')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-inquiries">
                         <i class="fa-solid fa-calendar-check w-4 text-rose-400"></i> Bookings
                     </button>
+                    <button onclick="switchTab('vendors')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-vendors">
+                        <i class="fa-solid fa-handshake w-4 text-emerald-300"></i> With Driver Vendors
+                    </button>
                     <a href="/self-drive-review" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left">
                         <i class="fa-solid fa-id-card w-4 text-cyan-300"></i> Self Drive Documents
                     </a>
@@ -464,6 +467,73 @@
                 </div>
             </div>
 
+            <!-- WITH DRIVER VENDOR CONTROL CENTER -->
+            <div id="section-vendors" class="hidden space-y-6">
+                <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">With Driver Vendors</h2>
+                        <p class="text-xs text-slate-500 mt-1">Registration, approvals, vendor status, offers, allocations and settlements in one place.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <a href="/vendor-register" target="_blank" class="inline-flex items-center gap-2 bg-white border border-slate-200 text-indigo-950 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Registration
+                        </a>
+                        <button type="button" onclick="copyVendorRegistrationLink()" class="inline-flex items-center gap-2 bg-indigo-950 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm">
+                            <i class="fa-regular fa-copy"></i> Copy Registration Link
+                        </button>
+                        <button type="button" onclick="loadVendorControlCenter()" class="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div id="vendor-center-kpis" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 text-slate-400 text-sm">Loading vendor summary...</div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <h3 class="font-black text-slate-900">Registered Vendors</h3>
+                            <p class="text-[10px] text-slate-500 mt-0.5">Approve, suspend or review vendor contact details.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="setVendorFilter('all')" data-vendor-filter="all" class="vendor-filter-btn bg-indigo-950 text-white px-3 py-2 rounded-lg text-[10px] font-bold">All</button>
+                            <button type="button" onclick="setVendorFilter('pending_review')" data-vendor-filter="pending_review" class="vendor-filter-btn bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-[10px] font-bold">Pending</button>
+                            <button type="button" onclick="setVendorFilter('active')" data-vendor-filter="active" class="vendor-filter-btn bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-[10px] font-bold">Active</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px] whitespace-nowrap">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[9px] font-extrabold tracking-wider">
+                                <tr>
+                                    <th class="py-3 px-3">Vendor</th>
+                                    <th class="py-3 px-3">WhatsApp</th>
+                                    <th class="py-3 px-3">Base Area</th>
+                                    <th class="py-3 px-3">Registered</th>
+                                    <th class="py-3 px-3">Status</th>
+                                    <th class="py-3 px-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vendor-center-table" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid xl:grid-cols-2 gap-5">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                        <h3 class="font-black text-slate-900">Recent Offers</h3>
+                        <p class="text-[10px] text-slate-500 mt-1 mb-4">Latest vendor responses across bookings.</p>
+                        <div id="vendor-center-offers" class="space-y-2 text-xs"></div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                        <h3 class="font-black text-slate-900">Allocations & Settlements</h3>
+                        <p class="text-[10px] text-slate-500 mt-1 mb-4">Active allocations and vendor payout status.</p>
+                        <div id="vendor-center-allocations" class="space-y-2 text-xs"></div>
+                    </div>
+                </div>
+            </div>
+
             <div id="manual-self-drive-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[75] hidden items-center justify-center p-4">
                 <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl max-h-[92vh] overflow-y-auto">
                     <div class="sticky top-0 bg-white border-b px-5 sm:px-6 py-4 flex justify-between items-center z-10">
@@ -775,7 +845,7 @@
 
         // TABS SWITCHER
         function switchTab(tab) {
-            ['dashboard', 'vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries'].forEach(t => {
+            ['dashboard', 'vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries', 'vendors'].forEach(t => {
                 const sec = document.getElementById(`section-${t}`);
                 const btn = document.getElementById(`tab-btn-${t}`);
                 if (t === tab) {
@@ -796,6 +866,7 @@
             if (tab === 'faqs') loadFaqs();
             setBookingsAutoRefresh(tab === 'inquiries');
             if (tab === 'inquiries') loadInquiries();
+            if (tab === 'vendors') loadVendorControlCenter();
         }
 
         // 1. VEHICLES CRUD
@@ -2338,6 +2409,89 @@ async function deleteWithDriverVehicle(id) {
     loadWithDriverRates();
 });
     
+        let cwdVendorCenterData = { vendors: [], offers: [], allocations: [], settlements: [] };
+        let cwdVendorFilter = 'all';
+
+        function copyVendorRegistrationLink() {
+            const url = location.origin + '/vendor-register';
+            if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(()=>alert('Vendor registration link copied.')).catch(()=>prompt('Copy link:',url));
+            else prompt('Copy link:',url);
+        }
+
+        function setVendorFilter(status) {
+            cwdVendorFilter = status || 'all';
+            document.querySelectorAll('.vendor-filter-btn').forEach(btn => {
+                const active = btn.dataset.vendorFilter === cwdVendorFilter;
+                btn.className = 'vendor-filter-btn px-3 py-2 rounded-lg text-[10px] font-bold ' + (active ? 'bg-indigo-950 text-white' : 'bg-slate-100 text-slate-600');
+            });
+            renderVendorCenterTable();
+        }
+
+        function vendorStatusBadge(status) {
+            const s = String(status || '').toLowerCase();
+            const cls = s === 'active' ? 'bg-emerald-100 text-emerald-700' : s === 'pending_review' ? 'bg-amber-100 text-amber-800' : s === 'suspended' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600';
+            return '<span class="px-2 py-1 rounded-full text-[9px] font-black '+cls+'">'+escapeAdminHtml(s.replaceAll('_',' '))+'</span>';
+        }
+
+        async function loadVendorControlCenter() {
+            const table=document.getElementById('vendor-center-table');
+            if(table)table.innerHTML='<tr><td colspan="6" class="py-8 text-center text-slate-400">Loading vendors...</td></tr>';
+            try {
+                const d = await adminApi('/api/admin-vendor-ops?dashboard=1');
+                cwdVendorCenterData = d;
+                renderVendorCenter();
+            } catch(e) {
+                if(table)table.innerHTML='<tr><td colspan="6" class="py-8 text-center text-rose-600 font-bold">'+escapeAdminHtml(e.message)+'</td></tr>';
+            }
+        }
+
+        function renderVendorCenter() {
+            const d=cwdVendorCenterData, vendors=d.vendors||[], offers=d.offers||[], allocations=d.allocations||[], settlements=d.settlements||[];
+            const pending=vendors.filter(v=>v.status==='pending_review').length;
+            const active=vendors.filter(v=>v.status==='active').length;
+            const accepted=offers.filter(o=>o.status==='accepted').length;
+            const pendingPayout=settlements.filter(x=>x.payout_status!=='paid').reduce((a,x)=>a+Number(x.vendor_final_payout||0),0);
+            document.getElementById('vendor-center-kpis').innerHTML=[
+                ['Registered Vendors',vendors.length,'fa-users'],
+                ['Pending Approval',pending,'fa-user-clock'],
+                ['Active Vendors',active,'fa-circle-check'],
+                ['Pending Vendor Payout',money(pendingPayout),'fa-wallet']
+            ].map(c=>'<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="flex justify-between gap-3"><div><p class="text-[10px] uppercase font-bold text-slate-400">'+c[0]+'</p><p class="text-2xl font-black text-indigo-950 mt-2">'+c[1]+'</p></div><i class="fa-solid '+c[2]+' text-emerald-500 text-xl"></i></div></div>').join('');
+
+            renderVendorCenterTable();
+            const vm=new Map(vendors.map(v=>[v.id,v]));
+            document.getElementById('vendor-center-offers').innerHTML=offers.slice(0,12).map(o=>{
+                const v=vm.get(o.vendor_id)||{};
+                return '<button class="w-full text-left border rounded-xl p-3 hover:bg-slate-50" onclick="openBookingDetailById(\''+escapeAdminHtml(o.booking_id)+'\')"><div class="flex justify-between gap-2"><div><b>'+escapeAdminHtml(v.owner_business_name||v.vendor_code||'Vendor')+'</b><div class="text-[10px] text-slate-500 mt-1">'+escapeAdminHtml(o.booking_id)+' · '+escapeAdminHtml(String(o.status||'').replaceAll('_',' '))+'</div></div><b>'+money(o.estimated_vendor_payout)+'</b></div></button>';
+            }).join('') || '<p class="text-slate-400">No vendor offers yet.</p>';
+
+            const settleMap=new Map(settlements.map(x=>[x.booking_id,x]));
+            document.getElementById('vendor-center-allocations').innerHTML=allocations.slice(0,12).map(a=>{
+                const v=vm.get(a.vendor_id)||{}, st=settleMap.get(a.booking_id);
+                return '<button class="w-full text-left border rounded-xl p-3 hover:bg-slate-50" onclick="openBookingDetailById(\''+escapeAdminHtml(a.booking_id)+'\')"><div class="flex justify-between gap-2"><div><b>'+escapeAdminHtml(v.owner_business_name||v.vendor_code||'Vendor')+'</b><div class="text-[10px] text-slate-500 mt-1">'+escapeAdminHtml(a.booking_id)+' · '+escapeAdminHtml(String(a.status||'').replaceAll('_',' '))+'</div></div><div class="text-right">'+(st?'<b>'+money(st.vendor_final_payout)+'</b><div class="text-[9px] '+(st.payout_status==='paid'?'text-emerald-700':'text-amber-700')+'">'+escapeAdminHtml(st.payout_status)+'</div>':'<span class="text-slate-400 text-[10px]">No settlement</span>')+'</div></div></button>';
+            }).join('') || '<p class="text-slate-400">No allocations yet.</p>';
+        }
+
+        function renderVendorCenterTable() {
+            const tbody=document.getElementById('vendor-center-table');if(!tbody)return;
+            let rows=cwdVendorCenterData.vendors||[];
+            if(cwdVendorFilter!=='all')rows=rows.filter(v=>v.status===cwdVendorFilter);
+            if(!rows.length){tbody.innerHTML='<tr><td colspan="6" class="py-8 text-center text-slate-400">No vendors in this view.</td></tr>';return;}
+            tbody.innerHTML=rows.map(v=>{
+                const date=v.created_at?new Date(v.created_at).toLocaleDateString('en-IN'):'—';
+                return '<tr class="hover:bg-slate-50"><td class="py-3 px-3"><b>'+escapeAdminHtml(v.owner_business_name)+'</b><div class="text-[9px] text-indigo-700 font-bold">'+escapeAdminHtml(v.vendor_code)+'</div></td><td class="py-3 px-3"><a class="text-emerald-700 font-bold" target="_blank" href="https://wa.me/91'+escapeAdminHtml(String(v.primary_whatsapp||'').replace(/\D/g,''))+'">'+escapeAdminHtml(v.primary_whatsapp||'—')+'</a></td><td class="py-3 px-3">'+escapeAdminHtml(v.base_location||'—')+'</td><td class="py-3 px-3">'+escapeAdminHtml(date)+'</td><td class="py-3 px-3">'+vendorStatusBadge(v.status)+'</td><td class="py-3 px-3 text-right"><div class="flex justify-end gap-1">'+(v.status!=='active'?'<button onclick="updateVendorStatus(\''+v.id+'\',\'active\')" class="bg-emerald-600 text-white rounded-lg px-2.5 py-1.5 text-[9px] font-bold">Approve</button>':'')+(v.status==='active'?'<button onclick="updateVendorStatus(\''+v.id+'\',\'suspended\')" class="bg-rose-50 text-rose-700 rounded-lg px-2.5 py-1.5 text-[9px] font-bold">Suspend</button>':'')+(v.status==='suspended'?'<button onclick="updateVendorStatus(\''+v.id+'\',\'active\')" class="bg-emerald-50 text-emerald-700 rounded-lg px-2.5 py-1.5 text-[9px] font-bold">Reactivate</button>':'')+'</div></td></tr>';
+            }).join('');
+        }
+
+        async function updateVendorStatus(vendorId,status) {
+            const label=status==='active'?'approve/activate':status;
+            if(!confirm('Confirm '+label+' this vendor?'))return;
+            try{
+                await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'set_vendor_status',booking_id:'VENDOR-CENTER',vendor_id:vendorId,status})});
+                await loadVendorControlCenter();
+            }catch(e){alert(e.message)}
+        }
+
         let cwdLastGeneratedOffers = [];
         let cwdLastAllocationUrl = '';
         function cwdCopyText(value){

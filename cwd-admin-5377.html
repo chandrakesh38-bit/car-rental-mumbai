@@ -20,6 +20,11 @@
         button:focus-visible { outline: 3px solid rgba(245,158,11,.35); outline-offset: 2px; }
         button:disabled { cursor: wait; }
     </style>
+<style>
+.cwd-action-flash{filter:brightness(.80)!important;transform:scale(.985)!important;box-shadow:0 0 0 4px rgba(37,99,235,.16)!important}
+.cwd-action-success{background:#16a34a!important;color:#fff!important;border-color:#16a34a!important}
+.cwd-action-busy{opacity:.86!important;cursor:wait!important}
+</style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
 
@@ -3058,13 +3063,39 @@ async function deleteWithDriverVehicle(id) {
 
         let cwdLastGeneratedOffers = [];
         let cwdLastAllocationUrl = '';
-        function cwdCopyText(value){
-            if(!value)return;
-            if(navigator.clipboard?.writeText) navigator.clipboard.writeText(value).catch(()=>prompt('Copy:',value));
-            else prompt('Copy:',value);
+        async function cwdCopyText(value){
+            if(!value)return false;
+            try{
+                if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(value);return true;}
+            }catch(_){}
+            prompt('Copy:',value);return true;
+        }
+        function cwdBusyButton(btn,label){
+            if(!btn)return()=>{};
+            const old=btn.innerHTML,oldDisabled=btn.disabled;
+            btn.disabled=true;btn.classList.add('cwd-action-busy');
+            btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i>'+label;
+            return()=>{btn.disabled=oldDisabled;btn.classList.remove('cwd-action-busy');btn.innerHTML=old;};
+        }
+        function cwdSuccessButton(btn,label,restoreMs=1100){
+            if(!btn)return;
+            const old=btn.innerHTML;
+            btn.classList.remove('cwd-action-busy');btn.classList.add('cwd-action-success');btn.disabled=false;
+            btn.innerHTML='<i class="fa-solid fa-check mr-1"></i>'+label;
+            if(restoreMs)setTimeout(()=>{if(btn.isConnected){btn.classList.remove('cwd-action-success');btn.innerHTML=old;}},restoreMs);
+        }
+        function cwdOpenedButton(btn,label='Opened'){
+            cwdSuccessButton(btn,label,1000);
+        }
+        function cwdCleanOfferRoute(value){
+            let parts=String(value||'').split(/\s*→\s*/).map(v=>v.trim()).filter(Boolean);
+            const isBase=v=>/lal bahadur shastri marg.*godrej hillside colony.*vikhroli west/i.test(String(v||''))||/vikhroli base/i.test(String(v||''));
+            if(parts.length&&isBase(parts[0]))parts.shift();
+            if(parts.length&&isBase(parts[parts.length-1]))parts.pop();
+            return parts.join(' → ')||String(value||'').trim();
         }
         function cwdVendorOfferMessage(o){
-            const route=String(o.route_summary||'').trim();
+            const route=cwdCleanOfferRoute(o.route_summary||'');
             return [
               '🚘 *CWD BOOKING OFFER*',
               '',
@@ -3091,7 +3122,7 @@ async function deleteWithDriverVehicle(id) {
             if(!/with driver/i.test(String(b.service_type||'')) && /self/i.test(String(b.trip_type||'')))return;
             const card=document.createElement('div');card.id='cwd-vendor-ops-card';card.className='mt-4 border-2 border-indigo-100 rounded-2xl p-4 bg-indigo-50/40';
             card.innerHTML='<div class="flex justify-between items-center gap-2"><div><h4 class="font-black text-sm text-indigo-950">With Driver Vendor Operations</h4><p class="text-[10px] text-slate-500">Offer → Accept/Decline → Allocate → Trip → Review → Invoice → Vendor Payout</p></div><button type="button" id="cwd-vendor-refresh" class="text-[10px] font-bold bg-white border rounded-lg px-3 py-2">Refresh</button></div><div id="cwd-vendor-ops-content" class="mt-4 text-xs">Loading vendor operations…</div>';
-            body.appendChild(card);document.getElementById('cwd-vendor-refresh').onclick=loadVendorOpsPanel;
+            body.appendChild(card);document.getElementById('cwd-vendor-refresh').onclick=function(){cwdRefreshVendorOps(this)};
             try{
                 const d=await adminApi('/api/admin-vendor-ops?booking_id='+encodeURIComponent(b.booking_id));
                 renderVendorOps(d);
@@ -3116,19 +3147,29 @@ async function deleteWithDriverVehicle(id) {
                 return '<label class="block p-3 bg-white border rounded-xl '+(disabled?'opacity-60':'hover:border-indigo-300')+' transition"><div class="flex items-start gap-2"><input type="checkbox" data-vendor-id="'+escapeAdminHtml(v.id)+'" class="mt-1" '+(disabled?'disabled':'')+'><span><b>'+escapeAdminHtml(v.owner_business_name)+'</b> <span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(v.vendor_code)+'</span><br><span class="text-[10px] text-slate-500">'+escapeAdminHtml(v.primary_whatsapp)+' · '+escapeAdminHtml(v.base_location)+' · '+escapeAdminHtml(v.status)+'</span></span></div>'+selector+'</label>';
             }).join('')||'<p class="text-slate-500">No active vendors yet.</p>';
             const acceptedOffers=offers.filter(o=>o.status==='accepted');
-            const offerRows=offers.map(o=>{const v=vendorMap.get(o.vendor_id)||{},accepted=o.status==='accepted';return '<div class="p-3 '+(accepted?'bg-emerald-50 border-emerald-300':'bg-white')+' border rounded-xl flex items-center justify-between gap-2"><div><b>'+escapeAdminHtml(v.owner_business_name||v.vendor_code||'Vendor')+'</b>'+(accepted?' <span class="ml-1 inline-flex px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black">ACCEPTED</span>':'')+'<br><span class="text-[10px] text-slate-500">'+escapeAdminHtml(v.primary_whatsapp||'')+' · '+escapeAdminHtml(o.status.toUpperCase())+' · '+money(o.estimated_vendor_payout)+'</span></div>'+(accepted?'<button class="bg-emerald-600 text-white rounded-lg px-3 py-2 font-bold" onclick="cwdAllocate(\''+o.id+'\')">ALLOCATE</button>':'')+'</div>'}).join('');
+            const offerRows=offers.map(o=>{const v=vendorMap.get(o.vendor_id)||{},accepted=o.status==='accepted';return '<div class="p-3 '+(accepted?'bg-emerald-50 border-emerald-300':'bg-white')+' border rounded-xl flex items-center justify-between gap-2"><div><b>'+escapeAdminHtml(v.owner_business_name||v.vendor_code||'Vendor')+'</b>'+(accepted?' <span class="ml-1 inline-flex px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black">ACCEPTED</span>':'')+'<br><span class="text-[10px] text-slate-500">'+escapeAdminHtml(v.primary_whatsapp||'')+' · '+escapeAdminHtml(o.status.toUpperCase())+' · '+money(o.estimated_vendor_payout)+'</span></div>'+(accepted?'<button class="bg-emerald-600 text-white rounded-lg px-3 py-2 font-bold" onclick="cwdAllocate(\''+o.id+'\',this)">ALLOCATE</button>':'')+'</div>'}).join('');
             box.innerHTML=
               (acceptedOffers.length?'<div class="mb-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-3 flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg">✓</div><div><div class="font-black text-emerald-900">Vendor Accepted — Allocation Required</div><div class="text-[10px] text-emerald-700">'+acceptedOffers.length+' vendor'+(acceptedOffers.length>1?'s have':' has')+' accepted this booking. Choose one below and tap ALLOCATE.</div></div></div>':'')+
               '<div class="grid lg:grid-cols-2 gap-3"><div class="bg-white rounded-xl p-3 border"><h5 class="font-black mb-2">1. Select Vendors</h5><div class="space-y-2 max-h-56 overflow-auto">'+vendorRows+'</div></div>'+
-              '<div class="bg-white rounded-xl p-3 border"><h5 class="font-black mb-2">2. Offer Pricing Inputs</h5><div class="grid grid-cols-2 gap-2"><label>Estimated/Billable KM<input id="cwd-est-km" type="number" min="0" value="240" class="w-full border rounded-lg p-2 mt-1"></label><label>Duty Days<input id="cwd-duty-days" type="number" min="1" value="1" class="w-full border rounded-lg p-2 mt-1"></label><label>Night Count<input id="cwd-night-count" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label><label>Local Package<select id="cwd-local-package" class="w-full border rounded-lg p-2 mt-1"><option value="8hr_80km">8H/80KM</option><option value="10hr_100km">10H/100KM</option><option value="12hr_120km">12H/120KM</option></select></label><label>Extra KM<input id="cwd-extra-km" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label><label>Extra Hours<input id="cwd-extra-hours" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label></div><div class="mt-3 border-t pt-3"><div><h6 class="font-black text-amber-900">Vendor Offer Override</h6><p class="text-[9px] text-slate-500">Optional. Use only when standard vendor rate is not being accepted.</p></div><div class="grid grid-cols-2 gap-2 mt-2"><label>Override ₹/KM<input id="cwd-vendor-rate-override" type="number" min="0" step="0.01" placeholder="Optional" value="'+escapeAdminHtml(d.commercial_override?.vendor_rate_per_km_override??'')+'" class="w-full border rounded-lg p-2 mt-1"></label><label>Final Vendor Payout<input id="cwd-vendor-final-override" type="number" min="0" step="0.01" placeholder="Optional" value="'+escapeAdminHtml(d.commercial_override?.vendor_final_payout_override??'')+'" class="w-full border rounded-lg p-2 mt-1"></label><label class="col-span-2">Override Reason<input id="cwd-vendor-override-reason" maxlength="500" placeholder="e.g. No vendor accepted / urgent booking" value="'+escapeAdminHtml(d.commercial_override?.vendor_override_reason||'')+'" class="w-full border rounded-lg p-2 mt-1"></label></div><p class="text-[9px] text-slate-500 mt-2">If Final Vendor Payout is entered, it takes priority over ₹/KM override for this offer.</p></div><button class="mt-3 w-full bg-indigo-950 text-white rounded-xl p-3 font-black" onclick="cwdGenerateOffers()">Generate Vendor Offer</button></div></div>'+
-              (cwdLastGeneratedOffers.length?'<div class="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3"><h5 class="font-black">New Offer Links</h5>'+cwdLastGeneratedOffers.map((o,i)=>'<div class="mt-2 flex gap-2"><button class="flex-1 bg-white border rounded-lg p-2 font-bold" onclick="cwdCopyText(cwdVendorOfferMessage(cwdLastGeneratedOffers['+i+']))">Copy Offer</button><a class="flex-1 text-center bg-emerald-600 text-white rounded-lg p-2 font-bold" target="_blank" href="https://wa.me/91'+encodeURIComponent(String(o.vendor_whatsapp||'').replace(/\D/g,''))+'?text='+encodeURIComponent(cwdVendorOfferMessage(o))+'">Open WhatsApp</a></div>').join('')+'</div>':'')+
+              '<div class="bg-white rounded-xl p-3 border"><h5 class="font-black mb-2">2. Offer Pricing Inputs</h5><div class="grid grid-cols-2 gap-2"><label>Estimated/Billable KM<input id="cwd-est-km" type="number" min="0" value="240" class="w-full border rounded-lg p-2 mt-1"></label><label>Duty Days<input id="cwd-duty-days" type="number" min="1" value="1" class="w-full border rounded-lg p-2 mt-1"></label><label>Night Count<input id="cwd-night-count" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label><label>Local Package<select id="cwd-local-package" class="w-full border rounded-lg p-2 mt-1"><option value="8hr_80km">8H/80KM</option><option value="10hr_100km">10H/100KM</option><option value="12hr_120km">12H/120KM</option></select></label><label>Extra KM<input id="cwd-extra-km" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label><label>Extra Hours<input id="cwd-extra-hours" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label></div><div class="mt-3 border-t pt-3"><div><h6 class="font-black text-amber-900">Vendor Offer Override</h6><p class="text-[9px] text-slate-500">Optional. Use only when standard vendor rate is not being accepted.</p></div><div class="grid grid-cols-2 gap-2 mt-2"><label>Override ₹/KM<input id="cwd-vendor-rate-override" type="number" min="0" step="0.01" placeholder="Optional" value="'+escapeAdminHtml(d.commercial_override?.vendor_rate_per_km_override??'')+'" class="w-full border rounded-lg p-2 mt-1"></label><label>Final Vendor Payout<input id="cwd-vendor-final-override" type="number" min="0" step="0.01" placeholder="Optional" value="'+escapeAdminHtml(d.commercial_override?.vendor_final_payout_override??'')+'" class="w-full border rounded-lg p-2 mt-1"></label><label class="col-span-2">Override Reason<input id="cwd-vendor-override-reason" maxlength="500" placeholder="e.g. No vendor accepted / urgent booking" value="'+escapeAdminHtml(d.commercial_override?.vendor_override_reason||'')+'" class="w-full border rounded-lg p-2 mt-1"></label></div><p class="text-[9px] text-slate-500 mt-2">If Final Vendor Payout is entered, it takes priority over ₹/KM override for this offer.</p></div><button class="mt-3 w-full bg-indigo-950 text-white rounded-xl p-3 font-black" onclick="cwdGenerateOffers(this)">Generate Vendor Offer</button></div></div>'+
+              (cwdLastGeneratedOffers.length?'<div class="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3"><h5 class="font-black">New Offer Links</h5>'+cwdLastGeneratedOffers.map((o,i)=>'<div class="mt-2 bg-white border border-amber-200 rounded-xl p-3"><div class="flex items-start justify-between gap-2 mb-2"><div><b>'+escapeAdminHtml(o.vendor_name||o.vendor_code||'Vendor')+'</b><div class="text-[10px] text-slate-500">'+escapeAdminHtml(o.vendor_whatsapp||'')+(o.vendor_code?' · '+escapeAdminHtml(o.vendor_code):'')+'</div></div><span class="text-[9px] font-black text-emerald-700">'+money(o.estimated_vendor_payout)+'</span></div><div class="grid grid-cols-2 gap-2"><button class="bg-white border rounded-lg p-2 font-bold" onclick="cwdCopyOffer('+i+',this)">Copy Offer</button><a class="text-center bg-emerald-600 text-white rounded-lg p-2 font-bold" target="_blank" onclick="cwdOpenedButton(this,\'WhatsApp Opened\')" href="https://wa.me/91'+encodeURIComponent(String(o.vendor_whatsapp||'').replace(/\D/g,''))+'?text='+encodeURIComponent(cwdVendorOfferMessage(o))+'">Open WhatsApp</a></div></div>').join('')+'</div>':'')+
               '<div class="mt-3 bg-white border rounded-xl p-3"><h5 class="font-black mb-2">Offer Status</h5><div class="space-y-2">'+(offerRows||'<p class="text-slate-500">No offers yet.</p>')+'</div></div>'+
-              (a?'<div class="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h5 class="font-black">Allocated Vendor</h5><p>Status: <b>'+escapeAdminHtml(a.status)+'</b></p><p>Vehicle: '+escapeAdminHtml(a.vehicle_number||'Not entered')+' · Driver: '+escapeAdminHtml(a.driver_name||'Not entered')+' '+escapeAdminHtml(a.driver_mobile||'')+'</p>'+(a.vehicle_number&&a.driver_name&&a.driver_mobile?'<div class="grid grid-cols-2 gap-2 mt-3"><button class="bg-white border border-emerald-300 text-emerald-800 rounded-lg p-2 font-bold" onclick="cwdCopyDriverDetails()">Copy Driver Details</button><button class="bg-emerald-600 text-white rounded-lg p-2 font-bold" onclick="cwdWhatsAppDriverDetails()">WhatsApp Customer</button></div>':'')+(!t?.started_at?(earlyStartApprovedAt?'<div class="mt-2 rounded-lg bg-emerald-100 text-emerald-800 p-2 text-[10px] font-bold">✓ Early Start Approved by CWD</div>':'<button class="mt-2 w-full bg-amber-500 text-white rounded-lg p-2 font-bold" onclick="cwdAllowEarlyStart(this)">Allow Early Start</button>'):'')+(cwdLastAllocationUrl?'<button class="mt-2 bg-white border rounded-lg p-2 font-bold" onclick="cwdCopyText(cwdLastAllocationUrl)">Copy Allocated Vendor Link</button>':'')+'</div>':'')+
-              (t?'<div class="mt-3 bg-white border rounded-xl p-3"><h5 class="font-black">Trip Closure / Review</h5><div class="grid md:grid-cols-2 gap-2 mt-2"><div>Starting KM: <b>'+escapeAdminHtml(t.starting_odometer||'—')+'</b>'+(t.start_photo_url?'<br><a class="text-indigo-700 underline" target="_blank" href="'+t.start_photo_url+'">View starting photo</a>':'')+'</div><div>Closing KM: <b>'+escapeAdminHtml(t.closing_odometer||'—')+'</b>'+(t.end_photo_url?'<br><a class="text-indigo-700 underline" target="_blank" href="'+t.end_photo_url+'">View closing photo</a>':'')+'</div></div><p class="mt-2">Calculated KM: <b>'+escapeAdminHtml(t.calculated_trip_km||'—')+'</b> · Toll '+money(t.toll)+' · Parking '+money(t.parking)+' · State Tax '+money(t.state_tax)+' · Night '+(t.night_charge?'YES':'NO')+' · Other '+money(t.other_amount)+'</p><p>Status: <b>'+escapeAdminHtml(t.review_status)+'</b></p>'+(t.ended_at?'<div class="grid grid-cols-3 gap-2 mt-3"><button class="bg-emerald-600 text-white rounded-lg p-2 font-bold" onclick="cwdReview(\'approve\')">APPROVE</button><button class="bg-amber-500 text-white rounded-lg p-2 font-bold" onclick="cwdReview(\'correct\')">CORRECT</button><button class="bg-rose-600 text-white rounded-lg p-2 font-bold" onclick="cwdReview(\'query\')">QUERY VENDOR</button></div>':'')+'</div>':'')+
-              (cl?'<div class="mt-3 grid md:grid-cols-2 gap-3"><div class="bg-blue-50 border border-blue-200 rounded-xl p-3"><h5 class="font-black">Customer Billing</h5><p>Total: <b>'+money(cl.customer_total)+'</b> · Advance: '+money(cl.customer_advance)+' · Balance: <b>'+money(cl.customer_balance)+'</b></p><button class="mt-2 w-full bg-indigo-950 text-white rounded-lg p-2 font-bold" onclick="cwdGenerateInvoice('+Number(cl.customer_balance||0)+')">Generate Final Invoice + PAY NOW</button></div><div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h5 class="font-black">Vendor Settlement</h5><p>Final payout: <b>'+money(vl?.vendor_final_payout||0)+'</b> · '+escapeAdminHtml(vl?.payout_status||'pending')+'</p>'+(vl?.payout_status!=='paid'?'<button class="mt-2 w-full bg-emerald-700 text-white rounded-lg p-2 font-bold" onclick="cwdMarkVendorPaid()">Mark Vendor Payout PAID</button>':'<p>UTR: '+escapeAdminHtml(vl?.utr_reference||'')+'</p>')+'</div></div>':'')+
+              (a?'<div class="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h5 class="font-black">Allocated Vendor</h5><p>Status: <b>'+escapeAdminHtml(a.status)+'</b></p><p>Vehicle: '+escapeAdminHtml(a.vehicle_number||'Not entered')+' · Driver: '+escapeAdminHtml(a.driver_name||'Not entered')+' '+escapeAdminHtml(a.driver_mobile||'')+'</p>'+(a.vehicle_number&&a.driver_name&&a.driver_mobile?'<div class="grid grid-cols-2 gap-2 mt-3"><button class="bg-white border border-emerald-300 text-emerald-800 rounded-lg p-2 font-bold" onclick="cwdCopyDriverDetails(this)">Copy Driver Details</button><button class="bg-emerald-600 text-white rounded-lg p-2 font-bold" onclick="cwdWhatsAppDriverDetails(this)">WhatsApp Customer</button></div>':'')+(!t?.started_at?(earlyStartApprovedAt?'<div class="mt-2 rounded-lg bg-emerald-100 text-emerald-800 p-2 text-[10px] font-bold">✓ Early Start Approved by CWD</div>':'<button class="mt-2 w-full bg-amber-500 text-white rounded-lg p-2 font-bold" onclick="cwdAllowEarlyStart(this)">Allow Early Start</button>'):'')+(cwdLastAllocationUrl?'<button class="mt-2 bg-white border rounded-lg p-2 font-bold" onclick="cwdCopyAllocatedLink(this)">Copy Allocated Vendor Link</button>':'')+'</div>':'')+
+              (t?'<div class="mt-3 bg-white border rounded-xl p-3"><h5 class="font-black">Trip Closure / Review</h5><div class="grid md:grid-cols-2 gap-2 mt-2"><div>Starting KM: <b>'+escapeAdminHtml(t.starting_odometer||'—')+'</b>'+(t.start_photo_url?'<br><a class="text-indigo-700 underline" target="_blank" href="'+t.start_photo_url+'">View starting photo</a>':'')+'</div><div>Closing KM: <b>'+escapeAdminHtml(t.closing_odometer||'—')+'</b>'+(t.end_photo_url?'<br><a class="text-indigo-700 underline" target="_blank" href="'+t.end_photo_url+'">View closing photo</a>':'')+'</div></div><p class="mt-2">Calculated KM: <b>'+escapeAdminHtml(t.calculated_trip_km||'—')+'</b> · Toll '+money(t.toll)+' · Parking '+money(t.parking)+' · State Tax '+money(t.state_tax)+' · Night '+(t.night_charge?'YES':'NO')+' · Other '+money(t.other_amount)+'</p><p>Status: <b>'+escapeAdminHtml(t.review_status)+'</b></p>'+(t.ended_at?'<div class="grid grid-cols-3 gap-2 mt-3"><button class="bg-emerald-600 text-white rounded-lg p-2 font-bold" onclick="cwdReview(\'approve\',this)">APPROVE</button><button class="bg-amber-500 text-white rounded-lg p-2 font-bold" onclick="cwdReview(\'correct\',this)">CORRECT</button><button class="bg-rose-600 text-white rounded-lg p-2 font-bold" onclick="cwdReview(\'query\',this)">QUERY VENDOR</button></div>':'')+'</div>':'')+
+              (cl?'<div class="mt-3 grid md:grid-cols-2 gap-3"><div class="bg-blue-50 border border-blue-200 rounded-xl p-3"><h5 class="font-black">Customer Billing</h5><p>Total: <b>'+money(cl.customer_total)+'</b> · Advance: '+money(cl.customer_advance)+' · Balance: <b>'+money(cl.customer_balance)+'</b></p><button class="mt-2 w-full bg-indigo-950 text-white rounded-lg p-2 font-bold" onclick="cwdGenerateInvoice('+Number(cl.customer_balance||0)+',this)">Generate Final Invoice + PAY NOW</button></div><div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h5 class="font-black">Vendor Settlement</h5><p>Final payout: <b>'+money(vl?.vendor_final_payout||0)+'</b> · '+escapeAdminHtml(vl?.payout_status||'pending')+'</p>'+(vl?.payout_status!=='paid'?'<button class="mt-2 w-full bg-emerald-700 text-white rounded-lg p-2 font-bold" onclick="cwdMarkVendorPaid(this)">Mark Vendor Payout PAID</button>':'<p>UTR: '+escapeAdminHtml(vl?.utr_reference||'')+'</p>')+'</div></div>':'')+
               (d.invoice?'<div class="mt-3 text-[10px] text-emerald-700 font-bold">Final invoice already generated.</div>':'');
         }
-        async function cwdGenerateOffers(){
+        async function cwdRefreshVendorOps(btn){
+            const done=cwdBusyButton(btn,'Refreshing…');
+            try{await loadVendorOpsPanel()}finally{done()}
+        }
+        async function cwdCopyOffer(index,btn){
+            await cwdCopyText(cwdVendorOfferMessage(cwdLastGeneratedOffers[index]));cwdSuccessButton(btn,'Copied',1200);
+        }
+        async function cwdCopyAllocatedLink(btn){
+            await cwdCopyText(cwdLastAllocationUrl);cwdSuccessButton(btn,'Link Copied',1200);
+        }
+        async function cwdGenerateOffers(btn){
             const ids=[...document.querySelectorAll('#cwd-vendor-ops-content [data-vendor-id]:checked')].map(x=>x.dataset.vendorId);if(!ids.length)return alert('Select at least one vendor.');
             const vendorVehicleIds={};
             for(const id of ids){
@@ -3136,37 +3177,45 @@ async function deleteWithDriverVehicle(id) {
                 if(!el||!el.value)return alert('Choose the exact vehicle model for each selected vendor.');
                 vendorVehicleIds[id]=el.value;
             }
-            try{const d=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'create_offer',booking_id:currentAdminBooking.booking_id,vendor_ids:ids,vendor_vehicle_ids:vendorVehicleIds,estimated_km:Number(document.getElementById('cwd-est-km').value||0),duty_days:Number(document.getElementById('cwd-duty-days').value||1),night_count:Number(document.getElementById('cwd-night-count').value||0),local_package:document.getElementById('cwd-local-package').value,extra_km:Number(document.getElementById('cwd-extra-km').value||0),extra_hours:Number(document.getElementById('cwd-extra-hours').value||0),vendor_rate_per_km_override:document.getElementById('cwd-vendor-rate-override')?.value||null,vendor_final_payout_override:document.getElementById('cwd-vendor-final-override')?.value||null,vendor_override_reason:document.getElementById('cwd-vendor-override-reason')?.value.trim()||''})});cwdLastGeneratedOffers=d.offers||[];await loadVendorOpsPanel()}catch(e){alert(e.message)}
+            const done=cwdBusyButton(btn,'Generating…');
+            try{const d=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'create_offer',booking_id:currentAdminBooking.booking_id,vendor_ids:ids,vendor_vehicle_ids:vendorVehicleIds,estimated_km:Number(document.getElementById('cwd-est-km').value||0),duty_days:Number(document.getElementById('cwd-duty-days').value||1),night_count:Number(document.getElementById('cwd-night-count').value||0),local_package:document.getElementById('cwd-local-package').value,extra_km:Number(document.getElementById('cwd-extra-km').value||0),extra_hours:Number(document.getElementById('cwd-extra-hours').value||0),vendor_rate_per_km_override:document.getElementById('cwd-vendor-rate-override')?.value||null,vendor_final_payout_override:document.getElementById('cwd-vendor-final-override')?.value||null,vendor_override_reason:document.getElementById('cwd-vendor-override-reason')?.value.trim()||''})});cwdLastGeneratedOffers=d.offers||[];cwdSuccessButton(btn,'Offers Generated',0);await new Promise(r=>setTimeout(r,350));await loadVendorOpsPanel()}catch(e){done();alert(e.message)}
         }
-        async function cwdAllocate(offerId){if(!confirm('Allocate this accepted vendor? Any previous vendor access will be revoked.'))return;try{const d=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'allocate',booking_id:currentAdminBooking.booking_id,offer_id:offerId})});cwdLastAllocationUrl=d.allocated_url||'';await loadVendorOpsPanel();if(cwdLastAllocationUrl)cwdCopyText(cwdLastAllocationUrl)}catch(e){alert(e.message)}}
+        async function cwdAllocate(offerId,btn){if(!confirm('Allocate this accepted vendor? Any previous vendor access will be revoked.'))return;const done=cwdBusyButton(btn,'Allocating…');try{const d=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'allocate',booking_id:currentAdminBooking.booking_id,offer_id:offerId})});cwdLastAllocationUrl=d.allocated_url||'';cwdSuccessButton(btn,'Allocated',0);if(cwdLastAllocationUrl)await cwdCopyText(cwdLastAllocationUrl);await new Promise(r=>setTimeout(r,350));await loadVendorOpsPanel()}catch(e){done();alert(e.message)}}
         function cwdDriverDetailsMessage(){
             const data=window._cwdCurrentVendorOps||{},a=data.allocation||{},offers=data.offers||[];
-            const b=currentAdminBooking||{};
+            const b=currentAdminBooking||{},opsBooking=data.booking||{};
             const offer=offers.find(o=>String(o.id)===String(a?.offer_id))||{};
+            let pickup='';
+            if(opsBooking.start_at){
+                const d=new Date(opsBooking.start_at);
+                if(!Number.isNaN(d.getTime()))pickup=new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true}).format(d);
+            }
             return [
               'Hello '+String(b.customer_name||'Sir/Madam')+',',
               '',
-              'Your driver details for *'+String(b.booking_id||'your booking')+'* are:',
+              'Driver details for *'+String(b.booking_id||'your booking')+'*:',
               '',
-              '🚗 *Vehicle:* '+String(offer.vehicle_required||b.car_name||'')+(a?.vehicle_number?' ('+String(a.vehicle_number)+')':''),
+              '🚗 *Vehicle:* '+String(offer.vehicle_required||b.car_name||''),
+              '🔢 *Vehicle No.:* '+String(a?.vehicle_number||''),
               '👤 *Driver:* '+String(a?.driver_name||''),
               '📞 *Driver Mobile:* '+String(a?.driver_mobile||''),
+              ...(pickup?['🕒 *Pickup:* '+pickup]:[]),
               '',
-              'Please contact the driver if needed before pickup.',
+              'The driver will coordinate with you before pickup.',
               '',
               'Regards,',
               '*Car With Driver India*',
-              '📞 9702988465',
-              '🌐 carswithdriverindia.com'
+              '📞 9702988465'
             ].join('\n');
         }
-        function cwdCopyDriverDetails(){
-            cwdCopyText(cwdDriverDetailsMessage());
+        async function cwdCopyDriverDetails(btn){
+            await cwdCopyText(cwdDriverDetailsMessage());cwdSuccessButton(btn,'Copied',1200);
         }
-        function cwdWhatsAppDriverDetails(){
+        function cwdWhatsAppDriverDetails(btn){
             const b=currentAdminBooking||{};
             const phone=String(b.customer_phone||'').replace(/\D/g,'').slice(-10);
             if(!phone)return alert('Customer mobile number is missing.');
+            cwdOpenedButton(btn,'WhatsApp Opened');
             window.open('https://wa.me/91'+phone+'?text='+encodeURIComponent(cwdDriverDetailsMessage()),'_blank','noopener');
         }
 
@@ -3176,11 +3225,11 @@ async function deleteWithDriverVehicle(id) {
             try{
                 if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Approving…';}
                 await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'allow_early_start',booking_id:currentAdminBooking.booking_id})});
-                await loadVendorOpsPanel();
+                cwdSuccessButton(btn,'Early Start Allowed',0);await new Promise(r=>setTimeout(r,350));await loadVendorOpsPanel();
             }catch(e){alert(e.message);if(btn){btn.disabled=false;btn.innerHTML=old||'Allow Early Start';}}
         }
 
-        async function cwdReview(action){
+        async function cwdReview(action,btn){
             const payload={action:'review',booking_id:currentAdminBooking.booking_id,review_action:action};
             if(action==='query')payload.admin_notes=prompt('Query / note for vendor:','')||'';
             if(action==='correct'){
@@ -3191,9 +3240,11 @@ async function deleteWithDriverVehicle(id) {
                 const tax=prompt('Correct State Tax ₹ (leave blank to keep):','');if(tax!=='')payload.corrections.state_tax=Number(tax);
                 payload.admin_notes=prompt('Correction note:','')||'';
             }
-            try{await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify(payload)});await loadVendorOpsPanel()}catch(e){alert(e.message)}
+            const done=cwdBusyButton(btn,action==='approve'?'Approving…':action==='correct'?'Correcting…':'Sending Query…');
+            try{await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify(payload)});cwdSuccessButton(btn,action==='approve'?'Approved':action==='correct'?'Corrected':'Query Sent',0);await new Promise(r=>setTimeout(r,350));await loadVendorOpsPanel()}catch(e){done();alert(e.message)}
         }
-        async function cwdGenerateInvoice(balance){
+        async function cwdGenerateInvoice(balance,btn){
+            const done=cwdBusyButton(btn,'Generating Invoice…');
             try{
                 const refreshed=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'refresh_invoice_totals',booking_id:currentAdminBooking.booking_id})});
                 balance=Number(refreshed.balance||0);
@@ -3203,15 +3254,17 @@ async function deleteWithDriverVehicle(id) {
                     paymentUrl=pay.payment?.razorpay_payment_link_url||'';
                 }
                 const inv=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'generate_invoice',booking_id:currentAdminBooking.booking_id,payment_url:paymentUrl})});
-                cwdCopyText(inv.invoice_url);alert('Invoice link copied. Final balance: '+money(balance));await loadVendorOpsPanel();
-            }catch(e){alert(e.message)}
+                await cwdCopyText(inv.invoice_url);cwdSuccessButton(btn,'Invoice Ready + Link Copied',0);await new Promise(r=>setTimeout(r,450));alert('Invoice link copied. Final balance: '+money(balance));await loadVendorOpsPanel();
+            }catch(e){done();alert(e.message)}
         }
-        async function cwdMarkVendorPaid(){const utr=prompt('Enter UTR / payment reference:','');if(!utr)return;try{await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'mark_vendor_paid',booking_id:currentAdminBooking.booking_id,utr_reference:utr})});await loadVendorOpsPanel()}catch(e){alert(e.message)}}
+        async function cwdMarkVendorPaid(btn){const utr=prompt('Enter UTR / payment reference:','');if(!utr)return;const done=cwdBusyButton(btn,'Marking Paid…');try{await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'mark_vendor_paid',booking_id:currentAdminBooking.booking_id,utr_reference:utr})});cwdSuccessButton(btn,'Paid',0);await new Promise(r=>setTimeout(r,350));await loadVendorOpsPanel()}catch(e){done();alert(e.message)}}
 
 document.addEventListener('click',e=>{
     const el=e.target.closest('button,a');
-    if(!el||el.dataset.noPressAnimation==='1')return;
-    try{el.animate([{transform:'scale(1)'},{transform:'scale(.97)'},{transform:'scale(1)'}],{duration:180,easing:'ease-out'});}catch(_){}
+    if(!el||el.dataset.noPressAnimation==='1'||el.disabled)return;
+    el.classList.add('cwd-action-flash');
+    try{el.animate([{transform:'scale(1)'},{transform:'scale(.965)'},{transform:'scale(.99)'}],{duration:220,easing:'ease-out'});}catch(_){}
+    setTimeout(()=>el.classList.remove('cwd-action-flash'),320);
 });
 </script>
 </body>

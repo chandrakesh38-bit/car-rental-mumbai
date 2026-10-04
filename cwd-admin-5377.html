@@ -965,8 +965,7 @@
                 .select('*')
                 .order('display_order', { ascending: true });
 
-            window._cwdWithDriverRates = cars || [];
-    if (error || !cars) {
+            if (error || !cars) {
                 tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-center text-rose-500">Failed to load cars.</td></tr>`;
                 return;
             }
@@ -2459,9 +2458,10 @@ async function loadWithDriverRates() {
     const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
     const { data, error } = await client.from('with_driver_rates').select('*').order('display_order', { ascending: true }).order('full_name', { ascending: true });
     if (error || !data) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-red-500">Failed to load rates</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-red-500">Failed to load rates</td></tr>';
         return;
     }
+    window._cwdWithDriverRates = data || [];
     tbody.innerHTML = data.map(car => `
         <tr class="border-b hover:bg-slate-50">
             <td class="py-2 px-3 font-semibold text-slate-800"><input id="wd_name_${car.id}" value="${escapeAdminHtml(car.full_name || '')}" class="w-36 border rounded px-1 py-0.5 font-bold"><input id="wd_segment_${car.id}" value="${escapeAdminHtml(car.segment || '')}" class="w-36 border rounded px-1 py-0.5 text-[10px] text-slate-500 block mt-1"></td>

@@ -1740,17 +1740,29 @@
 
         async function refreshAdminNotificationBadges(){
             try{
-                const seen=localStorage.getItem(BOOKING_SEEN_KEY);
-                let q=supabaseClient.from('inquiries').select('created_at',{count:'exact',head:true}).not('booking_id','is',null);
-                if(seen)q=q.gt('created_at',seen);
-                const {count,error}=await q;
-                if(!error)setNavBadge('booking-nav-badge',Number(count||0));
+                let seen=localStorage.getItem(BOOKING_SEEN_KEY);
+                if(!seen){
+                    const {data:latest}=await supabaseClient.from('inquiries').select('created_at').not('booking_id','is',null).order('created_at',{ascending:false}).limit(1);
+                    seen=latest?.[0]?.created_at||new Date().toISOString();
+                    localStorage.setItem(BOOKING_SEEN_KEY,seen);
+                    setNavBadge('booking-nav-badge',0);
+                }else{
+                    const {count,error}=await supabaseClient.from('inquiries').select('created_at',{count:'exact',head:true}).not('booking_id','is',null).gt('created_at',seen);
+                    if(!error)setNavBadge('booking-nav-badge',Number(count||0));
+                }
             }catch(_){}
             try{
                 const d=await adminApi('/api/admin-vendor-ops?dashboard=1');
-                const seen=localStorage.getItem(VENDOR_ACCEPT_SEEN_KEY);
-                const accepted=(d.offers||[]).filter(o=>o.status==='accepted' && (!seen || new Date(o.responded_at||o.created_at||0)>new Date(seen)));
-                setNavBadge('vendor-accept-nav-badge',accepted.length);
+                let seen=localStorage.getItem(VENDOR_ACCEPT_SEEN_KEY);
+                if(!seen){
+                    const latestAccepted=(d.offers||[]).filter(o=>o.status==='accepted').sort((a,b)=>new Date(b.responded_at||b.created_at||0)-new Date(a.responded_at||a.created_at||0))[0];
+                    seen=latestAccepted?.responded_at||latestAccepted?.created_at||new Date().toISOString();
+                    localStorage.setItem(VENDOR_ACCEPT_SEEN_KEY,seen);
+                    setNavBadge('vendor-accept-nav-badge',0);
+                }else{
+                    const accepted=(d.offers||[]).filter(o=>o.status==='accepted' && new Date(o.responded_at||o.created_at||0)>new Date(seen));
+                    setNavBadge('vendor-accept-nav-badge',accepted.length);
+                }
             }catch(_){}
         }
 

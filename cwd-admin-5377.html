@@ -269,6 +269,41 @@
                 </table>
             </div>
         </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-5">
+            <div class="p-5 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <div>
+                    <h3 class="font-black text-slate-900 text-sm">Vendor Rate Card / CWD Cost</h3>
+                    <p class="text-[11px] text-slate-500 mt-1">Vehicle names are linked to Global Pricing. Customer rates stay separate; these values calculate vendor offers and settlements.</p>
+                </div>
+                <button type="button" onclick="loadVendorRateCards()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">⟳ Refresh</button>
+            </div>
+            <div id="vendor-rate-card-status" class="hidden mx-5 mt-4 rounded-xl border px-4 py-3 text-xs font-semibold"></div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-[11px] text-slate-600 whitespace-nowrap">
+                    <thead class="bg-slate-50 text-slate-700 uppercase font-bold border-b">
+                        <tr>
+                            <th class="py-3 px-3">Vehicle</th>
+                            <th class="py-3 px-3">Customer Outstation</th>
+                            <th class="py-3 px-3">Vendor /KM</th>
+                            <th class="py-3 px-3">Min KM/Day</th>
+                            <th class="py-3 px-3">Vendor DA</th>
+                            <th class="py-3 px-3">Night</th>
+                            <th class="py-3 px-3">Local 8H/80</th>
+                            <th class="py-3 px-3">Local 10H/100</th>
+                            <th class="py-3 px-3">Local 12H/120</th>
+                            <th class="py-3 px-3">Extra KM</th>
+                            <th class="py-3 px-3">Extra Hr</th>
+                            <th class="py-3 px-3">Active</th>
+                            <th class="py-3 px-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vendor-rate-card-body">
+                        <tr><td colspan="13" class="py-7 text-center text-slate-400">Loading vendor rates...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
             </div>
 
             <!-- SECTION 3: BOOKING LOCATIONS -->
@@ -898,7 +933,7 @@
 
             if (tab === 'dashboard') loadDashboard();
             if (tab === 'vehicles') loadVehicles();
-            if (tab === 'pricing') loadPricingRules();
+            if (tab === 'pricing') { loadPricingRules(); loadWithDriverRates(); loadVendorRateCards(); }
             if (tab === 'locations') loadLocations();
             if (tab === 'cms') loadCmsSettings();
             if (tab === 'whatsapp') loadWhatsAppTemplate();
@@ -2448,6 +2483,88 @@ async function deleteWithDriverVehicle(id) {
     loadWithDriverRates();
 });
     
+        let cwdVendorRateState = { vehicles: [], vendor_rates: [] };
+
+        function vendorRateStatus(message,error=false){
+            const el=document.getElementById('vendor-rate-card-status');if(!el)return;
+            if(!message){el.classList.add('hidden');return}
+            el.textContent=message;el.className='mx-5 mt-4 rounded-xl border px-4 py-3 text-xs font-semibold '+(error?'bg-rose-50 border-rose-200 text-rose-700':'bg-emerald-50 border-emerald-200 text-emerald-700');
+        }
+
+        async function loadVendorRateCards(){
+            const tbody=document.getElementById('vendor-rate-card-body');if(!tbody)return;
+            tbody.innerHTML='<tr><td colspan="13" class="py-7 text-center text-slate-400">Loading vendor rates...</td></tr>';
+            vendorRateStatus('');
+            try{
+                const d=await adminApi('/api/admin-vendor-ops?rates=1');
+                cwdVendorRateState=d;
+                renderVendorRateCards();
+            }catch(e){
+                tbody.innerHTML='<tr><td colspan="13" class="py-7 text-center text-rose-600 font-bold">'+escapeAdminHtml(e.message)+'</td></tr>';
+                vendorRateStatus(e.message,true);
+            }
+        }
+
+        function vrInput(id,key,value,width='w-16'){
+            return '<input type="number" min="0" step="0.01" id="vr-'+key+'-'+id+'" value="'+Number(value||0)+'" class="'+width+' border border-slate-300 rounded px-2 py-1.5 text-right">';
+        }
+
+        function renderVendorRateCards(){
+            const tbody=document.getElementById('vendor-rate-card-body');if(!tbody)return;
+            const vehicles=cwdVendorRateState.vehicles||[], rateMap=new Map((cwdVendorRateState.vendor_rates||[]).map(r=>[String(r.vehicle_rate_id),r]));
+            if(!vehicles.length){tbody.innerHTML='<tr><td colspan="13" class="py-7 text-center text-slate-400">No Global Pricing vehicles found.</td></tr>';return}
+            tbody.innerHTML=vehicles.map(car=>{
+                const id=String(car.id),r=rateMap.get(id)||{};
+                const customerOut=Number(car.outstation_rate_per_km||0);
+                const vendorOut=Number(r.outstation_rate_per_km||0);
+                const warning=vendorOut>0&&customerOut>0&&vendorOut>=customerOut?'<div class="text-[9px] text-rose-600 font-bold mt-1">Vendor ≥ customer</div>':'';
+                return '<tr class="border-b hover:bg-slate-50">'+
+                  '<td class="py-3 px-3"><div class="font-black text-slate-900">'+escapeAdminHtml(car.full_name||'')+'</div><div class="text-[9px] text-slate-400">'+escapeAdminHtml(car.segment||'')+'</div></td>'+
+                  '<td class="py-3 px-3"><b class="text-indigo-950">₹'+customerOut.toLocaleString('en-IN')+'/km</b>'+warning+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'out',r.outstation_rate_per_km)+'</td>'+
+                  '<td class="py-3 px-3">'+vrInput(id,'min',r.minimum_outstation_km_per_day||240)+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'da',r.driver_allowance_per_day||500)+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'night',r.night_charge||300)+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'l8',r.local_pkg_8hr_80km,'w-20')+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'l10',r.local_pkg_10hr_100km,'w-20')+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'l12',r.local_pkg_12hr_120km,'w-20')+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'ekm',r.local_extra_km_rate)+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'ehr',r.local_extra_hour_rate)+'</td>'+
+                  '<td class="py-3 px-3"><input type="checkbox" id="vr-active-'+id+'" '+(r.is_active!==false?'checked':'')+'></td>'+
+                  '<td class="py-3 px-3 text-right"><button type="button" onclick="saveVendorRateCard('+JSON.stringify(id).replace(/"/g,'&quot;')+')" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-1.5 font-bold text-[10px]">Save</button></td></tr>';
+            }).join('');
+        }
+
+        function vrVal(id,key){
+            const el=document.getElementById('vr-'+key+'-'+id),v=Number(el?.value);
+            if(!Number.isFinite(v)||v<0)throw new Error('Enter valid non-negative vendor rates.');
+            return v;
+        }
+
+        async function saveVendorRateCard(id){
+            const car=(cwdVendorRateState.vehicles||[]).find(x=>String(x.id)===String(id));if(!car)return;
+            try{
+                const rate={
+                    vehicle_rate_id:String(id),
+                    outstation_rate_per_km:vrVal(id,'out'),
+                    minimum_outstation_km_per_day:vrVal(id,'min'),
+                    driver_allowance_per_day:vrVal(id,'da'),
+                    night_charge:vrVal(id,'night'),
+                    local_pkg_8hr_80km:vrVal(id,'l8'),
+                    local_pkg_10hr_100km:vrVal(id,'l10'),
+                    local_pkg_12hr_120km:vrVal(id,'l12'),
+                    local_extra_km_rate:vrVal(id,'ekm'),
+                    local_extra_hour_rate:vrVal(id,'ehr'),
+                    is_active:document.getElementById('vr-active-'+id).checked
+                };
+                const customerOut=Number(car.outstation_rate_per_km||0);
+                if(customerOut>0&&rate.outstation_rate_per_km>=customerOut&&!confirm('Vendor outstation rate is equal to or higher than customer rate for '+car.full_name+'. Save anyway?'))return;
+                await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'update_vendor_rate',rate})});
+                vendorRateStatus(car.full_name+' vendor rate saved.');
+                await loadVendorRateCards();
+            }catch(e){vendorRateStatus(e.message,true)}
+        }
+
         let cwdVendorCenterData = { vendors: [], offers: [], allocations: [], settlements: [] };
         let cwdVendorFilter = 'all';
 

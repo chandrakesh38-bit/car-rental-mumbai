@@ -93,10 +93,13 @@ async function buildLedgers(b,a,t,over={}){
  }
  const customerNight=night?n(snap.customer_night):0;
  const vendorNight=night?n(snap.vendor_night):0;
- const customerTotal=customerBase+customerDa+customerNight+actuals.toll+actuals.parking+actuals.state_tax+actuals.other;
+ const standardCustomerPreActual=customerBase+customerDa+customerNight;
+ const agreedCustomerPreActual=over.negotiated_customer_fare!==null&&over.negotiated_customer_fare!==undefined?n(over.negotiated_customer_fare):standardCustomerPreActual;
+ const customerTotal=agreedCustomerPreActual+actuals.toll+actuals.parking+actuals.state_tax+actuals.other;
  const advance=n(b.paid_amount),balance=Math.max(0,customerTotal-advance);
- const computedVendorTotal=vendorBase+vendorDa+vendorNight+actuals.toll+actuals.parking+actuals.state_tax+actuals.other-n(over.penalty);
- const vendorTotal=snap.vendor_final_payout_override!==null&&snap.vendor_final_payout_override!==undefined?n(snap.vendor_final_payout_override):computedVendorTotal;
+ const standardVendorPreActual=vendorBase+vendorDa+vendorNight;
+ const agreedVendorPreActual=snap.vendor_final_payout_override!==null&&snap.vendor_final_payout_override!==undefined?n(snap.vendor_final_payout_override):standardVendorPreActual;
+ const vendorTotal=agreedVendorPreActual+actuals.toll+actuals.parking+actuals.state_tax+actuals.other-n(over.penalty);
  const due=new Date();due.setUTCDate(due.getUTCDate()+1);due.setUTCHours(10,30,0,0);
  return {
   customer:{booking_id:b.booking_id,customer_km_rate:customerKmRate,billable_km:billableKm,customer_da:customerDa,customer_night:customerNight,toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,customer_advance:advance,customer_total:customerTotal,customer_balance:balance,updated_at:new Date().toISOString()},
@@ -309,14 +312,19 @@ async function handler(request){
   }
   if(action==='review'){
     const ar=await db('cwd_vendor_allocations?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),a=ar?.[0];if(!a)fail('No allocation found.');
-    const sourceOffer=(await db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a.offer_id)+'&select=pricing_snapshot&limit=1'))?.[0];
-    a.pricing_snapshot=sourceOffer?.pricing_snapshot||{};
+    const [sourceOffer,commercialOverride]=await Promise.all([
+      db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a.offer_id)+'&select=pricing_snapshot&limit=1'),
+      db('cwd_booking_commercial_overrides?booking_id=eq.'+encodeURIComponent(id)+'&select=negotiated_customer_fare&limit=1')
+    ]);
+    a.pricing_snapshot=sourceOffer?.[0]?.pricing_snapshot||{};
     const tr=await db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),t=tr?.[0];if(!t||!t.ended_at)fail('Trip closure has not been submitted.');
     if(body.review_action==='query'){
       await db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({review_status:'query_vendor',admin_notes:String(body.admin_notes||'').slice(0,1000),reviewed_at:new Date().toISOString(),reviewed_by:String(user.email||'')})});return json({success:true});
     }
     if(!['approve','correct'].includes(body.review_action))fail('Invalid review action.');
-    const led=await buildLedgers(b,a,t,body.corrections||{});
+    const corrections={...(body.corrections||{})};
+    if(commercialOverride?.[0]?.negotiated_customer_fare!==null&&commercialOverride?.[0]?.negotiated_customer_fare!==undefined)corrections.negotiated_customer_fare=Number(commercialOverride[0].negotiated_customer_fare);
+    const led=await buildLedgers(b,a,t,corrections);
     await db('cwd_customer_billing_ledger',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(led.customer)});
     await db('cwd_vendor_settlement_ledger',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(led.vendor)});
     await db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({review_status:body.review_action==='correct'?'corrected':'approved',admin_notes:String(body.admin_notes||'').slice(0,1000)||null,reviewed_at:new Date().toISOString(),reviewed_by:String(user.email||'')})});

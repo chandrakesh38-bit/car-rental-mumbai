@@ -57,7 +57,7 @@ async function buildLedgers(b,a,t,over={}){
  const due=new Date();due.setUTCDate(due.getUTCDate()+1);due.setUTCHours(10,30,0,0);
  return {customer:{booking_id:b.booking_id,customer_km_rate:trip.includes('local')?17:13,billable_km:billableKm,customer_da:customerDa,customer_night:customerNight,toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,customer_advance:advance,customer_total:customerTotal,customer_balance:balance,updated_at:new Date().toISOString()},vendor:{booking_id:b.booking_id,vendor_id:a.vendor_id,vendor_km_rate:trip.includes('local')?13:11,billable_km:billableKm,vendor_da:vendorDa,vendor_night:vendorNight,toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,penalty:n(over.penalty),vendor_final_payout:Math.max(0,vendorTotal),payout_due_at:due.toISOString(),updated_at:new Date().toISOString()}}
 }
-export default async function handler(request){
+async function handler(request){
  if(!['GET','POST'].includes(request.method))return json({success:false,message:'Method not allowed.'},405);
  try{
   const user=await requireAdmin(request);

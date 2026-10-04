@@ -49,9 +49,24 @@ function formatIndiaDateTime(d){
  return new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true}).format(d);
 }
 async function upload(file,path){if(!file||typeof file.arrayBuffer!=='function')fail('Odometer photo is required.');if(file.size<=0||file.size>5242880)fail('Photo must be under 5 MB.');if(!['image/jpeg','image/png','image/webp'].includes(file.type))fail('Use JPG, PNG or WEBP photo.');const r=await fetch(base()+'/storage/v1/object/'+BUCKET+'/'+path,{method:'POST',headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':file.type,'x-upsert':'false'},body:await file.arrayBuffer()});if(!r.ok)fail('Photo upload failed.',503);return path}
-function piiBooking(b){
- const schedule=bookingSchedule(b);
- return {booking_id:b.booking_id,customer_name:b.customer_name,customer_mobile:b.customer_phone,exact_pickup:b.pickup_location||b.route||'',exact_drop:b.destination||b.route||'',route:b.route||'',pickup_date_time:formatIndiaDateTime(schedule.start),final_drop_date_time:formatIndiaDateTime(schedule.end),trip_type:b.trip_type||'',vehicle:b.car_name||''}
+function customerTripLocations(b){
+ const raw=String(b?.route||'');
+ let points=raw.split(/\s*→\s*/).map(v=>v.trim()).filter(Boolean);
+ const isBase=value=>/lal bahadur shastri marg.*godrej hillside colony.*vikhroli west/i.test(String(value||''))||/vikhroli base/i.test(String(value||''));
+ if(points.length&&isBase(points[0]))points.shift();
+ if(points.length&&isBase(points[points.length-1]))points.pop();
+
+ const details=String(b?.booking_details||'');
+ const journey=(details.match(/🔁\s*Trip Type:\s*([^\n]+)/i)?.[1]||'').trim().toLowerCase();
+ const pickup=String(b?.pickup_location||points[0]||raw||'').trim();
+ const destination=String(b?.destination||points[points.length-1]||pickup||'').trim();
+ const customerRoute=(points.length?points:[pickup,destination]).filter(Boolean).join(' → ');
+ const finalDrop=journey.includes('round')?pickup:destination;
+ return {pickup,destination,customerRoute,finalDrop,journeyType:journey};
+}
+function piiBooking(b,allocatedVehicle=''){
+ const schedule=bookingSchedule(b),loc=customerTripLocations(b);
+ return {booking_id:b.booking_id,customer_name:b.customer_name,customer_mobile:b.customer_phone,exact_pickup:loc.pickup,exact_drop:loc.finalDrop,destination:loc.destination,route:loc.customerRoute,journey_type:loc.journeyType,pickup_date_time:formatIndiaDateTime(schedule.start),final_drop_date_time:formatIndiaDateTime(schedule.end),trip_type:b.trip_type||'',vehicle:allocatedVehicle||b.car_name||''}
 }
 async function handler(request){
  try{
@@ -59,7 +74,7 @@ async function handler(request){
   if(request.method==='GET'){
    const offer=u.searchParams.get('offer'),allocation=u.searchParams.get('allocation');
    if(offer){const o=await byOffer(offer);if(!o||['revoked','expired'].includes(o.status))fail('Offer link is invalid or expired.',410);return json({success:true,mode:'offer',offer:{booking_id:o.booking_id,vehicle:o.vehicle_required,trip_type:o.trip_type,route:o.route_summary,start_at:o.start_at,final_drop_at:o.final_drop_at,estimated_km:o.estimated_km,estimated_vendor_payout:o.estimated_vendor_payout,status:o.status,pricing_snapshot:o.pricing_snapshot}})}
-   if(allocation){const a=await byAlloc(allocation);if(!a||a.revoked_at||['cancelled','reallocated'].includes(a.status))fail('Allocation link is invalid or revoked.',410);const [b,t,o]=await Promise.all([booking(a.booking_id),db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(a.booking_id)+'&select=*&limit=1'),db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a.offer_id)+'&select=pricing_snapshot&limit=1')]);const allocationView={...a,early_start_approved_at:o?.[0]?.pricing_snapshot?.early_start_approved_at||null};return json({success:true,mode:'allocation',allocation:allocationView,booking:piiBooking(b),trip:t?.[0]||null})}
+   if(allocation){const a=await byAlloc(allocation);if(!a||a.revoked_at||['cancelled','reallocated'].includes(a.status))fail('Allocation link is invalid or revoked.',410);const [b,t,o]=await Promise.all([booking(a.booking_id),db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(a.booking_id)+'&select=*&limit=1'),db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a.offer_id)+'&select=vehicle_required,pricing_snapshot&limit=1')]);const allocationView={...a,early_start_approved_at:o?.[0]?.pricing_snapshot?.early_start_approved_at||null};return json({success:true,mode:'allocation',allocation:allocationView,booking:piiBooking(b,o?.[0]?.vehicle_required||''),trip:t?.[0]||null})}
    fail('Secure token is required.',401);
   }
   const ct=String(request.headers.get('content-type')||'');

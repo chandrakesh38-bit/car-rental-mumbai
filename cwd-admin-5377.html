@@ -105,10 +105,10 @@
                         <i class="fa-solid fa-circle-question w-4 text-amber-300"></i> FAQs
                     </button>
                     <button onclick="switchTab('inquiries')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-inquiries">
-                        <i class="fa-solid fa-calendar-check w-4 text-rose-400"></i> Bookings
+                        <i class="fa-solid fa-calendar-check w-4 text-rose-400"></i> <span class="flex-1">Bookings</span><span id="booking-nav-badge" class="hidden min-w-5 h-5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-black items-center justify-center"></span>
                     </button>
                     <button onclick="switchTab('vendors')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-vendors">
-                        <i class="fa-solid fa-handshake w-4 text-emerald-300"></i> With Driver Vendors
+                        <i class="fa-solid fa-handshake w-4 text-emerald-300"></i> <span class="flex-1">With Driver Vendors</span><span id="vendor-accept-nav-badge" class="hidden min-w-5 h-5 px-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black items-center justify-center"></span>
                     </button>
                     <a href="/self-drive-review" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left">
                         <i class="fa-solid fa-id-card w-4 text-cyan-300"></i> Self Drive Documents
@@ -896,6 +896,7 @@
                 document.getElementById('dashboard-screen').classList.remove('hidden');
                 document.getElementById('admin-user-display').innerText = session.user.email;
                 switchTab('dashboard');
+                startAdminNotificationMonitor();
             } else {
                 document.getElementById('auth-screen').classList.remove('hidden');
                 document.getElementById('dashboard-screen').classList.add('hidden');
@@ -951,7 +952,8 @@
             if (tab === 'whatsapp') loadWhatsAppTemplate();
             if (tab === 'faqs') loadFaqs();
             setBookingsAutoRefresh(tab === 'inquiries');
-            if (tab === 'inquiries') loadInquiries();
+            if (tab === 'inquiries') { markBookingsSeen(); loadInquiries(); }
+            if (tab === 'vendors') markVendorAcceptancesSeen();
             if (tab === 'vendors') loadVendorControlCenter();
         }
 
@@ -1726,6 +1728,46 @@
         async function refreshBookingDetail(){
             if(!currentAdminBooking)return; const btn=document.getElementById('booking-refresh-btn');
             try{if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Refreshing…';}const result=await adminApi('/api/admin-payment?dashboard=1');const fresh=(result.bookings||[]).find(x=>x.booking_id===currentAdminBooking.booking_id);if(fresh)currentAdminBooking=fresh;await renderBookingDetail();await loadVendorOpsPanel();}catch(e){alert(e.message)}finally{const b=document.getElementById('booking-refresh-btn');if(b){b.disabled=false;b.innerHTML='<i class="fa-solid fa-check mr-1"></i> Updated';setTimeout(()=>{if(b)b.innerHTML='<i class="fa-solid fa-rotate mr-1"></i> Refresh'},900);}}}
+        let adminNotificationTimer=null;
+        const BOOKING_SEEN_KEY='cwd_admin_bookings_seen_at';
+        const VENDOR_ACCEPT_SEEN_KEY='cwd_admin_vendor_accept_seen_at';
+
+        function setNavBadge(id,count){
+            const el=document.getElementById(id);if(!el)return;
+            if(count>0){el.textContent=count>99?'99+':String(count);el.classList.remove('hidden');el.classList.add('inline-flex');}
+            else{el.textContent='';el.classList.add('hidden');el.classList.remove('inline-flex');}
+        }
+
+        async function refreshAdminNotificationBadges(){
+            try{
+                const seen=localStorage.getItem(BOOKING_SEEN_KEY);
+                let q=supabaseClient.from('inquiries').select('created_at',{count:'exact',head:true}).not('booking_id','is',null);
+                if(seen)q=q.gt('created_at',seen);
+                const {count,error}=await q;
+                if(!error)setNavBadge('booking-nav-badge',Number(count||0));
+            }catch(_){}
+            try{
+                const d=await adminApi('/api/admin-vendor-ops?dashboard=1');
+                const seen=localStorage.getItem(VENDOR_ACCEPT_SEEN_KEY);
+                const accepted=(d.offers||[]).filter(o=>o.status==='accepted' && (!seen || new Date(o.responded_at||o.created_at||0)>new Date(seen)));
+                setNavBadge('vendor-accept-nav-badge',accepted.length);
+            }catch(_){}
+        }
+
+        function markBookingsSeen(){
+            localStorage.setItem(BOOKING_SEEN_KEY,new Date().toISOString());
+            setNavBadge('booking-nav-badge',0);
+        }
+        function markVendorAcceptancesSeen(){
+            localStorage.setItem(VENDOR_ACCEPT_SEEN_KEY,new Date().toISOString());
+            setNavBadge('vendor-accept-nav-badge',0);
+        }
+        function startAdminNotificationMonitor(){
+            if(adminNotificationTimer)clearInterval(adminNotificationTimer);
+            refreshAdminNotificationBadges();
+            adminNotificationTimer=setInterval(refreshAdminNotificationBadges,15000);
+        }
+
         let bookingsAutoRefreshTimer = null;
         function setBookingsAutoRefresh(enabled) {
             if (bookingsAutoRefreshTimer) { clearInterval(bookingsAutoRefreshTimer); bookingsAutoRefreshTimer = null; }
@@ -3010,12 +3052,25 @@ async function deleteWithDriverVehicle(id) {
             else prompt('Copy:',value);
         }
         function cwdVendorOfferMessage(o){
-            return '🚨 *CWD BOOKING OFFER*\n\n*Booking ID:* '+o.booking_id+
-              '\n*Vehicle:* '+(o.vehicle_required||'')+'\n*Trip Type:* '+(o.trip_type||'')+
-              '\n*Route:* '+(o.route_summary||'')+'\n*Estimated KM:* '+Number(o.estimated_km||0).toLocaleString('en-IN')+
-              '\n*Estimated Vendor Payout:* '+money(o.estimated_vendor_payout)+
-              '\n\nView / Accept / Decline:\n'+o.view_url+
-              '\n\nAccepting does not allocate the booking. CWD will confirm allocation separately.';
+            const route=String(o.route_summary||'').trim();
+            return [
+              '🚘 *CWD BOOKING OFFER*',
+              '',
+              '🆔 *'+String(o.booking_id||'')+'*',
+              '🚗 '+String(o.vehicle_required||''),
+              '🧭 '+String(o.trip_type||''),
+              '',
+              '📍 *Route*',
+              route,
+              '',
+              '📏 *Billable KM:* '+Number(o.estimated_km||0).toLocaleString('en-IN')+' KM',
+              '💰 *Vendor Payout:* '+money(o.estimated_vendor_payout),
+              '',
+              '👇 *Open to Accept / Decline*',
+              String(o.view_url||''),
+              '',
+              '_Accepting confirms availability only. Final allocation is confirmed separately by CWD._'
+            ].join('\n');
         }
         async function loadVendorOpsPanel(){
             const b=currentAdminBooking,body=document.getElementById('booking-detail-body');
@@ -3045,8 +3100,10 @@ async function deleteWithDriverVehicle(id) {
                     : '<div class="mt-2 text-[10px] font-bold text-rose-600">No compatible registered vehicle</div>';
                 return '<label class="block p-3 bg-white border rounded-xl '+(disabled?'opacity-60':'hover:border-indigo-300')+' transition"><div class="flex items-start gap-2"><input type="checkbox" data-vendor-id="'+escapeAdminHtml(v.id)+'" class="mt-1" '+(disabled?'disabled':'')+'><span><b>'+escapeAdminHtml(v.owner_business_name)+'</b> <span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(v.vendor_code)+'</span><br><span class="text-[10px] text-slate-500">'+escapeAdminHtml(v.primary_whatsapp)+' · '+escapeAdminHtml(v.base_location)+' · '+escapeAdminHtml(v.status)+'</span></span></div>'+selector+'</label>';
             }).join('')||'<p class="text-slate-500">No active vendors yet.</p>';
-            const offerRows=offers.map(o=>{const v=vendorMap.get(o.vendor_id)||{};return '<div class="p-3 bg-white border rounded-xl flex items-center justify-between gap-2"><div><b>'+escapeAdminHtml(v.owner_business_name||v.vendor_code||'Vendor')+'</b><br><span class="text-[10px] text-slate-500">'+escapeAdminHtml(v.primary_whatsapp||'')+' · '+escapeAdminHtml(o.status.toUpperCase())+' · '+money(o.estimated_vendor_payout)+'</span></div>'+(o.status==='accepted'?'<button class="bg-emerald-600 text-white rounded-lg px-3 py-2 font-bold" onclick="cwdAllocate(\''+o.id+'\')">ALLOCATE</button>':'')+'</div>'}).join('');
+            const acceptedOffers=offers.filter(o=>o.status==='accepted');
+            const offerRows=offers.map(o=>{const v=vendorMap.get(o.vendor_id)||{},accepted=o.status==='accepted';return '<div class="p-3 '+(accepted?'bg-emerald-50 border-emerald-300':'bg-white')+' border rounded-xl flex items-center justify-between gap-2"><div><b>'+escapeAdminHtml(v.owner_business_name||v.vendor_code||'Vendor')+'</b>'+(accepted?' <span class="ml-1 inline-flex px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black">ACCEPTED</span>':'')+'<br><span class="text-[10px] text-slate-500">'+escapeAdminHtml(v.primary_whatsapp||'')+' · '+escapeAdminHtml(o.status.toUpperCase())+' · '+money(o.estimated_vendor_payout)+'</span></div>'+(accepted?'<button class="bg-emerald-600 text-white rounded-lg px-3 py-2 font-bold" onclick="cwdAllocate(\''+o.id+'\')">ALLOCATE</button>':'')+'</div>'}).join('');
             box.innerHTML=
+              (acceptedOffers.length?'<div class="mb-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-3 flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg">✓</div><div><div class="font-black text-emerald-900">Vendor Accepted — Allocation Required</div><div class="text-[10px] text-emerald-700">'+acceptedOffers.length+' vendor'+(acceptedOffers.length>1?'s have':' has')+' accepted this booking. Choose one below and tap ALLOCATE.</div></div></div>':'')+
               '<div class="grid lg:grid-cols-2 gap-3"><div class="bg-white rounded-xl p-3 border"><h5 class="font-black mb-2">1. Select Vendors</h5><div class="space-y-2 max-h-56 overflow-auto">'+vendorRows+'</div></div>'+
               '<div class="bg-white rounded-xl p-3 border"><h5 class="font-black mb-2">2. Offer Pricing Inputs</h5><div class="grid grid-cols-2 gap-2"><label>Estimated/Billable KM<input id="cwd-est-km" type="number" min="0" value="240" class="w-full border rounded-lg p-2 mt-1"></label><label>Duty Days<input id="cwd-duty-days" type="number" min="1" value="1" class="w-full border rounded-lg p-2 mt-1"></label><label>Night Count<input id="cwd-night-count" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label><label>Local Package<select id="cwd-local-package" class="w-full border rounded-lg p-2 mt-1"><option value="8hr_80km">8H/80KM</option><option value="10hr_100km">10H/100KM</option><option value="12hr_120km">12H/120KM</option></select></label><label>Extra KM<input id="cwd-extra-km" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label><label>Extra Hours<input id="cwd-extra-hours" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label></div><div class="mt-3 border-t pt-3"><div><h6 class="font-black text-amber-900">Vendor Offer Override</h6><p class="text-[9px] text-slate-500">Optional. Use only when standard vendor rate is not being accepted.</p></div><div class="grid grid-cols-2 gap-2 mt-2"><label>Override ₹/KM<input id="cwd-vendor-rate-override" type="number" min="0" step="0.01" placeholder="Optional" value="'+escapeAdminHtml(d.commercial_override?.vendor_rate_per_km_override??'')+'" class="w-full border rounded-lg p-2 mt-1"></label><label>Final Vendor Payout<input id="cwd-vendor-final-override" type="number" min="0" step="0.01" placeholder="Optional" value="'+escapeAdminHtml(d.commercial_override?.vendor_final_payout_override??'')+'" class="w-full border rounded-lg p-2 mt-1"></label><label class="col-span-2">Override Reason<input id="cwd-vendor-override-reason" maxlength="500" placeholder="e.g. No vendor accepted / urgent booking" value="'+escapeAdminHtml(d.commercial_override?.vendor_override_reason||'')+'" class="w-full border rounded-lg p-2 mt-1"></label></div><p class="text-[9px] text-slate-500 mt-2">If Final Vendor Payout is entered, it takes priority over ₹/KM override for this offer.</p></div><button class="mt-3 w-full bg-indigo-950 text-white rounded-xl p-3 font-black" onclick="cwdGenerateOffers()">Generate Vendor Offer</button></div></div>'+
               (cwdLastGeneratedOffers.length?'<div class="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3"><h5 class="font-black">New Offer Links</h5>'+cwdLastGeneratedOffers.map((o,i)=>'<div class="mt-2 flex gap-2"><button class="flex-1 bg-white border rounded-lg p-2 font-bold" onclick="cwdCopyText(cwdVendorOfferMessage(cwdLastGeneratedOffers['+i+']))">Copy Offer</button><a class="flex-1 text-center bg-emerald-600 text-white rounded-lg p-2 font-bold" target="_blank" href="https://wa.me/91'+encodeURIComponent(String(o.vendor_whatsapp||'').replace(/\D/g,''))+'?text='+encodeURIComponent(cwdVendorOfferMessage(o))+'">Open WhatsApp</a></div>').join('')+'</div>':'')+

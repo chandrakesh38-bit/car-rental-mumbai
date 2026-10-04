@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Final Invoice | Car With Driver India</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827;background:#f5f7fb}
+*{box-sizing:border-box}body{margin:0;background:#f5f7fb}.wrap{max-width:720px;margin:auto;padding:18px 12px 42px}.card{background:#fff;border:1px solid #dfe5ee;border-radius:20px;padding:22px;box-shadow:0 10px 28px rgba(15,23,42,.05)}
+.brand{display:flex;align-items:center;gap:11px;margin-bottom:20px}.brand img{width:48px;height:48px;border-radius:13px}.brand h1{font-size:20px;margin:0;color:#0b1739}.brand p{font-size:11px;color:#64748b;margin:2px 0 0}
+.title{font-size:24px;font-weight:900;color:#0b1739;margin:4px 0}.sub{font-size:12px;color:#64748b;margin-bottom:18px}.meta{background:#f8fafc;border:1px solid #edf1f6;border-radius:15px;padding:4px 14px;margin-bottom:16px}
+.row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:10px 0;border-bottom:1px solid #edf1f6}.row:last-child{border-bottom:0}.row b{font-size:13px}.row span,.row strong{font-size:13px;text-align:right;max-width:64%}.route{line-height:1.45}
+.section{font-size:12px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin:18px 0 6px}.base{background:#eef6ff;border:1px solid #d8e9ff;border-radius:15px;padding:14px;margin-top:8px}.base .amount{font-size:22px;font-weight:950;color:#0b1739}.note{font-size:11px;color:#5f6f85;margin-top:3px;line-height:1.45}
+.total{margin-top:14px;border-top:2px solid #e5e7eb}.total .row strong{font-size:16px}.balance strong{font-size:20px;color:#0b1739}.pay{display:flex;align-items:center;justify-content:center;text-align:center;background:#16a34a;color:#fff;padding:15px;border-radius:13px;text-decoration:none;font-weight:900;margin-top:18px;transition:transform .15s ease,opacity .15s ease}.pay:active{transform:scale(.98);opacity:.9}
+.zero{font-size:12px;color:#64748b;background:#f8fafc;border-radius:12px;padding:12px}
+@media(max-width:520px){.wrap{padding:10px 8px 30px}.card{padding:17px;border-radius:17px}.row span,.row strong{max-width:60%}.route{font-size:12px!important}.title{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+  <div class="brand"><img src="/logo-optimized.webp" alt=""><div><h1>Car With Driver India</h1><p>Final Customer Invoice</p></div></div>
+  <div class="title">Trip Invoice</div><div class="sub">Final amount after approved trip charges.</div>
+  <div id="invoice">Loading…</div>
+</div></div>
+<script>
+const t=new URLSearchParams(location.search).get('t'),x=document.getElementById('invoice');
+const money=v=>'₹'+Number(v||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmt=v=>{if(!v)return '—';const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v);return new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true}).format(d)};
+const line=(label,value,cls='')=>'<div class="row '+cls+'"><b>'+esc(label)+'</b><span>'+value+'</span></div>';
+fetch('/api/customer-invoice?t='+encodeURIComponent(t||'')).then(async r=>{
+ const d=await r.json();if(!r.ok||!d.success)throw Error(d.message||'Invalid invoice');
+ const i=d.invoice||{};
+ const bookingFare=Number(i.booking_fare??0);
+ let extras='';
+ if(Number(i.extra_km)>0)extras+=line('Extra KM',esc(Number(i.extra_km).toLocaleString('en-IN'))+' KM × '+money(i.extra_km_rate)+' = <b>'+money(i.extra_km_charge)+'</b>');
+ if(Number(i.extra_hours)>0)extras+=line('Extra Hours',esc(Number(i.extra_hours).toLocaleString('en-IN'))+' × '+money(i.extra_hour_rate)+' = <b>'+money(i.extra_hour_charge)+'</b>');
+ if(Number(i.customer_night)>0)extras+=line('Night charge',money(i.customer_night));
+ if(Number(i.toll)>0)extras+=line('Toll',money(i.toll));
+ if(Number(i.parking)>0)extras+=line('Parking',money(i.parking));
+ if(Number(i.state_tax)>0)extras+=line('State tax',money(i.state_tax));
+ if(Number(i.approved_other)>0)extras+=line('Other approved charge',money(i.approved_other));
+ x.innerHTML=
+  '<div class="meta">'+
+   line('Booking ID',esc(i.booking_id||''))+
+   line('Trip date',esc(fmt(i.trip_date)))+
+   line('Vehicle',esc(i.vehicle||''))+
+   line('Route','<span class="route">'+esc(i.route||'')+'</span>')+
+  '</div>'+
+  '<div class="section">Confirmed Booking Fare</div>'+
+  '<div class="base"><div class="amount">'+money(bookingFare)+'</div>'+(Number(i.included_km)>0?'<div class="note">'+Number(i.included_km).toLocaleString('en-IN')+' KM included.</div>':'')+'</div>'+
+  '<div class="section">Additional Trip Charges</div>'+
+  (extras||'<div class="zero">No additional trip charges.</div>')+
+  '<div class="total">'+
+   line('Final Total','<strong>'+money(i.customer_total)+'</strong>')+
+   line('Advance Paid',money(i.customer_advance))+
+   line('Balance Payable','<strong>'+money(i.customer_balance)+'</strong>','balance')+
+  '</div>'+
+  (d.payment_url?'<a class="pay" href="'+esc(d.payment_url)+'">PAY NOW</a>':'');
+}).catch(er=>x.textContent=er.message);
+</script>
+</body>
+</html>

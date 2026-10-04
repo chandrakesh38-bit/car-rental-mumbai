@@ -312,15 +312,15 @@
   const SUPABASE_URL = 'https://pwciaihqkfnlenxxiown.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz';
   const fallbackFleet = [
-    { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', outstationPerKm: 17, driverAllowance: 500, local8: 3000, local10: 3500, local12: 4000, extraKm: 17, extraHour: 250 },
-    { name: 'Maruti Ertiga', category: 'Family MUV', outstationPerKm: 19, driverAllowance: 500, local8: 3750, local10: 4400, local12: 5000, extraKm: 19, extraHour: 325 },
-    { name: 'Kia Carens', category: 'Premium Family MUV', outstationPerKm: 20, driverAllowance: 500, local8: 4000, local10: 4700, local12: 5400, extraKm: 20, extraHour: 350 },
-    { name: 'Toyota Innova', category: 'Executive MUV', outstationPerKm: 22, driverAllowance: 500, local8: 4400, local10: 5200, local12: 6000, extraKm: 22, extraHour: 400 },
-    { name: 'Innova Crysta', category: 'Luxury MUV', outstationPerKm: 25, driverAllowance: 500, local8: 5000, local10: 6000, local12: 7000, extraKm: 25, extraHour: 500 }
+    { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', outstationPerKm: 17, driverAllowance: 500, nightCharge: 400, local8: 3000, local10: 3500, local12: 4000, extraKm: 17, extraHour: 250 },
+    { name: 'Maruti Ertiga', category: 'Family MUV', outstationPerKm: 19, driverAllowance: 500, nightCharge: 400, local8: 3750, local10: 4400, local12: 5000, extraKm: 19, extraHour: 325 },
+    { name: 'Kia Carens', category: 'Premium Family MUV', outstationPerKm: 20, driverAllowance: 500, nightCharge: 400, local8: 4000, local10: 4700, local12: 5400, extraKm: 20, extraHour: 350 },
+    { name: 'Toyota Innova', category: 'Executive MUV', outstationPerKm: 22, driverAllowance: 500, nightCharge: 400, local8: 4400, local10: 5200, local12: 6000, extraKm: 22, extraHour: 400 },
+    { name: 'Innova Crysta', category: 'Luxury MUV', outstationPerKm: 25, driverAllowance: 500, nightCharge: 400, local8: 5000, local10: 6000, local12: 7000, extraKm: 25, extraHour: 500 }
   ];
 
   let fleet = [...fallbackFleet];
-  let minimumKmPerDay = 300;
+  let minimumKmPerDay = 240;
   let pickupSelection = null;
   let dropSelection = null;
   let routeQuote = null;
@@ -373,7 +373,8 @@
             name,
             category: String(row.segment || 'With Driver'),
             outstationPerKm: Number(row.outstation_rate_per_km) || 0,
-            driverAllowance: Number(row.driver_allowance_per_day) || 500,
+            driverAllowance: Number(row.driver_allowance_per_day) || 0,
+            nightCharge: Number(row.customer_night_charge) || 0,
             local8: Number(row.local_pkg_8hr_80km) || 0,
             local10: (Number(row.local_pkg_8hr_80km) || 0) + ((Number(row.local_extra_hour_rate) || 0) * 2),
             local12: (Number(row.local_pkg_8hr_80km) || 0) + ((Number(row.local_extra_hour_rate) || 0) * 4),
@@ -545,7 +546,7 @@
     const hour = dateObj.getHours();
     if (!(hour >= 23 || hour <= 4)) return '';
     const d = new Date(dateObj);
-    if (hour <= 4) d.setDate(d.getDate() - 1);
+    if (hour <= 6) d.setDate(d.getDate() - 1);
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
@@ -559,7 +560,7 @@
   }
 
   function nightRate(car) {
-    return /hatchback|sedan/i.test(String(car.category || '')) ? 400 : 600;
+    return Number(car?.nightCharge || 0);
   }
 
   function clearFare() {

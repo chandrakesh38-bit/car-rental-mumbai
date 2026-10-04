@@ -9,8 +9,7 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
             baseDeliveryCharge: 500,
             extraDeliveryChargePerKm: 25,
             freeThresholdKm: 25,
-            driverNightAllowance: 500,
-            minimumOutstationKmPerDay: 300,
+            minimumOutstationKmPerDay: 240,
         };
 
         function pricingRuleKey(name) {
@@ -18,7 +17,6 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
             if (n.includes('base') && n.includes('delivery')) return 'baseDeliveryCharge';
             if (n.includes('extra') && n.includes('delivery')) return 'extraDeliveryChargePerKm';
             if (n.includes('threshold')) return 'freeThresholdKm';
-            if (n.includes('night') && n.includes('allowance')) return 'driverNightAllowance';
             if (n.includes('minimum') && n.includes('outstation')) return 'minimumOutstationKmPerDay';
             return null;
         }
@@ -302,11 +300,11 @@ let mumbaiMetroLocations = [
 
         // 6 WITH DRIVER CARS
         let wdFleet = [
-            { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
-            { name: 'Maruti Ertiga', category: 'Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 }, outstationPerKm: 19, driverAllowance: 500, airport: { t1: 2200, t2: 2400, nmia: 2800 } } },
-            { name: 'Kia Carens', category: 'Premium Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 4000, '10hr_100km': 4700, '12hr_120km': 5400, extraKm: 20 }, outstationPerKm: 20, driverAllowance: 500, airport: { t1: 2400, t2: 2600, nmia: 3000 } } },
-            { name: 'Toyota Innova', category: 'Executive MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 4400, '10hr_100km': 5200, '12hr_120km': 6000, extraKm: 22 }, outstationPerKm: 22, driverAllowance: 500, airport: { t1: 2700, t2: 2900, nmia: 3400 } } },
-            { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
+            { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, nightCharge: 400, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
+            { name: 'Maruti Ertiga', category: 'Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 }, outstationPerKm: 19, driverAllowance: 500, nightCharge: 400, airport: { t1: 2200, t2: 2400, nmia: 2800 } } },
+            { name: 'Kia Carens', category: 'Premium Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 4000, '10hr_100km': 4700, '12hr_120km': 5400, extraKm: 20 }, outstationPerKm: 20, driverAllowance: 500, nightCharge: 400, airport: { t1: 2400, t2: 2600, nmia: 3000 } } },
+            { name: 'Toyota Innova', category: 'Executive MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 4400, '10hr_100km': 5200, '12hr_120km': 6000, extraKm: 22 }, outstationPerKm: 22, driverAllowance: 500, nightCharge: 400, airport: { t1: 2700, t2: 2900, nmia: 3400 } } },
+            { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, nightCharge: 400, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
         ];
 
 
@@ -342,6 +340,7 @@ let mumbaiMetroLocations = [
                         },
                         outstationPerKm: Number(row.outstation_rate_per_km) || 0,
                         driverAllowance: Number(row.driver_allowance_per_day) || 0,
+                        nightCharge: Number(row.customer_night_charge) || 0,
                         airport: {
                             t1: Number(row.airport_t1_rate) || 0,
                             t2: Number(row.airport_t2_rate) || 0,
@@ -447,7 +446,6 @@ let mumbaiMetroLocations = [
         let currentAirportType = 'drop';
         let currentOutstationJourneyType = '';
         const OUTSTATION_BASE_ADDRESS = 'Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai, Maharashtra 400079';
-        const OUTSTATION_DRIVER_ALLOWANCE_PER_DAY = 500;
         let wdOutstationKm = 0;
         let wdOutstationDays = 1;
         let wdOutstationRouteQuote = null;
@@ -1247,11 +1245,11 @@ function onPickupDateChange() {
             const hour = to24Hour(hourValue, ampmValue);
             const minute = Number(minuteValue) || 0;
             const totalMinutes = hour * 60 + minute;
-            // Night charge applies from 11:00 PM through 4:00 AM.
-            if (!(totalMinutes >= 23 * 60 || totalMinutes <= 4 * 60)) return null;
+            // Night charge applies from 10:00 PM through 6:00 AM.
+            if (!(totalMinutes >= 22 * 60 || totalMinutes <= 6 * 60)) return null;
             const date = new Date(dateValue + 'T12:00:00');
             if (!Number.isFinite(date.getTime())) return null;
-            if (totalMinutes <= 5 * 60) date.setDate(date.getDate() - 1);
+            if (totalMinutes <= 6 * 60) date.setDate(date.getDate() - 1);
             return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
         }
 
@@ -1301,7 +1299,7 @@ function onPickupDateChange() {
         }
 
         function nightRateForCar(car) {
-            return /hatchback|sedan/i.test(String(car?.category || '')) ? 400 : 600;
+            return Number(car?.rates?.nightCharge || 0);
         }
 
         function currentDriverNightCharge(car) {
@@ -1332,7 +1330,7 @@ function onPickupDateChange() {
             } else if (currentWDSubTab === 'outstation') {
                 if (!currentOutstationJourneyType) return null;
                 const includedKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                return (includedKm * car.rates.outstationPerKm) + (wdOutstationDays * OUTSTATION_DRIVER_ALLOWANCE_PER_DAY) + nightCharge;
+                return (includedKm * car.rates.outstationPerKm) + (wdOutstationDays * Number(car.rates.driverAllowance || 0)) + nightCharge;
             } else if (currentWDSubTab === 'airport') {
                 const termInput = document.getElementById('wd-airport-terminal');
                 const term = termInput ? termInput.value : 't2';
@@ -1958,7 +1956,7 @@ function onPickupDateChange() {
                 };
                 dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nFinal Drop: ${formatReviewTime('wd-out-r')}`;
                 const includedKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                pkgStr = `${wdOutstationDays}-Day Dedicated Cab Package · ${includedKm.toLocaleString('en-IN')} KM included (300 KM/day)\nCar + Fuel + Driver Allowance included · Dedicated car & driver for your complete trip`;
+                pkgStr = `${wdOutstationDays}-Day Dedicated Cab Package · ${includedKm.toLocaleString('en-IN')} KM included (${Number(livePricingRules.minimumOutstationKmPerDay||240).toLocaleString('en-IN')} KM/day)\nCar + Fuel + Driver Allowance included · Dedicated car & driver for your complete trip`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
                 destLoc = document.getElementById('wd-airport-terminal').value.toUpperCase() + ' Airport';
@@ -2491,7 +2489,7 @@ async function handleBookingSubmit(e) {
         const returnAmPm = document.getElementById('wd-out-rampm').value;
 
         const extraKmRate = car?.rates?.outstationPerKm || 0;
-        const driverAllowance = OUTSTATION_DRIVER_ALLOWANCE_PER_DAY;
+        const driverAllowance = Number(car?.rates?.driverAllowance || 0);
 
         const startDateTime = createLocalDateTime(
             pickupDate,
@@ -2529,7 +2527,7 @@ async function handleBookingSubmit(e) {
 ⏱ ${wdOutstationDays} Day${wdOutstationDays > 1 ? 's' : ''} | ${includedKm.toLocaleString('en-IN')} km included
 ${currentOutstationJourneyType === 'one-way' ? '↩️ One-way fare includes the vehicle’s empty return distance; driver allowance applies to trip days only.\n' : ''}🗺 Route distance: ${wdOutstationRouteQuote?.distanceKmExact || wdOutstationKm} km
 💰 ₹${extraKmRate}/KM | Driver ₹${driverAllowance}/Day
-🌙 Night: ₹400 Hatchback/Sedan · ₹600 SUV/MUV when 11 PM–4 AM applies
+🌙 Night: ₹${Number(car?.rates?.nightCharge || 0).toLocaleString('en-IN')} when vehicle is actually driven between 10 PM–6 AM
 
 ✓ Incl: Fuel, Driver
 ✕ Excl: Toll, Parking, State Tax (as per actual)

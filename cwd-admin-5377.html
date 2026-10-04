@@ -105,7 +105,10 @@
                         <i class="fa-solid fa-circle-question w-4 text-amber-300"></i> FAQs
                     </button>
                     <button onclick="switchTab('inquiries')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-inquiries">
-                        <i class="fa-solid fa-calendar-check w-4 text-rose-400"></i> Bookings
+                        <i class="fa-solid fa-calendar-check w-4 text-rose-400"></i> <span class="flex-1">Bookings</span><span id="booking-nav-badge" class="hidden min-w-5 h-5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-black items-center justify-center"></span>
+                    </button>
+                    <button onclick="switchTab('vendors')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-vendors">
+                        <i class="fa-solid fa-handshake w-4 text-emerald-300"></i> <span class="flex-1">With Driver Vendors</span><span id="vendor-accept-nav-badge" class="hidden min-w-5 h-5 px-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black items-center justify-center"></span>
                     </button>
                     <a href="/self-drive-review" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left">
                         <i class="fa-solid fa-id-card w-4 text-cyan-300"></i> Self Drive Documents
@@ -186,18 +189,25 @@
             <div id="section-pricing" class="hidden space-y-6">
                 <div>
                     <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Global Pricing &amp; Allowances</h2>
-                    <p class="text-xs text-slate-500 mt-0.5">Update doorstep delivery formulas, night allowance, and outstation limits.</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Customer pricing controls are separated by service. Vendor costs are managed independently below.</p>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm max-w-2xl space-y-4" id="pricing-rules-container">
-                    <!-- Loaded dynamically from DB -->
+                <div class="grid xl:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <div class="mb-3"><h3 class="font-black text-slate-900">Self Drive Delivery Rules</h3><p class="text-[11px] text-slate-500 mt-1">Used only for Self Drive home-delivery charges.</p></div>
+                        <div id="pricing-rules-selfdrive" class="space-y-2"></div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <div class="mb-3"><h3 class="font-black text-slate-900">With Driver Customer Rules</h3><p class="text-[11px] text-slate-500 mt-1">Global rule for customer outstation minimum billing. Driver allowance and night charge are vehicle-wise below.</p></div>
+                        <div id="pricing-rules-withdriver" class="space-y-2"></div>
+                    </div>
                 </div>
                 <!-- With-Driver Rates Management Card -->
         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mt-6">
             <div class="flex items-center justify-between mb-4 border-b pb-3">
                 <div>
-                    <h3 class="text-lg font-bold text-slate-900">With-Driver Fleet Rates</h3>
-                    <p class="text-xs text-slate-500">Live vendor rates + 25% markup for Outstation, Local & Driver Allowance.</p>
+                    <h3 class="text-lg font-bold text-slate-900">With-Driver Customer Fleet Rates</h3>
+                    <p class="text-xs text-slate-500">Live customer-facing vehicle rates for Outstation, Local, Driver Allowance, Night Charge and Airport transfers.</p>
                 </div>
                 <div class="flex gap-2">
 <button type="button" onclick="toggleWithDriverAddForm()" class="px-3 py-1.5 bg-indigo-950 hover:bg-indigo-900 text-white text-xs font-semibold rounded-lg">+ Add Vehicle</button>
@@ -210,6 +220,7 @@
                     <div>
                         <input id="wd-new-segment" required list="wd-segment-options" placeholder="Category / Segment" class="w-full border rounded-lg px-3 py-2">
                         <datalist id="wd-segment-options">
+                            <option value="Hatchback"></option>
                             <option value="Sedan"></option>
                             <option value="Compact SUV"></option>
                             <option value="SUV"></option>
@@ -234,7 +245,8 @@
                     <input id="wd-new-ehr" required type="number" min="0" placeholder="Extra Hour" class="border rounded-lg px-3 py-2">
                     <input id="wd-new-ekm" required type="number" min="0" placeholder="Extra KM" class="border rounded-lg px-3 py-2">
                     <input id="wd-new-outstation" required type="number" min="0" placeholder="Outstation / KM" class="border rounded-lg px-3 py-2">
-                    <input id="wd-new-allowance" required type="number" min="0" placeholder="Driver Allowance" class="border rounded-lg px-3 py-2">
+                    <input id="wd-new-allowance" required type="number" min="0" placeholder="Driver Allowance / Day" class="border rounded-lg px-3 py-2">
+                    <input id="wd-new-night" required type="number" min="0" placeholder="Night Charge" class="border rounded-lg px-3 py-2">
                     <input id="wd-new-t1" required type="number" min="0" placeholder="Airport T1" class="border rounded-lg px-3 py-2">
                     <input id="wd-new-t2" required type="number" min="0" placeholder="Airport T2" class="border rounded-lg px-3 py-2">
                     <input id="wd-new-nmia" required type="number" min="0" placeholder="Airport NMIA" class="border rounded-lg px-3 py-2">
@@ -252,9 +264,12 @@
                             <th class="py-2.5 px-3">Vehicle</th>
                             <th class="py-2.5 px-3">Outstation (/KM)</th>
                             <th class="py-2.5 px-3">Local 8H/80KM</th>
+                            <th class="py-2.5 px-3">Local 10H/100KM</th>
+                            <th class="py-2.5 px-3">Local 12H/120KM</th>
                             <th class="py-2.5 px-3">Extra Hr</th>
                             <th class="py-2.5 px-3">Extra KM</th>
-                            <th class="py-2.5 px-3">Allowance</th>
+                            <th class="py-2.5 px-3">Allowance / Day</th>
+                            <th class="py-2.5 px-3">Night Charge</th>
                             <th class="py-2.5 px-3">Airport T1/T2/NMIA</th>
                             <th class="py-2.5 px-3">Active</th>
                             <th class="py-2.5 px-3 text-right">Action</th>
@@ -262,6 +277,41 @@
                     </thead>
                     <tbody id="with-driver-rates-body">
                         <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-5">
+            <div class="p-5 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <div>
+                    <h3 class="font-black text-slate-900 text-sm">Vendor Rate Card / CWD Cost</h3>
+                    <p class="text-[11px] text-slate-500 mt-1">Vehicle names are linked to Global Pricing. Customer rates stay separate; these values calculate vendor offers and settlements.</p>
+                </div>
+                <button type="button" onclick="loadVendorRateCards()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">⟳ Refresh</button>
+            </div>
+            <div id="vendor-rate-card-status" class="hidden mx-5 mt-4 rounded-xl border px-4 py-3 text-xs font-semibold"></div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-[11px] text-slate-600 whitespace-nowrap">
+                    <thead class="bg-slate-50 text-slate-700 uppercase font-bold border-b">
+                        <tr>
+                            <th class="py-3 px-3">Vehicle</th>
+                            <th class="py-3 px-3">Customer Outstation</th>
+                            <th class="py-3 px-3">Vendor /KM</th>
+                            <th class="py-3 px-3">Min KM/Day</th>
+                            <th class="py-3 px-3">Vendor DA</th>
+                            <th class="py-3 px-3">Night</th>
+                            <th class="py-3 px-3">Local 8H/80</th>
+                            <th class="py-3 px-3">Local 10H/100</th>
+                            <th class="py-3 px-3">Local 12H/120</th>
+                            <th class="py-3 px-3">Extra KM</th>
+                            <th class="py-3 px-3">Extra Hr</th>
+                            <th class="py-3 px-3">Active</th>
+                            <th class="py-3 px-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vendor-rate-card-body">
+                        <tr><td colspan="13" class="py-7 text-center text-slate-400">Loading vendor rates...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -460,6 +510,112 @@
                             </thead>
                             <tbody id="admin-inquiries-table-body" class="divide-y divide-slate-100"></tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WITH DRIVER VENDOR CONTROL CENTER -->
+            <div id="section-vendors" class="hidden space-y-6">
+                <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">With Driver Vendors</h2>
+                        <p class="text-xs text-slate-500 mt-1">Registration, approvals, vendor status, offers, allocations and settlements in one place.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <a href="/vendor-register" target="_blank" class="inline-flex items-center gap-2 bg-white border border-slate-200 text-indigo-950 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Registration
+                        </a>
+                        <button type="button" onclick="copyVendorRegistrationLink()" class="inline-flex items-center gap-2 bg-indigo-950 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm">
+                            <i class="fa-regular fa-copy"></i> Copy Registration Link
+                        </button>
+                        <button type="button" onclick="loadVendorControlCenter()" class="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div id="vendor-center-kpis" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 text-slate-400 text-sm">Loading vendor summary...</div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <h3 class="font-black text-slate-900">Registered Vendors</h3>
+                            <p class="text-[10px] text-slate-500 mt-0.5">Approve, suspend or review vendor contact details.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="setVendorFilter('all')" data-vendor-filter="all" class="vendor-filter-btn bg-indigo-950 text-white px-3 py-2 rounded-lg text-[10px] font-bold">All</button>
+                            <button type="button" onclick="setVendorFilter('pending_review')" data-vendor-filter="pending_review" class="vendor-filter-btn bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-[10px] font-bold">Pending</button>
+                            <button type="button" onclick="setVendorFilter('active')" data-vendor-filter="active" class="vendor-filter-btn bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-[10px] font-bold">Active</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px] whitespace-nowrap">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[9px] font-extrabold tracking-wider">
+                                <tr>
+                                    <th class="py-3 px-3">Vendor</th>
+                                    <th class="py-3 px-3">WhatsApp</th>
+                                    <th class="py-3 px-3">Base Area</th>
+                                    <th class="py-3 px-3">Registered</th>
+                                    <th class="py-3 px-3">Status</th>
+                                    <th class="py-3 px-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vendor-center-table" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid xl:grid-cols-2 gap-5">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                        <h3 class="font-black text-slate-900">Recent Offers</h3>
+                        <p class="text-[10px] text-slate-500 mt-1 mb-4">Latest vendor responses across bookings.</p>
+                        <div id="vendor-center-offers" class="space-y-2 text-xs"></div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                        <h3 class="font-black text-slate-900">Allocations & Settlements</h3>
+                        <p class="text-[10px] text-slate-500 mt-1 mb-4">Active allocations and vendor payout status.</p>
+                        <div id="vendor-center-allocations" class="space-y-2 text-xs"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="vendor-detail-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[85] hidden items-center justify-center p-3 sm:p-5">
+                <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl max-h-[94vh] overflow-y-auto">
+                    <div class="sticky top-0 bg-white border-b px-5 sm:px-6 py-4 flex justify-between items-center z-10">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-900">Vendor Details</h3>
+                            <p id="vendor-detail-subtitle" class="text-xs text-slate-500 mt-0.5">Loading vendor profile...</p>
+                        </div>
+                        <button type="button" onclick="closeVendorDetail()" class="text-slate-400 hover:text-slate-800 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div id="vendor-detail-body" class="p-5 sm:p-6"></div>
+                </div>
+            </div>
+
+            <div id="vendor-edit-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[90] hidden items-center justify-center p-3 sm:p-5">
+                <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl max-h-[94vh] overflow-y-auto">
+                    <div class="sticky top-0 bg-white border-b px-5 sm:px-6 py-4 flex justify-between items-center z-10">
+                        <div><h3 class="text-lg font-black text-slate-900">Edit Vendor Details</h3><p class="text-xs text-slate-500 mt-0.5">Use corrected details received from the vendor.</p></div>
+                        <button type="button" onclick="closeVendorEditModal()" class="text-slate-400 hover:text-slate-800 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div id="vendor-edit-body" class="p-5 sm:p-6"></div>
+                </div>
+            </div>
+
+            <div id="vendor-change-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4">
+                <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl">
+                    <div class="border-b px-5 py-4 flex justify-between items-center">
+                        <div><h3 class="text-lg font-black text-slate-900">Request Changes</h3><p class="text-xs text-slate-500 mt-0.5">Select what the vendor needs to correct.</p></div>
+                        <button type="button" onclick="closeVendorChangeModal()" class="text-slate-400 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="p-5 space-y-3">
+                        <div id="vendor-change-options" class="grid sm:grid-cols-2 gap-2 text-xs">
+                            <label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="Business / contact details"><span>Business / contact details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="PAN details"><span>PAN details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="Payout details"><span>Payout details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="Vehicle details"><span>Vehicle details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="Insurance details"><span>Insurance details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="PUC details"><span>PUC details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="Permit / Fitness details"><span>Permit / Fitness details</span></label><label class="flex items-start gap-2 border rounded-xl p-3"><input type="checkbox" class="vendor-change-reason mt-0.5" value="Other"><span>Other</span></label>
+                        </div>
+                        <textarea id="vendor-change-note" rows="3" placeholder="Optional note for vendor" class="w-full border border-slate-300 rounded-xl p-3 text-xs"></textarea>
+                        <button type="button" onclick="sendVendorChangeRequest()" class="w-full bg-amber-500 hover:bg-amber-600 text-white rounded-xl p-3 font-black text-xs"><i class="fa-brands fa-whatsapp mr-1"></i> Open WhatsApp With Request</button>
                     </div>
                 </div>
             </div>
@@ -740,6 +896,7 @@
                 document.getElementById('dashboard-screen').classList.remove('hidden');
                 document.getElementById('admin-user-display').innerText = session.user.email;
                 switchTab('dashboard');
+                startAdminNotificationMonitor();
             } else {
                 document.getElementById('auth-screen').classList.remove('hidden');
                 document.getElementById('dashboard-screen').classList.add('hidden');
@@ -775,7 +932,7 @@
 
         // TABS SWITCHER
         function switchTab(tab) {
-            ['dashboard', 'vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries'].forEach(t => {
+            ['dashboard', 'vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries', 'vendors'].forEach(t => {
                 const sec = document.getElementById(`section-${t}`);
                 const btn = document.getElementById(`tab-btn-${t}`);
                 if (t === tab) {
@@ -789,13 +946,15 @@
 
             if (tab === 'dashboard') loadDashboard();
             if (tab === 'vehicles') loadVehicles();
-            if (tab === 'pricing') loadPricingRules();
+            if (tab === 'pricing') { loadPricingRules(); loadWithDriverRates(); loadVendorRateCards(); }
             if (tab === 'locations') loadLocations();
             if (tab === 'cms') loadCmsSettings();
             if (tab === 'whatsapp') loadWhatsAppTemplate();
             if (tab === 'faqs') loadFaqs();
             setBookingsAutoRefresh(tab === 'inquiries');
-            if (tab === 'inquiries') loadInquiries();
+            if (tab === 'inquiries') { markBookingsSeen(); loadInquiries(); }
+            if (tab === 'vendors') markVendorAcceptancesSeen();
+            if (tab === 'vendors') loadVendorControlCenter();
         }
 
         // 1. VEHICLES CRUD
@@ -1003,28 +1162,42 @@
 
         // 2. PRICING RULES
         async function loadPricingRules() {
-            const container = document.getElementById('pricing-rules-container');
-            container.innerHTML = '<p class="text-xs text-slate-400">Loading rules...</p>';
+            const selfDrive = document.getElementById('pricing-rules-selfdrive');
+            const withDriver = document.getElementById('pricing-rules-withdriver');
+            if(!selfDrive||!withDriver)return;
+            selfDrive.innerHTML = '<p class="text-xs text-slate-400">Loading rules...</p>';
+            withDriver.innerHTML = '<p class="text-xs text-slate-400">Loading rules...</p>';
 
             const { data: rules } = await supabaseClient.from('pricing_rules').select('*');
             if (!rules) return;
 
-            container.innerHTML = '';
-            rules.forEach(rule => {
+            const renderRule = rule => {
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between py-2 border-b border-slate-100 text-xs";
+                div.className = "flex items-center justify-between gap-3 py-3 border-b border-slate-100 text-xs";
                 div.innerHTML = `
-                    <div>
+                    <div class="min-w-0">
                         <strong class="text-slate-800 block">${rule.rule_name}</strong>
                         <span class="text-slate-400 text-[10px]">${rule.description || ''}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <input type="number" id="rule-${rule.id}" value="${rule.rule_value}" class="w-24 text-right border border-slate-300 rounded px-2 py-1 font-bold text-indigo-950">
-                        <button onclick="updateRule('${rule.id}')" class="bg-indigo-950 hover:bg-indigo-900 text-white px-2.5 py-1 rounded text-[11px] font-bold">Save</button>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <input type="number" min="0" step="0.01" id="rule-${rule.id}" value="${rule.rule_value}" class="w-24 text-right border border-slate-300 rounded px-2 py-1.5 font-bold text-indigo-950">
+                        <button onclick="updateRule('${rule.id}')" class="bg-indigo-950 hover:bg-indigo-900 text-white px-2.5 py-1.5 rounded text-[11px] font-bold">Save</button>
                     </div>
                 `;
-                container.appendChild(div);
+                return div;
+            };
+
+            selfDrive.innerHTML=''; withDriver.innerHTML='';
+            rules.forEach(rule => {
+                const n=String(rule.rule_name||'').toLowerCase();
+                if((n.includes('delivery')||n.includes('threshold')) && !n.includes('driver')){
+                    selfDrive.appendChild(renderRule(rule));
+                } else if(n.includes('minimum')&&n.includes('outstation')){
+                    withDriver.appendChild(renderRule(rule));
+                }
             });
+            if(!selfDrive.children.length)selfDrive.innerHTML='<p class="text-xs text-slate-400">No Self Drive delivery rules found.</p>';
+            if(!withDriver.children.length)withDriver.innerHTML='<p class="text-xs text-slate-400">No With Driver customer rules found.</p>';
         }
 
         async function updateRule(id) {
@@ -1554,7 +1727,59 @@
         async function openBookingDetailById(id){try{const result=await adminApi('/api/admin-payment?dashboard=1');const b=(result.bookings||[]).find(x=>x.booking_id===id);if(b)openBookingDetail(b);}catch(e){alert(e.message)}}
         async function refreshBookingDetail(){
             if(!currentAdminBooking)return; const btn=document.getElementById('booking-refresh-btn');
-            try{if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Refreshing…';}const result=await adminApi('/api/admin-payment?dashboard=1');const fresh=(result.bookings||[]).find(x=>x.booking_id===currentAdminBooking.booking_id);if(fresh)currentAdminBooking=fresh;await renderBookingDetail();}catch(e){alert(e.message)}finally{const b=document.getElementById('booking-refresh-btn');if(b){b.disabled=false;b.innerHTML='<i class="fa-solid fa-check mr-1"></i> Updated';setTimeout(()=>{if(b)b.innerHTML='<i class="fa-solid fa-rotate mr-1"></i> Refresh'},900);}}}
+            try{if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Refreshing…';}const result=await adminApi('/api/admin-payment?dashboard=1');const fresh=(result.bookings||[]).find(x=>x.booking_id===currentAdminBooking.booking_id);if(fresh)currentAdminBooking=fresh;await renderBookingDetail();await loadVendorOpsPanel();}catch(e){alert(e.message)}finally{const b=document.getElementById('booking-refresh-btn');if(b){b.disabled=false;b.innerHTML='<i class="fa-solid fa-check mr-1"></i> Updated';setTimeout(()=>{if(b)b.innerHTML='<i class="fa-solid fa-rotate mr-1"></i> Refresh'},900);}}}
+        let adminNotificationTimer=null;
+        const BOOKING_SEEN_KEY='cwd_admin_bookings_seen_at';
+        const VENDOR_ACCEPT_SEEN_KEY='cwd_admin_vendor_accept_seen_at';
+
+        function setNavBadge(id,count){
+            const el=document.getElementById(id);if(!el)return;
+            if(count>0){el.textContent=count>99?'99+':String(count);el.classList.remove('hidden');el.classList.add('inline-flex');}
+            else{el.textContent='';el.classList.add('hidden');el.classList.remove('inline-flex');}
+        }
+
+        async function refreshAdminNotificationBadges(){
+            try{
+                let seen=localStorage.getItem(BOOKING_SEEN_KEY);
+                if(!seen){
+                    const {data:latest}=await supabaseClient.from('inquiries').select('created_at').not('booking_id','is',null).order('created_at',{ascending:false}).limit(1);
+                    seen=latest?.[0]?.created_at||new Date().toISOString();
+                    localStorage.setItem(BOOKING_SEEN_KEY,seen);
+                    setNavBadge('booking-nav-badge',0);
+                }else{
+                    const {count,error}=await supabaseClient.from('inquiries').select('created_at',{count:'exact',head:true}).not('booking_id','is',null).gt('created_at',seen);
+                    if(!error)setNavBadge('booking-nav-badge',Number(count||0));
+                }
+            }catch(_){}
+            try{
+                const d=await adminApi('/api/admin-vendor-ops?dashboard=1');
+                let seen=localStorage.getItem(VENDOR_ACCEPT_SEEN_KEY);
+                if(!seen){
+                    const latestAccepted=(d.offers||[]).filter(o=>o.status==='accepted').sort((a,b)=>new Date(b.responded_at||b.created_at||0)-new Date(a.responded_at||a.created_at||0))[0];
+                    seen=latestAccepted?.responded_at||latestAccepted?.created_at||new Date().toISOString();
+                    localStorage.setItem(VENDOR_ACCEPT_SEEN_KEY,seen);
+                    setNavBadge('vendor-accept-nav-badge',0);
+                }else{
+                    const accepted=(d.offers||[]).filter(o=>o.status==='accepted' && new Date(o.responded_at||o.created_at||0)>new Date(seen));
+                    setNavBadge('vendor-accept-nav-badge',accepted.length);
+                }
+            }catch(_){}
+        }
+
+        function markBookingsSeen(){
+            localStorage.setItem(BOOKING_SEEN_KEY,new Date().toISOString());
+            setNavBadge('booking-nav-badge',0);
+        }
+        function markVendorAcceptancesSeen(){
+            localStorage.setItem(VENDOR_ACCEPT_SEEN_KEY,new Date().toISOString());
+            setNavBadge('vendor-accept-nav-badge',0);
+        }
+        function startAdminNotificationMonitor(){
+            if(adminNotificationTimer)clearInterval(adminNotificationTimer);
+            refreshAdminNotificationBadges();
+            adminNotificationTimer=setInterval(refreshAdminNotificationBadges,15000);
+        }
+
         let bookingsAutoRefreshTimer = null;
         function setBookingsAutoRefresh(enabled) {
             if (bookingsAutoRefreshTimer) { clearInterval(bookingsAutoRefreshTimer); bookingsAutoRefreshTimer = null; }
@@ -1716,6 +1941,7 @@
             const copyBtn=document.getElementById('copy-booking-id-btn'); if(copyBtn)copyBtn.innerHTML='<i class="fa-regular fa-copy"></i> Copy ID';
             const modal=document.getElementById('booking-detail-modal'); modal.classList.remove('hidden'); modal.classList.add('flex');
             await renderBookingDetail();
+            await loadVendorOpsPanel();
         }
         function closeBookingDetail(){ const m=document.getElementById('booking-detail-modal');m.classList.add('hidden');m.classList.remove('flex');currentAdminBooking=null; }
         async function copyCurrentBookingId(){
@@ -1952,6 +2178,7 @@
                     </div>
                     ${String(b.booking_status||'').toLowerCase()==='confirmed'?`<div class="mt-4 border-t pt-4"><p class="mb-2 text-[11px] font-bold uppercase tracking-wide text-emerald-700">Booking confirmed — customer confirmation ready</p><div class="flex flex-wrap gap-2"><button type="button" onclick="shareBookingConfirmationWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold"><i class="fa-brands fa-whatsapp mr-1"></i> Share Confirmation on WhatsApp</button><button type="button" id="copy-confirmation-btn" onclick="copyBookingConfirmation()" class="border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg text-xs font-bold"><i class="fa-regular fa-copy mr-1"></i> Copy Confirmation</button></div></div>`:''}
                 </div>
+                ${!/self/i.test(String(b.service_type||''))?'<div id="booking-commercial-override-card" class="mt-4 border border-amber-200 bg-amber-50/40 rounded-2xl p-4"><p class="text-xs text-slate-400">Loading negotiated fare controls...</p></div>':''}
                 <details class="mt-4 border border-indigo-100 bg-indigo-50/40 rounded-2xl">
                     <summary class="cursor-pointer list-none p-4 flex items-center justify-between gap-3 select-none">
                         <div><h4 class="font-black text-sm">Final Trip Charges</h4><p class="text-[11px] text-slate-500 mt-1">Tap to add or review actual trip extras.</p></div>
@@ -2004,6 +2231,38 @@
             if (paymentBtn) paymentBtn.addEventListener('click', generatePaymentLink);
             const offlineBtn = document.getElementById('record-offline-payment-btn');
             if (offlineBtn) offlineBtn.addEventListener('click', recordOfflinePayment);
+            if(document.getElementById('booking-commercial-override-card')) loadBookingCommercialOverride();
+        }
+
+        async function loadBookingCommercialOverride(){
+            const box=document.getElementById('booking-commercial-override-card'),b=currentAdminBooking;if(!box||!b)return;
+            try{
+                const d=await adminApi('/api/admin-vendor-ops?booking_id='+encodeURIComponent(b.booking_id));
+                const o=d.commercial_override||{};
+                const websiteFare=Number(o.original_customer_fare ?? b.original_fare ?? b.fare_amount ?? b.total_fare ?? 0);
+                const currentFare=Number(b.total_fare||b.fare_amount||0);
+                const negotiated=o.negotiated_customer_fare!==null&&o.negotiated_customer_fare!==undefined?Number(o.negotiated_customer_fare):currentFare;
+                box.innerHTML='<div class="flex flex-col md:flex-row md:items-end gap-3 justify-between"><div><h4 class="font-black text-sm text-amber-950">Customer Negotiated Fare</h4><p class="text-[10px] text-slate-500 mt-1">Changes only this booking. Global Pricing remains unchanged.</p></div><div class="text-right"><span class="text-[9px] uppercase text-slate-400 font-bold">Website / Original</span><b class="block text-sm">'+money(websiteFare)+'</b></div></div>'+
+                  '<div class="grid md:grid-cols-3 gap-3 mt-3"><label class="text-xs font-bold">Final Agreed Fare<input id="cwd-negotiated-fare" type="number" min="0" step="0.01" value="'+negotiated+'" class="block mt-1 w-full border rounded-lg px-3 py-2"></label><label class="text-xs font-bold md:col-span-2">Reason<input id="cwd-negotiated-reason" maxlength="500" value="'+escapeAdminHtml(o.customer_override_reason||'')+'" placeholder="e.g. Repeat customer / Phone negotiation" class="block mt-1 w-full border rounded-lg px-3 py-2"></label></div>'+
+                  '<div class="mt-3 flex flex-wrap items-center gap-2"><button type="button" onclick="saveCustomerNegotiatedFare('+websiteFare+')" class="bg-amber-500 hover:bg-amber-600 text-white rounded-lg px-4 py-2 text-xs font-black">Save Negotiated Fare</button>'+
+                  (o.customer_overridden_at?'<span class="text-[10px] text-slate-500">Last changed '+new Date(o.customer_overridden_at).toLocaleString('en-IN')+'</span>':'')+'</div>';
+            }catch(e){box.innerHTML='<div class="text-xs font-bold text-rose-600">'+escapeAdminHtml(e.message)+'</div>'}
+        }
+
+        async function saveCustomerNegotiatedFare(originalFare){
+            const fare=Number(document.getElementById('cwd-negotiated-fare')?.value);
+            const reason=document.getElementById('cwd-negotiated-reason')?.value.trim()||'';
+            if(!Number.isFinite(fare)||fare<0)return alert('Enter a valid final agreed fare.');
+            if(!reason)return alert('Reason is required.');
+            if(!confirm('Set this booking customer fare to '+money(fare)+'?\n\nGlobal Pricing will not change.'))return;
+            try{
+                await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'update_customer_fare',booking_id:currentAdminBooking.booking_id,original_customer_fare:originalFare,negotiated_customer_fare:fare,reason})});
+                const {data}=await supabaseClient.from('inquiries').select('*').eq('booking_id',currentAdminBooking.booking_id).single();
+                if(data)currentAdminBooking=data;
+                await renderBookingDetail();
+                await loadVendorOpsPanel();
+                await loadInquiries();
+            }catch(e){alert(e.message)}
         }
 
         function paymentCard(p) {
@@ -2253,17 +2512,21 @@ async function loadWithDriverRates() {
     const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
     const { data, error } = await client.from('with_driver_rates').select('*').order('display_order', { ascending: true }).order('full_name', { ascending: true });
     if (error || !data) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-red-500">Failed to load rates</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-red-500">Failed to load rates</td></tr>';
         return;
     }
+    window._cwdWithDriverRates = data || [];
     tbody.innerHTML = data.map(car => `
         <tr class="border-b hover:bg-slate-50">
             <td class="py-2 px-3 font-semibold text-slate-800"><input id="wd_name_${car.id}" value="${escapeAdminHtml(car.full_name || '')}" class="w-36 border rounded px-1 py-0.5 font-bold"><input id="wd_segment_${car.id}" value="${escapeAdminHtml(car.segment || '')}" class="w-36 border rounded px-1 py-0.5 text-[10px] text-slate-500 block mt-1"></td>
             <td class="py-2 px-3">₹<input type="number" id="wd_outstation_${car.id}" value="${car.outstation_rate_per_km}" class="w-16 border rounded px-1 py-0.5"></td>
             <td class="py-2 px-3">₹<input type="number" id="wd_local_${car.id}" value="${car.local_pkg_8hr_80km}" class="w-20 border rounded px-1 py-0.5"></td>
+            <td class="py-2 px-3 font-bold text-slate-700">₹${(Number(car.local_pkg_8hr_80km||0)+(Number(car.local_extra_hour_rate||0)*2)).toLocaleString('en-IN')}</td>
+            <td class="py-2 px-3 font-bold text-slate-700">₹${(Number(car.local_pkg_8hr_80km||0)+(Number(car.local_extra_hour_rate||0)*4)).toLocaleString('en-IN')}</td>
             <td class="py-2 px-3">₹<input type="number" id="wd_ehr_${car.id}" value="${car.local_extra_hour_rate}" class="w-16 border rounded px-1 py-0.5"></td>
             <td class="py-2 px-3">₹<input type="number" id="wd_ekm_${car.id}" value="${car.local_extra_km_rate}" class="w-16 border rounded px-1 py-0.5"></td>
             <td class="py-2 px-3">₹<input type="number" id="wd_allowance_${car.id}" value="${car.driver_allowance_per_day}" class="w-16 border rounded px-1 py-0.5"></td>
+            <td class="py-2 px-3">₹<input type="number" id="wd_night_${car.id}" value="${car.customer_night_charge || 0}" class="w-16 border rounded px-1 py-0.5"></td>
             <td class="py-2 px-3 whitespace-nowrap">₹<input type="number" id="wd_t1_${car.id}" value="${car.airport_t1_rate || 0}" class="w-16 border rounded px-1 py-0.5"> / ₹<input type="number" id="wd_t2_${car.id}" value="${car.airport_t2_rate || 0}" class="w-16 border rounded px-1 py-0.5"> / ₹<input type="number" id="wd_nmia_${car.id}" value="${car.airport_nmia_rate || 0}" class="w-16 border rounded px-1 py-0.5"></td>
             <td class="py-2 px-3"><input type="checkbox" id="wd_active_${car.id}" ${car.is_active !== false ? 'checked' : ''}></td>
             <td class="py-2 px-3 text-right whitespace-nowrap">
@@ -2274,24 +2537,27 @@ async function loadWithDriverRates() {
 }
 
 async function saveWithDriverRate(id) {
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
     try {
+        const car=(window._cwdWithDriverRates||[]).find(x=>String(x.id)===String(id))||{};
         const payload = {
+            id,
             full_name: document.getElementById(`wd_name_${id}`).value.trim(),
             segment: document.getElementById(`wd_segment_${id}`).value.trim(),
+            seating_capacity:Number(car.seating_capacity||4),
+            bag_capacity:Number(car.bag_capacity||0),
             outstation_rate_per_km: wdNumber(`wd_outstation_${id}`),
             local_pkg_8hr_80km: wdNumber(`wd_local_${id}`),
             local_extra_hour_rate: wdNumber(`wd_ehr_${id}`),
             local_extra_km_rate: wdNumber(`wd_ekm_${id}`),
             driver_allowance_per_day: wdNumber(`wd_allowance_${id}`),
+            customer_night_charge: wdNumber(`wd_night_${id}`),
             airport_t1_rate: wdNumber(`wd_t1_${id}`),
             airport_t2_rate: wdNumber(`wd_t2_${id}`),
             airport_nmia_rate: wdNumber(`wd_nmia_${id}`),
+            display_order:Number(car.display_order||999),
             is_active: document.getElementById(`wd_active_${id}`).checked
         };
-        if (!payload.full_name || !payload.segment) throw new Error('Vehicle name and category are required.');
-        const { data, error } = await client.from('with_driver_rates').update(payload).eq('id', id).select('id');
-        if (error || !data?.length) throw new Error(error?.message || 'No row updated.');
+        await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'save_customer_fleet_vehicle',vehicle:payload})});
         await loadWithDriverRates();
         alert('Vehicle updated. Website will use the new values.');
     } catch (error) { alert(error.message); }
@@ -2299,7 +2565,6 @@ async function saveWithDriverRate(id) {
 
 async function addWithDriverVehicle(event) {
     event.preventDefault();
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
     try {
         const payload = {
             full_name: document.getElementById('wd-new-name').value.trim(),
@@ -2311,14 +2576,14 @@ async function addWithDriverVehicle(event) {
             local_extra_km_rate: wdNumber('wd-new-ekm'),
             outstation_rate_per_km: wdNumber('wd-new-outstation'),
             driver_allowance_per_day: wdNumber('wd-new-allowance'),
+            customer_night_charge: wdNumber('wd-new-night'),
             airport_t1_rate: wdNumber('wd-new-t1'),
             airport_t2_rate: wdNumber('wd-new-t2'),
             airport_nmia_rate: wdNumber('wd-new-nmia'),
             display_order: Number(document.getElementById('wd-new-order').value) || 999,
             is_active: true
         };
-        const { data, error } = await client.from('with_driver_rates').insert(payload).select('id');
-        if (error || !data?.length) throw new Error(error?.message || 'Vehicle was not added.');
+        await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'save_customer_fleet_vehicle',vehicle:payload})});
         event.target.reset();
         toggleWithDriverAddForm(false);
         await loadWithDriverRates();
@@ -2328,14 +2593,626 @@ async function addWithDriverVehicle(event) {
 
 async function deleteWithDriverVehicle(id) {
     if (!confirm('Delete this With-Driver vehicle? It will disappear from the website.')) return;
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
-    const { data, error } = await client.from('with_driver_rates').delete().eq('id', id).select('id');
-    if (error || !data?.length) return alert('Delete failed: ' + (error?.message || 'No row deleted.'));
-    await loadWithDriverRates();
+    try{
+      await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'delete_customer_fleet_vehicle',vehicle_id:id})});
+      await loadWithDriverRates();
+    }catch(error){alert('Delete failed: '+error.message)}
 }
    window.addEventListener('DOMContentLoaded', () => {
     loadWithDriverRates();
 });
-    </script>
+    
+        let cwdVendorRateState = { vehicles: [], vendor_rates: [] };
+
+        function vendorRateStatus(message,error=false){
+            const el=document.getElementById('vendor-rate-card-status');if(!el)return;
+            if(!message){el.classList.add('hidden');return}
+            el.textContent=message;el.className='mx-5 mt-4 rounded-xl border px-4 py-3 text-xs font-semibold '+(error?'bg-rose-50 border-rose-200 text-rose-700':'bg-emerald-50 border-emerald-200 text-emerald-700');
+        }
+
+        async function loadVendorRateCards(){
+            const tbody=document.getElementById('vendor-rate-card-body');if(!tbody)return;
+            tbody.innerHTML='<tr><td colspan="13" class="py-7 text-center text-slate-400">Loading vendor rates...</td></tr>';
+            vendorRateStatus('');
+            try{
+                const d=await adminApi('/api/admin-vendor-ops?rates=1');
+                cwdVendorRateState=d;
+                renderVendorRateCards();
+            }catch(e){
+                tbody.innerHTML='<tr><td colspan="13" class="py-7 text-center text-rose-600 font-bold">'+escapeAdminHtml(e.message)+'</td></tr>';
+                vendorRateStatus(e.message,true);
+            }
+        }
+
+        function vrInput(id,key,value,width='w-16'){
+            return '<input type="number" min="0" step="0.01" id="vr-'+key+'-'+id+'" value="'+Number(value||0)+'" class="'+width+' border border-slate-300 rounded px-2 py-1.5 text-right">';
+        }
+
+        function renderVendorRateCards(){
+            const tbody=document.getElementById('vendor-rate-card-body');if(!tbody)return;
+            const vehicles=cwdVendorRateState.vehicles||[], rateMap=new Map((cwdVendorRateState.vendor_rates||[]).map(r=>[String(r.vehicle_rate_id),r]));
+            if(!vehicles.length){tbody.innerHTML='<tr><td colspan="13" class="py-7 text-center text-slate-400">No Global Pricing vehicles found.</td></tr>';return}
+            tbody.innerHTML=vehicles.map(car=>{
+                const id=String(car.id),r=rateMap.get(id)||{};
+                const customerOut=Number(car.outstation_rate_per_km||0);
+                const vendorOut=Number(r.outstation_rate_per_km||0);
+                const warning=vendorOut>0&&customerOut>0&&vendorOut>=customerOut?'<div class="text-[9px] text-rose-600 font-bold mt-1">Vendor ≥ customer</div>':'';
+                return '<tr class="border-b hover:bg-slate-50">'+
+                  '<td class="py-3 px-3"><div class="font-black text-slate-900">'+escapeAdminHtml(car.full_name||'')+'</div><div class="text-[9px] text-slate-400">'+escapeAdminHtml(car.segment||'')+'</div></td>'+
+                  '<td class="py-3 px-3"><b class="text-indigo-950">₹'+customerOut.toLocaleString('en-IN')+'/km</b>'+warning+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'out',r.outstation_rate_per_km)+'</td>'+
+                  '<td class="py-3 px-3">'+vrInput(id,'min',r.minimum_outstation_km_per_day||240)+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'da',r.driver_allowance_per_day||500)+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'night',r.night_charge||300)+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'l8',r.local_pkg_8hr_80km,'w-20')+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'l10',r.local_pkg_10hr_100km,'w-20')+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'l12',r.local_pkg_12hr_120km,'w-20')+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'ekm',r.local_extra_km_rate)+'</td>'+
+                  '<td class="py-3 px-3">₹'+vrInput(id,'ehr',r.local_extra_hour_rate)+'</td>'+
+                  '<td class="py-3 px-3"><input type="checkbox" id="vr-active-'+id+'" '+(r.is_active!==false?'checked':'')+'></td>'+
+                  '<td class="py-3 px-3 text-right"><button type="button" onclick="saveVendorRateCard('+JSON.stringify(id).replace(/"/g,'&quot;')+')" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-1.5 font-bold text-[10px]">Save</button></td></tr>';
+            }).join('');
+        }
+
+        function vrVal(id,key){
+            const el=document.getElementById('vr-'+key+'-'+id),v=Number(el?.value);
+            if(!Number.isFinite(v)||v<0)throw new Error('Enter valid non-negative vendor rates.');
+            return v;
+        }
+
+        async function saveVendorRateCard(id){
+            const car=(cwdVendorRateState.vehicles||[]).find(x=>String(x.id)===String(id));if(!car)return;
+            try{
+                const rate={
+                    vehicle_rate_id:String(id),
+                    outstation_rate_per_km:vrVal(id,'out'),
+                    minimum_outstation_km_per_day:vrVal(id,'min'),
+                    driver_allowance_per_day:vrVal(id,'da'),
+                    night_charge:vrVal(id,'night'),
+                    local_pkg_8hr_80km:vrVal(id,'l8'),
+                    local_pkg_10hr_100km:vrVal(id,'l10'),
+                    local_pkg_12hr_120km:vrVal(id,'l12'),
+                    local_extra_km_rate:vrVal(id,'ekm'),
+                    local_extra_hour_rate:vrVal(id,'ehr'),
+                    is_active:document.getElementById('vr-active-'+id).checked
+                };
+                const customerOut=Number(car.outstation_rate_per_km||0);
+                if(customerOut>0&&rate.outstation_rate_per_km>=customerOut&&!confirm('Vendor outstation rate is equal to or higher than customer rate for '+car.full_name+'. Save anyway?'))return;
+                await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'update_vendor_rate',rate})});
+                vendorRateStatus(car.full_name+' vendor rate saved.');
+                await loadVendorRateCards();
+            }catch(e){vendorRateStatus(e.message,true)}
+        }
+
+        let cwdVendorCenterData = { vendors: [], offers: [], allocations: [], settlements: [] };
+        let cwdVendorFilter = 'all';
+
+        function copyVendorRegistrationLink() {
+            const url = location.origin + '/vendor-register';
+            if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(()=>alert('Vendor registration link copied.')).catch(()=>prompt('Copy link:',url));
+            else prompt('Copy link:',url);
+        }
+
+        function setVendorFilter(status) {
+            cwdVendorFilter = status || 'all';
+            document.querySelectorAll('.vendor-filter-btn').forEach(btn => {
+                const active = btn.dataset.vendorFilter === cwdVendorFilter;
+                btn.className = 'vendor-filter-btn px-3 py-2 rounded-lg text-[10px] font-bold ' + (active ? 'bg-indigo-950 text-white' : 'bg-slate-100 text-slate-600');
+            });
+            renderVendorCenterTable();
+        }
+
+        function vendorStatusBadge(status) {
+            const s = String(status || '').toLowerCase();
+            const cls = s === 'active' ? 'bg-emerald-100 text-emerald-700' : s === 'pending_review' ? 'bg-amber-100 text-amber-800' : s === 'suspended' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600';
+            return '<span class="px-2 py-1 rounded-full text-[9px] font-black '+cls+'">'+escapeAdminHtml(s.replaceAll('_',' '))+'</span>';
+        }
+
+        async function loadVendorControlCenter() {
+            const table=document.getElementById('vendor-center-table');
+            if(table)table.innerHTML='<tr><td colspan="6" class="py-8 text-center text-slate-400">Loading vendors...</td></tr>';
+            try {
+                const d = await adminApi('/api/admin-vendor-ops?dashboard=1');
+                cwdVendorCenterData = d;
+                renderVendorCenter();
+            } catch(e) {
+                if(table)table.innerHTML='<tr><td colspan="6" class="py-8 text-center text-rose-600 font-bold">'+escapeAdminHtml(e.message)+'</td></tr>';
+            }
+        }
+
+        function renderVendorCenter() {
+            const d=cwdVendorCenterData, vendors=d.vendors||[], offers=d.offers||[], allocations=d.allocations||[], settlements=d.settlements||[];
+            const pending=vendors.filter(v=>v.status==='pending_review').length;
+            const active=vendors.filter(v=>v.status==='active').length;
+            const accepted=offers.filter(o=>o.status==='accepted').length;
+            const pendingPayout=settlements.filter(x=>x.payout_status!=='paid').reduce((a,x)=>a+Number(x.vendor_final_payout||0),0);
+            document.getElementById('vendor-center-kpis').innerHTML=[
+                ['Registered Vendors',vendors.length,'fa-users',"setVendorFilter('all')"],
+                ['Pending Approval',pending,'fa-user-clock',"setVendorFilter('pending_review')"],
+                ['Active Vendors',active,'fa-circle-check',"setVendorFilter('active')"],
+                ['Pending Vendor Payout',money(pendingPayout),'fa-wallet',"focusPendingVendorPayouts()"]
+            ].map(c=>'<button type="button" onclick="'+c[3]+'" class="text-left bg-white hover:-translate-y-0.5 hover:shadow-md transition rounded-2xl border border-slate-200 shadow-sm p-5"><div class="flex justify-between gap-3"><div><p class="text-[10px] uppercase font-bold text-slate-400">'+c[0]+'</p><p class="text-2xl font-black text-indigo-950 mt-2">'+c[1]+'</p></div><i class="fa-solid '+c[2]+' text-emerald-500 text-xl"></i></div></button>').join('');
+
+            renderVendorCenterTable();
+            const vm=new Map(vendors.map(v=>[v.id,v]));
+            document.getElementById('vendor-center-offers').innerHTML=offers.slice(0,12).map(o=>{
+                const v=vm.get(o.vendor_id)||{};
+                return '<button class="w-full text-left border rounded-xl p-3 hover:bg-slate-50" onclick="openBookingDetailById(\''+escapeAdminHtml(o.booking_id)+'\')"><div class="flex justify-between gap-2"><div><b>'+escapeAdminHtml(v.owner_business_name||v.vendor_code||'Vendor')+'</b><div class="text-[10px] text-slate-500 mt-1">'+escapeAdminHtml(o.booking_id)+' · '+escapeAdminHtml(String(o.status||'').replaceAll('_',' '))+'</div></div><b>'+money(o.estimated_vendor_payout)+'</b></div></button>';
+            }).join('') || '<p class="text-slate-400">No vendor offers yet.</p>';
+
+            const settleMap=new Map(settlements.map(x=>[x.booking_id,x]));
+            document.getElementById('vendor-center-allocations').innerHTML=allocations.slice(0,12).map(a=>{
+                const v=vm.get(a.vendor_id)||{}, st=settleMap.get(a.booking_id);
+                return '<button class="w-full text-left border rounded-xl p-3 hover:bg-slate-50" onclick="openBookingDetailById(\''+escapeAdminHtml(a.booking_id)+'\')"><div class="flex justify-between gap-2"><div><b>'+escapeAdminHtml(v.owner_business_name||v.vendor_code||'Vendor')+'</b><div class="text-[10px] text-slate-500 mt-1">'+escapeAdminHtml(a.booking_id)+' · '+escapeAdminHtml(String(a.status||'').replaceAll('_',' '))+'</div></div><div class="text-right">'+(st?'<b>'+money(st.vendor_final_payout)+'</b><div class="text-[9px] '+(st.payout_status==='paid'?'text-emerald-700':'text-amber-700')+'">'+escapeAdminHtml(st.payout_status)+'</div>':'<span class="text-slate-400 text-[10px]">No settlement</span>')+'</div></div></button>';
+            }).join('') || '<p class="text-slate-400">No allocations yet.</p>';
+        }
+
+        function renderVendorCenterTable() {
+            const tbody=document.getElementById('vendor-center-table');if(!tbody)return;
+            let rows=cwdVendorCenterData.vendors||[];
+            if(cwdVendorFilter!=='all')rows=rows.filter(v=>v.status===cwdVendorFilter);
+            if(!rows.length){tbody.innerHTML='<tr><td colspan="6" class="py-8 text-center text-slate-400">No vendors in this view.</td></tr>';return;}
+            tbody.innerHTML=rows.map(v=>{
+                const date=v.created_at?new Date(v.created_at).toLocaleDateString('en-IN'):'—';
+                return '<tr class="hover:bg-slate-50 cursor-pointer" onclick="openVendorDetail(\''+v.id+'\')"><td class="py-3 px-3"><b>'+escapeAdminHtml(v.owner_business_name)+'</b><div class="text-[9px] text-indigo-700 font-bold">'+escapeAdminHtml(v.vendor_code)+'</div></td><td class="py-3 px-3"><a onclick="event.stopPropagation()" class="text-emerald-700 font-bold" target="_blank" href="https://wa.me/91'+escapeAdminHtml(String(v.primary_whatsapp||'').replace(/\D/g,''))+'">'+escapeAdminHtml(v.primary_whatsapp||'—')+'</a></td><td class="py-3 px-3">'+escapeAdminHtml(v.base_location||'—')+'</td><td class="py-3 px-3">'+escapeAdminHtml(date)+'</td><td class="py-3 px-3">'+vendorStatusBadge(v.status)+'</td><td class="py-3 px-3 text-right"><button onclick="event.stopPropagation();openVendorDetail(\''+v.id+'\')" class="bg-indigo-950 text-white rounded-lg px-3 py-2 text-[9px] font-bold">View Details</button></td></tr>';
+            }).join('');
+        }
+
+        let cwdSelectedVendorDetail = null;
+
+        function focusPendingVendorPayouts() {
+            const box=document.getElementById('vendor-center-allocations');
+            if(!box)return;
+            box.scrollIntoView({behavior:'smooth',block:'center'});
+            box.parentElement.classList.add('ring-2','ring-amber-300');
+            setTimeout(()=>box.parentElement.classList.remove('ring-2','ring-amber-300'),1800);
+        }
+
+        async function openVendorDetail(vendorId) {
+            const modal=document.getElementById('vendor-detail-modal');
+            const body=document.getElementById('vendor-detail-body');
+            modal.classList.remove('hidden');modal.classList.add('flex');
+            body.innerHTML='<div class="py-12 text-center text-slate-400">Loading complete vendor profile...</div>';
+            try{
+                const d=await adminApi('/api/admin-vendor-ops?dashboard=1&vendor_id='+encodeURIComponent(vendorId));
+                cwdSelectedVendorDetail=d;
+                renderVendorDetail(d);
+            }catch(e){body.innerHTML='<div class="bg-rose-50 text-rose-700 rounded-xl p-4 font-bold">'+escapeAdminHtml(e.message)+'</div>'}
+        }
+
+        function closeVendorDetail(){const m=document.getElementById('vendor-detail-modal');m.classList.add('hidden');m.classList.remove('flex');cwdSelectedVendorDetail=null}
+
+        function detailRow(label,value){
+            return '<div class="bg-slate-50 border border-slate-100 rounded-xl p-3"><div class="text-[9px] uppercase font-black tracking-wide text-slate-400">'+escapeAdminHtml(label)+'</div><div class="text-xs font-bold text-slate-800 mt-1 break-words">'+escapeAdminHtml(value??'—')+'</div></div>';
+        }
+
+        function maskAccount(value){
+            const s=String(value||'');if(!s)return '—';return s.length<=4?s:'••••••'+s.slice(-4);
+        }
+
+        function inlineField(label,key,value,type='text',extra=''){
+            return '<div class="vendor-inline-field bg-slate-50 border border-slate-100 rounded-xl p-3 cursor-pointer hover:border-indigo-300 transition" data-key="'+key+'" onclick="enableInlineEdit(this)"><div class="text-[9px] uppercase font-black tracking-wide text-slate-400">'+escapeAdminHtml(label)+'</div><div class="vendor-display text-xs font-bold text-slate-800 mt-1 break-words">'+escapeAdminHtml(value??'—')+'</div><input class="vendor-input hidden mt-2 w-full border border-slate-300 rounded-lg px-2.5 py-2 text-xs" type="'+type+'" value="'+escapeAdminHtml(value??'')+'" '+extra+' onclick="event.stopPropagation()"><div class="vendor-inline-actions hidden mt-2 flex gap-2"><button type="button" onclick="event.stopPropagation();saveInlineField(this)" class="bg-indigo-950 text-white rounded-lg px-3 py-1.5 text-[9px] font-bold">Save</button><button type="button" onclick="event.stopPropagation();cancelInlineEdit(this)" class="bg-white border rounded-lg px-3 py-1.5 text-[9px] font-bold">Cancel</button></div></div>';
+        }
+
+        function enableInlineEdit(card){
+            card.querySelector('.vendor-display')?.classList.add('hidden');
+            card.querySelector('.vendor-input')?.classList.remove('hidden');
+            card.querySelector('.vendor-inline-actions')?.classList.remove('hidden');
+            const input=card.querySelector('.vendor-input');if(input){input.focus();input.select?.();}
+        }
+
+        function cancelInlineEdit(btn){
+            const card=btn.closest('.vendor-inline-field');
+            card.querySelector('.vendor-input')?.classList.add('hidden');
+            card.querySelector('.vendor-inline-actions')?.classList.add('hidden');
+            card.querySelector('.vendor-display')?.classList.remove('hidden');
+        }
+
+        async function saveInlineField(btn){
+            const card=btn.closest('.vendor-inline-field'), key=card.dataset.key, input=card.querySelector('.vendor-input');
+            if(!cwdSelectedVendorDetail?.vendor||!input)return;
+            const d=cwdSelectedVendorDetail;
+            const profile={...d.vendor};
+            const payout={...(d.payout||{})};
+            const vehicles=(d.vehicles||[]).map(x=>({...x}));
+            let value=input.value.trim();
+
+            if(key.startsWith('profile.')){
+                const k=key.split('.')[1];
+                if(k==='primary_whatsapp'||k==='alternate_mobile')value=value.replace(/\D/g,'').slice(-10);
+                if(k==='pan')value=value.toUpperCase();
+                profile[k]=value||null;
+            }else if(key.startsWith('payout.')){
+                const k=key.split('.')[1];
+                if(k==='ifsc')value=value.toUpperCase();
+                payout[k]=value||null;
+            }else if(key.startsWith('vehicle.')){
+                const parts=key.split('.'), idx=Number(parts[1]), k=parts[2];
+                if(!vehicles[idx])return;
+                if(k==='vehicle_number')value=value.toUpperCase().replace(/\s+/g,'');
+                vehicles[idx][k]=value;
+            }else return;
+
+            const payload={
+              action:'update_vendor_profile',
+              vendor_id:d.vendor.id,
+              profile:{
+                owner_business_name:profile.owner_business_name,
+                primary_whatsapp:profile.primary_whatsapp,
+                alternate_mobile:profile.alternate_mobile||'',
+                email:profile.email||'',
+                base_location:profile.base_location,
+                pan:profile.pan,
+                address:profile.address
+              },
+              payout:{
+                payout_mode:payout.payout_mode,
+                upi_id:payout.upi_id||'',
+                account_holder_name:payout.account_holder_name||'',
+                bank_name:payout.bank_name||'',
+                account_number:payout.account_number||'',
+                ifsc:payout.ifsc||''
+              },
+              vehicles:vehicles.map(v=>({
+                id:v.id,vehicle_number:v.vehicle_number,make_model:v.make_model,category:v.category,
+                manufacturing_year:Number(v.manufacturing_year),fuel:v.fuel,seating:Number(v.seating),
+                commercial_permit_type:v.commercial_permit_type,insurance_policy_number:v.insurance_policy_number,
+                insurance_expiry:v.insurance_expiry||null,puc_number:v.puc_number,puc_expiry:v.puc_expiry||null,
+                permit_fitness_number:v.permit_fitness_number||null,permit_fitness_expiry:v.permit_fitness_expiry||null
+              }))
+            };
+            try{
+              await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify(payload)});
+              await loadVendorControlCenter();
+              await openVendorDetail(d.vendor.id);
+            }catch(e){alert(e.message)}
+        }
+
+        function renderVendorDetail(d){
+            const v=d.vendor||{},p=d.payout||{},vehicles=d.vehicles||[],terms=d.terms||[];
+            document.getElementById('vendor-detail-subtitle').textContent=(v.owner_business_name||'Vendor')+' · '+(v.vendor_code||'');
+            const vehicleCards=vehicles.map((x,i)=>'<div class="border border-slate-200 rounded-2xl p-4"><div class="flex justify-between gap-3"><h5 class="font-black text-slate-900">Vehicle '+(i+1)+'</h5><span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(x.category||'')+'</span></div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">'+inlineField('Vehicle Number','vehicle.'+i+'.vehicle_number',x.vehicle_number,'text','maxlength="20" style="text-transform:uppercase"')+
+              inlineField('Make / Model','vehicle.'+i+'.make_model',x.make_model)+inlineField('Manufacturing Year','vehicle.'+i+'.manufacturing_year',x.manufacturing_year,'number')+inlineField('Fuel','vehicle.'+i+'.fuel',x.fuel)+inlineField('Seating','vehicle.'+i+'.seating',x.seating,'number')+inlineField('Permit Type','vehicle.'+i+'.commercial_permit_type',x.commercial_permit_type)+inlineField('Insurance Policy','vehicle.'+i+'.insurance_policy_number',x.insurance_policy_number)+inlineField('Insurance Expiry','vehicle.'+i+'.insurance_expiry',x.insurance_expiry||'','date')+inlineField('PUC Number','vehicle.'+i+'.puc_number',x.puc_number)+inlineField('PUC Expiry','vehicle.'+i+'.puc_expiry',x.puc_expiry||'','date')+inlineField('Permit / Fitness No.','vehicle.'+i+'.permit_fitness_number',x.permit_fitness_number||'')+inlineField('Permit / Fitness Expiry','vehicle.'+i+'.permit_fitness_expiry',x.permit_fitness_expiry||'','date')+'</div></div>').join('')||'<p class="text-slate-400 text-xs">No vehicles found.</p>';
+
+            const lastTerms=terms[0];
+            document.getElementById('vendor-detail-body').innerHTML=
+              '<div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-5"><div><div class="flex items-center gap-2"><h4 class="text-xl font-black text-slate-900">'+escapeAdminHtml(v.owner_business_name||'')+'</h4>'+vendorStatusBadge(v.status)+'</div><p class="text-xs text-slate-500 mt-1">'+escapeAdminHtml(v.vendor_code||'')+' · Registered '+escapeAdminHtml(v.created_at?new Date(v.created_at).toLocaleString('en-IN'):'—')+'</p></div><div class="flex flex-wrap gap-2">'+
+              (v.status!=='active'?'<button class="bg-emerald-600 text-white rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'active\')">Approve Vendor</button>':'<button class="bg-emerald-100 text-emerald-800 rounded-xl px-4 py-2.5 text-xs font-black" onclick="openVendorApprovalWhatsApp(cwdSelectedVendorDetail.vendor)">Send Approval WhatsApp</button><button class="bg-rose-50 text-rose-700 rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'suspended\')">Suspend</button>')+
+              
+              '<button class="bg-amber-100 text-amber-800 rounded-xl px-4 py-2.5 text-xs font-black" onclick="openVendorChangeModal()">Request Changes</button>'+
+              (v.status!=='rejected'?'<button class="bg-rose-600 text-white rounded-xl px-4 py-2.5 text-xs font-black" onclick="updateVendorStatusFromDetail(\'rejected\')">Reject</button>':'')+
+              '</div></div>'+
+              '<div class="space-y-5"><section><h5 class="font-black text-slate-900 mb-3">Business & Contact</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">'+inlineField('Owner / Business','profile.owner_business_name',v.owner_business_name)+inlineField('Primary WhatsApp','profile.primary_whatsapp',v.primary_whatsapp,'tel','maxlength="10"')+inlineField('Alternate Mobile','profile.alternate_mobile',v.alternate_mobile||'','tel','maxlength="10"')+inlineField('Email','profile.email',v.email||'','email')+inlineField('Base Location','profile.base_location',v.base_location)+inlineField('PAN','profile.pan',v.pan,'text','maxlength="10" style="text-transform:uppercase"')+'<div class="sm:col-span-2 lg:col-span-3">'+inlineField('Address','profile.address',v.address)+'</div></div></section>'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Payout Details</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">'+detailRow('Payout Mode',({upi:'UPI',bank:'Bank Account',bank_upi:'Bank + UPI'}[p.payout_mode]||p.payout_mode||'—'))+inlineField('UPI ID','payout.upi_id',p.upi_id||'')+inlineField('Account Holder','payout.account_holder_name',p.account_holder_name||'')+inlineField('Bank','payout.bank_name',p.bank_name||'')+inlineField('Account Number','payout.account_number',p.account_number||'')+inlineField('IFSC','payout.ifsc',p.ifsc||'','text','style="text-transform:uppercase"')+'</div></section>'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Vehicles</h5><div class="space-y-3">'+vehicleCards+'</div></section>'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Consent & Terms</h5><div class="grid sm:grid-cols-2 gap-2">'+detailRow('Terms Version',lastTerms?.terms_version)+detailRow('Accepted At',lastTerms?.accepted_at?new Date(lastTerms.accepted_at).toLocaleString('en-IN'):'—')+'</div></section></div>';
+        }
+
+        function cwdVendorApprovalMessage(v){
+            return 'Hello '+(v.owner_business_name||'')+',\n\n*Your CWD Vendor Registration is Approved*\n\n'+
+              '*Vendor Code:* '+(v.vendor_code||'')+'\n\n'+
+              'You are now active in the *Car With Driver India* vendor network.\n\n'+
+              '*Vendor Rates:* Vehicle-wise rates and estimated payout will be shown clearly in each booking offer before you accept it.\n\n'+
+              '*Payout:* After booking completion, next calendar day on or before 4:00 PM.\n\n'+
+              'Booking offers will be shared on WhatsApp through a secure CWD link. Accepting an offer confirms availability only; final allocation will be confirmed separately by CWD.\n\n'+
+              'Regards,\n*Car With Driver India*';
+        }
+
+        function openVendorApprovalWhatsApp(v){
+            if(!v?.primary_whatsapp)return alert('Vendor WhatsApp number is missing.');
+            const msg=cwdVendorApprovalMessage(v);
+            window.open('https://wa.me/91'+String(v.primary_whatsapp).replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank');
+        }
+
+        async function updateVendorStatusFromDetail(status){
+            const v=cwdSelectedVendorDetail?.vendor;if(!v)return;
+            const words={active:'approve this vendor',suspended:'suspend this vendor',rejected:'reject this vendor'};
+            if(!confirm('Confirm '+(words[status]||status)+'?'))return;
+            try{
+                await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'set_vendor_status',vendor_id:v.id,status})});
+                if(status==='active'){
+                    const approvalVendor={...v,status:'active'};
+                    const sendNow=confirm('Vendor approved successfully.\n\nOpen WhatsApp now and send the approval message?');
+                    if(sendNow)openVendorApprovalWhatsApp(approvalVendor);
+                }
+                await loadVendorControlCenter();
+                await openVendorDetail(v.id);
+            }catch(e){alert(e.message)}
+        }
+
+        function editField(label,id,value,type='text',extra=''){
+            return '<div><label class="block text-[10px] font-black text-slate-600 mb-1">'+escapeAdminHtml(label)+'</label><input id="'+id+'" type="'+type+'" value="'+escapeAdminHtml(value??'')+'" '+extra+' class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs"></div>';
+        }
+
+        function editSelect(label,id,value,options){
+            return '<div><label class="block text-[10px] font-black text-slate-600 mb-1">'+escapeAdminHtml(label)+'</label><select id="'+id+'" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs">'+options.map(o=>'<option value="'+escapeAdminHtml(o[0])+'" '+(String(o[0])===String(value)?'selected':'')+'>'+escapeAdminHtml(o[1])+'</option>').join('')+'</select></div>';
+        }
+
+        function openVendorEditModal(){
+            const d=cwdSelectedVendorDetail;if(!d?.vendor)return;
+            const v=d.vendor,p=d.payout||{},vehicles=d.vehicles||[];
+            const body=document.getElementById('vendor-edit-body');
+            const currentYear=new Date().getFullYear();
+            const years=Array.from({length:5},(_,i)=>[String(currentYear-i),String(currentYear-i)]);
+            const models=['Maruti Suzuki Dzire','Hyundai Aura','Maruti Suzuki Ertiga','Toyota Rumion','Kia Carens','Toyota Innova Crysta','Toyota Innova Hycross','Maruti Suzuki Ciaz','Honda City','Hyundai Verna','Toyota Etios','Tempo Traveller'];
+            const vehicleHtml=vehicles.map((x,i)=>'<div class="vendor-edit-vehicle border border-slate-200 rounded-2xl p-4" data-id="'+escapeAdminHtml(x.id)+'"><div class="flex justify-between items-center gap-2 mb-3"><h5 class="font-black text-slate-900">Vehicle '+(i+1)+'</h5></div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">'+
+              editField('Vehicle Number','ev-num-'+i,x.vehicle_number,'text','maxlength="20" style="text-transform:uppercase"')+
+              editSelect('Make / Model','ev-model-'+i,x.make_model,[['','Select make / model'],...models.map(m=>[m,m]),[x.make_model,x.make_model]].filter((o,idx,arr)=>o[0]===''||arr.findIndex(z=>z[0]===o[0])===idx))+
+              editSelect('Category','ev-cat-'+i,x.category,[['','Select'],['Hatchback','Hatchback'],['Sedan','Sedan'],['SUV','SUV'],['MUV','MUV'],['Premium Sedan','Premium Sedan'],['Premium SUV','Premium SUV'],['Tempo Traveller','Tempo Traveller'],['Other','Other']])+
+              editSelect('Manufacturing Year','ev-year-'+i,x.manufacturing_year,[['','Select year'],...years])+
+              editSelect('Fuel','ev-fuel-'+i,x.fuel,[['','Select'],['Petrol','Petrol'],['Diesel','Diesel'],['CNG','CNG'],['Petrol+CNG','Petrol+CNG'],['Electric','Electric'],['Hybrid','Hybrid'],['Other','Other']])+
+              editSelect('Seating','ev-seat-'+i,x.seating,[['','Select'],['5','4+1'],['7','6+1'],['8','7+1'],['13','12+1'],['18','17+1']])+
+              editSelect('Permit Type','ev-permit-'+i,x.commercial_permit_type,[['','Select'],['Tourist Permit / T-Permit','Tourist Permit / T-Permit'],['Contract Carriage','Contract Carriage'],['All India Tourist Permit','All India Tourist Permit'],['Local Commercial Permit','Local Commercial Permit'],['Other','Other']])+
+              editField('Insurance Policy','ev-ins-'+i,x.insurance_policy_number)+
+              editField('Insurance Expiry','ev-insexp-'+i,x.insurance_expiry||'','date')+
+              editField('PUC Number','ev-puc-'+i,x.puc_number)+
+              editField('PUC Expiry','ev-pucexp-'+i,x.puc_expiry||'','date')+
+              editField('Permit / Fitness No.','ev-fit-'+i,x.permit_fitness_number||'')+
+              editField('Permit / Fitness Expiry','ev-fitexp-'+i,x.permit_fitness_expiry||'','date')+
+              '</div></div>').join('');
+
+            body.innerHTML='<div class="space-y-5">'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Business & Contact</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">'+
+              editField('Owner / Business Name','edit-owner',v.owner_business_name)+
+              editField('Primary WhatsApp','edit-primary',v.primary_whatsapp,'tel','maxlength="10"')+
+              editField('Alternate Mobile','edit-alt',v.alternate_mobile||'','tel','maxlength="10"')+
+              editField('Email','edit-email',v.email||'','email')+
+              editField('Base Location','edit-base',v.base_location)+
+              editField('PAN','edit-pan',v.pan,'text','maxlength="10" style="text-transform:uppercase"')+
+              '<div class="sm:col-span-2 lg:col-span-3"><label class="block text-[10px] font-black text-slate-600 mb-1">Address</label><textarea id="edit-address" rows="3" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs">'+escapeAdminHtml(v.address||'')+'</textarea></div></div></section>'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Payout Details</h5><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">'+
+              editSelect('Payout Mode','edit-payout-mode',p.payout_mode,[['upi','UPI'],['bank','Bank Account'],['bank_upi','Bank + UPI']])+
+              editField('UPI ID','edit-upi',p.upi_id||'')+
+              editField('Account Holder','edit-holder',p.account_holder_name||'')+
+              editField('Bank Name','edit-bank',p.bank_name||'')+
+              editField('Account Number','edit-account',p.account_number||'')+
+              editField('IFSC','edit-ifsc',p.ifsc||'','text','style="text-transform:uppercase"')+
+              '</div></section>'+
+              '<section><h5 class="font-black text-slate-900 mb-3">Vehicles</h5><div id="vendor-edit-vehicles" class="space-y-3">'+vehicleHtml+'</div></section>'+
+              '<div class="flex justify-end gap-2 pt-2"><button type="button" onclick="closeVendorEditModal()" class="bg-white border rounded-xl px-4 py-2.5 text-xs font-bold">Cancel</button><button type="button" onclick="saveVendorEdits()" class="bg-indigo-950 text-white rounded-xl px-5 py-2.5 text-xs font-black">Save Corrected Details</button></div>'+
+              '</div>';
+            const m=document.getElementById('vendor-edit-modal');m.classList.remove('hidden');m.classList.add('flex');
+        }
+
+        function closeVendorEditModal(){const m=document.getElementById('vendor-edit-modal');m.classList.add('hidden');m.classList.remove('flex')}
+
+        async function saveVendorEdits(){
+            const d=cwdSelectedVendorDetail;if(!d?.vendor)return;
+            const vehicles=[...document.querySelectorAll('.vendor-edit-vehicle')].map((box,i)=>({
+              id:box.dataset.id,
+              vehicle_number:document.getElementById('ev-num-'+i).value.trim().toUpperCase().replace(/\s+/g,''),
+              make_model:document.getElementById('ev-model-'+i).value,
+              category:document.getElementById('ev-cat-'+i).value,
+              manufacturing_year:Number(document.getElementById('ev-year-'+i).value),
+              fuel:document.getElementById('ev-fuel-'+i).value,
+              seating:Number(document.getElementById('ev-seat-'+i).value),
+              commercial_permit_type:document.getElementById('ev-permit-'+i).value,
+              insurance_policy_number:document.getElementById('ev-ins-'+i).value.trim(),
+              insurance_expiry:document.getElementById('ev-insexp-'+i).value||null,
+              puc_number:document.getElementById('ev-puc-'+i).value.trim(),
+              puc_expiry:document.getElementById('ev-pucexp-'+i).value||null,
+              permit_fitness_number:document.getElementById('ev-fit-'+i).value.trim()||null,
+              permit_fitness_expiry:document.getElementById('ev-fitexp-'+i).value||null
+            }));
+            const payload={
+              action:'update_vendor_profile',
+              vendor_id:d.vendor.id,
+              profile:{
+                owner_business_name:document.getElementById('edit-owner').value.trim(),
+                primary_whatsapp:document.getElementById('edit-primary').value.trim(),
+                alternate_mobile:document.getElementById('edit-alt').value.trim(),
+                email:document.getElementById('edit-email').value.trim(),
+                base_location:document.getElementById('edit-base').value.trim(),
+                pan:document.getElementById('edit-pan').value.trim().toUpperCase(),
+                address:document.getElementById('edit-address').value.trim()
+              },
+              payout:{
+                payout_mode:document.getElementById('edit-payout-mode').value,
+                upi_id:document.getElementById('edit-upi').value.trim(),
+                account_holder_name:document.getElementById('edit-holder').value.trim(),
+                bank_name:document.getElementById('edit-bank').value.trim(),
+                account_number:document.getElementById('edit-account').value.trim(),
+                ifsc:document.getElementById('edit-ifsc').value.trim().toUpperCase()
+              },
+              vehicles
+            };
+            if(!confirm('Save these corrected vendor details?'))return;
+            try{
+              await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify(payload)});
+              closeVendorEditModal();
+              await loadVendorControlCenter();
+              await openVendorDetail(d.vendor.id);
+              alert('Vendor details updated successfully.');
+            }catch(e){alert(e.message)}
+        }
+
+        function openVendorChangeModal(){
+            if(!cwdSelectedVendorDetail?.vendor)return;
+            document.querySelectorAll('.vendor-change-reason').forEach(x=>x.checked=false);
+            document.getElementById('vendor-change-note').value='';
+            const m=document.getElementById('vendor-change-modal');m.classList.remove('hidden');m.classList.add('flex');
+        }
+        function closeVendorChangeModal(){const m=document.getElementById('vendor-change-modal');m.classList.add('hidden');m.classList.remove('flex')}
+
+        function sendVendorChangeRequest(){
+            const v=cwdSelectedVendorDetail?.vendor;if(!v)return;
+            const reasons=[...document.querySelectorAll('.vendor-change-reason:checked')].map(x=>x.value);
+            const note=document.getElementById('vendor-change-note').value.trim();
+            if(!reasons.length&&!note)return alert('Select at least one correction or add a note.');
+            const msg='Hello '+(v.owner_business_name||'')+',\n\nThank you for registering with *Car With Driver India*. We reviewed your vendor registration and need the following details corrected/updated:\n\n'+
+              reasons.map(x=>'• '+x).join('\n')+
+              (note?'\n\nNote: '+note:'')+
+              '\n\nPlease reply on WhatsApp with the corrected details/documents. Once updated, we will review your registration again.\n\nRegards,\n*Car With Driver India*';
+            closeVendorChangeModal();
+            window.open('https://wa.me/91'+String(v.primary_whatsapp||'').replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank');
+        }
+
+        async function updateVendorStatus(vendorId,status) {
+            const label=status==='active'?'approve/activate':status;
+            if(!confirm('Confirm '+label+' this vendor?'))return;
+            try{
+                await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'set_vendor_status',booking_id:'VENDOR-CENTER',vendor_id:vendorId,status})});
+                await loadVendorControlCenter();
+            }catch(e){alert(e.message)}
+        }
+
+        let cwdLastGeneratedOffers = [];
+        let cwdLastAllocationUrl = '';
+        function cwdCopyText(value){
+            if(!value)return;
+            if(navigator.clipboard?.writeText) navigator.clipboard.writeText(value).catch(()=>prompt('Copy:',value));
+            else prompt('Copy:',value);
+        }
+        function cwdVendorOfferMessage(o){
+            const route=String(o.route_summary||'').trim();
+            return [
+              '🚘 *CWD BOOKING OFFER*',
+              '',
+              '🆔 *'+String(o.booking_id||'')+'*',
+              '🚗 '+String(o.vehicle_required||''),
+              '🧭 '+String(o.trip_type||''),
+              '',
+              '📍 *Route*',
+              route,
+              '',
+              '📏 *Billable KM:* '+Number(o.estimated_km||0).toLocaleString('en-IN')+' KM',
+              '💰 *Vendor Payout:* '+money(o.estimated_vendor_payout),
+              '',
+              '👇 *Open to Accept / Decline*',
+              String(o.view_url||''),
+              '',
+              '_Accepting confirms availability only. Final allocation is confirmed separately by CWD._'
+            ].join('\n');
+        }
+        async function loadVendorOpsPanel(){
+            const b=currentAdminBooking,body=document.getElementById('booking-detail-body');
+            if(!b||!body)return;
+            const existing=document.getElementById('cwd-vendor-ops-card');if(existing)existing.remove();
+            if(!/with driver/i.test(String(b.service_type||'')) && /self/i.test(String(b.trip_type||'')))return;
+            const card=document.createElement('div');card.id='cwd-vendor-ops-card';card.className='mt-4 border-2 border-indigo-100 rounded-2xl p-4 bg-indigo-50/40';
+            card.innerHTML='<div class="flex justify-between items-center gap-2"><div><h4 class="font-black text-sm text-indigo-950">With Driver Vendor Operations</h4><p class="text-[10px] text-slate-500">Offer → Accept/Decline → Allocate → Trip → Review → Invoice → Vendor Payout</p></div><button type="button" id="cwd-vendor-refresh" class="text-[10px] font-bold bg-white border rounded-lg px-3 py-2">Refresh</button></div><div id="cwd-vendor-ops-content" class="mt-4 text-xs">Loading vendor operations…</div>';
+            body.appendChild(card);document.getElementById('cwd-vendor-refresh').onclick=loadVendorOpsPanel;
+            try{
+                const d=await adminApi('/api/admin-vendor-ops?booking_id='+encodeURIComponent(b.booking_id));
+                renderVendorOps(d);
+            }catch(e){document.getElementById('cwd-vendor-ops-content').innerHTML='<div class="bg-rose-50 text-rose-700 rounded-xl p-3 font-bold">'+escapeAdminHtml(e.message)+'</div>'}
+        }
+        function renderVendorOps(d){
+            window._cwdCurrentVendorOps=d||{};
+            const box=document.getElementById('cwd-vendor-ops-content');if(!box)return;
+            const vendors=d.vendors||[],offers=d.offers||[],a=d.allocation,t=d.trip,cl=d.customer_ledger,vl=d.vendor_ledger;
+            const allocatedOffer=a?offers.find(o=>String(o.id)===String(a.offer_id)):null;
+            const earlyStartApprovedAt=allocatedOffer?.pricing_snapshot?.early_start_approved_at||null;
+            const vendorMap=new Map(vendors.map(v=>[v.id,v]));
+            const vehicleOptions=d.vendor_vehicle_options||{};
+            const vendorRows=vendors.map(v=>{
+                const opts=vehicleOptions[v.id]||[];
+                const disabled=!opts.length;
+                const selector=opts.length>1
+                  ? '<select data-vendor-vehicle-select="'+escapeAdminHtml(v.id)+'" class="mt-2 w-full border rounded-lg p-2 text-[10px]"><option value="">Choose exact vehicle</option>'+opts.map(o=>'<option value="'+escapeAdminHtml(o.global_vehicle_id)+'">'+escapeAdminHtml(o.vehicle_name)+' · '+escapeAdminHtml(o.vendor_vehicle_number||'')+'</option>').join('')+'</select>'
+                  : opts.length===1
+                    ? '<input type="hidden" data-vendor-vehicle-select="'+escapeAdminHtml(v.id)+'" value="'+escapeAdminHtml(opts[0].global_vehicle_id)+'"><div class="mt-2 text-[10px] font-bold text-emerald-700">Eligible: '+escapeAdminHtml(opts[0].vehicle_name)+' · '+escapeAdminHtml(opts[0].vendor_vehicle_number||'')+'</div>'
+                    : '<div class="mt-2 text-[10px] font-bold text-rose-600">No compatible registered vehicle</div>';
+                return '<label class="block p-3 bg-white border rounded-xl '+(disabled?'opacity-60':'hover:border-indigo-300')+' transition"><div class="flex items-start gap-2"><input type="checkbox" data-vendor-id="'+escapeAdminHtml(v.id)+'" class="mt-1" '+(disabled?'disabled':'')+'><span><b>'+escapeAdminHtml(v.owner_business_name)+'</b> <span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(v.vendor_code)+'</span><br><span class="text-[10px] text-slate-500">'+escapeAdminHtml(v.primary_whatsapp)+' · '+escapeAdminHtml(v.base_location)+' · '+escapeAdminHtml(v.status)+'</span></span></div>'+selector+'</label>';
+            }).join('')||'<p class="text-slate-500">No active vendors yet.</p>';
+            const acceptedOffers=offers.filter(o=>o.status==='accepted');
+            const offerRows=offers.map(o=>{const v=vendorMap.get(o.vendor_id)||{},accepted=o.status==='accepted';return '<div class="p-3 '+(accepted?'bg-emerald-50 border-emerald-300':'bg-white')+' border rounded-xl flex items-center justify-between gap-2"><div><b>'+escapeAdminHtml(v.owner_business_name||v.vendor_code||'Vendor')+'</b>'+(accepted?' <span class="ml-1 inline-flex px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black">ACCEPTED</span>':'')+'<br><span class="text-[10px] text-slate-500">'+escapeAdminHtml(v.primary_whatsapp||'')+' · '+escapeAdminHtml(o.status.toUpperCase())+' · '+money(o.estimated_vendor_payout)+'</span></div>'+(accepted?'<button class="bg-emerald-600 text-white rounded-lg px-3 py-2 font-bold" onclick="cwdAllocate(\''+o.id+'\')">ALLOCATE</button>':'')+'</div>'}).join('');
+            box.innerHTML=
+              (acceptedOffers.length?'<div class="mb-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-3 flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg">✓</div><div><div class="font-black text-emerald-900">Vendor Accepted — Allocation Required</div><div class="text-[10px] text-emerald-700">'+acceptedOffers.length+' vendor'+(acceptedOffers.length>1?'s have':' has')+' accepted this booking. Choose one below and tap ALLOCATE.</div></div></div>':'')+
+              '<div class="grid lg:grid-cols-2 gap-3"><div class="bg-white rounded-xl p-3 border"><h5 class="font-black mb-2">1. Select Vendors</h5><div class="space-y-2 max-h-56 overflow-auto">'+vendorRows+'</div></div>'+
+              '<div class="bg-white rounded-xl p-3 border"><h5 class="font-black mb-2">2. Offer Pricing Inputs</h5><div class="grid grid-cols-2 gap-2"><label>Estimated/Billable KM<input id="cwd-est-km" type="number" min="0" value="240" class="w-full border rounded-lg p-2 mt-1"></label><label>Duty Days<input id="cwd-duty-days" type="number" min="1" value="1" class="w-full border rounded-lg p-2 mt-1"></label><label>Night Count<input id="cwd-night-count" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label><label>Local Package<select id="cwd-local-package" class="w-full border rounded-lg p-2 mt-1"><option value="8hr_80km">8H/80KM</option><option value="10hr_100km">10H/100KM</option><option value="12hr_120km">12H/120KM</option></select></label><label>Extra KM<input id="cwd-extra-km" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label><label>Extra Hours<input id="cwd-extra-hours" type="number" min="0" value="0" class="w-full border rounded-lg p-2 mt-1"></label></div><div class="mt-3 border-t pt-3"><div><h6 class="font-black text-amber-900">Vendor Offer Override</h6><p class="text-[9px] text-slate-500">Optional. Use only when standard vendor rate is not being accepted.</p></div><div class="grid grid-cols-2 gap-2 mt-2"><label>Override ₹/KM<input id="cwd-vendor-rate-override" type="number" min="0" step="0.01" placeholder="Optional" value="'+escapeAdminHtml(d.commercial_override?.vendor_rate_per_km_override??'')+'" class="w-full border rounded-lg p-2 mt-1"></label><label>Final Vendor Payout<input id="cwd-vendor-final-override" type="number" min="0" step="0.01" placeholder="Optional" value="'+escapeAdminHtml(d.commercial_override?.vendor_final_payout_override??'')+'" class="w-full border rounded-lg p-2 mt-1"></label><label class="col-span-2">Override Reason<input id="cwd-vendor-override-reason" maxlength="500" placeholder="e.g. No vendor accepted / urgent booking" value="'+escapeAdminHtml(d.commercial_override?.vendor_override_reason||'')+'" class="w-full border rounded-lg p-2 mt-1"></label></div><p class="text-[9px] text-slate-500 mt-2">If Final Vendor Payout is entered, it takes priority over ₹/KM override for this offer.</p></div><button class="mt-3 w-full bg-indigo-950 text-white rounded-xl p-3 font-black" onclick="cwdGenerateOffers()">Generate Vendor Offer</button></div></div>'+
+              (cwdLastGeneratedOffers.length?'<div class="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3"><h5 class="font-black">New Offer Links</h5>'+cwdLastGeneratedOffers.map((o,i)=>'<div class="mt-2 flex gap-2"><button class="flex-1 bg-white border rounded-lg p-2 font-bold" onclick="cwdCopyText(cwdVendorOfferMessage(cwdLastGeneratedOffers['+i+']))">Copy Offer</button><a class="flex-1 text-center bg-emerald-600 text-white rounded-lg p-2 font-bold" target="_blank" href="https://wa.me/91'+encodeURIComponent(String(o.vendor_whatsapp||'').replace(/\D/g,''))+'?text='+encodeURIComponent(cwdVendorOfferMessage(o))+'">Open WhatsApp</a></div>').join('')+'</div>':'')+
+              '<div class="mt-3 bg-white border rounded-xl p-3"><h5 class="font-black mb-2">Offer Status</h5><div class="space-y-2">'+(offerRows||'<p class="text-slate-500">No offers yet.</p>')+'</div></div>'+
+              (a?'<div class="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h5 class="font-black">Allocated Vendor</h5><p>Status: <b>'+escapeAdminHtml(a.status)+'</b></p><p>Vehicle: '+escapeAdminHtml(a.vehicle_number||'Not entered')+' · Driver: '+escapeAdminHtml(a.driver_name||'Not entered')+' '+escapeAdminHtml(a.driver_mobile||'')+'</p>'+(a.vehicle_number&&a.driver_name&&a.driver_mobile?'<div class="grid grid-cols-2 gap-2 mt-3"><button class="bg-white border border-emerald-300 text-emerald-800 rounded-lg p-2 font-bold" onclick="cwdCopyDriverDetails()">Copy Driver Details</button><button class="bg-emerald-600 text-white rounded-lg p-2 font-bold" onclick="cwdWhatsAppDriverDetails()">WhatsApp Customer</button></div>':'')+(!t?.started_at?(earlyStartApprovedAt?'<div class="mt-2 rounded-lg bg-emerald-100 text-emerald-800 p-2 text-[10px] font-bold">✓ Early Start Approved by CWD</div>':'<button class="mt-2 w-full bg-amber-500 text-white rounded-lg p-2 font-bold" onclick="cwdAllowEarlyStart(this)">Allow Early Start</button>'):'')+(cwdLastAllocationUrl?'<button class="mt-2 bg-white border rounded-lg p-2 font-bold" onclick="cwdCopyText(cwdLastAllocationUrl)">Copy Allocated Vendor Link</button>':'')+'</div>':'')+
+              (t?'<div class="mt-3 bg-white border rounded-xl p-3"><h5 class="font-black">Trip Closure / Review</h5><div class="grid md:grid-cols-2 gap-2 mt-2"><div>Starting KM: <b>'+escapeAdminHtml(t.starting_odometer||'—')+'</b>'+(t.start_photo_url?'<br><a class="text-indigo-700 underline" target="_blank" href="'+t.start_photo_url+'">View starting photo</a>':'')+'</div><div>Closing KM: <b>'+escapeAdminHtml(t.closing_odometer||'—')+'</b>'+(t.end_photo_url?'<br><a class="text-indigo-700 underline" target="_blank" href="'+t.end_photo_url+'">View closing photo</a>':'')+'</div></div><p class="mt-2">Calculated KM: <b>'+escapeAdminHtml(t.calculated_trip_km||'—')+'</b> · Toll '+money(t.toll)+' · Parking '+money(t.parking)+' · State Tax '+money(t.state_tax)+' · Night '+(t.night_charge?'YES':'NO')+' · Other '+money(t.other_amount)+'</p><p>Status: <b>'+escapeAdminHtml(t.review_status)+'</b></p>'+(t.ended_at?'<div class="grid grid-cols-3 gap-2 mt-3"><button class="bg-emerald-600 text-white rounded-lg p-2 font-bold" onclick="cwdReview(\'approve\')">APPROVE</button><button class="bg-amber-500 text-white rounded-lg p-2 font-bold" onclick="cwdReview(\'correct\')">CORRECT</button><button class="bg-rose-600 text-white rounded-lg p-2 font-bold" onclick="cwdReview(\'query\')">QUERY VENDOR</button></div>':'')+'</div>':'')+
+              (cl?'<div class="mt-3 grid md:grid-cols-2 gap-3"><div class="bg-blue-50 border border-blue-200 rounded-xl p-3"><h5 class="font-black">Customer Billing</h5><p>Total: <b>'+money(cl.customer_total)+'</b> · Advance: '+money(cl.customer_advance)+' · Balance: <b>'+money(cl.customer_balance)+'</b></p><button class="mt-2 w-full bg-indigo-950 text-white rounded-lg p-2 font-bold" onclick="cwdGenerateInvoice('+Number(cl.customer_balance||0)+')">Generate Final Invoice + PAY NOW</button></div><div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3"><h5 class="font-black">Vendor Settlement</h5><p>Final payout: <b>'+money(vl?.vendor_final_payout||0)+'</b> · '+escapeAdminHtml(vl?.payout_status||'pending')+'</p>'+(vl?.payout_status!=='paid'?'<button class="mt-2 w-full bg-emerald-700 text-white rounded-lg p-2 font-bold" onclick="cwdMarkVendorPaid()">Mark Vendor Payout PAID</button>':'<p>UTR: '+escapeAdminHtml(vl?.utr_reference||'')+'</p>')+'</div></div>':'')+
+              (d.invoice?'<div class="mt-3 text-[10px] text-emerald-700 font-bold">Final invoice already generated.</div>':'');
+        }
+        async function cwdGenerateOffers(){
+            const ids=[...document.querySelectorAll('#cwd-vendor-ops-content [data-vendor-id]:checked')].map(x=>x.dataset.vendorId);if(!ids.length)return alert('Select at least one vendor.');
+            const vendorVehicleIds={};
+            for(const id of ids){
+                const el=document.querySelector('[data-vendor-vehicle-select="'+CSS.escape(id)+'"]');
+                if(!el||!el.value)return alert('Choose the exact vehicle model for each selected vendor.');
+                vendorVehicleIds[id]=el.value;
+            }
+            try{const d=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'create_offer',booking_id:currentAdminBooking.booking_id,vendor_ids:ids,vendor_vehicle_ids:vendorVehicleIds,estimated_km:Number(document.getElementById('cwd-est-km').value||0),duty_days:Number(document.getElementById('cwd-duty-days').value||1),night_count:Number(document.getElementById('cwd-night-count').value||0),local_package:document.getElementById('cwd-local-package').value,extra_km:Number(document.getElementById('cwd-extra-km').value||0),extra_hours:Number(document.getElementById('cwd-extra-hours').value||0),vendor_rate_per_km_override:document.getElementById('cwd-vendor-rate-override')?.value||null,vendor_final_payout_override:document.getElementById('cwd-vendor-final-override')?.value||null,vendor_override_reason:document.getElementById('cwd-vendor-override-reason')?.value.trim()||''})});cwdLastGeneratedOffers=d.offers||[];await loadVendorOpsPanel()}catch(e){alert(e.message)}
+        }
+        async function cwdAllocate(offerId){if(!confirm('Allocate this accepted vendor? Any previous vendor access will be revoked.'))return;try{const d=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'allocate',booking_id:currentAdminBooking.booking_id,offer_id:offerId})});cwdLastAllocationUrl=d.allocated_url||'';await loadVendorOpsPanel();if(cwdLastAllocationUrl)cwdCopyText(cwdLastAllocationUrl)}catch(e){alert(e.message)}}
+        function cwdDriverDetailsMessage(){
+            const data=window._cwdCurrentVendorOps||{},a=data.allocation||{},offers=data.offers||[];
+            const b=currentAdminBooking||{};
+            const offer=offers.find(o=>String(o.id)===String(a?.offer_id))||{};
+            return [
+              'Hello '+String(b.customer_name||'Sir/Madam')+',',
+              '',
+              'Your driver details for *'+String(b.booking_id||'your booking')+'* are:',
+              '',
+              '🚗 *Vehicle:* '+String(offer.vehicle_required||b.car_name||'')+(a?.vehicle_number?' ('+String(a.vehicle_number)+')':''),
+              '👤 *Driver:* '+String(a?.driver_name||''),
+              '📞 *Driver Mobile:* '+String(a?.driver_mobile||''),
+              '',
+              'Please contact the driver if needed before pickup.',
+              '',
+              'Regards,',
+              '*Car With Driver India*',
+              '📞 9702988465',
+              '🌐 carswithdriverindia.com'
+            ].join('\n');
+        }
+        function cwdCopyDriverDetails(){
+            cwdCopyText(cwdDriverDetailsMessage());
+        }
+        function cwdWhatsAppDriverDetails(){
+            const b=currentAdminBooking||{};
+            const phone=String(b.customer_phone||'').replace(/\D/g,'').slice(-10);
+            if(!phone)return alert('Customer mobile number is missing.');
+            window.open('https://wa.me/91'+phone+'?text='+encodeURIComponent(cwdDriverDetailsMessage()),'_blank','noopener');
+        }
+
+        async function cwdAllowEarlyStart(btn){
+            if(!confirm('Allow this vendor to start the trip before the normal 3-hour window?'))return;
+            const old=btn?.innerHTML;
+            try{
+                if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Approving…';}
+                await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'allow_early_start',booking_id:currentAdminBooking.booking_id})});
+                await loadVendorOpsPanel();
+            }catch(e){alert(e.message);if(btn){btn.disabled=false;btn.innerHTML=old||'Allow Early Start';}}
+        }
+
+        async function cwdReview(action){
+            const payload={action:'review',booking_id:currentAdminBooking.booking_id,review_action:action};
+            if(action==='query')payload.admin_notes=prompt('Query / note for vendor:','')||'';
+            if(action==='correct'){
+                payload.corrections={};
+                const km=prompt('Correct billable/trip KM (leave blank to keep submitted):','');if(km!=='')payload.corrections.billable_km=Number(km);
+                const toll=prompt('Correct Toll ₹ (leave blank to keep):','');if(toll!=='')payload.corrections.toll=Number(toll);
+                const parking=prompt('Correct Parking ₹ (leave blank to keep):','');if(parking!=='')payload.corrections.parking=Number(parking);
+                const tax=prompt('Correct State Tax ₹ (leave blank to keep):','');if(tax!=='')payload.corrections.state_tax=Number(tax);
+                payload.admin_notes=prompt('Correction note:','')||'';
+            }
+            try{await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify(payload)});await loadVendorOpsPanel()}catch(e){alert(e.message)}
+        }
+        async function cwdGenerateInvoice(balance){
+            try{
+                const refreshed=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'refresh_invoice_totals',booking_id:currentAdminBooking.booking_id})});
+                balance=Number(refreshed.balance||0);
+                let paymentUrl='';
+                if(balance>0){
+                    const pay=await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'create',booking_id:currentAdminBooking.booking_id,payment_type:'balance',amount:balance})});
+                    paymentUrl=pay.payment?.razorpay_payment_link_url||'';
+                }
+                const inv=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'generate_invoice',booking_id:currentAdminBooking.booking_id,payment_url:paymentUrl})});
+                cwdCopyText(inv.invoice_url);alert('Invoice link copied. Final balance: '+money(balance));await loadVendorOpsPanel();
+            }catch(e){alert(e.message)}
+        }
+        async function cwdMarkVendorPaid(){const utr=prompt('Enter UTR / payment reference:','');if(!utr)return;try{await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'mark_vendor_paid',booking_id:currentAdminBooking.booking_id,utr_reference:utr})});await loadVendorOpsPanel()}catch(e){alert(e.message)}}
+
+document.addEventListener('click',e=>{
+    const el=e.target.closest('button,a');
+    if(!el||el.dataset.noPressAnimation==='1')return;
+    try{el.animate([{transform:'scale(1)'},{transform:'scale(.97)'},{transform:'scale(1)'}],{duration:180,easing:'ease-out'});}catch(_){}
+});
+</script>
 </body>
 </html>

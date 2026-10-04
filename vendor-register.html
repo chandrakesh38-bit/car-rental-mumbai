@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Vendor Registration | Car With Driver India</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+    :root{
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:#0f172a;background:#f5f7fb;
+      --navy:#0b1739;--navy2:#17336f;--blue:#1769e0;--gold:#d7a63a;--muted:#64748b;--line:#e3e9f3;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:
+      radial-gradient(circle at 88% 5%,rgba(23,105,224,.08),transparent 26rem),
+      radial-gradient(circle at 12% 18%,rgba(215,166,58,.06),transparent 24rem),
+      linear-gradient(180deg,#fbfdff,#f4f7fb)}
+    .wrap{max-width:920px;margin:auto;padding:18px 14px 46px}
+    .brandbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:2px 2px 14px}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .brand img{width:54px;height:54px;border-radius:15px;object-fit:contain;background:#fff;border:1px solid var(--line);box-shadow:0 8px 22px rgba(15,23,42,.09)}
+    .brand-name{font-size:18px;font-weight:950;letter-spacing:-.02em;color:var(--navy);white-space:nowrap}
+    .brand-sub{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
+    .help{display:flex;align-items:center;gap:9px;text-decoration:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:9px 12px;color:var(--navy);box-shadow:0 6px 18px rgba(15,23,42,.05)}
+    .help-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:#ecfdf3;color:#059669;font-size:16px}
+    .help small{display:block;color:var(--muted);font-size:9px}.help strong{font-size:11px}
+    .hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#0b1739 0%,#132b60 72%,#17336f 100%);color:#fff;border-radius:25px;padding:27px 25px;margin-bottom:16px;box-shadow:0 18px 42px rgba(11,23,57,.18)}
+    .hero:before{content:"";position:absolute;right:-35px;bottom:-75px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.055)}
+    .hero h1{font-size:30px;line-height:1.08;letter-spacing:-.035em;margin:0 0 9px;max-width:650px}
+    .hero p{margin:0;color:#dbe6ff;line-height:1.55;font-size:14px;max-width:650px}
+    .trustrow{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}
+    .trustpill{font-size:11px;font-weight:750;color:#f7f9ff;background:rgba(255,255,255,.085);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:8px 11px}
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#fff;border:1px solid var(--line);border-radius:17px;padding:7px;margin-bottom:14px;box-shadow:0 8px 24px rgba(15,23,42,.045)}
+    .step{border:0;background:transparent;border-radius:12px;padding:11px 8px;font:inherit;font-size:12px;font-weight:850;color:#7b879b;cursor:default;transition:.2s}
+    .step.active{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;box-shadow:0 6px 16px rgba(11,23,57,.18)}
+    .step.done{color:#166534;background:#f0fdf4;cursor:pointer}
+    .panel{display:none}
+    .panel.active{display:block}
+    .card{background:rgba(255,255,255,.99);border:1px solid var(--line);border-radius:22px;padding:21px;margin:0;box-shadow:0 12px 34px rgba(15,23,42,.06)}
+    .section-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}
+    .section-icon{width:40px;height:40px;display:grid;place-items:center;background:#eef4ff;border:1px solid #dce8fb;border-radius:13px;font-size:18px;flex:0 0 auto}
+    h2{font-size:20px;letter-spacing:-.025em;margin:0;color:var(--navy)}
+    h3{font-size:16px;margin:12px 0;color:var(--navy)}
+    .subtitle{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.45}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+    .full{grid-column:1/-1}
+    label{font-size:12px;font-weight:850;display:block;margin-bottom:6px;color:#1e2c48}
+    input,select,textarea{width:100%;border:1px solid #d4ddea;border-radius:13px;padding:13px 14px;font:inherit;background:#fff;outline:none;transition:.2s;color:#111827}
+    input::placeholder,textarea::placeholder{color:#98a2b3}
+    input:focus,select:focus,textarea:focus{border-color:#6f91d5;box-shadow:0 0 0 3px rgba(23,105,224,.10)}
+    textarea{min-height:96px;resize:vertical}
+    .bank{display:none}
+    .hint{font-size:10px;color:#7c879e;margin-top:-4px;margin-bottom:8px}
+    .vehicle{border:1px solid #dfe6f0;border-radius:18px;padding:16px;margin:12px 0;background:linear-gradient(180deg,#fcfdff,#f8faff)}
+    .vehicle-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid #e9edf5;margin-bottom:14px}
+    .vehicle:first-child .remove{display:none}
+    .remove{border:0;background:#fff1f2;color:#be123c;border-radius:10px;padding:8px 10px;font-weight:850}
+    .add{width:100%;border:1px dashed #7f8aa3;background:#fbfcff;border-radius:13px;padding:13px;font-weight:900;color:var(--navy)}
+    .terms{border:1px solid #e1e7f0;border-radius:14px;padding:14px;background:#f8fafc;font-size:12px;line-height:1.6;color:#475569}
+    .terms summary{cursor:pointer;font-weight:900;color:var(--navy);list-style:none}
+    .terms summary::-webkit-details-marker{display:none}
+    .terms summary:after{content:"View full terms";float:right;color:#1769e0;font-size:11px}
+    .terms[open] summary:after{content:"Hide terms"}
+    .terms ol{padding-left:20px;margin:13px 0 0}
+    .check{display:flex;gap:11px;align-items:flex-start;margin-top:15px;background:#fff;border:1px solid #dce3ef;border-radius:14px;padding:14px}
+    .check input{width:20px;height:20px;margin-top:1px;box-shadow:none;flex:0 0 auto}
+    .actions{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+    .btn{border:0;border-radius:13px;padding:13px 18px;font-weight:900;font-size:14px;cursor:pointer}
+    .btn-secondary{background:#fff;border:1px solid #d6deeb;color:var(--navy)}
+    .btn-primary{margin-left:auto;background:linear-gradient(135deg,var(--navy),#1b3d80);color:#fff;box-shadow:0 9px 20px rgba(11,23,57,.17)}
+    .submit{flex:1;max-width:360px;margin-left:auto;background:linear-gradient(135deg,var(--navy),#1b3d80);color:#fff}
+    .submit:disabled{opacity:.55}
+    .status{display:none;margin-top:14px;padding:15px;border-radius:13px;font-weight:800}
+    .ok{background:#dcfce7;color:#166534}.err{background:#fee2e2;color:#991b1b}
+    .success-card{display:none;background:#fff;border:1px solid #d9eee2;border-radius:22px;padding:28px 24px;text-align:center;box-shadow:0 12px 34px rgba(15,23,42,.06);max-width:720px;margin:0 auto}
+    .success-icon{width:58px;height:58px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;background:#dcfce7;color:#15803d;font-size:28px;font-weight:900}
+    .success-card h2{font-size:24px;margin-bottom:8px}
+    .success-card p{font-size:12px;color:#64748b;line-height:1.6}
+    .vendor-code-box{margin:18px auto 14px;max-width:420px;background:#f8fafc;border:1px dashed #94a3b8;border-radius:14px;padding:14px}
+    .vendor-code-box small{display:block;color:#64748b;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+    .vendor-code-box strong{display:block;font-size:22px;color:#0b1739;margin-top:4px;letter-spacing:.02em}
+    .success-actions{display:flex;gap:10px;justify-content:center;align-items:stretch;flex-wrap:wrap;margin:16px auto 0;max-width:420px}.success-actions .btn{flex:1 1 100%;margin-left:0;text-align:center;text-decoration:none}
+    .step-note{margin-top:14px;font-size:10px;color:#7a8699;text-align:center}
+    @media(min-width:780px){
+      .wrap{padding-top:24px}
+      .hero{padding:31px 30px}
+      .hero h1{font-size:34px}
+      .card{padding:26px}
+      .vehicle .grid{grid-template-columns:repeat(3,1fr)}
+    }
+    @media(max-width:620px){
+      .wrap{padding:11px 11px 34px}
+      .brand img{width:50px;height:50px}
+      .brand-name{font-size:16px}
+      .help{padding:8px}.help div:not(.help-icon){display:none}
+      .hero{border-radius:20px;padding:23px 19px}
+      .hero h1{font-size:25px}
+      .hero p{font-size:13px}
+      .trustrow{gap:6px}.trustpill{font-size:10px;padding:7px 9px}
+      .steps{gap:4px;padding:5px}
+      .step{font-size:10px;padding:10px 4px}
+      .card{padding:17px;border-radius:18px}
+      .grid{grid-template-columns:1fr}.full{grid-column:auto}
+      .actions{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 28%);padding-top:24px;padding-bottom:2px}
+      .btn{padding:13px 15px}
+      .brandbar{align-items:center;margin-bottom:12px}
+      .brand{gap:10px}
+      .brand img{width:52px;height:52px}
+      .brand-name{font-size:15px;white-space:normal;line-height:1.15}
+      .brand-sub{font-size:10px}
+      .success-card{padding:26px 18px 24px;border-radius:20px}
+      .success-card h2{font-size:22px}
+      .success-card p{font-size:13px;max-width:300px;margin:0 auto}
+      .vendor-code-box{width:100%;max-width:340px;margin:18px auto 14px;padding:16px 12px}
+      .vendor-code-box strong{font-size:21px;overflow-wrap:anywhere}
+      .success-actions{width:100%;max-width:340px}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brandbar">
+    <div class="brand">
+      <img src="/logo-optimized.webp" alt="Car With Driver India">
+      <div><div class="brand-name">Car With Driver India</div><div class="brand-sub">Vendor Registration</div></div>
+    </div>
+    <a class="help" href="https://wa.me/919702988465?text=Hi%20CWD%2C%20I%20need%20help%20with%20vendor%20registration" target="_blank" rel="noopener">
+      <div class="help-icon">◉</div>
+      <div><strong>Need help?</strong><small>Chat on WhatsApp</small></div>
+    </a>
+  </div>
+
+  <section class="hero">
+    <h1>Register Your Business & Vehicles</h1>
+    <p>Join Car With Driver India as a With-Driver vendor. Simple registration, no OTP and no app login.</p>
+    <div class="trustrow">
+      <span class="trustpill">✓ No registration fee</span>
+      <span class="trustpill">✓ Simple registration</span>
+      <span class="trustpill">✓ WhatsApp-based operations</span>
+    </div>
+  </section>
+
+  <div class="steps" id="wizard-tabs">
+    <button type="button" class="step active" data-step="0">Business</button>
+    <button type="button" class="step" data-step="1">Payout</button>
+    <button type="button" class="step" data-step="2">Vehicle</button>
+    <button type="button" class="step" data-step="3">Terms</button>
+  </div>
+
+  <form id="vendor-form" novalidate>
+    <section class="panel active" data-panel="0">
+      <div class="card">
+        <div class="section-head"><div class="section-icon">👤</div><div><h2>Business / Owner Details</h2><div class="subtitle">Tell us about your business and primary contact details.</div></div></div>
+        <div class="grid">
+          <div><label>Owner / business name *</label><input name="owner_business_name" maxlength="160" placeholder="e.g. Sharma Tours & Travels" required></div>
+          <div><label>Primary WhatsApp mobile *</label><input name="primary_whatsapp" inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" placeholder="9876543210" required></div>
+          <div><label>Alternate mobile</label><input name="alternate_mobile" inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" placeholder="Optional"></div>
+          <div><label>Email</label><input name="email" type="email" maxlength="254" placeholder="yourname@example.com"></div>
+          <div><label>Base location / area *</label><input name="base_location" maxlength="160" placeholder="e.g. Vikhroli, Mumbai" required></div>
+          <div><label>PAN *</label><input name="pan" maxlength="10" autocapitalize="characters" placeholder="ABCDE1234F" required></div>
+          <div class="full"><label>Address *</label><textarea name="address" maxlength="1000" placeholder="Enter complete address" required></textarea></div>
+        </div>
+        <div class="actions"><button type="button" class="btn btn-primary" data-next>Continue to Payout →</button></div>
+      </div>
+    </section>
+
+    <section class="panel" data-panel="1">
+      <div class="card">
+        <div class="section-head"><div class="section-icon">₹</div><div><h2>Payout Details</h2><div class="subtitle">Choose how you would like to receive vendor payouts.</div></div></div>
+        <div class="grid">
+          <div><label>Payout method *</label>
+            <select name="payout_mode" id="payout-mode" required>
+              <option value="">Select payout method</option>
+              <option value="upi">UPI</option>
+              <option value="bank">Bank account</option>
+              <option value="bank_upi">Bank + UPI</option>
+            </select>
+          </div>
+          <div id="upi-wrap" class="bank"><label>UPI ID *</label><input name="upi_id" id="upi-id" placeholder="e.g. 9876543210@upi"><div class="hint">Enter the UPI ID where you want to receive payouts.</div></div>
+          <div class="bank bank-field"><label>Account holder name *</label><input name="account_holder_name" id="account-holder" maxlength="160"></div>
+          <div class="bank bank-field"><label>Bank name</label><input name="bank_name" maxlength="160"></div>
+          <div class="bank bank-field"><label>Account number *</label><input name="account_number" id="account-number" inputmode="numeric" maxlength="40"></div>
+          <div class="bank bank-field"><label>IFSC *</label><input name="ifsc" id="ifsc" maxlength="11" autocapitalize="characters"></div>
+        </div>
+        <div class="actions"><button type="button" class="btn btn-secondary" data-back>← Back</button><button type="button" class="btn btn-primary" data-next>Continue to Vehicle →</button></div>
+      </div>
+    </section>
+
+    <section class="panel" data-panel="2">
+      <div class="card">
+        <div class="section-head"><div class="section-icon">🚘</div><div><h2>Vehicle Details</h2><div class="subtitle">Add one or more vehicles. Driver details are not required during registration.</div></div></div>
+        <div id="vehicles"></div>
+        <button type="button" class="add" id="add-vehicle">+ Add another vehicle</button>
+        <div class="actions"><button type="button" class="btn btn-secondary" data-back>← Back</button><button type="button" class="btn btn-primary" data-next>Continue to Terms →</button></div>
+      </div>
+    </section>
+
+    <section class="panel" data-panel="3">
+      <div class="card">
+        <div class="section-head"><div class="section-icon">✓</div><div><h2>Vendor Terms & Conditions</h2><div class="subtitle">Please review the important operating terms before submitting.</div></div></div>
+        <details class="terms">
+          <summary>Important Vendor Terms</summary>
+          <ol>
+            <li>Vendor payout is processed after booking completion on the next calendar day on or before 4:00 PM.</li>
+            <li>The allocated vendor must arrange an equivalent replacement vehicle in case of breakdown or cancellation.</li>
+            <li>If there is a last-minute cancellation/breakdown and the vendor cannot provide an equivalent replacement vehicle, a ₹500 penalty applies.</li>
+            <li>CWD does not promise or guarantee booking volume or earnings.</li>
+            <li>Toll, parking and state tax are actual/as applicable.</li>
+            <li>Night charge applies only when the vehicle is actually driven between 10 PM–6 AM.</li>
+            <li>You confirm that submitted registration, vehicle and payout details are accurate.</li>
+          </ol>
+        </details>
+        <label class="check"><input type="checkbox" id="terms" required><span>I have read and agree to the CWD Vendor Terms & Conditions.</span></label>
+        <div class="actions"><button type="button" class="btn btn-secondary" data-back>← Back</button><button class="btn submit" id="submit-btn" type="submit">Submit Vendor Registration →</button></div>
+        <div id="status" class="status"></div>
+      </div>
+    </section>
+  </form>
+
+  <section id="registration-success" class="success-card">
+    <div class="success-icon">✓</div>
+    <h2>Registration Successful</h2>
+    <p>Your vendor registration has been submitted to Car With Driver India for review.</p>
+    <div class="vendor-code-box">
+      <small>Your Vendor Code</small>
+      <strong id="success-vendor-code">—</strong>
+    </div>
+    <div class="success-actions">
+      <button type="button" class="btn btn-primary" id="copy-vendor-code">Copy Vendor Code</button>
+      <a class="btn btn-secondary" href="https://wa.me/919702988465?text=Hi%20CWD%2C%20I%20have%20completed%20my%20vendor%20registration." target="_blank" rel="noopener">Contact CWD on WhatsApp</a>
+    </div>
+  </section>
+
+  <div class="step-note" id="form-note">Your entered details stay in this form while you move between steps.</div>
+</div>
+
+<script>
+(function(){
+  const form=document.getElementById('vendor-form');
+  const vehicles=document.getElementById('vehicles');
+  const status=document.getElementById('status');
+  const submit=document.getElementById('submit-btn');
+  const panels=[...document.querySelectorAll('[data-panel]')];
+  const tabs=[...document.querySelectorAll('[data-step]')];
+  let currentStep=0;
+  let completedStep=-1;
+  let vehicleCount=0;
+  let vehicleMaster=[];
+
+  function modelOptionsHtml(){
+    const rows=vehicleMaster.map(v=>'<option value="'+String(v.full_name||'').replace(/"/g,'&quot;')+'">'+String(v.full_name||'')+'</option>').join('');
+    return '<option value="">Select make / model</option>'+rows+'<option value="Other">Other</option>';
+  }
+
+  async function loadVehicleMaster(){
+    try{
+      const res=await fetch('/api/vendor-register',{cache:'no-store'});
+      const data=await res.json();
+      if(res.ok&&data.success&&Array.isArray(data.vehicles))vehicleMaster=data.vehicles;
+    }catch(_){}
+  }
+
+  function field(label,name,type,attrs){
+    return '<div><label>'+label+'</label><input data-field="'+name+'" type="'+(type||'text')+'" '+(attrs||'')+'></div>';
+  }
+
+  function addVehicle(values){
+    vehicleCount++;
+    const box=document.createElement('div');
+    box.className='vehicle';
+    box.innerHTML='<div class="vehicle-head"><h3>Vehicle '+vehicleCount+'</h3><button class="remove" type="button">Remove</button></div>'+
+      '<div class="grid">'+
+      field('Vehicle number *','vehicle_number','text','maxlength="20" pattern="[A-Z0-9-]{6,20}" autocapitalize="characters" spellcheck="false" placeholder="e.g. MH01AB1234" required')+
+      '<div><label>Make / model *</label><select data-field="make_model" class="make-model-select" required>'+modelOptionsHtml()+'</select><input class="other-model" maxlength="160" placeholder="Enter make / model" style="display:none;margin-top:8px"></div>'+
+      '<div><label>Category *</label><select data-field="category" required><option value="">Select</option><option>Hatchback</option><option>Sedan</option><option>SUV</option><option>MUV</option><option>Premium Sedan</option><option>Premium SUV</option><option>Tempo Traveller</option><option>Other</option></select></div>'+
+      '<div><label>Manufacturing year *</label><select data-field="manufacturing_year" required><option value="">Select year</option>'+Array.from({length:5},(_,i)=>{const y=new Date().getFullYear()-i;return '<option value="'+y+'">'+y+'</option>'}).join('')+'</select><div class="hint">Only vehicles up to 4 years old are accepted.</div></div>'+
+      '<div><label>Fuel *</label><select data-field="fuel" required><option value="">Select</option><option>Petrol</option><option>Diesel</option><option>CNG</option><option>Petrol+CNG</option><option>Electric</option><option>Hybrid</option><option>Other</option></select></div>'+
+      '<div><label>Seating capacity *</label><select data-field="seating" required><option value="">Select</option><option value="5">4+1</option><option value="7">6+1</option><option value="8">7+1</option><option value="13">12+1</option><option value="18">17+1</option></select></div>'+
+      '<div><label>Permit type *</label><select data-field="commercial_permit_type" required><option value="">Select permit type</option><option value="Tourist Permit / T-Permit">Tourist Permit / T-Permit</option><option value="Contract Carriage">Contract Carriage</option><option value="All India Tourist Permit">All India Tourist Permit</option><option value="Local Commercial Permit">Local Commercial Permit</option><option value="Other">Other</option></select></div>'+
+      field('Insurance policy number *','insurance_policy_number','text','maxlength="120" placeholder="Policy number" required')+
+      field('Insurance expiry','insurance_expiry','date','')+
+      field('PUC number *','puc_number','text','maxlength="100" placeholder="PUC number" required')+
+      field('PUC expiry','puc_expiry','date','')+
+      field('Permit / Fitness number','permit_fitness_number','text','maxlength="120" placeholder="Optional"')+
+      field('Permit / Fitness expiry','permit_fitness_expiry','date','')+
+      '</div>';
+    box.querySelector('.remove').onclick=function(){
+      if(vehicles.children.length===1){alert('At least one vehicle is required.');return;}
+      box.remove();
+      renumberVehicles();
+    };
+    vehicles.appendChild(box);
+    const vehicleNumberInput=box.querySelector('[data-field="vehicle_number"]');
+    if(vehicleNumberInput){
+      vehicleNumberInput.addEventListener('input',function(){
+        this.value=this.value.toUpperCase().replace(/\s+/g,'');
+      });
+    }
+    const modelSelect=box.querySelector('.make-model-select');
+    const otherModel=box.querySelector('.other-model');
+    modelSelect.addEventListener('change',function(){
+      const isOther=this.value==='Other';
+      otherModel.style.display=isOther?'block':'none';
+      otherModel.required=isOther;
+      if(!isOther)otherModel.value='';
+    });
+    if(values){
+      Object.entries(values).forEach(function([key,val]){
+        const el=box.querySelector('[data-field="'+key+'"]');
+        if(el)el.value=val||'';
+      });
+    }
+  }
+
+  function renumberVehicles(){
+    [...vehicles.querySelectorAll('.vehicle')].forEach(function(box,i){
+      const title=box.querySelector('h3');if(title)title.textContent='Vehicle '+(i+1);
+    });
+    vehicleCount=vehicles.children.length;
+  }
+
+  function payoutVisibility(){
+    const mode=document.getElementById('payout-mode').value;
+    const needsUpi=mode==='upi'||mode==='bank_upi';
+    const needsBank=mode==='bank'||mode==='bank_upi';
+    document.getElementById('upi-wrap').style.display=needsUpi?'block':'none';
+    document.querySelectorAll('.bank-field').forEach(function(el){el.style.display=needsBank?'block':'none';});
+    document.getElementById('upi-id').required=needsUpi;
+    document.getElementById('account-holder').required=needsBank;
+    document.getElementById('account-number').required=needsBank;
+    document.getElementById('ifsc').required=needsBank;
+  }
+
+  function panelControls(step){
+    return [...panels[step].querySelectorAll('input,select,textarea')];
+  }
+
+  function validateStep(step){
+    payoutVisibility();
+    const controls=panelControls(step);
+    for(const el of controls){
+      if(!el.checkValidity()){
+        el.reportValidity();
+        el.focus({preventScroll:false});
+        return false;
+      }
+    }
+    if(step===2&&vehicles.children.length<1){alert('Please add at least one vehicle.');return false;}
+    return true;
+  }
+
+  function showStep(step,scroll=true){
+    currentStep=Math.max(0,Math.min(3,step));
+    panels.forEach((p,i)=>p.classList.toggle('active',i===currentStep));
+    tabs.forEach((t,i)=>{
+      t.classList.toggle('active',i===currentStep);
+      t.classList.toggle('done',i<=completedStep&&i!==currentStep);
+      t.setAttribute('aria-current',i===currentStep?'step':'false');
+    });
+    if(scroll)document.getElementById('wizard-tabs').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  document.getElementById('payout-mode').addEventListener('change',payoutVisibility);
+  document.getElementById('add-vehicle').addEventListener('click',()=>addVehicle());
+  document.querySelectorAll('[data-next]').forEach(btn=>btn.addEventListener('click',function(){
+    if(!validateStep(currentStep))return;
+    completedStep=Math.max(completedStep,currentStep);
+    showStep(currentStep+1);
+  }));
+  document.querySelectorAll('[data-back]').forEach(btn=>btn.addEventListener('click',()=>showStep(currentStep-1)));
+  tabs.forEach(tab=>tab.addEventListener('click',function(){
+    const target=Number(tab.dataset.step);
+    if(target<=completedStep+1){
+      if(target>currentStep&&!validateStep(currentStep))return;
+      if(target>currentStep)completedStep=Math.max(completedStep,currentStep);
+      showStep(target);
+    }
+  }));
+
+  (async function initVendorForm(){
+    await loadVehicleMaster();
+    addVehicle();
+    payoutVisibility();
+    showStep(0,false);
+  })();
+
+  document.getElementById('copy-vendor-code').addEventListener('click',function(){
+    const code=document.getElementById('success-vendor-code').textContent.trim();
+    if(!code||code==='—')return;
+    if(navigator.clipboard?.writeText){
+      navigator.clipboard.writeText(code).then(()=>{this.textContent='Copied ✓';setTimeout(()=>this.textContent='Copy Vendor Code',1600)}).catch(()=>prompt('Copy Vendor Code:',code));
+    }else{
+      prompt('Copy Vendor Code:',code);
+    }
+  });
+
+  form.addEventListener('submit',async function(e){
+    e.preventDefault();
+    status.style.display='none';
+    if(!validateStep(3))return;
+
+    const fd=new FormData(form);
+    const vehicleRows=[];
+    try{
+      vehicles.querySelectorAll('.vehicle').forEach(function(box){
+        const row={};
+        box.querySelectorAll('[data-field]').forEach(function(el){row[el.dataset.field]=el.value.trim();});
+        if(row.make_model==='Other'){
+          const custom=box.querySelector('.other-model')?.value.trim()||'';
+          if(!custom)throw new Error('Please enter the vehicle make / model.');
+          row.make_model=custom;
+        }
+        row.rc_number=row.vehicle_number;
+        vehicleRows.push(row);
+      });
+    }catch(err){
+      alert(err.message);
+      return;
+    }
+
+    const payload={
+      owner_business_name:fd.get('owner_business_name'),
+      primary_whatsapp:fd.get('primary_whatsapp'),
+      alternate_mobile:fd.get('alternate_mobile'),
+      email:fd.get('email'),
+      base_location:fd.get('base_location'),
+      address:fd.get('address'),
+      pan:fd.get('pan'),
+      payout_mode:fd.get('payout_mode'),
+      account_holder_name:fd.get('account_holder_name'),
+      bank_name:fd.get('bank_name'),
+      account_number:fd.get('account_number'),
+      ifsc:fd.get('ifsc'),
+      upi_id:fd.get('upi_id'),
+      vehicles:vehicleRows,
+      terms_accepted:document.getElementById('terms').checked,
+      terms_version:'CWD-VENDOR-TERMS-V1'
+    };
+
+    submit.disabled=true;
+    submit.textContent='Submitting...';
+    try{
+      const res=await fetch('/api/vendor-register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const data=await res.json().catch(function(){return {};});
+      if(!res.ok||!data.success)throw new Error(data.message||'Unable to submit registration.');
+      completedStep=3;
+      document.getElementById('success-vendor-code').textContent=data.vendor_code;
+      form.style.display='none';
+      document.getElementById('wizard-tabs').style.display='none';
+      document.querySelector('.hero').style.display='none';
+      document.getElementById('form-note').style.display='none';
+      const help=document.querySelector('.help'); if(help) help.style.display='none';
+      const wrap=document.querySelector('.wrap'); if(wrap) wrap.style.maxWidth='760px';
+      const successCard=document.getElementById('registration-success');
+      successCard.style.display='block';
+      successCard.scrollIntoView({behavior:'smooth',block:'start'});
+    }catch(err){
+      status.className='status err';status.style.display='block';status.textContent=err.message||'Unable to submit registration.';
+    }finally{
+      submit.disabled=false;submit.textContent='Submit Vendor Registration →';
+    }
+  });
+})();
+</script>
+</body>
+</html>

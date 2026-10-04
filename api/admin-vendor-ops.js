@@ -115,6 +115,19 @@ function bookingIncludedKm(b){
  const m=text.match(/KM Included:\s*([\d,]+)/i)||text.match(/([\d,]+)\s*km included/i);
  return m?Number(String(m[1]).replace(/,/g,''))||0:0;
 }
+function shortCustomerRoute(route){
+ let parts=String(route||'').split('→').map(x=>x.trim()).filter(Boolean);
+ if(parts.length>=3){
+   const norm=x=>String(x||'').toLowerCase().replace(/\s+/g,' ').trim();
+   if(norm(parts[0])===norm(parts[parts.length-1]))parts=parts.slice(1,-1);
+ }
+ const short=x=>{
+   const bits=String(x||'').split(',').map(v=>v.trim()).filter(Boolean);
+   return bits[0]||String(x||'').trim();
+ };
+ const compact=parts.map(short).filter(Boolean);
+ return compact.join(' → ')||String(route||'');
+}
 async function snapshot(id){
  const raw=await booking(id),schedule=bookingScheduleFromDetails(raw);
  return {
@@ -460,6 +473,19 @@ async function handler(request){
     await db('cwd_vendor_offers?id=eq.'+o.id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status:'allocated'})});
     return json({success:true,allocation:rows?.[0],allocated_url:publicBase(request)+'/vendor-booking?allocation='+raw});
   }
+  if(action==='allow_early_start'){
+    const a=(await db('cwd_vendor_allocations?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'))?.[0];
+    if(!a)fail('No allocated vendor found.',404);
+    const t=(await db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(id)+'&select=started_at,ended_at&limit=1'))?.[0];
+    if(t?.ended_at)fail('Trip is already closed.',409);
+    if(t?.started_at)fail('Trip has already started.',409);
+    const o=(await db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a.offer_id)+'&select=id,pricing_snapshot&limit=1'))?.[0];
+    if(!o)fail('Allocated offer not found.',404);
+    const now=new Date().toISOString();
+    const pricing={...(o.pricing_snapshot||{}),early_start_approved_at:now,early_start_approved_by:String(user.email||'')};
+    await db('cwd_vendor_offers?id=eq.'+encodeURIComponent(o.id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({pricing_snapshot:pricing})});
+    return json({success:true,approved_at:now});
+  }
   if(action==='review'){
     const ar=await db('cwd_vendor_allocations?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),a=ar?.[0];if(!a)fail('No allocation found.');
     const [sourceOffer,commercialOverride]=await Promise.all([
@@ -479,12 +505,57 @@ async function handler(request){
     await db('cwd_vendor_settlement_ledger',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(led.vendor)});
     await db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({review_status:body.review_action==='correct'?'corrected':'approved',admin_notes:String(body.admin_notes||'').slice(0,1000)||null,reviewed_at:new Date().toISOString(),reviewed_by:String(user.email||'')})});
     await db('cwd_vendor_allocations?booking_id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status:'approved',updated_at:new Date().toISOString()})});
-    await db('inquiries?booking_id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({total_fare:led.customer.customer_total,updated_at:new Date().toISOString()})});
+    await db('inquiries?booking_id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({
+      extra_km:led.invoice_meta.extra_km,
+      extra_km_rate:led.invoice_meta.extra_km_rate,
+      extra_km_charge:led.invoice_meta.extra_km_charge,
+      night_charge:led.customer.customer_night,
+      toll_charge:led.customer.toll,
+      parking_charge:led.customer.parking,
+      state_tax_charge:led.customer.state_tax,
+      other_charge:led.customer.approved_other,
+      total_fare:led.customer.customer_total,
+      final_charges_updated_at:new Date().toISOString(),
+      updated_at:new Date().toISOString()
+    })});
     return json({success:true,customer_ledger:led.customer,vendor_ledger:led.vendor});
   }
   if(action==='generate_invoice'){
-    const cl=(await db('cwd_customer_billing_ledger?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'))?.[0];if(!cl)fail('Approve trip review first.');
-    const raw=token(),h=await hashToken(raw),snap={booking_id:id,route:b.route,trip_date:b.start_at,vehicle:b.vehicle,...cl};
+    const [cl,a,co]=await Promise.all([
+      db('cwd_customer_billing_ledger?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'),
+      db('cwd_vendor_allocations?booking_id=eq.'+encodeURIComponent(id)+'&select=offer_id&limit=1'),
+      db('cwd_booking_commercial_overrides?booking_id=eq.'+encodeURIComponent(id)+'&select=negotiated_customer_fare&limit=1')
+    ]);
+    const ledger=cl?.[0];if(!ledger)fail('Approve trip review first.');
+    const offer=a?.[0]?(await db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a[0].offer_id)+'&select=pricing_snapshot&limit=1'))?.[0]:null;
+    const ps=offer?.pricing_snapshot||{};
+    const bookingFare=co?.[0]?.negotiated_customer_fare!==null&&co?.[0]?.negotiated_customer_fare!==undefined?n(co[0].negotiated_customer_fare):n(b.original_fare||b.fare_amount||b.total_fare);
+    const trip=String(b.trip_type||'').toLowerCase();
+    const localPack=String(ps.local_package||'8hr_80km');
+    const includedKm=trip.includes('local')?({'8hr_80km':80,'10hr_100km':100,'12hr_120km':120}[localPack]||80):n(b.included_km||ps.estimated_km||240);
+    const extraKm=Math.max(0,n(ledger.billable_km)-includedKm);
+    const extraKmRate=n(ledger.customer_km_rate);
+    const extraKmCharge=extraKm*extraKmRate;
+    const extraHours=trip.includes('local')?n(ps.extra_hours):0;
+    const extraHourRate=trip.includes('local')?n(ps.customer_local_extra_hour):0;
+    const extraHourCharge=extraHours*extraHourRate;
+    const snap={
+      booking_id:id,
+      route:shortCustomerRoute(b.route),
+      trip_date:b.start_at,
+      vehicle:b.vehicle,
+      booking_fare:bookingFare,
+      booking_fare_note:'Includes car, fuel and driver allowance',
+      included_km:includedKm,
+      extra_km:extraKm,
+      extra_km_rate:extraKmRate,
+      extra_km_charge:extraKmCharge,
+      extra_hours:extraHours,
+      extra_hour_rate:extraHourRate,
+      extra_hour_charge:extraHourCharge,
+      ...ledger
+    };
+    const raw=token(),h=await hashToken(raw);
     const rows=await db('cwd_customer_invoices',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify({booking_id:id,invoice_token_hash:h,invoice_snapshot:snap,payment_url:String(body.payment_url||'')||null})});
     return json({success:true,invoice:rows?.[0],invoice_url:publicBase(request)+'/customer-invoice?t='+raw});
   }

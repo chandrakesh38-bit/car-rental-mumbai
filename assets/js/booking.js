@@ -1958,7 +1958,7 @@ function onPickupDateChange() {
                 };
                 dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nFinal Drop: ${formatReviewTime('wd-out-r')}`;
                 const includedKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                pkgStr = `${wdOutstationDays}-Day Dedicated Cab Package · ${includedKm.toLocaleString('en-IN')} KM included (240 KM/day)\nCar + Fuel + Driver Allowance included · Dedicated car & driver for your complete trip`;
+                pkgStr = `${wdOutstationDays}-Day Dedicated Cab Package · ${includedKm.toLocaleString('en-IN')} KM included (${Number(livePricingRules.minimumOutstationKmPerDay||240).toLocaleString('en-IN')} KM/day)\nCar + Fuel + Driver Allowance included · Dedicated car & driver for your complete trip`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
                 destLoc = document.getElementById('wd-airport-terminal').value.toUpperCase() + ' Airport';

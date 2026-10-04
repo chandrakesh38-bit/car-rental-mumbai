@@ -965,7 +965,8 @@
                 .select('*')
                 .order('display_order', { ascending: true });
 
-            if (error || !cars) {
+            window._cwdWithDriverRates = cars || [];
+    if (error || !cars) {
                 tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-center text-rose-500">Failed to load cars.</td></tr>`;
                 return;
             }
@@ -2482,11 +2483,14 @@ async function loadWithDriverRates() {
 }
 
 async function saveWithDriverRate(id) {
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
     try {
+        const car=(window._cwdWithDriverRates||[]).find(x=>String(x.id)===String(id))||{};
         const payload = {
+            id,
             full_name: document.getElementById(`wd_name_${id}`).value.trim(),
             segment: document.getElementById(`wd_segment_${id}`).value.trim(),
+            seating_capacity:Number(car.seating_capacity||4),
+            bag_capacity:Number(car.bag_capacity||0),
             outstation_rate_per_km: wdNumber(`wd_outstation_${id}`),
             local_pkg_8hr_80km: wdNumber(`wd_local_${id}`),
             local_extra_hour_rate: wdNumber(`wd_ehr_${id}`),
@@ -2496,11 +2500,10 @@ async function saveWithDriverRate(id) {
             airport_t1_rate: wdNumber(`wd_t1_${id}`),
             airport_t2_rate: wdNumber(`wd_t2_${id}`),
             airport_nmia_rate: wdNumber(`wd_nmia_${id}`),
+            display_order:Number(car.display_order||999),
             is_active: document.getElementById(`wd_active_${id}`).checked
         };
-        if (!payload.full_name || !payload.segment) throw new Error('Vehicle name and category are required.');
-        const { data, error } = await client.from('with_driver_rates').update(payload).eq('id', id).select('id');
-        if (error || !data?.length) throw new Error(error?.message || 'No row updated.');
+        await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'save_customer_fleet_vehicle',vehicle:payload})});
         await loadWithDriverRates();
         alert('Vehicle updated. Website will use the new values.');
     } catch (error) { alert(error.message); }
@@ -2508,7 +2511,6 @@ async function saveWithDriverRate(id) {
 
 async function addWithDriverVehicle(event) {
     event.preventDefault();
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
     try {
         const payload = {
             full_name: document.getElementById('wd-new-name').value.trim(),
@@ -2527,8 +2529,7 @@ async function addWithDriverVehicle(event) {
             display_order: Number(document.getElementById('wd-new-order').value) || 999,
             is_active: true
         };
-        const { data, error } = await client.from('with_driver_rates').insert(payload).select('id');
-        if (error || !data?.length) throw new Error(error?.message || 'Vehicle was not added.');
+        await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'save_customer_fleet_vehicle',vehicle:payload})});
         event.target.reset();
         toggleWithDriverAddForm(false);
         await loadWithDriverRates();
@@ -2538,10 +2539,10 @@ async function addWithDriverVehicle(event) {
 
 async function deleteWithDriverVehicle(id) {
     if (!confirm('Delete this With-Driver vehicle? It will disappear from the website.')) return;
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : supabasePublic;
-    const { data, error } = await client.from('with_driver_rates').delete().eq('id', id).select('id');
-    if (error || !data?.length) return alert('Delete failed: ' + (error?.message || 'No row deleted.'));
-    await loadWithDriverRates();
+    try{
+      await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'delete_customer_fleet_vehicle',vehicle_id:id})});
+      await loadWithDriverRates();
+    }catch(error){alert('Delete failed: '+error.message)}
 }
    window.addEventListener('DOMContentLoaded', () => {
     loadWithDriverRates();

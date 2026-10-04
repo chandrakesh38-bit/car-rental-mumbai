@@ -579,7 +579,7 @@ async function handler(request){
       ...ledger
     };
     const raw=token(),h=await hashToken(raw);
-    const rows=await db('cwd_customer_invoices',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify({booking_id:id,invoice_token_hash:h,invoice_snapshot:snap,payment_url:String(body.payment_url||'')||null})});
+    const rows=await db('cwd_customer_invoices?on_conflict=booking_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify({booking_id:id,invoice_token_hash:h,invoice_snapshot:snap,payment_url:String(body.payment_url||'')||null})});
     return json({success:true,invoice:rows?.[0],invoice_url:publicBase(request)+'/customer-invoice?t='+raw});
   }
   if(action==='mark_vendor_paid'){

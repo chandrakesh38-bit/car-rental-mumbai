@@ -59,7 +59,7 @@ async function handler(request){
   if(request.method==='GET'){
    const offer=u.searchParams.get('offer'),allocation=u.searchParams.get('allocation');
    if(offer){const o=await byOffer(offer);if(!o||['revoked','expired'].includes(o.status))fail('Offer link is invalid or expired.',410);return json({success:true,mode:'offer',offer:{booking_id:o.booking_id,vehicle:o.vehicle_required,trip_type:o.trip_type,route:o.route_summary,start_at:o.start_at,final_drop_at:o.final_drop_at,estimated_km:o.estimated_km,estimated_vendor_payout:o.estimated_vendor_payout,status:o.status,pricing_snapshot:o.pricing_snapshot}})}
-   if(allocation){const a=await byAlloc(allocation);if(!a||a.revoked_at||['cancelled','reallocated'].includes(a.status))fail('Allocation link is invalid or revoked.',410);const b=await booking(a.booking_id),t=(await db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(a.booking_id)+'&select=*&limit=1'))?.[0];return json({success:true,mode:'allocation',allocation:a,booking:piiBooking(b),trip:t||null})}
+   if(allocation){const a=await byAlloc(allocation);if(!a||a.revoked_at||['cancelled','reallocated'].includes(a.status))fail('Allocation link is invalid or revoked.',410);const [b,t,o]=await Promise.all([booking(a.booking_id),db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(a.booking_id)+'&select=*&limit=1'),db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a.offer_id)+'&select=pricing_snapshot&limit=1')]);const allocationView={...a,early_start_approved_at:o?.[0]?.pricing_snapshot?.early_start_approved_at||null};return json({success:true,mode:'allocation',allocation:allocationView,booking:piiBooking(b),trip:t?.[0]||null})}
    fail('Secure token is required.',401);
   }
   const ct=String(request.headers.get('content-type')||'');
@@ -73,7 +73,9 @@ async function handler(request){
       const schedule=bookingSchedule(b);
       if(!schedule.start)fail('Trip start time is missing in this booking. Please contact CWD before starting the trip.',409);
       const now=Date.now(),windowOpens=schedule.start.getTime()-(3*60*60*1000);
-      if(now<windowOpens && !a.early_start_approved_at){
+      const offer=(await db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a.offer_id)+'&select=pricing_snapshot&limit=1'))?.[0];
+      const earlyStartApprovedAt=offer?.pricing_snapshot?.early_start_approved_at||null;
+      if(now<windowOpens && !earlyStartApprovedAt){
         fail('Trip Start is locked. You can start this trip only within 3 hours of pickup time ('+formatIndiaDateTime(schedule.start)+'), unless CWD admin approves an early start.',409);
       }
       const km=n(f.get('odometer'),-1);if(km<0)fail('Starting odometer is required.');

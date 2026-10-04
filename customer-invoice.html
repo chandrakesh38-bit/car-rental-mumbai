@@ -49,7 +49,7 @@ fetch('/api/customer-invoice?t='+encodeURIComponent(t||'')).then(async r=>{
    line('Route','<span class="route">'+esc(i.route||'')+'</span>')+
   '</div>'+
   '<div class="section">Confirmed Booking Fare</div>'+
-  '<div class="base"><div class="amount">'+money(bookingFare)+'</div><div class="note">Includes car, fuel and driver allowance'+(Number(i.included_km)>0?' · '+Number(i.included_km).toLocaleString('en-IN')+' KM included':'')+'.</div></div>'+
+  '<div class="base"><div class="amount">'+money(bookingFare)+'</div>'+(Number(i.included_km)>0?'<div class="note">'+Number(i.included_km).toLocaleString('en-IN')+' KM included.</div>':'')+'</div>'+
   '<div class="section">Additional Trip Charges</div>'+
   (extras||'<div class="zero">No additional trip charges.</div>')+
   '<div class="total">'+

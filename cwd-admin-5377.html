@@ -189,18 +189,25 @@
             <div id="section-pricing" class="hidden space-y-6">
                 <div>
                     <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Global Pricing &amp; Allowances</h2>
-                    <p class="text-xs text-slate-500 mt-0.5">Update doorstep delivery formulas, night allowance, and outstation limits.</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Customer pricing controls are separated by service. Vendor costs are managed independently below.</p>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm max-w-2xl space-y-4" id="pricing-rules-container">
-                    <!-- Loaded dynamically from DB -->
+                <div class="grid xl:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <div class="mb-3"><h3 class="font-black text-slate-900">Self Drive Delivery Rules</h3><p class="text-[11px] text-slate-500 mt-1">Used only for Self Drive home-delivery charges.</p></div>
+                        <div id="pricing-rules-selfdrive" class="space-y-2"></div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <div class="mb-3"><h3 class="font-black text-slate-900">With Driver Customer Rules</h3><p class="text-[11px] text-slate-500 mt-1">Used for customer-facing outstation minimums, driver allowance and night charge.</p></div>
+                        <div id="pricing-rules-withdriver" class="space-y-2"></div>
+                    </div>
                 </div>
                 <!-- With-Driver Rates Management Card -->
         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mt-6">
             <div class="flex items-center justify-between mb-4 border-b pb-3">
                 <div>
-                    <h3 class="text-lg font-bold text-slate-900">With-Driver Fleet Rates</h3>
-                    <p class="text-xs text-slate-500">Live vendor rates + 25% markup for Outstation, Local & Driver Allowance.</p>
+                    <h3 class="text-lg font-bold text-slate-900">With-Driver Customer Fleet Rates</h3>
+                    <p class="text-xs text-slate-500">Live customer-facing vehicle rates for Outstation, Local, Driver Allowance and Airport transfers.</p>
                 </div>
                 <div class="flex gap-2">
 <button type="button" onclick="toggleWithDriverAddForm()" class="px-3 py-1.5 bg-indigo-950 hover:bg-indigo-900 text-white text-xs font-semibold rounded-lg">+ Add Vehicle</button>
@@ -1150,28 +1157,42 @@
 
         // 2. PRICING RULES
         async function loadPricingRules() {
-            const container = document.getElementById('pricing-rules-container');
-            container.innerHTML = '<p class="text-xs text-slate-400">Loading rules...</p>';
+            const selfDrive = document.getElementById('pricing-rules-selfdrive');
+            const withDriver = document.getElementById('pricing-rules-withdriver');
+            if(!selfDrive||!withDriver)return;
+            selfDrive.innerHTML = '<p class="text-xs text-slate-400">Loading rules...</p>';
+            withDriver.innerHTML = '<p class="text-xs text-slate-400">Loading rules...</p>';
 
             const { data: rules } = await supabaseClient.from('pricing_rules').select('*');
             if (!rules) return;
 
-            container.innerHTML = '';
-            rules.forEach(rule => {
+            const renderRule = rule => {
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between py-2 border-b border-slate-100 text-xs";
+                div.className = "flex items-center justify-between gap-3 py-3 border-b border-slate-100 text-xs";
                 div.innerHTML = `
-                    <div>
+                    <div class="min-w-0">
                         <strong class="text-slate-800 block">${rule.rule_name}</strong>
                         <span class="text-slate-400 text-[10px]">${rule.description || ''}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <input type="number" id="rule-${rule.id}" value="${rule.rule_value}" class="w-24 text-right border border-slate-300 rounded px-2 py-1 font-bold text-indigo-950">
-                        <button onclick="updateRule('${rule.id}')" class="bg-indigo-950 hover:bg-indigo-900 text-white px-2.5 py-1 rounded text-[11px] font-bold">Save</button>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <input type="number" min="0" step="0.01" id="rule-${rule.id}" value="${rule.rule_value}" class="w-24 text-right border border-slate-300 rounded px-2 py-1.5 font-bold text-indigo-950">
+                        <button onclick="updateRule('${rule.id}')" class="bg-indigo-950 hover:bg-indigo-900 text-white px-2.5 py-1.5 rounded text-[11px] font-bold">Save</button>
                     </div>
                 `;
-                container.appendChild(div);
+                return div;
+            };
+
+            selfDrive.innerHTML=''; withDriver.innerHTML='';
+            rules.forEach(rule => {
+                const n=String(rule.rule_name||'').toLowerCase();
+                if((n.includes('delivery')||n.includes('threshold')) && !n.includes('driver')){
+                    selfDrive.appendChild(renderRule(rule));
+                } else if(n.includes('minimum')&&n.includes('outstation') || n.includes('customer driver allowance') || n.includes('customer night charge')){
+                    withDriver.appendChild(renderRule(rule));
+                }
             });
+            if(!selfDrive.children.length)selfDrive.innerHTML='<p class="text-xs text-slate-400">No Self Drive delivery rules found.</p>';
+            if(!withDriver.children.length)withDriver.innerHTML='<p class="text-xs text-slate-400">No With Driver customer rules found.</p>';
         }
 
         async function updateRule(id) {

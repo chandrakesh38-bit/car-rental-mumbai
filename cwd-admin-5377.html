@@ -198,7 +198,7 @@
                         <div id="pricing-rules-selfdrive" class="space-y-2"></div>
                     </div>
                     <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-                        <div class="mb-3"><h3 class="font-black text-slate-900">With Driver Customer Rules</h3><p class="text-[11px] text-slate-500 mt-1">Used for customer-facing outstation minimums, driver allowance and night charge.</p></div>
+                        <div class="mb-3"><h3 class="font-black text-slate-900">With Driver Customer Rules</h3><p class="text-[11px] text-slate-500 mt-1">Global rule for customer outstation minimum billing. Driver allowance and night charge are vehicle-wise below.</p></div>
                         <div id="pricing-rules-withdriver" class="space-y-2"></div>
                     </div>
                 </div>
@@ -207,7 +207,7 @@
             <div class="flex items-center justify-between mb-4 border-b pb-3">
                 <div>
                     <h3 class="text-lg font-bold text-slate-900">With-Driver Customer Fleet Rates</h3>
-                    <p class="text-xs text-slate-500">Live customer-facing vehicle rates for Outstation, Local, Driver Allowance and Airport transfers.</p>
+                    <p class="text-xs text-slate-500">Live customer-facing vehicle rates for Outstation, Local, Driver Allowance, Night Charge and Airport transfers.</p>
                 </div>
                 <div class="flex gap-2">
 <button type="button" onclick="toggleWithDriverAddForm()" class="px-3 py-1.5 bg-indigo-950 hover:bg-indigo-900 text-white text-xs font-semibold rounded-lg">+ Add Vehicle</button>
@@ -244,7 +244,8 @@
                     <input id="wd-new-ehr" required type="number" min="0" placeholder="Extra Hour" class="border rounded-lg px-3 py-2">
                     <input id="wd-new-ekm" required type="number" min="0" placeholder="Extra KM" class="border rounded-lg px-3 py-2">
                     <input id="wd-new-outstation" required type="number" min="0" placeholder="Outstation / KM" class="border rounded-lg px-3 py-2">
-                    <input id="wd-new-allowance" required type="number" min="0" placeholder="Driver Allowance" class="border rounded-lg px-3 py-2">
+                    <input id="wd-new-allowance" required type="number" min="0" placeholder="Driver Allowance / Day" class="border rounded-lg px-3 py-2">
+                    <input id="wd-new-night" required type="number" min="0" placeholder="Night Charge" class="border rounded-lg px-3 py-2">
                     <input id="wd-new-t1" required type="number" min="0" placeholder="Airport T1" class="border rounded-lg px-3 py-2">
                     <input id="wd-new-t2" required type="number" min="0" placeholder="Airport T2" class="border rounded-lg px-3 py-2">
                     <input id="wd-new-nmia" required type="number" min="0" placeholder="Airport NMIA" class="border rounded-lg px-3 py-2">
@@ -266,7 +267,8 @@
                             <th class="py-2.5 px-3">Local 12H/120KM</th>
                             <th class="py-2.5 px-3">Extra Hr</th>
                             <th class="py-2.5 px-3">Extra KM</th>
-                            <th class="py-2.5 px-3">Allowance</th>
+                            <th class="py-2.5 px-3">Allowance / Day</th>
+                            <th class="py-2.5 px-3">Night Charge</th>
                             <th class="py-2.5 px-3">Airport T1/T2/NMIA</th>
                             <th class="py-2.5 px-3">Active</th>
                             <th class="py-2.5 px-3 text-right">Action</th>
@@ -1187,7 +1189,7 @@
                 const n=String(rule.rule_name||'').toLowerCase();
                 if((n.includes('delivery')||n.includes('threshold')) && !n.includes('driver')){
                     selfDrive.appendChild(renderRule(rule));
-                } else if(n.includes('minimum')&&n.includes('outstation') || n.includes('customer driver allowance') || n.includes('customer night charge')){
+                } else if(n.includes('minimum')&&n.includes('outstation')){
                     withDriver.appendChild(renderRule(rule));
                 }
             });
@@ -2468,6 +2470,7 @@ async function loadWithDriverRates() {
             <td class="py-2 px-3">₹<input type="number" id="wd_ehr_${car.id}" value="${car.local_extra_hour_rate}" class="w-16 border rounded px-1 py-0.5"></td>
             <td class="py-2 px-3">₹<input type="number" id="wd_ekm_${car.id}" value="${car.local_extra_km_rate}" class="w-16 border rounded px-1 py-0.5"></td>
             <td class="py-2 px-3">₹<input type="number" id="wd_allowance_${car.id}" value="${car.driver_allowance_per_day}" class="w-16 border rounded px-1 py-0.5"></td>
+            <td class="py-2 px-3">₹<input type="number" id="wd_night_${car.id}" value="${car.customer_night_charge || 0}" class="w-16 border rounded px-1 py-0.5"></td>
             <td class="py-2 px-3 whitespace-nowrap">₹<input type="number" id="wd_t1_${car.id}" value="${car.airport_t1_rate || 0}" class="w-16 border rounded px-1 py-0.5"> / ₹<input type="number" id="wd_t2_${car.id}" value="${car.airport_t2_rate || 0}" class="w-16 border rounded px-1 py-0.5"> / ₹<input type="number" id="wd_nmia_${car.id}" value="${car.airport_nmia_rate || 0}" class="w-16 border rounded px-1 py-0.5"></td>
             <td class="py-2 px-3"><input type="checkbox" id="wd_active_${car.id}" ${car.is_active !== false ? 'checked' : ''}></td>
             <td class="py-2 px-3 text-right whitespace-nowrap">
@@ -2488,6 +2491,7 @@ async function saveWithDriverRate(id) {
             local_extra_hour_rate: wdNumber(`wd_ehr_${id}`),
             local_extra_km_rate: wdNumber(`wd_ekm_${id}`),
             driver_allowance_per_day: wdNumber(`wd_allowance_${id}`),
+            customer_night_charge: wdNumber(`wd_night_${id}`),
             airport_t1_rate: wdNumber(`wd_t1_${id}`),
             airport_t2_rate: wdNumber(`wd_t2_${id}`),
             airport_nmia_rate: wdNumber(`wd_nmia_${id}`),
@@ -2515,6 +2519,7 @@ async function addWithDriverVehicle(event) {
             local_extra_km_rate: wdNumber('wd-new-ekm'),
             outstation_rate_per_km: wdNumber('wd-new-outstation'),
             driver_allowance_per_day: wdNumber('wd-new-allowance'),
+            customer_night_charge: wdNumber('wd-new-night'),
             airport_t1_rate: wdNumber('wd-new-t1'),
             airport_t2_rate: wdNumber('wd-new-t2'),
             airport_nmia_rate: wdNumber('wd-new-nmia'),

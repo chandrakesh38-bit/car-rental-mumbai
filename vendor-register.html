@@ -226,10 +226,10 @@
       field('Vehicle number *','vehicle_number','text','maxlength="30" placeholder="e.g. MH01AB1234" required')+
       field('Make / model *','make_model','text','maxlength="160" placeholder="e.g. Toyota Innova" required')+
       '<div><label>Category *</label><select data-field="category" required><option value="">Select</option><option>Hatchback</option><option>Sedan</option><option>SUV</option><option>MUV</option><option>Premium Sedan</option><option>Premium SUV</option><option>Tempo Traveller</option><option>Other</option></select></div>'+
-      field('Manufacturing year *','manufacturing_year','number','min="1990" max="2100" placeholder="e.g. 2022" required')+
+      '<div><label>Manufacturing year *</label><select data-field="manufacturing_year" required><option value="">Select year</option>'+Array.from({length:(new Date().getFullYear()+1)-2004},(_,i)=>{const y=new Date().getFullYear()+1-i;return '<option value="'+y+'">'+y+'</option>'}).join('')+'</select></div>'+
       '<div><label>Fuel *</label><select data-field="fuel" required><option value="">Select</option><option>Petrol</option><option>Diesel</option><option>CNG</option><option>Petrol+CNG</option><option>Electric</option><option>Hybrid</option><option>Other</option></select></div>'+
-      field('Seating *','seating','number','min="2" max="20" placeholder="e.g. 6+1" required')+
-      field('Permit type *','commercial_permit_type','text','maxlength="120" placeholder="e.g. Tourist Permit / T-Permit" required')+
+      '<div><label>Seating capacity *</label><select data-field="seating" required><option value="">Select</option><option value="5">4+1</option><option value="7">6+1</option><option value="8">7+1</option><option value="13">12+1</option><option value="18">17+1</option></select></div>'+
+      '<div><label>Permit type *</label><select data-field="commercial_permit_type" required><option value="">Select permit type</option><option value="Tourist Permit / T-Permit">Tourist Permit / T-Permit</option><option value="Contract Carriage">Contract Carriage</option><option value="All India Tourist Permit">All India Tourist Permit</option><option value="Local Commercial Permit">Local Commercial Permit</option><option value="Other">Other</option></select></div>'+
       field('RC number *','rc_number','text','maxlength="80" placeholder="e.g. MH01AB1234" required')+
       field('Insurance policy number *','insurance_policy_number','text','maxlength="120" placeholder="Policy number" required')+
       field('Insurance expiry','insurance_expiry','date','')+

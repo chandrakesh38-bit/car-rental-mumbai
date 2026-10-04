@@ -182,9 +182,9 @@ async function buildLedgers(b,a,t,over={}){
   customer:{
    booking_id:b.booking_id,customer_km_rate:customerKmRate,billable_km:customerBillableKm,customer_da:customerDa,customer_night:customerNight,
    toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,
-   customer_advance:advance,customer_total:customerTotal,customer_balance:balance,updated_at:new Date().toISOString(),
-   _invoice:{booking_fare:bookingFare,included_km:customerIncludedKm,actual_km:actualKm,extra_km:customerExtraKm,extra_km_rate:customerKmRate,extra_km_charge:customerExtraKmCharge,extra_hours:customerExtraHours,extra_hour_charge:customerExtraHourCharge}
+   customer_advance:advance,customer_total:customerTotal,customer_balance:balance,updated_at:new Date().toISOString()
   },
+  invoice_meta:{booking_fare:bookingFare,included_km:customerIncludedKm,actual_km:actualKm,extra_km:customerExtraKm,extra_km_rate:customerKmRate,extra_km_charge:customerExtraKmCharge,extra_hours:customerExtraHours,extra_hour_charge:customerExtraHourCharge},
   vendor:{booking_id:b.booking_id,vendor_id:a.vendor_id,vendor_km_rate:vendorKmRate,billable_km:vendorBillableKm,vendor_da:vendorDa,vendor_night:vendorNight,toll:actuals.toll,parking:actuals.parking,state_tax:actuals.state_tax,approved_other:actuals.other,penalty:n(over.penalty),vendor_final_payout:Math.max(0,vendorTotal),payout_due_at:due.toISOString(),updated_at:new Date().toISOString()}
  };
 }

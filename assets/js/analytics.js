@@ -19,6 +19,8 @@
 
   window.cwdTrackEvent = function (name, params = {}) {
     if (!/^[a-zA-Z][a-zA-Z0-9_]{0,39}$/.test(String(name || ''))) return;
+    // Clarity has its own testing/consent gates and fixed-value tag allowlist.
+    try { window.cwdClarity?.track(name, params); } catch (_) {}
     // Preview QA must not inflate the production acquisition funnel.
     if (!productionHost) return;
     const safeParams = {};
@@ -34,6 +36,13 @@
     });
     window.gtag('event', name, safeParams);
   };
+
+  // One small async loader; never load a testing recorder on the production domain.
+  if (!productionHost && /^(car-rental-mumbai-[a-z0-9-]+-car-with-driver-operation-team\.vercel\.app|localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+    const script = document.createElement('script');
+    script.src = '/assets/js/clarity.js'; script.async = true;
+    document.head.appendChild(script);
+  }
 
   document.addEventListener('click', function (event) {
     const link = event.target.closest && event.target.closest('a[href]');

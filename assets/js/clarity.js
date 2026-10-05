@@ -1,6 +1,7 @@
 (function () {
   'use strict';
   if (window.cwdClarity) return;
+  const status = value => document.documentElement.setAttribute('data-session-analytics-status', value);
   const events = new Set(['explore_cabs_click', 'cab_results_shown', 'book_car_click',
     'booking_form_opened', 'otp_requested', 'otp_verified', 'booking_request_submitted']);
   const paths = new Set(['/', '/index', '/with-driver', '/self-drive', '/airport-transfer',
@@ -94,12 +95,14 @@
     call('set', 'traffic_type', paid ? 'google_ads' : 'other');
     if (location.pathname.includes('outstation') || location.pathname.startsWith('/mumbai-to-')) call('set', 'trip_type', 'outstation');
     active = true;
+    status('starting');
     pending.splice(0).forEach(deliver);
     const script = document.createElement('script');
     script.id = 'cwd-clarity-sdk'; script.async = true;
     script.src = 'https://www.clarity.ms/tag/' + settings.projectId;
     script.referrerPolicy = 'no-referrer';
-    script.onerror = () => { active = false; pending = []; window.clarity.q = []; };
+    script.onload = () => status('sdk-loaded');
+    script.onerror = () => { active = false; pending = []; window.clarity.q = []; status('sdk-blocked'); };
     document.head.appendChild(script);
   }
   function showChoice() {
@@ -114,22 +117,24 @@
     document.body.appendChild(banner);
   }
   window.cwdClarity = { track, revoke, showChoice };
-  if (!eligible() || navigator.globalPrivacyControl || navigator.doNotTrack === '1') return;
+  if (!eligible()) { status('url-excluded'); return; }
+  if (navigator.globalPrivacyControl || navigator.doNotTrack === '1') { status('privacy-signal'); return; }
   try { preference = localStorage.getItem(preferenceKey); } catch (_) {}
   async function init() {
     try {
       const response = await fetch('/api/clarity-config', { cache: 'no-store', credentials: 'same-origin' });
-      if (!response.ok) return;
+      if (!response.ok) { status('config-unavailable'); return; }
       const config = await response.json();
-      if (!config.enabled || config.environment !== 'testing' || !/^[a-z0-9]{6,20}$/.test(config.projectId)) return;
+      if (!config.enabled || config.environment !== 'testing' || !/^[a-z0-9]{6,20}$/.test(config.projectId)) { status('not-configured'); return; }
       settings = config;
+      status(preference === 'denied' ? 'declined' : 'awaiting-consent');
       const button = document.createElement('button');
       button.type = 'button'; button.textContent = 'Session analytics preferences';
       button.className = 'underline mx-3 my-3'; button.onclick = showChoice;
       (document.querySelector('footer') || document.body).appendChild(button);
       if (preference === 'granted') start();
       else if (preference !== 'denied') showChoice();
-    } catch (_) { /* Config failure leaves recording disabled. */ }
+    } catch (_) { status('config-unavailable'); /* Recording remains disabled. */ }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();

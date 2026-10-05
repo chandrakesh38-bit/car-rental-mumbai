@@ -40,6 +40,8 @@
   // One small async loader; never load a testing recorder on the production domain.
   if (!productionHost && /^(car-rental-mumbai-[a-z0-9-]+-car-with-driver-operation-team\.vercel\.app|localhost|127\.0\.0\.1)$/.test(location.hostname)) {
     const script = document.createElement('script');
+    document.documentElement.setAttribute('data-session-analytics-status', 'loading');
+    script.onerror = () => document.documentElement.setAttribute('data-session-analytics-status', 'loader-blocked');
     script.src = '/assets/js/clarity.js'; script.async = true;
     document.head.appendChild(script);
   }

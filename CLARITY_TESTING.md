@@ -1,6 +1,8 @@
 # Microsoft Clarity testing and verification
 
-This implementation is for the Vercel preview of `testing` only. No production project is configured. Recording stays disabled until a separate testing Project ID is supplied. Code tests with a simulated SDK do not prove that Microsoft has processed recordings or heatmaps.
+This implementation is for the Vercel preview of `testing` only. No production project is configured. The separate testing project **Car With Driver India — Testing** was created on 5 October 2026 under the Car With Driver business account, with Project ID `ysx30apjfr`. Strict masking is enabled with no unmask rules, and default cookies are off so consent is required. Vercel's `CLARITY_TESTING_PROJECT_ID` is scoped to Preview and branch `testing` only. Code tests with a simulated SDK do not prove that Microsoft has processed recordings or heatmaps.
+
+Project: https://clarity.microsoft.com/projects/view/ysx30apjfr/settings
 
 ## Create the testing project
 
@@ -8,7 +10,7 @@ This implementation is for the Vercel preview of `testing` only. No production p
 2. Create a website project named **Car With Driver India — Testing**. Use the newest READY deployment for the Vercel `testing` branch as its website URL. Do not use the production domain. The initial baseline was commit `b1f9c7c`; implementation will produce a newer preview.
 3. Copy the Project ID from Settings → Overview or the installation code under Settings → Setup. It is the value following `https://www.clarity.ms/tag/`. Send the ID, not an account password or access token.
 4. In Settings → Masking, select **Strict** and remove any unmask rules. The code independently masks the document root before SDK startup. Do not unmask forms, summaries, suggestions, OTP, payment or document content. Microsoft says masking-setting changes can take up to one hour and affect only new recordings.
-5. Enable the project's consent requirement. The website asks for analytics permission and sends `analytics_Storage: granted` and `ad_Storage: denied` only after acceptance. No Clarity SDK loads before acceptance. Do not connect the testing project to production GA4 or Ads accounts.
+5. Enable the project's consent requirement by turning **Settings → Setup → Cookies OFF**. This is Microsoft's Consent Mode setting; it waits for an explicit consent signal. The website asks for analytics permission and sends `analytics_Storage: granted` and `ad_Storage: denied` only after acceptance. No Clarity SDK loads before acceptance. Do not connect the testing project to production GA4 or Ads accounts.
 6. In Vercel → car-rental-mumbai → Settings → Environment Variables, set `CLARITY_TESTING_PROJECT_ID` for **Preview**, branch **testing** only. Redeploy the newest testing commit. This is a public project identifier, not a secret. The endpoint additionally requires `VERCEL_ENV=preview` and the testing/implementation branch; main and production cannot enable it.
 
 ## Verify the deployed preview

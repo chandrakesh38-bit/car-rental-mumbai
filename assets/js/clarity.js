@@ -71,6 +71,7 @@
   }
   function revoke() {
     save('denied'); pending = []; active = false;
+    status('declined');
     if (started) {
       call('consentv2', { analytics_Storage: 'denied', ad_Storage: 'denied' });
       call('stop');

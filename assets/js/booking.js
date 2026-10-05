@@ -21,6 +21,8 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
             return null;
         }
 
+        let publicPricingRulesLoadPromise = null;
+
         async function loadPublicPricingRules() {
             if (!supabasePublic) return;
             const { data, error } = await supabasePublic.from('pricing_rules').select('rule_name,rule_value');
@@ -30,6 +32,8 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
                 const value = Number(rule.rule_value);
                 if (key && Number.isFinite(value) && value >= 0) livePricingRules[key] = value;
             });
+            updateOutstationFarePromo();
+            updateQuickRouteLiveFares();
             if (document.getElementById('booking-widget')) {
                 calculateDriverFare();
                 if (selectedCarObj) updateSDFareReview();
@@ -61,7 +65,7 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadPublicPricingRules();
+            publicPricingRulesLoadPromise = loadPublicPricingRules();
             loadPublicLocationConfig();
             loadPublicFaqs();
         });
@@ -314,10 +318,53 @@ let mumbaiMetroLocations = [
             return name;
         }
 
+        let withDriverRatesLoadPromise = null;
+        let withDriverRatesLoadedFromDb = false;
+
+        function updateOutstationFarePromo() {
+            const label = document.getElementById('outstation-fare-promo-rate');
+            if (!label) return;
+            if (!withDriverRatesLoadedFromDb) {
+                label.textContent = 'Live fare will be calculated from your route.';
+                return;
+            }
+            const validCars = wdFleet.filter(car => Number(car?.rates?.outstationPerKm) > 0);
+            const sedan = validCars.find(car => /sedan|dzire|aura/i.test(`${car.name} ${car.category}`)) || validCars[0];
+            if (!sedan) return;
+            const rate = Number(sedan.rates.outstationPerKm);
+            const allowance = Number(sedan.rates.driverAllowance || 0);
+            const minimumKm = Number(livePricingRules.minimumOutstationKmPerDay || 0);
+            label.textContent = `${sedan.name}: ₹${rate}/km + ₹${allowance}/day · Min. ${minimumKm} km/day`;
+        }
+
+        function updateQuickRouteLiveFares() {
+            if (!withDriverRatesLoadedFromDb) return;
+            const validCars = wdFleet.filter(car => Number(car?.rates?.outstationPerKm) > 0);
+            if (!validCars.length) return;
+            const minKm = Number(livePricingRules.minimumOutstationKmPerDay || 240);
+            const lowest = [...validCars].sort((a, b) => {
+                const aCost = (minKm * Number(a.rates.outstationPerKm)) + Number(a.rates.driverAllowance || 0);
+                const bCost = (minKm * Number(b.rates.outstationPerKm)) + Number(b.rates.driverAllowance || 0);
+                return aCost - bCost;
+            })[0];
+            document.querySelectorAll('[data-route-km]').forEach(card => {
+                const km = Number(card.dataset.routeKm || 0);
+                const fareLabel = card.querySelector('[data-live-route-fare]');
+                if (!fareLabel || !km) return;
+                const billableKm = Math.max(km, minKm);
+                const estimatedFare = Math.round(
+                    billableKm * Number(lowest.rates.outstationPerKm) +
+                    Number(lowest.rates.driverAllowance || 0)
+                );
+                fareLabel.textContent = `Starts ₹${estimatedFare.toLocaleString('en-IN')}`;
+            });
+        }
+
         async function loadWithDriverRatesPublic() {
             if (!supabasePublic) return;
             const { data, error } = await supabasePublic.from('with_driver_rates').select('*').eq('is_active', true).order('display_order', { ascending: true }).order('full_name', { ascending: true });
             if (error || !data?.length) return;
+            withDriverRatesLoadedFromDb = true;
             const seen = new Set();
             wdFleet = data.map(row => {
                 const name = withDriverPublicName(row);
@@ -349,10 +396,14 @@ let mumbaiMetroLocations = [
                     }
                 };
             }).filter(Boolean);
+            updateOutstationFarePromo();
+            updateQuickRouteLiveFares();
             if (document.getElementById('fleet-container')) renderWDFleet();
         }
 
-        document.addEventListener('DOMContentLoaded', loadWithDriverRatesPublic);
+        document.addEventListener('DOMContentLoaded', () => {
+            withDriverRatesLoadPromise = loadWithDriverRatesPublic();
+        });
 
         // Supabase vehicles is the source of truth; never restore deleted cars from a fallback.
         let excelCarsData = [];
@@ -1575,23 +1626,90 @@ function onPickupDateChange() {
                 if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                     await new Promise(resolve => setTimeout(resolve, 900));
                 }
-                target.scrollIntoView({ behavior: 'auto' });
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } finally {
                 overlay?.classList.remove('visible');
                 overlay?.setAttribute('aria-hidden', 'true');
             }
         }
 
+        function setExploreCabsUi(isLoading, message = '') {
+            const button = document.getElementById('explore-cabs-button');
+            const text = document.getElementById('search-btn-text');
+            const icon = document.getElementById('search-btn-icon');
+            const status = document.getElementById('explore-cabs-status');
+            if (button) button.disabled = Boolean(isLoading);
+            if (text) text.textContent = isLoading ? 'Checking Live Fares...' : 'Explore Cabs';
+            if (icon) icon.className = isLoading
+                ? 'fa-solid fa-circle-notch fa-spin text-indigo-950 text-base'
+                : 'fa-solid fa-magnifying-glass text-indigo-950 text-base';
+            if (status && message) {
+                status.textContent = message;
+                const ready = !isLoading && /^Live fares ready/.test(message);
+                status.classList.toggle('text-emerald-700', ready);
+                status.classList.toggle('text-slate-500', !ready);
+            }
+        }
+
+        function trackFareValidationFailure(reason) {
+            window.cwdTrackEvent?.('fare_validation_failed', {
+                service_type: currentMainMode === 'withdriver' ? 'with_driver' : currentMainMode,
+                trip_type: currentWDSubTab,
+                reason,
+                page_path: location.pathname
+            });
+        }
+
         async function triggerFareSearch() {
-            if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !requireOutstationJourneyType()) return;
-            if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !wdOutstationRouteQuote) {
-                await updateOutstationRouteEstimate();
+            window.cwdTrackEvent?.('explore_cabs_click', {
+                service_type: currentMainMode === 'withdriver' ? 'with_driver' : currentMainMode,
+                trip_type: currentWDSubTab,
+                page_path: location.pathname
+            });
+            setExploreCabsUi(true, 'Checking route and live fares...');
+
+            try {
+                if (withDriverRatesLoadPromise) await withDriverRatesLoadPromise;
+                if (publicPricingRulesLoadPromise) await publicPricingRulesLoadPromise;
+
+                if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !requireOutstationJourneyType()) {
+                    trackFareValidationFailure('trip_type_missing');
+                    setExploreCabsUi(false, 'Please choose One-way or Round trip.');
+                    return;
+                }
+                if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !wdOutstationRouteQuote) {
+                    await updateOutstationRouteEstimate();
+                }
+                if (currentMainMode === 'withdriver' && currentWDSubTab === 'airport' && !airportRouteQuote) {
+                    await updateAirportRouteEstimate();
+                }
+                if (currentMainMode === 'withdriver' && !validateJourneyAndOpenBooking()) {
+                    trackFareValidationFailure('form_or_route_validation');
+                    const routeStatus = document.getElementById('wd-out-route-status')?.textContent?.trim();
+                    setExploreCabsUi(false, routeStatus && !/^Calculating/i.test(routeStatus)
+                        ? routeStatus
+                        : 'Please complete the highlighted trip details.');
+                    return;
+                }
+
+                await showCabSearchTransition(calculateDriverFare, 'fleet');
+                const visibleCount = Array.isArray(wdFleet) ? wdFleet.length : 0;
+                window.cwdTrackEvent?.('cab_results_shown', {
+                    service_type: 'with_driver',
+                    trip_type: currentWDSubTab,
+                    vehicle_count: visibleCount,
+                    page_path: location.pathname
+                });
+                setExploreCabsUi(false, `Live fares ready below · ${visibleCount} cab option${visibleCount === 1 ? '' : 's'}`);
+            } catch (error) {
+                console.error('Fare search failed', error);
+                trackFareValidationFailure('unexpected_error');
+                showCustomAlert('Unable to load live fares right now. Please try again.');
+                setExploreCabsUi(false, 'Could not load live fares. Please try again.');
+            } finally {
+                const button = document.getElementById('explore-cabs-button');
+                if (button?.disabled) setExploreCabsUi(false);
             }
-            if (currentMainMode === 'withdriver' && currentWDSubTab === 'airport' && !airportRouteQuote) {
-                await updateAirportRouteEstimate();
-            }
-            if (currentMainMode === 'withdriver' && !validateJourneyAndOpenBooking()) return;
-            await showCabSearchTransition(calculateDriverFare, 'fleet');
         }
 
         function validateSelfDriveJourney() {

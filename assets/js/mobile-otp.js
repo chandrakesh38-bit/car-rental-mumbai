@@ -230,6 +230,9 @@ async function sendOtp(isRetry = false) {
     buildDigits(length);
     state.retryAt = Date.now() + Math.max(30, Number(state.settings.retryTime) || 30) * 1000;
     message('OTP sent. Please enter it below.');
+    if (state.purpose === 'booking') {
+      window.cwdTrackEvent?.('otp_requested', { service_type: state.phone?.id === 'sd-cust-phone' ? 'self_drive' : 'with_driver', is_retry: isRetry, page_path: location.pathname });
+    }
     ensureModal().querySelector('[data-digits] input')?.focus();
   } catch (error) {
     otpDiagnostic('send_error', error?.message || 'Unable to send OTP.', Boolean(state.reqId));
@@ -266,6 +269,9 @@ async function verifyAndFinish() {
     otpDiagnostic('verify_server_success', '', Boolean(state.reqId));
     state.proof = verified.proof;
     state.expiresAt = verified.expiresAt;
+    if (state.purpose === 'booking') {
+      window.cwdTrackEvent?.('otp_verified', { service_type: state.phone?.id === 'sd-cust-phone' ? 'self_drive' : 'with_driver', page_path: location.pathname });
+    }
     const resolve = state.resolve;
     closeModal(false);
     resolve?.(state.proof);

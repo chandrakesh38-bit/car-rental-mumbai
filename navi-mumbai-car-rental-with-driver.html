@@ -226,6 +226,7 @@
                                 <label for="wd-out-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> From *</label>
                                 <input type="text" id="wd-out-pickup" autocomplete="off" oninput="scheduleOutstationPlaceSearch('wd-out-pickup','wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search pickup on Google">
                                 <div id="wd-out-pickup-dropdown" class="autocomplete-dropdown hidden"></div>
+                                <p class="text-[11px] text-slate-500 mt-1">Type 3 or more letters, then tap a Google suggestion.</p>
                                 <button type="button" onclick="useBookingPickupCurrentLocation('outstation')" class="location-current-action mt-2 items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">
                                     <i class="fa-solid fa-location-crosshairs"></i> Use My Current Location
                                 </button>
@@ -251,7 +252,7 @@
                             <div id="wd-out-stops" class="mt-2 space-y-1.5"></div>
                         </div>
 
-                        <div id="wd-out-route-status" class="hidden rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-600"></div>
+                        <div id="wd-out-route-status" role="status" aria-live="polite" class="hidden rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-600"></div>
 
                         <!-- Date & Time Pickers -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
@@ -515,7 +516,7 @@
       </article>
       <article class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
         <h3 class="font-extrabold text-slate-900">Outstation car rental from Navi Mumbai</h3>
-        <p class="mt-2 text-sm text-slate-600 leading-6">Choose one-way or round trip from Navi Mumbai and see the included route distance in your fare. The fare includes at least 300 km per booked day. For one-way trips, the vehicle's empty return distance to its Vikhroli base is included; driver allowance applies only to your trip days. Tolls, parking and applicable state taxes are extra at actual cost.</p>
+        <p class="mt-2 text-sm text-slate-600 leading-6">Choose one-way or round trip from Navi Mumbai and see the included route distance in your fare. The fare includes the current minimum kilometres per booked day shown in the live fare. For one-way trips, the vehicle's empty return distance to its Vikhroli base is included; driver allowance applies only to your trip days. Tolls, parking and applicable state taxes are extra at actual cost.</p>
       </article>
     </div>
 

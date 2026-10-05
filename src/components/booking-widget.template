@@ -108,6 +108,7 @@
                                 <label for="wd-out-pickup" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-location-dot text-indigo-600 mr-1"></i> From *</label>
                                 <input type="text" id="wd-out-pickup" autocomplete="off" oninput="scheduleOutstationPlaceSearch('wd-out-pickup','wd-out-pickup-dropdown')" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-600 outline-none font-medium" placeholder="Search pickup on Google">
                                 <div id="wd-out-pickup-dropdown" class="autocomplete-dropdown hidden"></div>
+                                <p class="text-[11px] text-slate-500 mt-1">Type 3 or more letters, then tap a Google suggestion.</p>
                                 <button type="button" onclick="useBookingPickupCurrentLocation('outstation')" class="location-current-action mt-2 items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">
                                     <i class="fa-solid fa-location-crosshairs"></i> Use My Current Location
                                 </button>
@@ -133,7 +134,7 @@
                             <div id="wd-out-stops" class="mt-2 space-y-1.5"></div>
                         </div>
 
-                        <div id="wd-out-route-status" class="hidden rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-600"></div>
+                        <div id="wd-out-route-status" role="status" aria-live="polite" class="hidden rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-600"></div>
 
                         <!-- Date & Time Pickers -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
@@ -177,6 +178,17 @@
                             </div>
                         </div>
 
+                        <div id="outstation-fare-promo" class="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-3">
+                            <div class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-tag mt-0.5 text-emerald-700"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-black text-emerald-900">New lower outstation fares</p>
+                                    <p id="outstation-fare-promo-rate" class="mt-0.5 text-[11px] font-bold text-emerald-800">Live fare will be calculated from your route.</p>
+                                    <p class="mt-0.5 text-[11px] font-semibold text-slate-600">FIRSTTRIP · 5% OFF on your first booking.</p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- AIRPORT FIELDS -->
@@ -194,11 +206,12 @@
                     </div>
 
                     <!-- Search Button -->
-                    <div class="mt-6 flex justify-center">
-                        <button type="button" onclick="triggerFareSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
+                    <div class="mt-6 flex flex-col items-center">
+                        <button type="button" id="explore-cabs-button" aria-describedby="explore-cabs-status" onclick="triggerFareSearch()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:cursor-wait disabled:opacity-70 text-indigo-950 font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm sm:text-base cursor-pointer transform active:scale-95">
                             <i class="fa-solid fa-magnifying-glass text-indigo-950 text-base" id="search-btn-icon"></i>
                             <span id="search-btn-text">Explore Cabs</span>
                         </button>
+                        <p id="explore-cabs-status" class="mt-2 text-center text-[11px] font-semibold text-slate-500" role="status" aria-live="polite">Enter trip details to view live fares.</p>
                     </div>
                 </div>
 

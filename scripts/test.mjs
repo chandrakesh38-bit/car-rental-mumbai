@@ -54,7 +54,8 @@ const check=async(name,fn)=>{
 const go=async(slug='',port=testPort)=>{
   const response=await page.goto(`http://127.0.0.1:${port}/${slug}`,{waitUntil:'load'});
   assert.equal(response.status(),200);
-  if (port === testPort) await page.waitForFunction(() => !document.getElementById('booking-widget') || fleetRequest === null);
+  // With Driver pages deliberately defer the Self Drive request until that tab opens.
+  if (port === testPort) await page.waitForFunction(() => !document.getElementById('booking-widget') || fleetRequest == null);
 };
 const visible=async id=>assert.equal(await page.locator('#'+id).isVisible(),true,id);
 const fill=async(id,value)=>page.locator('#'+id).fill(value);

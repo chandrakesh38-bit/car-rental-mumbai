@@ -2098,8 +2098,7 @@ function onPickupDateChange() {
                     return `${date.getDate()} ${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}, ${Number(hour)}:00 ${ampm}`;
                 };
                 dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nFinal Drop: ${formatReviewTime('wd-out-r')}`;
-                const includedKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                pkgStr = `${wdOutstationDays}-Day Dedicated Cab Package · ${includedKm.toLocaleString('en-IN')} KM included (${Number(livePricingRules.minimumOutstationKmPerDay||240).toLocaleString('en-IN')} KM/day)\nCar + Fuel + Driver Allowance included · Dedicated car & driver for your complete trip`;
+                pkgStr = `${wdOutstationDays}-Day Dedicated Cab Package\n${Number(livePricingRules.minimumOutstationKmPerDay).toLocaleString('en-IN')} KM/Day included\nCar + Fuel + Driver Allowance included\nDedicated car & driver for your complete trip`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
                 destLoc = document.getElementById('wd-airport-terminal').value.toUpperCase() + ' Airport';
@@ -2119,14 +2118,19 @@ function onPickupDateChange() {
             if (tripTypeRow) tripTypeRow.classList.toggle('hidden', currentWDSubTab !== 'outstation');
             if (tripTypeValue) tripTypeValue.textContent = currentOutstationJourneyType === 'one-way' ? 'One-way' : 'Round trip';
             if (exclusions) exclusions.innerHTML = currentWDSubTab === 'outstation'
-                ? '<span class="text-amber-600" aria-hidden="true">ⓘ</span> <strong>Extra charges:</strong> Tolls, parking and applicable state taxes are charged at actual cost.'
+                ? 'Toll, parking and applicable state tax will be charged as per actuals.'
                 : '<span class="text-amber-600" aria-hidden="true">ⓘ</span> <strong>Extra charges:</strong> Tolls and parking are charged at actual cost.';
             if (extraNote) extraNote.textContent = currentWDSubTab === 'outstation'
-                ? 'Tolls, parking and applicable state taxes extra at actual cost.'
+                ? 'Toll, parking and applicable state tax will be charged as per actuals.'
                 : 'Tolls and parking extra at actual cost.';
             document.getElementById('modal-summary-datetime').innerText = dateTimeStr;
             document.getElementById('modal-summary-datetime').previousElementSibling.hidden = currentWDSubTab === 'outstation';
             document.getElementById('modal-summary-package').innerText = pkgStr;
+            const packageSummary = document.getElementById('modal-summary-package');
+            packageSummary.style.whiteSpace = currentWDSubTab === 'outstation' ? 'pre-line' : '';
+            packageSummary.style.display = currentWDSubTab === 'outstation' ? 'block' : '';
+            packageSummary.style.lineHeight = currentWDSubTab === 'outstation' ? '1.75' : '';
+            packageSummary.parentElement.classList.toggle('sm:col-span-2', currentWDSubTab === 'outstation');
 
             document.getElementById('booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('booking-modal'), true);
             window.cwdTrackEvent?.('fare_calculated', {
@@ -2186,6 +2190,26 @@ function onPickupDateChange() {
             const couponControls = codeInput?.parentElement;
             const couponHeading = document.getElementById('first-trip-offer-title');
             const isAutoAppliedOutstation = currentWDSubTab === 'outstation' && firstTripOfferApplied;
+            // Presentation only: use the existing fare and discount values without recalculating them.
+            const isOutstationReview = currentWDSubTab === 'outstation';
+            let fareSummary = document.getElementById('outstation-review-fare-summary');
+            if (!fareSummary && fare) {
+                fareSummary = document.createElement('dl');
+                fareSummary.id = 'outstation-review-fare-summary';
+                fareSummary.className = 'space-y-2 py-2 text-sm tabular-nums';
+                fareSummary.innerHTML = '<div class="flex justify-between items-baseline gap-3"><dt>Base Fare:</dt><dd data-review-base class="font-semibold whitespace-nowrap"></dd></div>' +
+                    '<div data-review-discount-row class="flex justify-between items-baseline gap-3 text-emerald-700"><dt>FIRSTTRIP (5% OFF):</dt><dd data-review-discount class="font-semibold whitespace-nowrap"></dd></div>' +
+                    '<div class="flex justify-between items-baseline gap-3 border-t border-slate-200 pt-2 font-extrabold"><dt>Final Fare:</dt><dd data-review-final class="text-base text-emerald-700 whitespace-nowrap"></dd></div>';
+                fare.parentElement.parentElement.after(fareSummary);
+            }
+            if (fareSummary) {
+                fareSummary.classList.toggle('hidden', !isOutstationReview);
+                fareSummary.querySelector('[data-review-base]').textContent = '₹' + firstTripFareBeforeDiscount.toLocaleString('en-IN');
+                fareSummary.querySelector('[data-review-discount]').textContent = '–₹' + discount.toLocaleString('en-IN');
+                fareSummary.querySelector('[data-review-final]').textContent = '₹' + chosenFareAmount.toLocaleString('en-IN');
+                fareSummary.querySelector('[data-review-discount-row]').classList.toggle('hidden', !firstTripOfferApplied);
+            }
+            if (fare) fare.parentElement.classList.toggle('hidden', isOutstationReview);
             if (couponControls) couponControls.classList.toggle('hidden', isAutoAppliedOutstation);
             if (couponHeading && isAutoAppliedOutstation) couponHeading.textContent = 'FIRSTTRIP · 5% OFF — Automatically Applied';
             if (badge) {
@@ -2193,7 +2217,7 @@ function onPickupDateChange() {
                 badge.classList.toggle('hidden', isAutoAppliedOutstation);
             }
             if (error && firstTripOfferApplied) error.classList.add('hidden');
-            if (breakdown) breakdown.classList.toggle('hidden', !firstTripOfferApplied);
+            if (breakdown) breakdown.classList.toggle('hidden', !firstTripOfferApplied || isOutstationReview);
             if (amount) amount.textContent = '−₹' + discount.toLocaleString('en-IN');
             if (breakdown && isAutoAppliedOutstation) {
                 const label = breakdown.querySelector('span, p, div');

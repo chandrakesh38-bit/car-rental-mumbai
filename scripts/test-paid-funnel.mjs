@@ -21,7 +21,7 @@ const server = await startServer(fileURLToPath(new URL('../',import.meta.url)), 
 const browser = await chromium.launch({headless:true,channel:process.env.BROWSER_CHANNEL || 'msedge'});
 try {
   const context = await browser.newContext({viewport:{width:393,height:851},ignoreHTTPSErrors:true});
-  let failPricing=false, delayRoute=0, routeCalls=0, otpReject=false;
+  let failPricing=false, delayRoute=0, routeCalls=0, otpReject=false, bookingSuccess=false;
   const cache=new Map(), errors=[];
   await context.route('**/*',async route=>{
     const req=route.request(),url=req.url();
@@ -44,6 +44,7 @@ try {
       }
       return json({success:false},400);
     }
+    if(url.endsWith('/api/booking-enquiry')) return json(bookingSuccess?{success:true,booking_id:'ISOLATED-TEST-ONLY'}:{success:false,message:'Fixture booking rejected'},bookingSuccess?200:400);
     if(url.endsWith('/api/mobile-otp')) {
       if(req.method()==='GET')return json({success:true,widgetId:'fixture',tokenAuth:'fixture'});
       const b=req.postDataJSON();
@@ -119,6 +120,12 @@ try {
   assert.equal(await page.evaluate(()=>testEvents.filter(e=>e.name==='otp_verified').length),1);
   assert.equal(await page.evaluate(()=>testEvents.filter(e=>e.name==='booking_request_submitted').length),0);
   console.log('PASS OTP events require successful provider send and server verification; no booking event from OTP alone');
+  const submitFixture=()=>page.evaluate(()=>sendEmailNotification(document.querySelector('#cust-phone').form,'ISOLATED-TEST-ONLY','Fixture','9999999999','fixture@example.com','Fixture trip',()=>{},'withdriver','fixture-proof',{tripType:'outstation'}));
+  await submitFixture();
+  assert.equal(await page.evaluate(()=>testEvents.filter(e=>e.name==='booking_request_submitted').length),0);
+  bookingSuccess=true; await submitFixture();
+  assert.equal(await page.evaluate(()=>testEvents.filter(e=>e.name==='booking_request_submitted').length),1);
+  console.log('PASS booking conversion occurs only after a successful mocked booking API response, never on rejection');
   failPricing=true; await go(); await page.locator('#wd-out-one-way').click(); await page.locator('#explore-cabs-button').click();
   await page.waitForFunction(()=>!document.getElementById('explore-cabs-button').disabled);
   assert.equal(await page.locator('#fleet-container > div').count(),0);

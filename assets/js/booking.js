@@ -22,15 +22,17 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
         }
 
         let publicPricingRulesLoadPromise = null;
+        let publicOutstationMinimumLoaded = false;
 
         async function loadPublicPricingRules() {
             if (!supabasePublic) return;
-            const { data, error } = await supabasePublic.from('pricing_rules').select('rule_name,rule_value');
+            const { data, error } = await supabasePublic.from('pricing_rules').select('rule_name,rule_value').abortSignal(AbortSignal.timeout(12000));
             if (error || !data) return;
             data.forEach(rule => {
                 const key = pricingRuleKey(rule.rule_name);
                 const value = Number(rule.rule_value);
                 if (key && Number.isFinite(value) && value >= 0) livePricingRules[key] = value;
+                if (key === 'minimumOutstationKmPerDay' && Number.isFinite(value) && value > 0) publicOutstationMinimumLoaded = true;
             });
             updateOutstationFarePromo();
             updateQuickRouteLiveFares();
@@ -356,13 +358,13 @@ let mumbaiMetroLocations = [
                     billableKm * Number(lowest.rates.outstationPerKm) +
                     Number(lowest.rates.driverAllowance || 0)
                 );
-                fareLabel.textContent = `Starts ₹${estimatedFare.toLocaleString('en-IN')}`;
+                fareLabel.textContent = `${lowest.name} · from ₹${estimatedFare.toLocaleString('en-IN')}`;
             });
         }
 
         async function loadWithDriverRatesPublic() {
             if (!supabasePublic) return;
-            const { data, error } = await supabasePublic.from('with_driver_rates').select('*').eq('is_active', true).order('display_order', { ascending: true }).order('full_name', { ascending: true });
+            const { data, error } = await supabasePublic.from('with_driver_rates').select('*').eq('is_active', true).order('display_order', { ascending: true }).order('full_name', { ascending: true }).abortSignal(AbortSignal.timeout(12000));
             if (error || !data?.length) return;
             withDriverRatesLoadedFromDb = true;
             const seen = new Set();
@@ -885,7 +887,8 @@ function onPickupDateChange() {
             const response = await fetch('/api/maps-route', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, ...extra })
+                body: JSON.stringify({ action, ...extra }),
+                signal: AbortSignal.timeout(15000)
             });
             const payload = await response.json().catch(() => ({}));
             if (!response.ok || !payload?.success) throw new Error(payload?.message || 'Unable to calculate this route.');
@@ -1394,6 +1397,11 @@ function onPickupDateChange() {
             const container = document.getElementById('fleet-container');
             if (!container) return;
             container.innerHTML = '';
+            // Never expose old fallback prices while the current admin rates load.
+            if (!withDriverRatesLoadedFromDb || (currentWDSubTab === 'outstation' && !publicOutstationMinimumLoaded)) {
+                container.innerHTML = '<p class="col-span-full text-center py-8 text-slate-600" role="status">Live fares will appear after pricing loads. Please try Explore Cabs again if needed.</p>';
+                return;
+            }
 
             wdFleet.forEach(car => {
                 const fare = getCarCost(car);
@@ -1434,6 +1442,7 @@ function onPickupDateChange() {
                             <div class="text-right">
                                 <span class="text-[10px] text-slate-400 block font-semibold">Estimated Fare</span>
                                 <span class="text-xl font-black text-indigo-950">${fare === null ? 'Choose trip type' : '₹' + fare.toLocaleString('en-IN')}</span>
+                                ${currentWDSubTab === 'outstation' && fare !== null ? `<span class="block text-xs font-bold text-emerald-700 mt-1">₹${(fare - Math.round(fare * 0.05)).toLocaleString('en-IN')} with FIRSTTRIP</span><span class="block text-[10px] text-slate-500">5% off your first booking</span>` : ''}
                             </div>
                         </div>
                         <div class="flex items-center space-x-3 text-xs text-slate-500 my-2 py-2 border-y border-slate-100">
@@ -1606,6 +1615,11 @@ function onPickupDateChange() {
         }
 
         function handleBookThisCarClick(carName, fare) {
+            window.cwdTrackEvent?.('book_car_click', {
+                service_type: 'with_driver', trip_type: currentWDSubTab,
+                journey_type: currentWDSubTab === 'outstation' ? currentOutstationJourneyType : undefined,
+                currency: 'INR', value: Number(fare), page_path: location.pathname
+            });
             if (!validateJourneyAndOpenBooking(carName, fare)) return;
             openModal(carName, fare);
         }
@@ -1623,9 +1637,6 @@ function onPickupDateChange() {
             overlay?.setAttribute('aria-hidden', 'false');
             try {
                 updateResults();
-                if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                    await new Promise(resolve => setTimeout(resolve, 900));
-                }
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } finally {
                 overlay?.classList.remove('visible');
@@ -1661,21 +1672,34 @@ function onPickupDateChange() {
         }
 
         async function triggerFareSearch() {
+            if (document.getElementById('explore-cabs-button')?.disabled) return;
             window.cwdTrackEvent?.('explore_cabs_click', {
                 service_type: currentMainMode === 'withdriver' ? 'with_driver' : currentMainMode,
                 trip_type: currentWDSubTab,
+                journey_type: currentWDSubTab === 'outstation' ? currentOutstationJourneyType : undefined,
                 page_path: location.pathname
             });
             setExploreCabsUi(true, 'Checking route and live fares...');
 
             try {
-                if (withDriverRatesLoadPromise) await withDriverRatesLoadPromise;
-                if (publicPricingRulesLoadPromise) await publicPricingRulesLoadPromise;
-
                 if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !requireOutstationJourneyType()) {
                     trackFareValidationFailure('trip_type_missing');
                     setExploreCabsUi(false, 'Please choose One-way or Round trip.');
                     return;
+                }
+                if (withDriverRatesLoadPromise) await withDriverRatesLoadPromise;
+                if (publicPricingRulesLoadPromise) await publicPricingRulesLoadPromise;
+
+                if (!withDriverRatesLoadedFromDb) {
+                    withDriverRatesLoadPromise = loadWithDriverRatesPublic();
+                    await withDriverRatesLoadPromise;
+                    if (!withDriverRatesLoadedFromDb) throw new Error('Live pricing unavailable');
+                }
+
+                if (currentWDSubTab === 'outstation' && !publicOutstationMinimumLoaded) {
+                    publicPricingRulesLoadPromise = loadPublicPricingRules();
+                    await publicPricingRulesLoadPromise;
+                    if (!publicOutstationMinimumLoaded) throw new Error('Live minimum kilometre rule unavailable');
                 }
                 if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !wdOutstationRouteQuote) {
                     await updateOutstationRouteEstimate();
@@ -1698,6 +1722,7 @@ function onPickupDateChange() {
                     service_type: 'with_driver',
                     trip_type: currentWDSubTab,
                     vehicle_count: visibleCount,
+                    journey_type: currentWDSubTab === 'outstation' ? currentOutstationJourneyType : undefined,
                     page_path: location.pathname
                 });
                 setExploreCabsUi(false, `Live fares ready below · ${visibleCount} cab option${visibleCount === 1 ? '' : 's'}`);

@@ -14,13 +14,23 @@
       referrerHost.endsWith('.vercel.app');
   } catch (_) {}
 
-  window.gtag('config', 'G-TQH1RQ70WV', ignoreDeploymentReferrer ? { ignore_referrer: true } : {});
+  const productionHost = ['carswithdriverindia.com', 'www.carswithdriverindia.com'].includes(location.hostname);
+  if (productionHost) window.gtag('config', 'G-TQH1RQ70WV', ignoreDeploymentReferrer ? { ignore_referrer: true } : {});
 
   window.cwdTrackEvent = function (name, params = {}) {
     if (!/^[a-zA-Z][a-zA-Z0-9_]{0,39}$/.test(String(name || ''))) return;
+    // Preview QA must not inflate the production acquisition funnel.
+    if (!productionHost) return;
     const safeParams = {};
+    const allowed = new Set(['service_type', 'trip_type', 'journey_type', 'currency', 'value',
+      'page_path', 'contact_method', 'reason', 'vehicle_count', 'is_retry']);
     Object.entries(params || {}).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') safeParams[key] = value;
+      if (!allowed.has(key) || value === undefined || value === null || value === '') return;
+      if (key === 'page_path') safeParams[key] = location.pathname;
+      else if (['value', 'vehicle_count'].includes(key)) {
+        if (typeof value === 'number' && Number.isFinite(value)) safeParams[key] = value;
+      } else if (key === 'is_retry') safeParams[key] = Boolean(value);
+      else if (/^[a-zA-Z0-9_-]{1,60}$/.test(String(value))) safeParams[key] = value;
     });
     window.gtag('event', name, safeParams);
   };

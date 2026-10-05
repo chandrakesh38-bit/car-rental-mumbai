@@ -18,6 +18,7 @@
   const preferenceKey = 'cwd_clarity_testing_consent_v1';
   let active = false, started = false, settings, banner, preference;
   let pending = [];
+  let dismissChoice = () => banner?.remove();
   const hostAllowed = /^(car-rental-mumbai-[a-z0-9-]+-car-with-driver-operation-team\.vercel\.app|localhost|127\.0\.0\.1)$/.test(location.hostname);
   const publicPath = path => paths.has(path.replace(/\.html$/, '').replace(/\/$/, '') || '/');
   // Masking the DOM does not mask page/referrer URLs. Reject unexpected parameters
@@ -78,7 +79,7 @@
       // Reload to remove SDK observers, queues and pending startup entirely.
       location.reload();
     }
-    banner?.remove();
+    dismissChoice();
   }
   function start() {
     if (started || preference !== 'granted' || !settings || !eligible()) return;
@@ -111,11 +112,42 @@
     banner = document.createElement('section');
     banner.id = 'cwd-clarity-choice';
     banner.setAttribute('aria-label', 'Optional session analytics');
-    banner.style.cssText = 'position:fixed;bottom:12px;left:12px;right:12px;max-width:480px;margin:auto;z-index:100000;background:white;color:#172554;border:1px solid #94a3b8;border-radius:12px;padding:16px;box-shadow:0 4px 20px #0003;font:14px/1.5 system-ui';
-    banner.innerHTML = '<strong>Help improve our website</strong><p>Allow Microsoft Clarity to record masked page interactions and use analytics cookies? Your choice is optional. Advertising storage stays off. <a href="/privacy-policy" style="text-decoration:underline">Privacy Policy</a></p><div style="display:flex;gap:12px;margin-top:12px"><button type="button" data-allow style="padding:10px;border:1px solid;border-radius:6px">Allow analytics</button><button type="button" data-decline style="padding:10px;border:1px solid;border-radius:6px">No thanks</button></div>';
-    banner.querySelector('[data-allow]').onclick = () => { save('granted'); banner.remove(); start(); };
+    banner.style.cssText = 'box-sizing:border-box;bottom:0;left:0;width:100%;z-index:40;background:#fff;color:#172554;border-top:1px solid #94a3b8;padding:10px 16px;padding-bottom:max(10px,env(safe-area-inset-bottom));font:13px/1.4 system-ui';
+    banner.innerHTML = '<div style="max-width:1100px;margin:auto;display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px"><p style="flex:1 1 320px;margin:0">Optional: allow Microsoft Clarity to record masked interactions and use analytics cookies? Advertising storage stays off. <a href="/privacy-policy" style="color:inherit;text-decoration:underline">Privacy Policy</a></p><div style="display:flex;flex:1 1 280px;max-width:360px;gap:8px"><button type="button" data-allow style="flex:1;min-height:44px;padding:8px;border:1px solid #64748b;border-radius:6px;background:#fff;color:#172554;font:inherit;cursor:pointer">Allow analytics</button><button type="button" data-decline style="flex:1;min-height:44px;padding:8px;border:1px solid #64748b;border-radius:6px;background:#fff;color:#172554;font:inherit;cursor:pointer">No thanks</button></div></div>';
+    banner.querySelector('[data-allow]').onclick = () => { save('granted'); dismissChoice(); start(); };
     banner.querySelector('[data-decline]').onclick = revoke;
     document.body.appendChild(banner);
+    // Reserve the fixed bar's space without changing existing body styles. On a
+    // short/zoomed viewport or during text entry, keep it in normal document flow.
+    // It never floats above a keyboard or the site's z-index 50+ booking dialogs.
+    const space = document.createElement('div');
+    space.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(space);
+    const viewport = window.visualViewport;
+    function layoutChoice() {
+      const focused = document.activeElement;
+      const editing = focused && !banner.contains(focused)
+        && (focused.matches('input,textarea,select') || focused.isContentEditable);
+      const compact = editing || (viewport?.height || window.innerHeight) < 500
+        || (viewport?.scale || 1) > 1;
+      banner.style.position = compact ? 'static' : 'fixed';
+      space.style.height = compact ? '0px' : banner.getBoundingClientRect().height + 'px';
+    }
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(layoutChoice) : null;
+    observer?.observe(banner);
+    window.addEventListener?.('resize', layoutChoice);
+    viewport?.addEventListener('resize', layoutChoice);
+    document.addEventListener?.('focusin', layoutChoice);
+    document.addEventListener?.('focusout', layoutChoice);
+    dismissChoice = () => {
+      observer?.disconnect();
+      window.removeEventListener?.('resize', layoutChoice);
+      viewport?.removeEventListener('resize', layoutChoice);
+      document.removeEventListener?.('focusin', layoutChoice);
+      document.removeEventListener?.('focusout', layoutChoice);
+      space.remove(); banner.remove();
+    };
+    layoutChoice();
   }
   window.cwdClarity = { track, revoke, showChoice };
   if (!eligible()) { status('url-excluded'); return; }

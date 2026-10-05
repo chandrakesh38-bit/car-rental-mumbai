@@ -11,7 +11,7 @@ async function run({url='https://car-rental-mumbai-test-car-with-driver-operatio
   const document={referrer,readyState:'complete',documentElement:root,
     head:{appendChild:el=>{assert.equal(attrs['data-clarity-mask'],'true');scripts.push(el);}},
     body:{appendChild:el=>buttons.push(el)},
-    createElement:tag=>({tag,setAttribute(){},style:{},querySelector(){return {};},remove(){}}),
+    createElement:tag=>({tag,setAttribute(){},style:{},querySelector(){return {};},getBoundingClientRect(){return {height:120};},remove(){}}),
     querySelector:selector=>selector==='[data-clarity-unmask]'?unmask:null};
   const location=new URL(url); location.reload=()=>reloads++;
   const window={};

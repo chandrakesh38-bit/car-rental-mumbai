@@ -259,6 +259,7 @@ export default async function handler(request) {
     return json({
       success: true,
       vendor_code: vendorCode,
+      upload_token: requestId,
       status: 'pending_review',
       terms_version: TERMS_VERSION,
       rate_card_versions: RATE_CARD_VERSIONS,

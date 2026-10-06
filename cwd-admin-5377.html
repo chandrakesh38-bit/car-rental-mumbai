@@ -2946,8 +2946,15 @@ async function deleteWithDriverVehicle(id) {
         function renderVendorDetail(d){
             const v=d.vendor||{},p=d.payout||{},vehicles=d.vehicles||[],media=d.vehicle_media||[],terms=d.terms||[];
             document.getElementById('vendor-detail-subtitle').textContent=(v.owner_business_name||'Vendor')+' · '+(v.vendor_code||'');
-            const vehicleCards=vehicles.map((x,i)=>'<div class="border border-slate-200 rounded-2xl p-4"><div class="flex justify-between gap-3"><h5 class="font-black text-slate-900">Vehicle '+(i+1)+'</h5><span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(x.category||'')+'</span></div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">'+inlineField('Vehicle Number','vehicle.'+i+'.vehicle_number',x.vehicle_number,'text','maxlength="20" style="text-transform:uppercase"')+
-              inlineField('Make / Model','vehicle.'+i+'.make_model',x.make_model)+inlineField('Manufacturing Year','vehicle.'+i+'.manufacturing_year',x.manufacturing_year,'number')+inlineField('Fuel','vehicle.'+i+'.fuel',x.fuel)+inlineField('Seating','vehicle.'+i+'.seating',x.seating,'number')+inlineField('Permit Type','vehicle.'+i+'.commercial_permit_type',x.commercial_permit_type)+'</div>'+vendorVehiclePhotosHtml(x.id,media)+'</div>').join('')||'<p class="text-slate-400 text-xs">No vehicles found.</p>';
+            const vehicleCards=vehicles.map((x,i)=>{
+              const active=x.is_active===true;
+              const status=active
+                ? '<span class="text-[9px] font-black bg-emerald-100 text-emerald-700 rounded-full px-2 py-1">Active</span>'
+                : '<span class="text-[9px] font-black bg-amber-100 text-amber-800 rounded-full px-2 py-1">Pending Vehicle Review</span>';
+              const approve=active?'':'<button type="button" onclick="updateVendorVehicleStatusFromDetail(\''+escapeAdminHtml(x.id)+'\',true)" class="bg-emerald-600 text-white rounded-lg px-3 py-2 text-[9px] font-black">Approve Vehicle</button>';
+              return '<div class="border border-slate-200 rounded-2xl p-4"><div class="flex flex-wrap items-center justify-between gap-3"><div class="flex items-center gap-2"><h5 class="font-black text-slate-900">Vehicle '+(i+1)+'</h5>'+status+'</div><div class="flex items-center gap-2"><span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(x.category||'')+'</span>'+approve+'</div></div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">'+inlineField('Vehicle Number','vehicle.'+i+'.vehicle_number',x.vehicle_number,'text','maxlength="20" style="text-transform:uppercase"')+
+              inlineField('Make / Model','vehicle.'+i+'.make_model',x.make_model)+inlineField('Manufacturing Year','vehicle.'+i+'.manufacturing_year',x.manufacturing_year,'number')+inlineField('Fuel','vehicle.'+i+'.fuel',x.fuel)+inlineField('Seating','vehicle.'+i+'.seating',x.seating,'number')+inlineField('Permit Type','vehicle.'+i+'.commercial_permit_type',x.commercial_permit_type)+'</div>'+vendorVehiclePhotosHtml(x.id,media)+'</div>';
+            }).join('')||'<p class="text-slate-400 text-xs">No vehicles found.</p>';
 
             const lastTerms=terms[0];
             document.getElementById('vendor-detail-body').innerHTML=
@@ -2977,6 +2984,21 @@ async function deleteWithDriverVehicle(id) {
             if(!v?.primary_whatsapp)return alert('Vendor WhatsApp number is missing.');
             const msg=cwdVendorApprovalMessage(v);
             window.open('https://wa.me/91'+String(v.primary_whatsapp).replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank');
+        }
+
+        async function updateVendorVehicleStatusFromDetail(vehicleId,isActive){
+            const v=cwdSelectedVendorDetail?.vendor;if(!v||!vehicleId)return;
+            if(isActive&&!confirm('Approve this vehicle for vendor bookings?'))return;
+            try{
+                await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({
+                    action:'set_vendor_vehicle_status',
+                    vendor_id:v.id,
+                    vehicle_id:vehicleId,
+                    is_active:Boolean(isActive)
+                })});
+                await loadVendorControlCenter();
+                await openVendorDetail(v.id);
+            }catch(e){alert(e.message)}
         }
 
         async function updateVendorStatusFromDetail(status){

@@ -135,7 +135,11 @@ function validateVehicle(raw, index) {
     fuel,
     seating,
     commercial_permit_type: text(raw?.commercial_permit_type, 120, 'Commercial / permit type'),
-    rc_number: vehicleNumber
+    rc_number: vehicleNumber,
+    // Legacy DB columns are still NOT NULL in the live project. These placeholders
+    // keep the schema compatible without collecting insurance/PUC data from vendors.
+    insurance_policy_number: 'NOT_COLLECTED',
+    puc_number: 'NOT_COLLECTED'
   };
 }
 

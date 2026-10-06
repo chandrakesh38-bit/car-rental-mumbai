@@ -2871,11 +2871,28 @@ async function deleteWithDriverVehicle(id) {
             }catch(e){alert(e.message)}
         }
 
+        function vendorVehiclePhotosHtml(vehicleId,media){
+            const slots=[['front','Front'],['right','Right Side'],['left','Left Side'],['rear','Rear'],['interior','Interior']];
+            const files=(media||[]).filter(m=>String(m.vehicle_id)===String(vehicleId));
+            const count=files.length;
+            return '<div class="mt-4 pt-4 border-t border-slate-100"><div class="flex items-center justify-between gap-2 mb-2"><h6 class="text-xs font-black text-slate-800">Vehicle Photos</h6><span class="text-[9px] font-black px-2 py-1 rounded-full '+(count?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-700')+'">'+count+'/5 uploaded</span></div>'+
+              '<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">'+slots.map(([slot,label])=>{
+                const file=files.find(m=>m.view_type===slot);
+                if(!file)return '<div class="border border-dashed border-slate-200 rounded-xl p-2 min-h-[88px] flex flex-col items-center justify-center text-center"><span class="text-[10px] font-bold text-slate-500">'+label+'</span><span class="text-[9px] text-slate-400 mt-1">Not uploaded</span></div>';
+                const url=file.signed_url?escapeAdminHtml(file.signed_url):'';
+                const title=escapeAdminHtml(file.original_filename||label);
+                if(file.mime_type==='application/pdf'){
+                  return '<div class="border border-slate-200 rounded-xl p-2 min-h-[88px] flex flex-col items-center justify-center text-center"><span class="text-[10px] font-bold text-slate-700">'+label+'</span>'+(url?'<a href="'+url+'" target="_blank" rel="noopener" class="mt-2 text-[9px] font-black text-indigo-700 underline">Open PDF</a>':'<span class="text-[9px] text-slate-400 mt-1">PDF uploaded</span>')+'</div>';
+                }
+                return '<div class="border border-slate-200 rounded-xl p-2"><div class="text-[10px] font-bold text-slate-700 mb-1">'+label+'</div>'+(url?'<a href="'+url+'" target="_blank" rel="noopener" title="'+title+'"><img src="'+url+'" alt="'+label+' vehicle photo" class="w-full h-20 object-cover rounded-lg bg-slate-100"></a>':'<div class="h-20 rounded-lg bg-slate-100 grid place-items-center text-[9px] text-slate-400">Uploaded</div>')+'</div>';
+              }).join('')+'</div></div>';
+        }
+
         function renderVendorDetail(d){
-            const v=d.vendor||{},p=d.payout||{},vehicles=d.vehicles||[],terms=d.terms||[];
+            const v=d.vendor||{},p=d.payout||{},vehicles=d.vehicles||[],media=d.vehicle_media||[],terms=d.terms||[];
             document.getElementById('vendor-detail-subtitle').textContent=(v.owner_business_name||'Vendor')+' · '+(v.vendor_code||'');
             const vehicleCards=vehicles.map((x,i)=>'<div class="border border-slate-200 rounded-2xl p-4"><div class="flex justify-between gap-3"><h5 class="font-black text-slate-900">Vehicle '+(i+1)+'</h5><span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(x.category||'')+'</span></div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">'+inlineField('Vehicle Number','vehicle.'+i+'.vehicle_number',x.vehicle_number,'text','maxlength="20" style="text-transform:uppercase"')+
-              inlineField('Make / Model','vehicle.'+i+'.make_model',x.make_model)+inlineField('Manufacturing Year','vehicle.'+i+'.manufacturing_year',x.manufacturing_year,'number')+inlineField('Fuel','vehicle.'+i+'.fuel',x.fuel)+inlineField('Seating','vehicle.'+i+'.seating',x.seating,'number')+inlineField('Permit Type','vehicle.'+i+'.commercial_permit_type',x.commercial_permit_type)+'</div></div>').join('')||'<p class="text-slate-400 text-xs">No vehicles found.</p>';
+              inlineField('Make / Model','vehicle.'+i+'.make_model',x.make_model)+inlineField('Manufacturing Year','vehicle.'+i+'.manufacturing_year',x.manufacturing_year,'number')+inlineField('Fuel','vehicle.'+i+'.fuel',x.fuel)+inlineField('Seating','vehicle.'+i+'.seating',x.seating,'number')+inlineField('Permit Type','vehicle.'+i+'.commercial_permit_type',x.commercial_permit_type)+'</div>'+vendorVehiclePhotosHtml(x.id,media)+'</div>').join('')||'<p class="text-slate-400 text-xs">No vehicles found.</p>';
 
             const lastTerms=terms[0];
             document.getElementById('vendor-detail-body').innerHTML=

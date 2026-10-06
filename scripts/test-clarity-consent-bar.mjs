@@ -49,7 +49,7 @@ try {
     await page.waitForFunction(short=>getComputedStyle(document.querySelector('#cwd-clarity-choice')).position===(short?'static':'fixed'),height<500);
     await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
     await page.screenshot({path:fileURLToPath(new URL(`${width}x${height}.png`,output))});
-    const allow=bar.getByRole('button',{name:'Allow analytics',exact:true});
+    const allow=bar.getByRole('button',{name:'Allow & Continue',exact:true});
     const decline=bar.getByRole('button',{name:'No thanks',exact:true});
     const a=await allow.boundingBox(),d=await decline.boundingBox();
     assert.ok(Math.abs(a.width-d.width)<1&&a.height>=44&&d.height>=44);

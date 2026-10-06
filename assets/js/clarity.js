@@ -15,7 +15,7 @@
     trip_type: new Set(['outstation', 'local', 'airport']),
     journey_type: new Set(['one-way', 'round-trip'])
   };
-  const preferenceKey = 'cwd_clarity_testing_consent_v1';
+  const preferenceKey = 'cwd_clarity_consent_v1';
   let active = false, started = false, settings, banner, preference;
   let pending = [];
   let dismissChoice = () => banner?.remove();
@@ -34,7 +34,7 @@
         if (key === 'gad_campaignid' && /^\d{8,16}$/.test(value)) continue;
         if (key === 'utm_source' && ['google', 'google_ads'].includes(value)) continue;
         if (key === 'utm_medium' && ['cpc', 'ppc', 'paidsearch'].includes(value)) continue;
-        if (key === 'utm_campaign' && ['outstation', 'clarity_testing'].includes(value)) continue;
+        if (key === 'utm_campaign' && /^[A-Za-z0-9_-]{1,100}$/.test(value)) continue;
         return false;
       }
       return true;
@@ -81,15 +81,32 @@
     }
     dismissChoice();
   }
+  function applySensitiveMasks() {
+    const selectors = [
+      '.autocomplete-dropdown',
+      '#modal-summary-pickup',
+      '#modal-summary-dest',
+      '#wd-local-location-status',
+      '#wd-out-location-status',
+      '#wd-current-location-status',
+      '#sd-current-location-status',
+      '#sd-review-deliv-location',
+      '#success-confirmation-modal'
+    ];
+    document.querySelectorAll(selectors.join(',')).forEach(element => {
+      element.setAttribute('data-clarity-mask', 'true');
+    });
+  }
   function start() {
     if (started || preference !== 'granted' || !settings || !eligible()) return;
-    // Before the SDK can inspect any existing or future descendants, including portals.
-    document.documentElement.setAttribute('data-clarity-mask', 'true');
-    if (document.querySelector('[data-clarity-unmask]') || window.clarity) return;
+    // Respect the project's selected masking mode while protecting dynamic customer-specific text.
+    // Clarity independently masks form inputs/dropdowns in every masking mode.
+    applySensitiveMasks();
+    if (window.clarity) return;
     started = true;
     window.clarity = function () { (window.clarity.q = window.clarity.q || []).push(arguments); };
     call('consentv2', { analytics_Storage: 'granted', ad_Storage: 'denied' });
-    call('set', 'environment', 'testing');
+    call('set', 'environment', settings.environment);
     const query = new URL(location.href).searchParams;
     const paid = ['gclid', 'gbraid', 'wbraid'].some(key => query.has(key))
       || (['google', 'google_ads'].includes(query.get('utm_source'))
@@ -158,11 +175,11 @@
       const response = await fetch('/api/clarity-config', { cache: 'no-store', credentials: 'same-origin' });
       if (!response.ok) { status('config-unavailable'); return; }
       const config = await response.json();
-      if (!config.enabled || config.environment !== 'testing' || !/^[a-z0-9]{6,20}$/.test(config.projectId)) { status('not-configured'); return; }
+      if (!config.enabled || !['testing', 'production'].includes(config.environment) || !/^[a-z0-9]{6,20}$/.test(config.projectId)) { status('not-configured'); return; }
       settings = config;
       status(preference === 'denied' ? 'declined' : 'awaiting-consent');
       const button = document.createElement('button');
-      button.type = 'button'; button.textContent = 'Session analytics preferences';
+      button.type = 'button'; button.textContent = 'Analytics preferences';
       button.className = 'underline mx-3 my-3'; button.onclick = showChoice;
       (document.querySelector('footer') || document.body).appendChild(button);
       if (preference === 'granted') start();

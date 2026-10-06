@@ -304,7 +304,7 @@
 
   function photoSlotsHtml(){
     return '<div class="vehicle-photos">'+
-      '<div class="vehicle-photo-head"><div><h4>Vehicle Photos</h4><p>Please upload recent, clear photos of the same vehicle. The full vehicle should be visible in exterior photos. Vehicle photos are optional during registration. Camera photos are automatically compressed before upload.</p></div><span class="optional-pill">OPTIONAL</span></div>'+
+      '<div class="vehicle-photo-head"><div><h4>Vehicle Photos</h4></div><span class="optional-pill">OPTIONAL</span></div>'+
       '<div class="photo-grid">'+PHOTO_SLOTS.map(function(item){
         return '<div class="photo-slot" data-photo-slot="'+item[0]+'">'+
           '<div class="photo-slot-title"><strong>'+item[1]+'</strong><span class="photo-state-badge" data-photo-badge></span></div>'+

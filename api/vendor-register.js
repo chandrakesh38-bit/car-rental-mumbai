@@ -107,6 +107,24 @@ async function sha256(value) {
   return Array.from(new Uint8Array(digest)).map(v => v.toString(16).padStart(2, '0')).join('');
 }
 
+async function hmacHex(value) {
+  if (!serviceKey()) fail('Vendor registration is temporarily unavailable.', 503);
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(serviceKey()),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(signature)).map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+async function createUploadToken(vendorCode) {
+  const stamp = Date.now();
+  return String(stamp) + '.' + await hmacHex(String(vendorCode) + '|' + String(stamp));
+}
+
 function clientIp(request) {
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) return forwarded.split(',')[0].trim();
@@ -146,6 +164,17 @@ function validateVehicle(raw, index) {
 export default async function handler(request) {
   if (request.method === 'GET') {
     try {
+      const url = new URL(request.url);
+      const lookupMobile = String(url.searchParams.get('mobile') || '').replace(/\D/g, '').slice(-10);
+      if (url.searchParams.has('mobile')) {
+        if (!/^[6-9][0-9]{9}$/.test(lookupMobile)) return json({ success: true, exists: false });
+        const existing = (await db('cwd_vendors?primary_whatsapp=eq.' + encodeURIComponent(lookupMobile) + '&select=id,vendor_code&limit=1'))?.[0];
+        return json({
+          success: true,
+          exists: Boolean(existing),
+          vendor_code: existing?.vendor_code || null
+        });
+      }
       const rows = await db('with_driver_rates?select=id,full_name,segment&is_active=eq.true&order=display_order.asc,full_name.asc');
       return json({ success: true, vehicles: rows || [] });
     } catch (error) {
@@ -166,8 +195,40 @@ export default async function handler(request) {
       fail('You must accept the current CWD Vendor Terms & Conditions.');
     }
 
+    if (body.action === 'add_vehicle') {
+      const primaryWhatsapp = mobile(body.primary_whatsapp, 'primary WhatsApp mobile');
+      const vendor = (await db('cwd_vendors?primary_whatsapp=eq.' + encodeURIComponent(primaryWhatsapp) + '&select=id,vendor_code&limit=1'))?.[0];
+      if (!vendor) fail('No existing vendor registration was found for this mobile number.', 404);
+
+      if (!Array.isArray(body.vehicles) || body.vehicles.length < 1) fail('Please add at least one vehicle.');
+      if (body.vehicles.length > 20) fail('A maximum of 20 vehicles can be added at one time.');
+      const vehicles = body.vehicles.map(validateVehicle);
+
+      for (const vehicle of vehicles) {
+        const existingVehicle = (await db('cwd_vendor_vehicles?vehicle_number=eq.' + encodeURIComponent(vehicle.vehicle_number) + '&select=id&limit=1'))?.[0];
+        if (existingVehicle) fail('This vehicle number is already registered with CWD.', 409);
+      }
+
+      await db('cwd_vendor_vehicles', {
+        method: 'POST',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify(vehicles.map(v => ({ ...v, vendor_id: vendor.id, is_active: false })))
+      });
+
+      return json({
+        success: true,
+        existing_vendor: true,
+        vendor_code: vendor.vendor_code,
+        upload_token: await createUploadToken(vendor.vendor_code),
+        status: 'pending_vehicle_review',
+        message: 'New vehicle submitted for review.'
+      });
+    }
+
     const ownerBusinessName = text(body.owner_business_name, 160, 'Owner / business name');
     const primaryWhatsapp = mobile(body.primary_whatsapp, 'primary WhatsApp mobile');
+    const existingVendor = (await db('cwd_vendors?primary_whatsapp=eq.' + encodeURIComponent(primaryWhatsapp) + '&select=id&limit=1'))?.[0];
+    if (existingVendor) fail('This mobile number is already registered. Use Add Another Vehicle instead.', 409);
     const alternateMobile = mobile(body.alternate_mobile, 'alternate mobile', false);
     if (alternateMobile && alternateMobile === primaryWhatsapp) fail('Alternate mobile must be different from the primary mobile.');
 
@@ -263,7 +324,7 @@ export default async function handler(request) {
     return json({
       success: true,
       vendor_code: vendorCode,
-      upload_token: requestId,
+      upload_token: await createUploadToken(vendorCode),
       status: 'pending_review',
       terms_version: TERMS_VERSION,
       rate_card_versions: RATE_CARD_VERSIONS,

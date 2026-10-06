@@ -94,7 +94,7 @@ try {
     if(name==='fresh'||name==='after-dom-ready'){
       assert.equal(result.status,'awaiting-consent');assert.equal(result.banner,true);assert.equal(result.preference,null);assert.equal(result.overflow,false);assert.equal(record.configRequests,1);
       for(const b of result.buttons){assert.ok(b.x>=0&&b.right<=393&&b.y>=0&&b.bottom<=851);}
-      await page.getByRole('button',{name:'Allow analytics',exact:true}).click({trial:true});
+      await page.getByRole('button',{name:'Allow & Continue',exact:true}).click({trial:true});
       await page.getByRole('button',{name:'No thanks',exact:true}).click({trial:true});
       if(name==='fresh')await page.screenshot({path:fileURLToPath(new URL(host.includes('git-testing')?'stable-mobile.png':'immutable-mobile.png',output))});
     } else assert.equal(result.banner,false,name);

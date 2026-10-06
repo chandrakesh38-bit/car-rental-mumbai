@@ -2926,6 +2926,111 @@ async function deleteWithDriverVehicle(id) {
             }catch(e){alert(e.message)}
         }
 
+        async function prepareAdminVendorVehiclePhoto(file){
+            if(!file)throw new Error('Please choose a file.');
+            const allowed=['image/jpeg','image/png','application/pdf'];
+            if(!allowed.includes(file.type))throw new Error('Use JPG, PNG or PDF.');
+            if(!file.size)throw new Error('Selected file is empty.');
+            const head=new Uint8Array(await file.slice(0,8).arrayBuffer());
+            const signatureOk=file.type==='image/jpeg'
+              ? head[0]===255&&head[1]===216&&head[2]===255
+              : file.type==='image/png'
+                ? [137,80,78,71,13,10,26,10].every((v,i)=>head[i]===v)
+                : new TextDecoder().decode(head.slice(0,5))==='%PDF-';
+            if(!signatureOk)throw new Error('File content does not match JPG, PNG or PDF.');
+            const max=5*1024*1024;
+            if(file.type==='application/pdf'){
+                if(file.size>max)throw new Error('PDF must be 5 MB or smaller.');
+                return file;
+            }
+            if(file.size>30*1024*1024)throw new Error('Photo is too large to process. Please choose a smaller image.');
+            let image=null;
+            try{
+                image=await createImageBitmap(file);
+                const longest=Math.max(image.width,image.height);
+                if(file.size<=900*1024&&longest<=1800)return file;
+                const scale=Math.min(1,1800/longest);
+                const canvas=document.createElement('canvas');
+                canvas.width=Math.max(1,Math.round(image.width*scale));
+                canvas.height=Math.max(1,Math.round(image.height*scale));
+                const ctx=canvas.getContext('2d');
+                ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);
+                let quality=.84;
+                let blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+                while(blob&&blob.size>1500*1024&&quality>.58){
+                    quality-=.08;
+                    blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+                }
+                if(!blob)throw new Error('Unable to optimize this photo.');
+                const ready=new File([blob],'vendor-vehicle-photo.jpg',{type:'image/jpeg',lastModified:Date.now()});
+                if(ready.size>max)throw new Error('Photo is still above 5 MB after compression.');
+                return ready;
+            }finally{
+                if(image&&typeof image.close==='function')image.close();
+            }
+        }
+
+        function uploadAdminVendorPhotoToSignedUrl(url,file){
+            return new Promise((resolve,reject)=>{
+                const xhr=new XMLHttpRequest();
+                xhr.open('PUT',url);
+                xhr.setRequestHeader('Content-Type',file.type);
+                xhr.setRequestHeader('x-upsert','false');
+                xhr.timeout=120000;
+                xhr.onload=()=>xhr.status>=200&&xhr.status<300?resolve():reject(new Error('Photo upload failed. Please retry.'));
+                xhr.onerror=()=>reject(new Error('Network error while uploading photo.'));
+                xhr.ontimeout=()=>reject(new Error('Photo upload timed out.'));
+                xhr.send(file);
+            });
+        }
+
+        function openVendorVehiclePhotoPicker(vehicleId,slot){
+            if(!cwdSelectedVendorDetail?.vendor||!vehicleId||!slot)return;
+            const input=document.createElement('input');
+            input.type='file';
+            input.accept='.jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf';
+            input.style.display='none';
+            document.body.appendChild(input);
+            input.onchange=async()=>{
+                const file=input.files?.[0];
+                input.remove();
+                if(!file)return;
+                await uploadVendorVehiclePhotoFromAdmin(vehicleId,slot,file);
+            };
+            input.click();
+        }
+
+        async function uploadVendorVehiclePhotoFromAdmin(vehicleId,slot,file){
+            const vendor=cwdSelectedVendorDetail?.vendor;if(!vendor)return;
+            const selector='[data-vendor-photo-upload="'+vehicleId+'-'+slot+'"]';
+            const buttons=[...document.querySelectorAll(selector)];
+            buttons.forEach(b=>{b.disabled=true;b.dataset.oldText=b.textContent;b.textContent='Uploading...';});
+            try{
+                const ready=await prepareAdminVendorVehiclePhoto(file);
+                const prepared=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({
+                    action:'prepare_vendor_vehicle_photo',
+                    vendor_id:vendor.id,
+                    vehicle_id:vehicleId,
+                    slot,
+                    type:ready.type,
+                    size:ready.size,
+                    filename:ready.name
+                })});
+                await uploadAdminVendorPhotoToSignedUrl(prepared.upload_url,ready);
+                await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({
+                    action:'verify_vendor_vehicle_photo',
+                    vendor_id:vendor.id,
+                    vehicle_id:vehicleId,
+                    slot,
+                    object_path:prepared.object_path
+                })});
+                await openVendorDetail(vendor.id);
+            }catch(e){
+                alert('Photo upload failed: '+e.message);
+                buttons.forEach(b=>{b.disabled=false;b.textContent=b.dataset.oldText||'Upload Photo';});
+            }
+        }
+
         function vendorVehiclePhotosHtml(vehicleId,media){
             const slots=[['front','Front'],['right','Right Side'],['left','Left Side'],['rear','Rear'],['interior','Interior']];
             const files=(media||[]).filter(m=>String(m.vehicle_id)===String(vehicleId));
@@ -2933,14 +3038,15 @@ async function deleteWithDriverVehicle(id) {
             return '<div class="mt-4 pt-4 border-t border-slate-100"><div class="flex items-center justify-between gap-2 mb-2"><h6 class="text-xs font-black text-slate-800">Vehicle Photos</h6><span class="text-[9px] font-black px-2 py-1 rounded-full '+(count?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-700')+'">'+count+'/5 uploaded</span></div>'+
               '<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">'+slots.map(([slot,label])=>{
                 const file=files.find(m=>m.view_type===slot);
-                if(!file)return '<div class="border border-dashed border-slate-200 rounded-xl p-2 min-h-[88px] flex flex-col items-center justify-center text-center"><span class="text-[10px] font-bold text-slate-500">'+label+'</span><span class="text-[9px] text-slate-400 mt-1">Not uploaded</span></div>';
+                const button='<button type="button" data-vendor-photo-upload="'+escapeAdminHtml(vehicleId)+'-'+slot+'" onclick="openVendorVehiclePhotoPicker(\''+escapeAdminHtml(vehicleId)+'\',\''+slot+'\')" class="mt-2 w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-100 rounded-lg px-2 py-2 text-[9px] font-black">'+(file?'Replace Photo':'Upload Photo')+'</button>';
+                if(!file)return '<div class="border border-dashed border-slate-200 rounded-xl p-2 min-h-[118px] flex flex-col items-center justify-center text-center"><span class="text-[10px] font-bold text-slate-500">'+label+'</span><span class="text-[9px] text-slate-400 mt-1">Not uploaded</span>'+button+'</div>';
                 const url=file.signed_url?escapeAdminHtml(file.signed_url):'';
                 const title=escapeAdminHtml(file.original_filename||label);
                 if(file.mime_type==='application/pdf'){
-                  return '<div class="border border-slate-200 rounded-xl p-2 min-h-[88px] flex flex-col items-center justify-center text-center"><span class="text-[10px] font-bold text-slate-700">'+label+'</span>'+(url?'<a href="'+url+'" target="_blank" rel="noopener" class="mt-2 text-[9px] font-black text-indigo-700 underline">Open PDF</a>':'<span class="text-[9px] text-slate-400 mt-1">PDF uploaded</span>')+'</div>';
+                  return '<div class="border border-slate-200 rounded-xl p-2 min-h-[118px] flex flex-col items-center justify-center text-center"><span class="text-[10px] font-bold text-slate-700">'+label+'</span>'+(url?'<a href="'+url+'" target="_blank" rel="noopener" class="mt-2 text-[9px] font-black text-indigo-700 underline">Open PDF</a>':'<span class="text-[9px] text-slate-400 mt-1">PDF uploaded</span>')+button+'</div>';
                 }
-                return '<div class="border border-slate-200 rounded-xl p-2"><div class="text-[10px] font-bold text-slate-700 mb-1">'+label+'</div>'+(url?'<a href="'+url+'" target="_blank" rel="noopener" title="'+title+'"><img src="'+url+'" alt="'+label+' vehicle photo" class="w-full h-20 object-cover rounded-lg bg-slate-100"></a>':'<div class="h-20 rounded-lg bg-slate-100 grid place-items-center text-[9px] text-slate-400">Uploaded</div>')+'</div>';
-              }).join('')+'</div></div>';
+                return '<div class="border border-slate-200 rounded-xl p-2"><div class="text-[10px] font-bold text-slate-700 mb-1">'+label+'</div>'+(url?'<a href="'+url+'" target="_blank" rel="noopener" title="'+title+'"><img src="'+url+'" alt="'+label+' vehicle photo" class="w-full h-20 object-cover rounded-lg bg-slate-100"></a>':'<div class="h-20 rounded-lg bg-slate-100 grid place-items-center text-[9px] text-slate-400">Uploaded</div>')+button+'</div>';
+              }).join('')+'</div><p class="text-[9px] text-slate-400 mt-2">Admin upload supports JPG, PNG or PDF. Images are compressed automatically when needed.</p></div>';
         }
 
         function renderVendorDetail(d){

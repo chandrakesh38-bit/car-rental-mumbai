@@ -118,6 +118,55 @@ async function vendorRegistrationMedia(vendorId,vehicles){
  }
  return out;
 }
+
+const VENDOR_REG_PHOTO_BUCKET='cwd-vendor-registration-photos';
+const VENDOR_REG_PHOTO_SLOTS=new Set(['front','right','left','rear','interior']);
+const VENDOR_REG_PHOTO_TYPES=new Set(['image/jpeg','image/png','application/pdf']);
+const VENDOR_REG_PHOTO_MAX=5*1024*1024;
+
+async function storageRequest(path,opt={}){
+ if(!base()||!key())fail('Vehicle photo storage is not configured.',503);
+ return fetch(base()+path,{
+  ...opt,
+  headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':'application/json',...(opt.headers||{})},
+  signal:AbortSignal.timeout(20000)
+ });
+}
+async function ensureVendorRegistrationPhotoBucket(){
+ const check=await storageRequest('/storage/v1/bucket/'+VENDOR_REG_PHOTO_BUCKET,{method:'GET'});
+ if(check.ok)return;
+ const create=await storageRequest('/storage/v1/bucket',{
+  method:'POST',
+  body:JSON.stringify({
+   id:VENDOR_REG_PHOTO_BUCKET,
+   name:VENDOR_REG_PHOTO_BUCKET,
+   public:false,
+   file_size_limit:VENDOR_REG_PHOTO_MAX,
+   allowed_mime_types:[...VENDOR_REG_PHOTO_TYPES]
+  })
+ });
+ if(create.ok||create.status===409)return;
+ const retry=await storageRequest('/storage/v1/bucket/'+VENDOR_REG_PHOTO_BUCKET,{method:'GET'});
+ if(retry.ok)return;
+ fail('Unable to prepare vehicle photo storage.',503);
+}
+function validateVendorAdminPhotoMeta(slot,type,size){
+ if(!VENDOR_REG_PHOTO_SLOTS.has(slot))fail('Invalid vehicle photo position.');
+ if(!VENDOR_REG_PHOTO_TYPES.has(type))fail('Use JPG, PNG or PDF.');
+ if(!Number.isInteger(size)||size<=0)fail('Please choose a non-empty file.');
+ if(size>VENDOR_REG_PHOTO_MAX)fail('Photo must be 5 MB or smaller.');
+}
+function validVendorAdminPhotoSignature(bytes,type){
+ if(type==='image/jpeg')return bytes[0]===255&&bytes[1]===216&&bytes[2]===255;
+ if(type==='image/png')return [137,80,78,71,13,10,26,10].every((v,i)=>bytes[i]===v);
+ return type==='application/pdf'&&new TextDecoder().decode(bytes.slice(0,5))==='%PDF-';
+}
+async function removeVendorRegistrationPhoto(path){
+ await storageRequest('/storage/v1/object/'+VENDOR_REG_PHOTO_BUCKET,{
+  method:'DELETE',
+  body:JSON.stringify({prefixes:[path]})
+ }).catch(()=>{});
+}
 function parseCwdBookingDate(value){
  const raw=String(value||'').trim().replace(/(\d{1,2})(st|nd|rd|th)/i,'$1');
  const m=raw.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4}),\s*(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
@@ -294,6 +343,48 @@ async function handler(request){
    return json({success:true,booking:b,vendors:vendors||[],vendor_vehicle_options,offers:offers||[],allocation:alloc?.[0]||null,trip:tripRow,customer_ledger:customer?.[0]||null,vendor_ledger:vendorSet?.[0]||null,invoice:invoice?.[0]||null,commercial_override:commercialOverride?.[0]||null});
   }
   const body=await request.json(),action=String(body.action||''),id=String(body.booking_id||'');
+
+  if(action==='prepare_vendor_vehicle_photo'){
+    const vendorId=String(body.vendor_id||'').trim(),vehicleId=String(body.vehicle_id||'').trim();
+    const slot=String(body.slot||'').trim().toLowerCase(),type=String(body.type||'').trim(),size=Number(body.size);
+    if(!vendorId||!vehicleId)fail('Vendor and vehicle are required.');
+    validateVendorAdminPhotoMeta(slot,type,size);
+    const vehicle=(await db('cwd_vendor_vehicles?id=eq.'+encodeURIComponent(vehicleId)+'&vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id&limit=1'))?.[0];
+    if(!vehicle)fail('Vendor vehicle not found.',404);
+    await ensureVendorRegistrationPhotoBucket();
+    const objectPath=vendorId+'/'+vehicleId+'/'+slot;
+    await removeVendorRegistrationPhoto(objectPath);
+    const signed=await storageRequest('/storage/v1/object/upload/sign/'+VENDOR_REG_PHOTO_BUCKET+'/'+objectPath,{method:'POST',body:'{}'});
+    const data=await signed.json().catch(()=>({}));
+    if(!signed.ok||!data.url)fail('Unable to start vehicle photo upload.',503);
+    const uploadUrl=new URL(base()+'/storage/v1'+data.url);
+    if(uploadUrl.origin!==new URL(base()).origin||!uploadUrl.pathname.startsWith('/storage/v1/object/upload/sign/'+VENDOR_REG_PHOTO_BUCKET+'/'))fail('Unable to start vehicle photo upload.',503);
+    return json({success:true,upload_url:uploadUrl.href,object_path:objectPath});
+  }
+
+  if(action==='verify_vendor_vehicle_photo'){
+    const vendorId=String(body.vendor_id||'').trim(),vehicleId=String(body.vehicle_id||'').trim();
+    const slot=String(body.slot||'').trim().toLowerCase(),objectPath=String(body.object_path||'').trim();
+    if(!vendorId||!vehicleId)fail('Vendor and vehicle are required.');
+    if(!VENDOR_REG_PHOTO_SLOTS.has(slot))fail('Invalid vehicle photo position.');
+    const expectedPath=vendorId+'/'+vehicleId+'/'+slot;
+    if(objectPath!==expectedPath)fail('Invalid vehicle photo reference.',403);
+    const vehicle=(await db('cwd_vendor_vehicles?id=eq.'+encodeURIComponent(vehicleId)+'&vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id&limit=1'))?.[0];
+    if(!vehicle)fail('Vendor vehicle not found.',404);
+    const response=await storageRequest('/storage/v1/object/authenticated/'+VENDOR_REG_PHOTO_BUCKET+'/'+objectPath,{method:'GET'});
+    if(!response.ok)fail('Vehicle photo was not received. Please retry.',409);
+    const actualType=String(response.headers.get('content-type')||'').split(';')[0];
+    const bytes=new Uint8Array(await response.arrayBuffer());
+    try{
+      validateVendorAdminPhotoMeta(slot,actualType,bytes.length);
+      if(!validVendorAdminPhotoSignature(bytes,actualType))fail('File content does not match JPG, PNG or PDF.');
+    }catch(error){
+      await removeVendorRegistrationPhoto(objectPath);
+      throw error;
+    }
+    return json({success:true,vehicle_id:vehicleId,slot,mime_type:actualType,size_bytes:bytes.length});
+  }
+
   if(action==='update_customer_fare'){
     if(!id)fail('Booking ID required.');
     const current=await booking(id);

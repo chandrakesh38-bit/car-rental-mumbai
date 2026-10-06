@@ -82,12 +82,28 @@
     .vendor-code-box strong{display:block;font-size:22px;color:#0b1739;margin-top:4px;letter-spacing:.02em}
     .success-actions{display:flex;gap:10px;justify-content:center;align-items:stretch;flex-wrap:wrap;margin:16px auto 0;max-width:420px}.success-actions .btn{flex:1 1 100%;margin-left:0;text-align:center;text-decoration:none}
     .step-note{margin-top:14px;font-size:10px;color:#7a8699;text-align:center}
+    .vehicle-photos{grid-column:1/-1;margin-top:4px;border-top:1px solid #e3e9f3;padding-top:15px}
+    .vehicle-photo-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+    .vehicle-photo-head h4{margin:0;color:var(--navy);font-size:13px}.vehicle-photo-head p{margin:3px 0 0;color:#64748b;font-size:10px;line-height:1.45}
+    .optional-pill{white-space:nowrap;background:#eef4ff;color:#31558f;border:1px solid #d9e5f7;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:900}
+    .photo-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+    .photo-slot{background:#fff;border:1px solid #dce4ef;border-radius:14px;padding:10px;min-width:0}
+    .photo-slot-title{display:flex;justify-content:space-between;gap:6px;align-items:center;margin-bottom:8px}.photo-slot-title strong{font-size:11px;color:#1e2c48}.photo-slot-title span{font-size:8px;color:#64748b}
+    .photo-preview{height:82px;border-radius:10px;background:#f6f8fc;border:1px dashed #cbd5e1;display:grid;place-items:center;overflow:hidden;color:#94a3b8;font-size:9px;text-align:center;padding:6px}
+    .photo-preview img{width:100%;height:100%;object-fit:cover;border-radius:8px}.photo-preview .pdf-ready{font-weight:900;color:#9a3412;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:8px}
+    .photo-controls{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+    .photo-btn{border:1px solid #d7dfeb;background:#fff;color:#243756;border-radius:9px;padding:8px 5px;font-size:9px;font-weight:850;cursor:pointer}
+    .photo-btn.remove-photo{grid-column:1/-1;background:#fff1f2;color:#be123c;border-color:#fecdd3}
+    .photo-info{font-size:8px;color:#7b879b;line-height:1.35;margin-top:7px;word-break:break-word}.photo-info.ready{color:#166534;font-weight:800}.photo-info.error{color:#b91c1c;font-weight:800}
+    .photo-upload-summary{margin:10px auto 0;max-width:420px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;padding:10px 12px;font-size:11px;color:#475569;line-height:1.45}
+    .photo-upload-summary.warn{background:#fff7ed;border-color:#fed7aa;color:#9a3412}.photo-upload-summary.ok{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
     @media(min-width:780px){
       .wrap{padding-top:24px}
       .hero{padding:31px 30px}
       .hero h1{font-size:34px}
       .card{padding:26px}
       .vehicle .grid{grid-template-columns:repeat(3,1fr)}
+      .photo-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
     }
     @media(max-width:620px){
       .wrap{padding:11px 11px 34px}
@@ -115,6 +131,8 @@
       .vendor-code-box{width:100%;max-width:340px;margin:18px auto 14px;padding:16px 12px}
       .vendor-code-box strong{font-size:21px;overflow-wrap:anywhere}
       .success-actions{width:100%;max-width:340px}
+      .photo-grid{grid-template-columns:1fr 1fr}.photo-slot:last-child{grid-column:1/-1}
+      .vehicle-photo-head{align-items:center}
     }
   </style>
 </head>
@@ -148,7 +166,7 @@
     <button type="button" class="step" data-step="3">Terms</button>
   </div>
 
-  <form id="vendor-form" novalidate>
+  <form id="vendor-form" novalidate autocomplete="off">
     <section class="panel active" data-panel="0">
       <div class="card">
         <div class="section-head"><div class="section-icon">👤</div><div><h2>Business / Owner Details</h2><div class="subtitle">Tell us about your business and primary contact details.</div></div></div>
@@ -189,7 +207,7 @@
 
     <section class="panel" data-panel="2">
       <div class="card">
-        <div class="section-head"><div class="section-icon">🚘</div><div><h2>Vehicle Details</h2><div class="subtitle">Add one or more vehicles. Driver details are not required during registration.</div></div></div>
+        <div class="section-head"><div class="section-icon">🚘</div><div><h2>Vehicle Details</h2><div class="subtitle">Add one or more vehicles. Vehicle photos are optional, but help us review the vehicle condition faster.</div></div></div>
         <div id="vehicles"></div>
         <button type="button" class="add" id="add-vehicle">+ Add another vehicle</button>
         <div class="actions"><button type="button" class="btn btn-secondary" data-back>← Back</button><button type="button" class="btn btn-primary" data-next>Continue to Terms →</button></div>
@@ -226,7 +244,9 @@
       <small>Your Vendor Code</small>
       <strong id="success-vendor-code">—</strong>
     </div>
+    <div id="photo-upload-summary" class="photo-upload-summary" style="display:none"></div>
     <div class="success-actions">
+      <button type="button" class="btn btn-secondary" id="retry-photo-uploads" style="display:none">Retry Failed Photo Uploads</button>
       <button type="button" class="btn btn-primary" id="copy-vendor-code">Copy Vendor Code</button>
       <a class="btn btn-secondary" href="https://wa.me/919702988465?text=Hi%20CWD%2C%20I%20have%20completed%20my%20vendor%20registration." target="_blank" rel="noopener">Contact CWD on WhatsApp</a>
     </div>
@@ -247,6 +267,16 @@
   let completedStep=-1;
   let vehicleCount=0;
   let vehicleMaster=[];
+  const PHOTO_SLOTS=[
+    ['front','Front'],
+    ['right','Right Side'],
+    ['left','Left Side'],
+    ['rear','Rear'],
+    ['interior','Interior']
+  ];
+  const photoState=new WeakMap();
+  let photoUploadBusy=false;
+  let uploadSession=null;
 
   function modelOptionsHtml(){
     const rows=vehicleMaster.map(v=>'<option value="'+String(v.full_name||'').replace(/"/g,'&quot;')+'">'+String(v.full_name||'')+'</option>').join('');
@@ -265,6 +295,138 @@
     return '<div><label>'+label+'</label><input data-field="'+name+'" type="'+(type||'text')+'" '+(attrs||'')+'></div>';
   }
 
+  function sizeText(size){
+    return size>=1024*1024?(size/1024/1024).toFixed(2)+' MB':Math.max(1,Math.ceil(size/1024))+' KB';
+  }
+
+  function photoSlotsHtml(){
+    return '<div class="vehicle-photos">'+
+      '<div class="vehicle-photo-head"><div><h4>Vehicle Photos</h4><p>Front, right, left, rear and interior. Optional during registration. Camera photos are automatically compressed before upload.</p></div><span class="optional-pill">OPTIONAL</span></div>'+
+      '<div class="photo-grid">'+PHOTO_SLOTS.map(function(item){
+        return '<div class="photo-slot" data-photo-slot="'+item[0]+'">'+
+          '<div class="photo-slot-title"><strong>'+item[1]+'</strong><span>Optional</span></div>'+
+          '<div class="photo-preview"><span>No file selected</span></div>'+
+          '<div class="photo-controls">'+
+            '<button type="button" class="photo-btn" data-camera-btn>📷 Camera</button>'+
+            '<button type="button" class="photo-btn" data-file-btn>📁 Gallery / File</button>'+
+            '<button type="button" class="photo-btn remove-photo" data-remove-photo style="display:none">Remove</button>'+
+          '</div>'+
+          '<input type="file" data-camera-input accept="image/jpeg,image/png" capture="environment" hidden>'+
+          '<input type="file" data-file-input accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" hidden>'+
+          '<div class="photo-info">JPG, PNG or PDF • max 5 MB after optimization</div>'+
+        '</div>';
+      }).join('')+'</div></div>';
+  }
+
+  async function prepareVehiclePhoto(file){
+    if(!file)throw new Error('Please choose a file.');
+    const allowed=['image/jpeg','image/png','application/pdf'];
+    if(!allowed.includes(file.type))throw new Error('Use JPG, PNG or PDF.');
+    if(!file.size)throw new Error('Selected file is empty.');
+    const head=new Uint8Array(await file.slice(0,8).arrayBuffer());
+    const valid=file.type==='image/jpeg'
+      ? head[0]===255&&head[1]===216&&head[2]===255
+      : file.type==='image/png'
+        ? [137,80,78,71,13,10,26,10].every((b,i)=>head[i]===b)
+        : new TextDecoder().decode(head.slice(0,5))==='%PDF-';
+    if(!valid)throw new Error('File content does not match JPG, PNG or PDF.');
+    const max=5*1024*1024;
+    if(file.type==='application/pdf'){
+      if(file.size>max)throw new Error('PDF must be 5 MB or smaller.');
+      return file;
+    }
+    if(file.size>30*1024*1024)throw new Error('Camera photo is too large to process. Please choose a smaller photo.');
+
+    let source=null;
+    try{
+      source=await createImageBitmap(file);
+      const longest=Math.max(source.width,source.height);
+      if(file.size<=900*1024&&longest<=1800)return file;
+      const scale=Math.min(1,1800/longest);
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(source.width*scale));
+      canvas.height=Math.max(1,Math.round(source.height*scale));
+      const ctx=canvas.getContext('2d');
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(source,0,0,canvas.width,canvas.height);
+      let quality=.84;
+      let blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+      while(blob&&blob.size>1500*1024&&quality>.58){
+        quality-=.08;
+        blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+      }
+      if(!blob)throw new Error('Unable to optimize this photo.');
+      const name=String(file.name||'vehicle-photo').replace(/\.[^.]+$/,'')+'.jpg';
+      const optimized=new File([blob],name,{type:'image/jpeg',lastModified:file.lastModified||Date.now()});
+      if(optimized.size>max)throw new Error('Photo is still above 5 MB after compression. Please choose another photo.');
+      return optimized;
+    }catch(error){
+      if(error?.message&&/5 MB|too large|optimize/.test(error.message))throw error;
+      if(file.size>max)throw new Error('Photo must be 5 MB or smaller.');
+      return file;
+    }finally{
+      if(source&&typeof source.close==='function')source.close();
+    }
+  }
+
+  function renderPhotoState(slotEl,state){
+    const preview=slotEl.querySelector('.photo-preview');
+    const info=slotEl.querySelector('.photo-info');
+    const remove=slotEl.querySelector('[data-remove-photo]');
+    if(state.previewUrl){URL.revokeObjectURL(state.previewUrl);state.previewUrl=null;}
+    preview.replaceChildren();
+    if(state.file?.type?.startsWith('image/')){
+      state.previewUrl=URL.createObjectURL(state.file);
+      const img=document.createElement('img');img.src=state.previewUrl;img.alt=state.label+' vehicle photo preview';preview.appendChild(img);
+    }else if(state.file?.type==='application/pdf'){
+      const badge=document.createElement('span');badge.className='pdf-ready';badge.textContent='PDF Ready';preview.appendChild(badge);
+    }else{
+      const empty=document.createElement('span');empty.textContent='No file selected';preview.appendChild(empty);
+    }
+    info.className='photo-info'+(state.error?' error':state.file?' ready':'');
+    info.textContent=state.error
+      ? state.error
+      : state.file
+        ? state.file.name+' • '+sizeText(state.file.size)+(state.originalSize&&state.originalSize>state.file.size?' • compressed':'')
+        : 'JPG, PNG or PDF • max 5 MB after optimization';
+    remove.style.display=state.file?'block':'none';
+  }
+
+  function clearVehiclePhotos(box){
+    const map=photoState.get(box);
+    if(!map)return;
+    map.forEach(function(state){if(state.previewUrl)URL.revokeObjectURL(state.previewUrl);});
+    photoState.delete(box);
+  }
+
+  function setupPhotoInputs(box){
+    const map=new Map();photoState.set(box,map);
+    box.querySelectorAll('[data-photo-slot]').forEach(function(slotEl){
+      const slot=slotEl.dataset.photoSlot;
+      const label=PHOTO_SLOTS.find(x=>x[0]===slot)?.[1]||slot;
+      const state={slot,label,file:null,originalSize:0,previewUrl:null,error:null,uploaded:false,objectPath:null};
+      map.set(slot,state);
+      const camera=slotEl.querySelector('[data-camera-input]');
+      const picker=slotEl.querySelector('[data-file-input]');
+      slotEl.querySelector('[data-camera-btn]').onclick=()=>camera.click();
+      slotEl.querySelector('[data-file-btn]').onclick=()=>picker.click();
+      slotEl.querySelector('[data-remove-photo]').onclick=function(){
+        if(photoUploadBusy)return;
+        state.file=null;state.error=null;state.uploaded=false;state.objectPath=null;camera.value='';picker.value='';renderPhotoState(slotEl,state);
+      };
+      async function choose(input){
+        const selected=input.files?.[0];if(!selected)return;
+        state.error=null;state.file=null;state.uploaded=false;state.objectPath=null;state.originalSize=selected.size;
+        const info=slotEl.querySelector('.photo-info');info.className='photo-info';info.textContent='Optimizing photo…';
+        try{state.file=await prepareVehiclePhoto(selected);}
+        catch(error){state.error=error.message||'Unable to prepare this file.';}
+        renderPhotoState(slotEl,state);
+      }
+      camera.onchange=()=>choose(camera);
+      picker.onchange=()=>choose(picker);
+      renderPhotoState(slotEl,state);
+    });
+  }
+
   function addVehicle(values){
     vehicleCount++;
     const box=document.createElement('div');
@@ -278,13 +440,16 @@
       '<div><label>Fuel *</label><select data-field="fuel" required><option value="">Select</option><option>Petrol</option><option>Diesel</option><option>CNG</option><option>Petrol+CNG</option><option>Electric</option><option>Hybrid</option><option>Other</option></select></div>'+
       '<div><label>Seating capacity *</label><select data-field="seating" required><option value="">Select</option><option value="5">4+1</option><option value="7">6+1</option><option value="8">7+1</option><option value="13">12+1</option><option value="18">17+1</option></select></div>'+
       '<div><label>Permit type *</label><select data-field="commercial_permit_type" required><option value="">Select permit type</option><option value="Tourist Permit / T-Permit">Tourist Permit / T-Permit</option><option value="Contract Carriage">Contract Carriage</option><option value="All India Tourist Permit">All India Tourist Permit</option><option value="Local Commercial Permit">Local Commercial Permit</option><option value="Other">Other</option></select></div>'+
+      photoSlotsHtml()+
       '</div>';
     box.querySelector('.remove').onclick=function(){
       if(vehicles.children.length===1){alert('At least one vehicle is required.');return;}
+      clearVehiclePhotos(box);
       box.remove();
       renumberVehicles();
     };
     vehicles.appendChild(box);
+    setupPhotoInputs(box);
     const vehicleNumberInput=box.querySelector('[data-field="vehicle_number"]');
     if(vehicleNumberInput){
       vehicleNumberInput.addEventListener('input',function(){
@@ -372,7 +537,14 @@
     }
   }));
 
+  window.addEventListener('pageshow',function(event){
+    if(event.persisted)location.reload();
+  });
+
   (async function initVendorForm(){
+    form.reset();
+    vehicles.replaceChildren();
+    vehicleCount=0;currentStep=0;completedStep=-1;
     await loadVehicleMaster();
     addVehicle();
     payoutVisibility();
@@ -387,6 +559,114 @@
     }else{
       prompt('Copy Vendor Code:',code);
     }
+  });
+
+  async function photoApi(action,data){
+    const res=await fetch('/api/vendor-registration-photos',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action,...data})
+    });
+    const out=await res.json().catch(()=>({}));
+    if(!res.ok||!out.success)throw new Error(out.message||'Unable to upload vehicle photo.');
+    return out;
+  }
+
+  function uploadSignedPhoto(url,file){
+    return new Promise(function(resolve,reject){
+      const xhr=new XMLHttpRequest();
+      xhr.open('PUT',url);
+      xhr.setRequestHeader('Content-Type',file.type);
+      xhr.setRequestHeader('x-upsert','false');
+      xhr.timeout=120000;
+      xhr.onload=()=>xhr.status>=200&&xhr.status<300?resolve():reject(new Error('Photo upload failed. Please retry.'));
+      xhr.onerror=()=>reject(new Error('Network error while uploading photo.'));
+      xhr.ontimeout=()=>reject(new Error('Photo upload timed out.'));
+      xhr.send(file);
+    });
+  }
+
+  function selectedPhotos(){
+    const out=[];
+    vehicles.querySelectorAll('.vehicle').forEach(function(box){
+      const vehicleNumber=box.querySelector('[data-field="vehicle_number"]')?.value.trim().toUpperCase().replace(/\s+/g,'')||'';
+      const map=photoState.get(box);
+      if(!map)return;
+      map.forEach(function(state){
+        if(state.file&&!state.uploaded)out.push({vehicleNumber,state});
+      });
+    });
+    return out;
+  }
+
+  async function uploadPendingPhotos(){
+    if(!uploadSession||photoUploadBusy)return;
+    const pending=selectedPhotos();
+    const summary=document.getElementById('photo-upload-summary');
+    const retry=document.getElementById('retry-photo-uploads');
+    retry.style.display='none';
+    summary.style.display='block';
+    if(!pending.length){
+      const totalUploaded=[...vehicles.querySelectorAll('.vehicle')].reduce(function(total,box){
+        const map=photoState.get(box);if(!map)return total;
+        map.forEach(s=>{if(s.uploaded)total++;});return total;
+      },0);
+      summary.className='photo-upload-summary '+(totalUploaded?'ok':'');
+      summary.textContent=totalUploaded
+        ? totalUploaded+' vehicle photo'+(totalUploaded===1?'':'s')+' uploaded successfully.'
+        : 'No vehicle photos were uploaded. Photos are optional; CWD may contact you to request them before approval.';
+      return;
+    }
+    photoUploadBusy=true;
+    summary.className='photo-upload-summary';
+    summary.textContent='Uploading '+pending.length+' selected vehicle photo'+(pending.length===1?'':'s')+'… Please keep this page open.';
+    let success=0,failed=0;
+    for(const item of pending){
+      const state=item.state;
+      try{
+        const meta={
+          vendor_code:uploadSession.vendorCode,
+          upload_token:uploadSession.uploadToken,
+          vehicle_number:item.vehicleNumber,
+          slot:state.slot,
+          type:state.file.type,
+          size:state.file.size,
+          filename:state.file.name
+        };
+        const prepared=await photoApi('prepare',meta);
+        state.objectPath=prepared.object_path;
+        try{await uploadSignedPhoto(prepared.upload_url,state.file);}
+        catch(uploadError){
+          try{
+            await photoApi('verify',{...meta,object_path:state.objectPath});
+            state.uploaded=true;state.error=null;success++;continue;
+          }catch(_){throw uploadError;}
+        }
+        await photoApi('verify',{...meta,object_path:state.objectPath});
+        state.uploaded=true;state.error=null;success++;
+      }catch(error){
+        state.error=error.message||'Upload failed.';
+        failed++;
+      }
+    }
+    photoUploadBusy=false;
+    const uploadedTotal=[...vehicles.querySelectorAll('.vehicle')].reduce(function(total,box){
+      const map=photoState.get(box);if(!map)return total;
+      map.forEach(s=>{if(s.uploaded)total++;});return total;
+    },0);
+    if(failed){
+      summary.className='photo-upload-summary warn';
+      summary.textContent=uploadedTotal+' photo'+(uploadedTotal===1?'':'s')+' uploaded. '+failed+' failed. Your vendor registration is saved; you can retry the failed photo upload now.';
+      retry.style.display='block';
+    }else{
+      summary.className='photo-upload-summary ok';
+      summary.textContent=uploadedTotal+' vehicle photo'+(uploadedTotal===1?'':'s')+' uploaded successfully.';
+    }
+  }
+
+  document.getElementById('retry-photo-uploads').addEventListener('click',uploadPendingPhotos);
+  window.addEventListener('beforeunload',function(event){
+    if(photoUploadBusy){event.preventDefault();event.returnValue='';}
   });
 
   form.addEventListener('submit',async function(e){
@@ -439,6 +719,7 @@
       const data=await res.json().catch(function(){return {};});
       if(!res.ok||!data.success)throw new Error(data.message||'Unable to submit registration.');
       completedStep=3;
+      uploadSession={vendorCode:data.vendor_code,uploadToken:data.upload_token};
       document.getElementById('success-vendor-code').textContent=data.vendor_code;
       form.style.display='none';
       document.getElementById('wizard-tabs').style.display='none';
@@ -449,6 +730,7 @@
       const successCard=document.getElementById('registration-success');
       successCard.style.display='block';
       successCard.scrollIntoView({behavior:'smooth',block:'start'});
+      await uploadPendingPhotos();
     }catch(err){
       status.className='status err';status.style.display='block';status.textContent=err.message||'Unable to submit registration.';
     }finally{

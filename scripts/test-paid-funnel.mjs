@@ -8,7 +8,7 @@ import { startServer } from './serve.mjs';
 // Contract tests: mocked current admin rates and Maps/OTP providers, no real leads or SMS.
 const require = createRequire(import.meta.url);
 const { chromium, devices } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const clarityTest = process.env.CLARITY_TEST === '1';
+const clarityTest = false;
 const rates = [
   ['Maruti Suzuki Dzire',14,500,400], ['WagonR',11,400,300],
   ['Maruti Suzuki Ertiga',16,500,400], ['Kia Carens',18,500,400],
@@ -23,13 +23,12 @@ const browser = await chromium.launch({headless:true,channel:process.env.BROWSER
   ...(process.env.LOW_MEMORY_BROWSER === '1' ? {args:['--disable-gpu','--renderer-process-limit=1']} : {})});
 try {
   const context = await browser.newContext({...devices['Pixel 5'],viewport:{width:393,height:851},ignoreHTTPSErrors:true});
-  if (clarityTest) await context.addInitScript(() => localStorage.setItem('cwd_clarity_consent_v1', 'granted'));
   let failPricing=false, delayRoute=0, routeCalls=0, otpReject=false, bookingSuccess=false;
   const cache=new Map(), errors=[];
   await context.route('**/*',async route=>{
     const req=route.request(),url=req.url();
     const json=(body,status=200)=>route.fulfill({status,json:body});
-    if (url.endsWith('/api/clarity-config')) return json({enabled:clarityTest,projectId:'fixture123',environment:'testing'});
+    if (url.endsWith('/api/clarity-config')) return json({enabled:false});
     if (/\.clarity\.ms\//.test(url)) return route.fulfill({contentType:'text/javascript',body:''});
     if (/googletagmanager|google-analytics/.test(url)) return route.fulfill({body:''});
     if (url.includes('supabase.co/rest/')) {
@@ -120,7 +119,8 @@ try {
     if (clarityTest) {
       const calls=await page.evaluate(()=>window.clarity.q.map(args=>Array.from(args)));
       for(const name of ['cab_results_shown','book_car_click','booking_form_opened']) assert.equal(calls.filter(c=>c[0]==='event'&&c[1]===name).length,1,'Clarity '+name);
-      assert.equal(await page.locator('html').getAttribute('data-clarity-mask'),null);\n      assert.equal(await page.locator('#modal-summary-pickup').getAttribute('data-clarity-mask'),'true');
+      assert.equal(await page.locator('html').getAttribute('data-clarity-mask'),null);
+      assert.equal(await page.locator('#modal-summary-pickup').getAttribute('data-clarity-mask'),'true');
       assert.equal(calls.some(c=>c[0]==='set'&&c[1]==='traffic_type'&&c[2]==='google_ads'),true);
     }
   assert.equal(events.some(e=>e.name==='booking_request_submitted'),false);

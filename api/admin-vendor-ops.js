@@ -387,6 +387,20 @@ async function handler(request){
     else await db('cwd_vendor_rate_cards',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(payload)});
     return json({success:true,vehicle_name:global.full_name});
   }
+  if(action==='set_vendor_vehicle_status'){
+    const vendorId=String(body.vendor_id||'').trim(),vehicleId=String(body.vehicle_id||'').trim();
+    if(!vendorId||!vehicleId)fail('Vendor and vehicle are required.');
+    const vehicle=(await db('cwd_vendor_vehicles?id=eq.'+encodeURIComponent(vehicleId)+'&vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id,vehicle_number,is_active&limit=1'))?.[0];
+    if(!vehicle)fail('Vendor vehicle not found.',404);
+    const active=body.is_active===true;
+    await db('cwd_vendor_vehicles?id=eq.'+encodeURIComponent(vehicleId),{
+      method:'PATCH',
+      headers:{Prefer:'return=minimal'},
+      body:JSON.stringify({is_active:active})
+    });
+    return json({success:true,vehicle_id:vehicleId,is_active:active});
+  }
+
   if(action==='update_vendor_profile'){
     const vendorId=String(body.vendor_id||'').trim();
     if(!vendorId)fail('Vendor is required.');

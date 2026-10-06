@@ -19,7 +19,7 @@
 
   window.cwdTrackEvent = function (name, params = {}) {
     if (!/^[a-zA-Z][a-zA-Z0-9_]{0,39}$/.test(String(name || ''))) return;
-    // Clarity has its own testing/consent gates and fixed-value tag allowlist.
+    // Clarity uses a fixed-value event allowlist; customer PII is not forwarded here.
     try { window.cwdClarity?.track(name, params); } catch (_) {}
     // Preview QA must not inflate the production acquisition funnel.
     if (!productionHost) return;
@@ -37,16 +37,13 @@
     window.gtag('event', name, safeParams);
   };
 
-  // Load the local Clarity controller on approved public production or preview hosts.
-  // The controller itself keeps recording opt-in and excludes sensitive/private routes.
-  const clarityHostAllowed = productionHost
-    || /^(car-rental-mumbai-[a-z0-9-]+-car-with-driver-operation-team\.vercel\.app|localhost|127\.0\.0\.1)$/.test(location.hostname);
-  if (clarityHostAllowed) {
+  // Session analytics is production-only and has no customer-facing UI.
+  if (productionHost && typeof document.createElement === 'function' && document.head) {
     const script = document.createElement('script');
     document.documentElement.setAttribute('data-session-analytics-status', 'loading');
-    script.onload = () => {};
     script.onerror = () => document.documentElement.setAttribute('data-session-analytics-status', 'loader-blocked');
-    script.src = '/assets/js/clarity.js'; script.async = true;
+    script.src = '/assets/js/clarity.js';
+    script.async = true;
     document.head.appendChild(script);
   }
 

@@ -183,7 +183,7 @@ try {
     await choicePage.getByRole('button',{name:'Session analytics preferences',exact:true}).waitFor();
     assert.equal(await choicePage.locator('#cwd-clarity-sdk').count(),0);
     await choicePage.getByRole('button',{name:'Session analytics preferences',exact:true}).click();
-    await choicePage.getByRole('button',{name:'Allow analytics',exact:true}).click();
+    await choicePage.getByRole('button',{name:'Allow & Continue',exact:true}).click();
     await choicePage.locator('#cwd-clarity-sdk').waitFor({state:'attached'});
     assert.equal(await choicePage.locator('html').getAttribute('data-clarity-mask'),'true');
     await choicePage.getByRole('button',{name:'Session analytics preferences',exact:true}).click();

@@ -2861,9 +2861,7 @@ async function deleteWithDriverVehicle(id) {
               vehicles:vehicles.map(v=>({
                 id:v.id,vehicle_number:v.vehicle_number,make_model:v.make_model,category:v.category,
                 manufacturing_year:Number(v.manufacturing_year),fuel:v.fuel,seating:Number(v.seating),
-                commercial_permit_type:v.commercial_permit_type,insurance_policy_number:v.insurance_policy_number,
-                insurance_expiry:v.insurance_expiry||null,puc_number:v.puc_number,puc_expiry:v.puc_expiry||null,
-                permit_fitness_number:v.permit_fitness_number||null,permit_fitness_expiry:v.permit_fitness_expiry||null
+                commercial_permit_type:v.commercial_permit_type
               }))
             };
             try{
@@ -2877,7 +2875,7 @@ async function deleteWithDriverVehicle(id) {
             const v=d.vendor||{},p=d.payout||{},vehicles=d.vehicles||[],terms=d.terms||[];
             document.getElementById('vendor-detail-subtitle').textContent=(v.owner_business_name||'Vendor')+' · '+(v.vendor_code||'');
             const vehicleCards=vehicles.map((x,i)=>'<div class="border border-slate-200 rounded-2xl p-4"><div class="flex justify-between gap-3"><h5 class="font-black text-slate-900">Vehicle '+(i+1)+'</h5><span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(x.category||'')+'</span></div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">'+inlineField('Vehicle Number','vehicle.'+i+'.vehicle_number',x.vehicle_number,'text','maxlength="20" style="text-transform:uppercase"')+
-              inlineField('Make / Model','vehicle.'+i+'.make_model',x.make_model)+inlineField('Manufacturing Year','vehicle.'+i+'.manufacturing_year',x.manufacturing_year,'number')+inlineField('Fuel','vehicle.'+i+'.fuel',x.fuel)+inlineField('Seating','vehicle.'+i+'.seating',x.seating,'number')+inlineField('Permit Type','vehicle.'+i+'.commercial_permit_type',x.commercial_permit_type)+inlineField('Insurance Policy','vehicle.'+i+'.insurance_policy_number',x.insurance_policy_number)+inlineField('Insurance Expiry','vehicle.'+i+'.insurance_expiry',x.insurance_expiry||'','date')+inlineField('PUC Number','vehicle.'+i+'.puc_number',x.puc_number)+inlineField('PUC Expiry','vehicle.'+i+'.puc_expiry',x.puc_expiry||'','date')+inlineField('Permit / Fitness No.','vehicle.'+i+'.permit_fitness_number',x.permit_fitness_number||'')+inlineField('Permit / Fitness Expiry','vehicle.'+i+'.permit_fitness_expiry',x.permit_fitness_expiry||'','date')+'</div></div>').join('')||'<p class="text-slate-400 text-xs">No vehicles found.</p>';
+              inlineField('Make / Model','vehicle.'+i+'.make_model',x.make_model)+inlineField('Manufacturing Year','vehicle.'+i+'.manufacturing_year',x.manufacturing_year,'number')+inlineField('Fuel','vehicle.'+i+'.fuel',x.fuel)+inlineField('Seating','vehicle.'+i+'.seating',x.seating,'number')+inlineField('Permit Type','vehicle.'+i+'.commercial_permit_type',x.commercial_permit_type)+'</div></div>').join('')||'<p class="text-slate-400 text-xs">No vehicles found.</p>';
 
             const lastTerms=terms[0];
             document.getElementById('vendor-detail-body').innerHTML=
@@ -2948,12 +2946,6 @@ async function deleteWithDriverVehicle(id) {
               editSelect('Fuel','ev-fuel-'+i,x.fuel,[['','Select'],['Petrol','Petrol'],['Diesel','Diesel'],['CNG','CNG'],['Petrol+CNG','Petrol+CNG'],['Electric','Electric'],['Hybrid','Hybrid'],['Other','Other']])+
               editSelect('Seating','ev-seat-'+i,x.seating,[['','Select'],['5','4+1'],['7','6+1'],['8','7+1'],['13','12+1'],['18','17+1']])+
               editSelect('Permit Type','ev-permit-'+i,x.commercial_permit_type,[['','Select'],['Tourist Permit / T-Permit','Tourist Permit / T-Permit'],['Contract Carriage','Contract Carriage'],['All India Tourist Permit','All India Tourist Permit'],['Local Commercial Permit','Local Commercial Permit'],['Other','Other']])+
-              editField('Insurance Policy','ev-ins-'+i,x.insurance_policy_number)+
-              editField('Insurance Expiry','ev-insexp-'+i,x.insurance_expiry||'','date')+
-              editField('PUC Number','ev-puc-'+i,x.puc_number)+
-              editField('PUC Expiry','ev-pucexp-'+i,x.puc_expiry||'','date')+
-              editField('Permit / Fitness No.','ev-fit-'+i,x.permit_fitness_number||'')+
-              editField('Permit / Fitness Expiry','ev-fitexp-'+i,x.permit_fitness_expiry||'','date')+
               '</div></div>').join('');
 
             body.innerHTML='<div class="space-y-5">'+
@@ -2991,13 +2983,7 @@ async function deleteWithDriverVehicle(id) {
               manufacturing_year:Number(document.getElementById('ev-year-'+i).value),
               fuel:document.getElementById('ev-fuel-'+i).value,
               seating:Number(document.getElementById('ev-seat-'+i).value),
-              commercial_permit_type:document.getElementById('ev-permit-'+i).value,
-              insurance_policy_number:document.getElementById('ev-ins-'+i).value.trim(),
-              insurance_expiry:document.getElementById('ev-insexp-'+i).value||null,
-              puc_number:document.getElementById('ev-puc-'+i).value.trim(),
-              puc_expiry:document.getElementById('ev-pucexp-'+i).value||null,
-              permit_fitness_number:document.getElementById('ev-fit-'+i).value.trim()||null,
-              permit_fitness_expiry:document.getElementById('ev-fitexp-'+i).value||null
+              commercial_permit_type:document.getElementById('ev-permit-'+i).value
             }));
             const payload={
               action:'update_vendor_profile',

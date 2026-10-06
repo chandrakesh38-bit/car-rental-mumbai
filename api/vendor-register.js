@@ -32,9 +32,10 @@ function fail(message, status = 400) {
   throw error;
 }
 
-function text(value, max, label) {
+function text(value, max, label, min = 1) {
   const out = String(value || '').trim();
   if (!out) fail(label + ' is required.');
+  if (out.length < min) fail(label + ' must be at least ' + min + ' characters.');
   if (out.length > max) fail(label + ' is too long.');
   return out;
 }
@@ -240,7 +241,7 @@ export default async function handler(request) {
       });
     }
 
-    const ownerBusinessName = text(body.owner_business_name, 160, 'Owner / business name');
+    const ownerBusinessName = text(body.owner_business_name, 160, 'Owner / business name', 2);
     const primaryWhatsapp = mobile(body.primary_whatsapp, 'primary WhatsApp mobile');
     const existingVendor = (await db('cwd_vendors?primary_whatsapp=eq.' + encodeURIComponent(primaryWhatsapp) + '&select=id&limit=1'))?.[0];
     if (existingVendor) fail('This mobile number is already registered. Use Add Another Vehicle instead.', 409);
@@ -278,8 +279,8 @@ export default async function handler(request) {
       primary_whatsapp: primaryWhatsapp,
       alternate_mobile: alternateMobile,
       email: email(body.email),
-      base_location: text(body.base_location, 160, 'Base location / area'),
-      address: text(body.address, 1000, 'Address'),
+      base_location: text(body.base_location, 160, 'Base location / area', 2),
+      address: text(body.address, 1000, 'Address', 5),
       pan: pan(body.pan),
       status: 'pending_review'
     };

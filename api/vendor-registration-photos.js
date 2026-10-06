@@ -63,17 +63,36 @@ async function removeObject(path) {
   if (!path) return;
   await supabase('/storage/v1/object/' + BUCKET, { method:'DELETE', body:JSON.stringify({ prefixes:[path] }) }).catch(()=>{});
 }
+async function hmacHex(value) {
+  if (!key()) fail('Photo upload is temporarily unavailable.', 503);
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(key()),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(signature)).map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+async function validUploadToken(vendorCode, token) {
+  const match = String(token || '').match(/^(\d{13})\.([a-f0-9]{64})$/i);
+  if (!match) return false;
+  const stamp = Number(match[1]);
+  if (!Number.isFinite(stamp) || stamp > Date.now() + 300000 || Date.now() - stamp > 24 * 60 * 60 * 1000) return false;
+  const expected = await hmacHex(String(vendorCode) + '|' + String(stamp));
+  return expected === String(match[2]).toLowerCase();
+}
+
 async function authorize(vendorCode, uploadToken, vehicleNumber) {
   const code = clean(vendorCode, 32);
-  const token = clean(uploadToken, 64);
+  const token = clean(uploadToken, 120);
   const number = clean(vehicleNumber, 30).toUpperCase().replace(/\s+/g,'');
-  if (!/^CWD[6-9][0-9]{9}$/.test(code) || !/^[0-9a-f-]{36}$/i.test(token) || !/^[A-Z0-9-]{6,20}$/.test(number)) fail('Invalid or expired photo upload session.', 403);
+  if (!/^CWD[6-9][0-9]{9}$/.test(code) || !/^[A-Z0-9-]{6,20}$/.test(number) || !(await validUploadToken(code, token))) fail('Invalid or expired photo upload session.', 403);
 
   const vendor = (await db('cwd_vendors?vendor_code=eq.' + encodeURIComponent(code) + '&select=id,vendor_code&limit=1'))?.[0];
   if (!vendor) fail('Invalid or expired photo upload session.', 403);
-
-  const accepted = (await db('cwd_vendor_terms_acceptances?vendor_id=eq.' + encodeURIComponent(vendor.id) + '&audit_request_id=eq.' + encodeURIComponent(token) + '&select=id&limit=1'))?.[0];
-  if (!accepted) fail('Invalid or expired photo upload session.', 403);
 
   const vehicle = (await db('cwd_vendor_vehicles?vendor_id=eq.' + encodeURIComponent(vendor.id) + '&vehicle_number=eq.' + encodeURIComponent(number) + '&select=id,vehicle_number&limit=1'))?.[0];
   if (!vehicle) fail('Registered vehicle not found.', 404);

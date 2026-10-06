@@ -394,13 +394,7 @@ async function handler(request){
         fuel:String(v.fuel||'').trim(),
         seating,
         commercial_permit_type:String(v.commercial_permit_type||'').trim(),
-        rc_number:vehicleNumber,
-        insurance_policy_number:String(v.insurance_policy_number||'').trim(),
-        insurance_expiry:v.insurance_expiry||null,
-        puc_number:String(v.puc_number||'').trim(),
-        puc_expiry:v.puc_expiry||null,
-        permit_fitness_number:String(v.permit_fitness_number||'').trim()||null,
-        permit_fitness_expiry:v.permit_fitness_expiry||null
+        rc_number:vehicleNumber
       };
     });
     await db('cwd_vendors?id=eq.'+encodeURIComponent(vendorId),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({

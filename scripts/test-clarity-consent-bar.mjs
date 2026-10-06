@@ -82,20 +82,20 @@ try {
     await page.evaluate(()=>document.dispatchEvent(new FocusEvent('focusout')));
     await decline.focus();await page.keyboard.press('Enter');
     assert.equal(await bar.count(),0);assert.equal(sdk,0);
-    assert.equal(await page.evaluate(()=>localStorage.getItem('cwd_clarity_testing_consent_v1')),'denied');
-    await page.getByRole('button',{name:'Session analytics preferences',exact:true}).click();
+    assert.equal(await page.evaluate(()=>localStorage.getItem('cwd_clarity_consent_v1')),'denied');
+    await page.getByRole('button',{name:'Analytics preferences',exact:true}).click();
     await allow.focus();await page.keyboard.press('Tab');
     assert.equal(await decline.evaluate(e=>e===document.activeElement),true);
     await allow.focus();await page.keyboard.press('Enter');
     await page.waitForFunction(()=>document.documentElement.getAttribute('data-session-analytics-status')==='sdk-loaded');
     assert.equal(sdk,1);assert.equal(await bar.count(),0);
-    assert.equal(await page.locator('html').getAttribute('data-clarity-mask'),'true');
-    await page.getByRole('button',{name:'Session analytics preferences',exact:true}).click();
+    assert.equal(await page.locator('html').getAttribute('data-clarity-mask'),null);
+    await page.getByRole('button',{name:'Analytics preferences',exact:true}).click();
     await Promise.all([page.waitForNavigation(),decline.click()]);
     await page.waitForFunction(()=>document.documentElement.getAttribute('data-session-analytics-status')==='declined');
     assert.equal(sdk,1,'withdrawal reload must not request another SDK');
     assert.equal(await bar.count(),0);assert.deepEqual(errors,[]);
-    results.push({width,height,passed:true,actualBookingMarkup:true,modalAboveBar:true});console.log(`PASS ${width}x${height}: scroll, text entry, reduced viewport, actual booking fields/CTA, z50 modal overlap, equal buttons, keyboard, decline, accept, withdrawal`);
+    assert.equal(await page.locator('#cwd-session-analytics-status').count(),0);\n    results.push({width,height,passed:true,actualBookingMarkup:true,modalAboveBar:true});console.log(`PASS ${width}x${height}: compact consent, no diagnostics, booking modal touch safety, decline, accept, withdrawal`);
     await context.close();
   }
   await writeFile(new URL('results.json',output),JSON.stringify({liveRequestsMade:0,results},null,2));

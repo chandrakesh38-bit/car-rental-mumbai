@@ -549,10 +549,22 @@
                             <h3 class="font-black text-slate-900">Registered Vendors</h3>
                             <p class="text-[10px] text-slate-500 mt-0.5">Approve, suspend or review vendor contact details.</p>
                         </div>
-                        <div class="flex gap-2">
-                            <button type="button" onclick="setVendorFilter('all')" data-vendor-filter="all" class="vendor-filter-btn bg-indigo-950 text-white px-3 py-2 rounded-lg text-[10px] font-bold">All</button>
-                            <button type="button" onclick="setVendorFilter('pending_review')" data-vendor-filter="pending_review" class="vendor-filter-btn bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-[10px] font-bold">Pending</button>
-                            <button type="button" onclick="setVendorFilter('active')" data-vendor-filter="active" class="vendor-filter-btn bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-[10px] font-bold">Active</button>
+                        <div class="flex flex-col sm:items-end gap-2 w-full sm:w-auto">
+                            <div class="flex items-center gap-2 w-full sm:w-[340px]">
+                                <div class="relative flex-1">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    <input id="vendor-mobile-search" type="tel" inputmode="numeric" maxlength="10" autocomplete="off"
+                                      placeholder="Search registered mobile number"
+                                      oninput="handleVendorMobileSearch(this.value)"
+                                      class="w-full border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400">
+                                </div>
+                                <button id="vendor-search-clear" type="button" onclick="clearVendorMobileSearch()" class="hidden bg-slate-100 text-slate-600 px-3 py-2.5 rounded-xl text-[10px] font-bold">Clear</button>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="setVendorFilter('all')" data-vendor-filter="all" class="vendor-filter-btn bg-indigo-950 text-white px-3 py-2 rounded-lg text-[10px] font-bold">All</button>
+                                <button type="button" onclick="setVendorFilter('pending_review')" data-vendor-filter="pending_review" class="vendor-filter-btn bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-[10px] font-bold">Pending</button>
+                                <button type="button" onclick="setVendorFilter('active')" data-vendor-filter="active" class="vendor-filter-btn bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-[10px] font-bold">Active</button>
+                            </div>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
@@ -2691,11 +2703,44 @@ async function deleteWithDriverVehicle(id) {
 
         let cwdVendorCenterData = { vendors: [], offers: [], allocations: [], settlements: [] };
         let cwdVendorFilter = 'all';
+        let cwdVendorMobileSearch = '';
+        let cwdVendorSearchOpenedId = '';
 
         function copyVendorRegistrationLink() {
             const url = location.origin + '/vendor-register';
             if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(()=>alert('Vendor registration link copied.')).catch(()=>prompt('Copy link:',url));
             else prompt('Copy link:',url);
+        }
+
+        function handleVendorMobileSearch(value) {
+            const digits=String(value||'').replace(/\D/g,'').slice(-10);
+            cwdVendorMobileSearch=digits;
+            const input=document.getElementById('vendor-mobile-search');
+            if(input&&input.value!==digits)input.value=digits;
+            const clear=document.getElementById('vendor-search-clear');
+            if(clear)clear.classList.toggle('hidden',!digits);
+            renderVendorCenterTable();
+
+            if(digits.length===10){
+                const vendors=cwdVendorCenterData.vendors||[];
+                const exact=vendors.find(v=>String(v.primary_whatsapp||'').replace(/\D/g,'').slice(-10)===digits)
+                  || vendors.find(v=>String(v.alternate_mobile||'').replace(/\D/g,'').slice(-10)===digits);
+                if(exact&&cwdVendorSearchOpenedId!==exact.id){
+                    cwdVendorSearchOpenedId=exact.id;
+                    openVendorDetail(exact.id);
+                }
+            }else{
+                cwdVendorSearchOpenedId='';
+            }
+        }
+
+        function clearVendorMobileSearch() {
+            cwdVendorMobileSearch='';
+            cwdVendorSearchOpenedId='';
+            const input=document.getElementById('vendor-mobile-search');
+            if(input){input.value='';input.focus();}
+            document.getElementById('vendor-search-clear')?.classList.add('hidden');
+            renderVendorCenterTable();
         }
 
         function setVendorFilter(status) {
@@ -2756,7 +2801,17 @@ async function deleteWithDriverVehicle(id) {
             const tbody=document.getElementById('vendor-center-table');if(!tbody)return;
             let rows=cwdVendorCenterData.vendors||[];
             if(cwdVendorFilter!=='all')rows=rows.filter(v=>v.status===cwdVendorFilter);
-            if(!rows.length){tbody.innerHTML='<tr><td colspan="6" class="py-8 text-center text-slate-400">No vendors in this view.</td></tr>';return;}
+            if(cwdVendorMobileSearch){
+                rows=rows.filter(v=>{
+                    const primary=String(v.primary_whatsapp||'').replace(/\D/g,'').slice(-10);
+                    const alternate=String(v.alternate_mobile||'').replace(/\D/g,'').slice(-10);
+                    return primary.includes(cwdVendorMobileSearch)||alternate.includes(cwdVendorMobileSearch);
+                });
+            }
+            if(!rows.length){
+                const msg=cwdVendorMobileSearch?'No vendor found for this mobile number.':'No vendors in this view.';
+                tbody.innerHTML='<tr><td colspan="6" class="py-8 text-center text-slate-400">'+msg+'</td></tr>';return;
+            }
             tbody.innerHTML=rows.map(v=>{
                 const date=v.created_at?new Date(v.created_at).toLocaleDateString('en-IN'):'—';
                 return '<tr class="hover:bg-slate-50 cursor-pointer" onclick="openVendorDetail(\''+v.id+'\')"><td class="py-3 px-3"><b>'+escapeAdminHtml(v.owner_business_name)+'</b><div class="text-[9px] text-indigo-700 font-bold">'+escapeAdminHtml(v.vendor_code)+'</div></td><td class="py-3 px-3"><a onclick="event.stopPropagation()" class="text-emerald-700 font-bold" target="_blank" href="https://wa.me/91'+escapeAdminHtml(String(v.primary_whatsapp||'').replace(/\D/g,''))+'">'+escapeAdminHtml(v.primary_whatsapp||'—')+'</a></td><td class="py-3 px-3">'+escapeAdminHtml(v.base_location||'—')+'</td><td class="py-3 px-3">'+escapeAdminHtml(date)+'</td><td class="py-3 px-3">'+vendorStatusBadge(v.status)+'</td><td class="py-3 px-3 text-right"><button onclick="event.stopPropagation();openVendorDetail(\''+v.id+'\')" class="bg-indigo-950 text-white rounded-lg px-3 py-2 text-[9px] font-bold">View Details</button></td></tr>';

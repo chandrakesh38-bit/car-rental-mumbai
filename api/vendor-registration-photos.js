@@ -33,7 +33,10 @@ async function db(path, options = {}) {
 async function ensureBucket() {
   const check = await supabase('/storage/v1/bucket/' + BUCKET, { method:'GET' });
   if (check.ok) return;
-  if (check.status !== 404) fail('Vehicle photo storage is temporarily unavailable.', 503);
+
+  // Supabase Storage may report a missing bucket as 400 or 404 depending on
+  // storage-api version. Try to create it before treating the check as fatal.
+  const checkText = await check.text().catch(() => '');
   const create = await supabase('/storage/v1/bucket', {
     method:'POST',
     body:JSON.stringify({
@@ -44,7 +47,21 @@ async function ensureBucket() {
       allowed_mime_types:TYPES
     })
   });
-  if (!create.ok && create.status !== 409) fail('Unable to prepare vehicle photo storage.', 503);
+  if (create.ok || create.status === 409) return;
+
+  const createText = await create.text().catch(() => '');
+  // A concurrent request can create the bucket between our GET and POST.
+  const retry = await supabase('/storage/v1/bucket/' + BUCKET, { method:'GET' });
+  if (retry.ok) return;
+
+  console.error('[vendor-photo bucket]', {
+    check_status: check.status,
+    check_body: checkText.slice(0, 240),
+    create_status: create.status,
+    create_body: createText.slice(0, 240),
+    retry_status: retry.status
+  });
+  fail('Unable to prepare vehicle photo storage.', 503);
 }
 
 function clean(value, max = 180) { return String(value || '').trim().slice(0, max); }
@@ -149,6 +166,10 @@ export default async function handler(request) {
       file:{ view_type:slot, original_filename:filename, mime_type:actualType, size_bytes:bytes.length, object_path:objectPath }
     });
   } catch (error) {
+    console.error('[vendor-photo]', {
+      status:error?.status || 500,
+      message:String(error?.message || 'Unable to upload vehicle photo.').slice(0, 300)
+    });
     return json({ success:false, message:error?.message || 'Unable to upload vehicle photo.' }, error?.status || 500);
   }
 }

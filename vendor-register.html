@@ -278,12 +278,6 @@
       '<div><label>Fuel *</label><select data-field="fuel" required><option value="">Select</option><option>Petrol</option><option>Diesel</option><option>CNG</option><option>Petrol+CNG</option><option>Electric</option><option>Hybrid</option><option>Other</option></select></div>'+
       '<div><label>Seating capacity *</label><select data-field="seating" required><option value="">Select</option><option value="5">4+1</option><option value="7">6+1</option><option value="8">7+1</option><option value="13">12+1</option><option value="18">17+1</option></select></div>'+
       '<div><label>Permit type *</label><select data-field="commercial_permit_type" required><option value="">Select permit type</option><option value="Tourist Permit / T-Permit">Tourist Permit / T-Permit</option><option value="Contract Carriage">Contract Carriage</option><option value="All India Tourist Permit">All India Tourist Permit</option><option value="Local Commercial Permit">Local Commercial Permit</option><option value="Other">Other</option></select></div>'+
-      field('Insurance policy number *','insurance_policy_number','text','maxlength="120" placeholder="Policy number" required')+
-      field('Insurance expiry','insurance_expiry','date','')+
-      field('PUC number *','puc_number','text','maxlength="100" placeholder="PUC number" required')+
-      field('PUC expiry','puc_expiry','date','')+
-      field('Permit / Fitness number','permit_fitness_number','text','maxlength="120" placeholder="Optional"')+
-      field('Permit / Fitness expiry','permit_fitness_expiry','date','')+
       '</div>';
     box.querySelector('.remove').onclick=function(){
       if(vehicles.children.length===1){alert('At least one vehicle is required.');return;}

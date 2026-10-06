@@ -135,13 +135,7 @@ function validateVehicle(raw, index) {
     fuel,
     seating,
     commercial_permit_type: text(raw?.commercial_permit_type, 120, 'Commercial / permit type'),
-    rc_number: vehicleNumber,
-    insurance_policy_number: text(raw?.insurance_policy_number, 120, 'Insurance policy number'),
-    insurance_expiry: optionalText(raw?.insurance_expiry, 10, 'Insurance expiry'),
-    puc_number: text(raw?.puc_number, 100, 'PUC number'),
-    puc_expiry: optionalText(raw?.puc_expiry, 10, 'PUC expiry'),
-    permit_fitness_number: optionalText(raw?.permit_fitness_number, 120, 'Permit / fitness number'),
-    permit_fitness_expiry: optionalText(raw?.permit_fitness_expiry, 10, 'Permit / fitness expiry')
+    rc_number: vehicleNumber
   };
 }
 

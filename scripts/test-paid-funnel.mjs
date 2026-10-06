@@ -23,7 +23,7 @@ const browser = await chromium.launch({headless:true,channel:process.env.BROWSER
   ...(process.env.LOW_MEMORY_BROWSER === '1' ? {args:['--disable-gpu','--renderer-process-limit=1']} : {})});
 try {
   const context = await browser.newContext({...devices['Pixel 5'],viewport:{width:393,height:851},ignoreHTTPSErrors:true});
-  if (clarityTest) await context.addInitScript(() => localStorage.setItem('cwd_clarity_testing_consent_v1', 'granted'));
+  if (clarityTest) await context.addInitScript(() => localStorage.setItem('cwd_clarity_consent_v1', 'granted'));
   let failPricing=false, delayRoute=0, routeCalls=0, otpReject=false, bookingSuccess=false;
   const cache=new Map(), errors=[];
   await context.route('**/*',async route=>{
@@ -120,7 +120,7 @@ try {
     if (clarityTest) {
       const calls=await page.evaluate(()=>window.clarity.q.map(args=>Array.from(args)));
       for(const name of ['cab_results_shown','book_car_click','booking_form_opened']) assert.equal(calls.filter(c=>c[0]==='event'&&c[1]===name).length,1,'Clarity '+name);
-      assert.equal(await page.locator('html').getAttribute('data-clarity-mask'),'true');
+      assert.equal(await page.locator('html').getAttribute('data-clarity-mask'),null);\n      assert.equal(await page.locator('#modal-summary-pickup').getAttribute('data-clarity-mask'),'true');
       assert.equal(calls.some(c=>c[0]==='set'&&c[1]==='traffic_type'&&c[2]==='google_ads'),true);
     }
   assert.equal(events.some(e=>e.name==='booking_request_submitted'),false);
@@ -151,7 +151,7 @@ try {
     for(const name of ['otp_requested','otp_verified','booking_request_submitted']) assert.equal(calls.filter(c=>c[0]==='event'&&c[1]===name).length,1,'Clarity '+name);
     const serialized=JSON.stringify(calls);
     for(const sensitive of ['9999999999','fixture@example.com','ISOLATED-TEST-ONLY','fixture-proof','012345']) assert.ok(!serialized.includes(sensitive));
-    console.log('PASS Clarity seven-event Android funnel, masking before SDK load, paid filter, and no PII in custom payloads');
+    console.log('PASS Clarity seven-event Android funnel, selective sensitive masking, paid filter, and no PII in custom payloads');
   }
   failPricing=true; await go(); await page.locator('#wd-out-one-way').click(); await page.locator('#explore-cabs-button').click();
   await page.waitForFunction(()=>!document.getElementById('explore-cabs-button').disabled);
@@ -180,15 +180,15 @@ try {
     await choicePage.screenshot({path:fileURLToPath(new URL('../.test-output/clarity-mobile-consent.png',import.meta.url))});
     await choicePage.getByRole('button',{name:'No thanks',exact:true}).click();
     await choicePage.reload();
-    await choicePage.getByRole('button',{name:'Session analytics preferences',exact:true}).waitFor();
+    await choicePage.getByRole('button',{name:'Analytics preferences',exact:true}).waitFor();
     assert.equal(await choicePage.locator('#cwd-clarity-sdk').count(),0);
-    await choicePage.getByRole('button',{name:'Session analytics preferences',exact:true}).click();
+    await choicePage.getByRole('button',{name:'Analytics preferences',exact:true}).click();
     await choicePage.getByRole('button',{name:'Allow & Continue',exact:true}).click();
     await choicePage.locator('#cwd-clarity-sdk').waitFor({state:'attached'});
     assert.equal(await choicePage.locator('html').getAttribute('data-clarity-mask'),'true');
-    await choicePage.getByRole('button',{name:'Session analytics preferences',exact:true}).click();
+    await choicePage.getByRole('button',{name:'Analytics preferences',exact:true}).click();
     await choicePage.getByRole('button',{name:'No thanks',exact:true}).click();
-    await choicePage.getByRole('button',{name:'Session analytics preferences',exact:true}).waitFor();
+    await choicePage.getByRole('button',{name:'Analytics preferences',exact:true}).waitFor();
     assert.equal(await choicePage.locator('#cwd-clarity-sdk').count(),0);
     await preferenceContext.close();
     console.log('PASS mobile consent UI: no SDK before consent or after decline; accept loads once; withdrawal persists across reload');

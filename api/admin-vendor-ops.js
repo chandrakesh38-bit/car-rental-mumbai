@@ -84,6 +84,40 @@ function vendorPayoutFromRate(p,rate){
  return km*n(rate.outstation_rate_per_km)+days*n(rate.driver_allowance_per_day)+night*n(rate.night_charge);
 }
 async function signedPhoto(path){if(!path)return null;try{const r=await fetch(base()+'/storage/v1/object/sign/cwd-vendor-trip-photos/'+path,{method:'POST',headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':'application/json'},body:JSON.stringify({expiresIn:900})});const d=await r.json();if(!r.ok)return null;const u=d.signedURL||d.signedUrl;return u?(u.startsWith('http')?u:base()+'/storage/v1'+u):null}catch{return null}}
+async function signedRegistrationPhoto(path){if(!path)return null;try{const r=await fetch(base()+'/storage/v1/object/sign/cwd-vendor-registration-photos/'+path,{method:'POST',headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':'application/json'},body:JSON.stringify({expiresIn:900})});const d=await r.json();if(!r.ok)return null;const u=d.signedURL||d.signedUrl;return u?(u.startsWith('http')?u:base()+'/storage/v1'+u):null}catch{return null}}
+async function vendorRegistrationMedia(vendorId,vehicles){
+ const slots=['front','right','left','rear','interior'],out=[];
+ for(const vehicle of vehicles||[]){
+  const prefix=vendorId+'/'+vehicle.id;
+  try{
+   const response=await fetch(base()+'/storage/v1/object/list/cwd-vendor-registration-photos',{
+    method:'POST',
+    headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':'application/json'},
+    body:JSON.stringify({prefix,limit:100,offset:0,sortBy:{column:'name',order:'asc'}})
+   });
+   if(!response.ok)continue;
+   const rows=await response.json();
+   for(const row of rows||[]){
+    const name=String(row?.name||'');
+    if(!slots.includes(name))continue;
+    const path=prefix+'/'+name;
+    const mime=String(row?.metadata?.mimetype||row?.metadata?.contentType||'');
+    out.push({
+      id:String(row?.id||path),
+      vehicle_id:vehicle.id,
+      view_type:name,
+      object_path:path,
+      original_filename:name,
+      mime_type:mime,
+      size_bytes:Number(row?.metadata?.size||0),
+      created_at:row?.created_at||null,
+      signed_url:await signedRegistrationPhoto(path)
+    });
+   }
+  }catch{}
+ }
+ return out;
+}
 function parseCwdBookingDate(value){
  const raw=String(value||'').trim().replace(/(\d{1,2})(st|nd|rd|th)/i,'$1');
  const m=raw.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4}),\s*(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
@@ -227,7 +261,8 @@ async function handler(request){
         db('cwd_vendor_settlement_ledger?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=booking_id,vendor_final_payout,payout_status,payout_due_at,paid_at,utr_reference,updated_at&order=updated_at.desc')
       ]);
       if(!vendor?.[0])fail('Vendor not found.',404);
-      return json({success:true,vendor:vendor[0],payout:payout?.[0]||null,vehicles:vehicles||[],terms:terms||[],offers:offers||[],allocations:allocations||[],settlements:settlements||[]});
+      const vehicleMedia=await vendorRegistrationMedia(vendorId,vehicles||[]);
+      return json({success:true,vendor:vendor[0],payout:payout?.[0]||null,vehicles:vehicles||[],vehicle_media:vehicleMedia||[],terms:terms||[],offers:offers||[],allocations:allocations||[],settlements:settlements||[]});
     }
     const [vendors,offers,allocations,settlements]=await Promise.all([
       db('cwd_vendors?select=id,vendor_code,owner_business_name,primary_whatsapp,alternate_mobile,email,base_location,status,created_at&order=created_at.desc'),
@@ -352,6 +387,20 @@ async function handler(request){
     else await db('cwd_vendor_rate_cards',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(payload)});
     return json({success:true,vehicle_name:global.full_name});
   }
+  if(action==='set_vendor_vehicle_status'){
+    const vendorId=String(body.vendor_id||'').trim(),vehicleId=String(body.vehicle_id||'').trim();
+    if(!vendorId||!vehicleId)fail('Vendor and vehicle are required.');
+    const vehicle=(await db('cwd_vendor_vehicles?id=eq.'+encodeURIComponent(vehicleId)+'&vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id,vehicle_number,is_active&limit=1'))?.[0];
+    if(!vehicle)fail('Vendor vehicle not found.',404);
+    const active=body.is_active===true;
+    await db('cwd_vendor_vehicles?id=eq.'+encodeURIComponent(vehicleId),{
+      method:'PATCH',
+      headers:{Prefer:'return=minimal'},
+      body:JSON.stringify({is_active:active})
+    });
+    return json({success:true,vehicle_id:vehicleId,is_active:active});
+  }
+
   if(action==='update_vendor_profile'){
     const vendorId=String(body.vendor_id||'').trim();
     if(!vendorId)fail('Vendor is required.');
@@ -394,13 +443,7 @@ async function handler(request){
         fuel:String(v.fuel||'').trim(),
         seating,
         commercial_permit_type:String(v.commercial_permit_type||'').trim(),
-        rc_number:vehicleNumber,
-        insurance_policy_number:String(v.insurance_policy_number||'').trim(),
-        insurance_expiry:v.insurance_expiry||null,
-        puc_number:String(v.puc_number||'').trim(),
-        puc_expiry:v.puc_expiry||null,
-        permit_fitness_number:String(v.permit_fitness_number||'').trim()||null,
-        permit_fitness_expiry:v.permit_fitness_expiry||null
+        rc_number:vehicleNumber
       };
     });
     await db('cwd_vendors?id=eq.'+encodeURIComponent(vendorId),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({

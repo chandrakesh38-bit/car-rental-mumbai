@@ -32,9 +32,10 @@ function fail(message, status = 400) {
   throw error;
 }
 
-function text(value, max, label) {
+function text(value, max, label, min = 1) {
   const out = String(value || '').trim();
   if (!out) fail(label + ' is required.');
+  if (out.length < min) fail(label + ' must be at least ' + min + ' characters.');
   if (out.length > max) fail(label + ' is too long.');
   return out;
 }
@@ -93,9 +94,24 @@ async function db(path, options = {}) {
   });
   const raw = await response.text();
   if (!response.ok) {
-    let code = '';
-    try { code = String(JSON.parse(raw)?.code || ''); } catch {}
+    let code = '', dbMessage = '', details = '';
+    try {
+      const parsed = JSON.parse(raw);
+      code = String(parsed?.code || '');
+      dbMessage = String(parsed?.message || '');
+      details = String(parsed?.details || '');
+    } catch {}
+    console.error('[vendor-register db]', {
+      method: options.method || 'GET',
+      path: String(path || '').split('?')[0],
+      status: response.status,
+      code,
+      dbMessage: dbMessage.slice(0, 300),
+      details: details.slice(0, 300)
+    });
     if (code === '23505') fail('This mobile number or vehicle number is already registered.', 409);
+    if (code === '23502') fail('Vendor registration could not be saved because a required database field is missing.', 503);
+    if (code === '23514') fail('Vendor registration could not be saved because one of the details failed a database check.', 503);
     fail('Unable to save vendor registration. Please try again.', 503);
   }
   return raw ? JSON.parse(raw) : null;
@@ -105,6 +121,24 @@ async function sha256(value) {
   const bytes = new TextEncoder().encode(value);
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return Array.from(new Uint8Array(digest)).map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+async function hmacHex(value) {
+  if (!serviceKey()) fail('Vendor registration is temporarily unavailable.', 503);
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(serviceKey()),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(signature)).map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+async function createUploadToken(vendorCode) {
+  const stamp = Date.now();
+  return String(stamp) + '.' + await hmacHex(String(vendorCode) + '|' + String(stamp));
 }
 
 function clientIp(request) {
@@ -136,18 +170,27 @@ function validateVehicle(raw, index) {
     seating,
     commercial_permit_type: text(raw?.commercial_permit_type, 120, 'Commercial / permit type'),
     rc_number: vehicleNumber,
-    insurance_policy_number: text(raw?.insurance_policy_number, 120, 'Insurance policy number'),
-    insurance_expiry: optionalText(raw?.insurance_expiry, 10, 'Insurance expiry'),
-    puc_number: text(raw?.puc_number, 100, 'PUC number'),
-    puc_expiry: optionalText(raw?.puc_expiry, 10, 'PUC expiry'),
-    permit_fitness_number: optionalText(raw?.permit_fitness_number, 120, 'Permit / fitness number'),
-    permit_fitness_expiry: optionalText(raw?.permit_fitness_expiry, 10, 'Permit / fitness expiry')
+    // Legacy DB columns are still NOT NULL in the live project. These placeholders
+    // keep the schema compatible without collecting insurance/PUC data from vendors.
+    insurance_policy_number: 'NOT_COLLECTED',
+    puc_number: 'NOT_COLLECTED'
   };
 }
 
 export default async function handler(request) {
   if (request.method === 'GET') {
     try {
+      const url = new URL(request.url);
+      const lookupMobile = String(url.searchParams.get('mobile') || '').replace(/\D/g, '').slice(-10);
+      if (url.searchParams.has('mobile')) {
+        if (!/^[6-9][0-9]{9}$/.test(lookupMobile)) return json({ success: true, exists: false });
+        const existing = (await db('cwd_vendors?primary_whatsapp=eq.' + encodeURIComponent(lookupMobile) + '&select=id,vendor_code&limit=1'))?.[0];
+        return json({
+          success: true,
+          exists: Boolean(existing),
+          vendor_code: existing?.vendor_code || null
+        });
+      }
       const rows = await db('with_driver_rates?select=id,full_name,segment&is_active=eq.true&order=display_order.asc,full_name.asc');
       return json({ success: true, vehicles: rows || [] });
     } catch (error) {
@@ -168,8 +211,40 @@ export default async function handler(request) {
       fail('You must accept the current CWD Vendor Terms & Conditions.');
     }
 
-    const ownerBusinessName = text(body.owner_business_name, 160, 'Owner / business name');
+    if (body.action === 'add_vehicle') {
+      const primaryWhatsapp = mobile(body.primary_whatsapp, 'primary WhatsApp mobile');
+      const vendor = (await db('cwd_vendors?primary_whatsapp=eq.' + encodeURIComponent(primaryWhatsapp) + '&select=id,vendor_code&limit=1'))?.[0];
+      if (!vendor) fail('No existing vendor registration was found for this mobile number.', 404);
+
+      if (!Array.isArray(body.vehicles) || body.vehicles.length < 1) fail('Please add at least one vehicle.');
+      if (body.vehicles.length > 20) fail('A maximum of 20 vehicles can be added at one time.');
+      const vehicles = body.vehicles.map(validateVehicle);
+
+      for (const vehicle of vehicles) {
+        const existingVehicle = (await db('cwd_vendor_vehicles?vehicle_number=eq.' + encodeURIComponent(vehicle.vehicle_number) + '&select=id&limit=1'))?.[0];
+        if (existingVehicle) fail('This vehicle number is already registered with CWD.', 409);
+      }
+
+      await db('cwd_vendor_vehicles', {
+        method: 'POST',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify(vehicles.map(v => ({ ...v, vendor_id: vendor.id, is_active: false })))
+      });
+
+      return json({
+        success: true,
+        existing_vendor: true,
+        vendor_code: vendor.vendor_code,
+        upload_token: await createUploadToken(vendor.vendor_code),
+        status: 'pending_vehicle_review',
+        message: 'New vehicle submitted for review.'
+      });
+    }
+
+    const ownerBusinessName = text(body.owner_business_name, 160, 'Owner / business name', 2);
     const primaryWhatsapp = mobile(body.primary_whatsapp, 'primary WhatsApp mobile');
+    const existingVendor = (await db('cwd_vendors?primary_whatsapp=eq.' + encodeURIComponent(primaryWhatsapp) + '&select=id&limit=1'))?.[0];
+    if (existingVendor) fail('This mobile number is already registered. Use Add Another Vehicle instead.', 409);
     const alternateMobile = mobile(body.alternate_mobile, 'alternate mobile', false);
     if (alternateMobile && alternateMobile === primaryWhatsapp) fail('Alternate mobile must be different from the primary mobile.');
 
@@ -204,8 +279,8 @@ export default async function handler(request) {
       primary_whatsapp: primaryWhatsapp,
       alternate_mobile: alternateMobile,
       email: email(body.email),
-      base_location: text(body.base_location, 160, 'Base location / area'),
-      address: text(body.address, 1000, 'Address'),
+      base_location: text(body.base_location, 160, 'Base location / area', 2),
+      address: text(body.address, 1000, 'Address', 5),
       pan: pan(body.pan),
       status: 'pending_review'
     };
@@ -265,6 +340,7 @@ export default async function handler(request) {
     return json({
       success: true,
       vendor_code: vendorCode,
+      upload_token: await createUploadToken(vendorCode),
       status: 'pending_review',
       terms_version: TERMS_VERSION,
       rate_card_versions: RATE_CARD_VERSIONS,

@@ -549,10 +549,22 @@
                             <h3 class="font-black text-slate-900">Registered Vendors</h3>
                             <p class="text-[10px] text-slate-500 mt-0.5">Approve, suspend or review vendor contact details.</p>
                         </div>
-                        <div class="flex gap-2">
-                            <button type="button" onclick="setVendorFilter('all')" data-vendor-filter="all" class="vendor-filter-btn bg-indigo-950 text-white px-3 py-2 rounded-lg text-[10px] font-bold">All</button>
-                            <button type="button" onclick="setVendorFilter('pending_review')" data-vendor-filter="pending_review" class="vendor-filter-btn bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-[10px] font-bold">Pending</button>
-                            <button type="button" onclick="setVendorFilter('active')" data-vendor-filter="active" class="vendor-filter-btn bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-[10px] font-bold">Active</button>
+                        <div class="flex flex-col sm:items-end gap-2 w-full sm:w-auto">
+                            <div class="flex items-center gap-2 w-full sm:w-[340px]">
+                                <div class="relative flex-1">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    <input id="vendor-mobile-search" type="tel" inputmode="numeric" maxlength="10" autocomplete="off"
+                                      placeholder="Search registered mobile number"
+                                      oninput="handleVendorMobileSearch(this.value)"
+                                      class="w-full border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400">
+                                </div>
+                                <button id="vendor-search-clear" type="button" onclick="clearVendorMobileSearch()" class="hidden bg-slate-100 text-slate-600 px-3 py-2.5 rounded-xl text-[10px] font-bold">Clear</button>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="setVendorFilter('all')" data-vendor-filter="all" class="vendor-filter-btn bg-indigo-950 text-white px-3 py-2 rounded-lg text-[10px] font-bold">All</button>
+                                <button type="button" onclick="setVendorFilter('pending_review')" data-vendor-filter="pending_review" class="vendor-filter-btn bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-[10px] font-bold">Pending</button>
+                                <button type="button" onclick="setVendorFilter('active')" data-vendor-filter="active" class="vendor-filter-btn bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-[10px] font-bold">Active</button>
+                            </div>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
@@ -2691,11 +2703,44 @@ async function deleteWithDriverVehicle(id) {
 
         let cwdVendorCenterData = { vendors: [], offers: [], allocations: [], settlements: [] };
         let cwdVendorFilter = 'all';
+        let cwdVendorMobileSearch = '';
+        let cwdVendorSearchOpenedId = '';
 
         function copyVendorRegistrationLink() {
             const url = location.origin + '/vendor-register';
             if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(()=>alert('Vendor registration link copied.')).catch(()=>prompt('Copy link:',url));
             else prompt('Copy link:',url);
+        }
+
+        function handleVendorMobileSearch(value) {
+            const digits=String(value||'').replace(/\D/g,'').slice(-10);
+            cwdVendorMobileSearch=digits;
+            const input=document.getElementById('vendor-mobile-search');
+            if(input&&input.value!==digits)input.value=digits;
+            const clear=document.getElementById('vendor-search-clear');
+            if(clear)clear.classList.toggle('hidden',!digits);
+            renderVendorCenterTable();
+
+            if(digits.length===10){
+                const vendors=cwdVendorCenterData.vendors||[];
+                const exact=vendors.find(v=>String(v.primary_whatsapp||'').replace(/\D/g,'').slice(-10)===digits)
+                  || vendors.find(v=>String(v.alternate_mobile||'').replace(/\D/g,'').slice(-10)===digits);
+                if(exact&&cwdVendorSearchOpenedId!==exact.id){
+                    cwdVendorSearchOpenedId=exact.id;
+                    openVendorDetail(exact.id);
+                }
+            }else{
+                cwdVendorSearchOpenedId='';
+            }
+        }
+
+        function clearVendorMobileSearch() {
+            cwdVendorMobileSearch='';
+            cwdVendorSearchOpenedId='';
+            const input=document.getElementById('vendor-mobile-search');
+            if(input){input.value='';input.focus();}
+            document.getElementById('vendor-search-clear')?.classList.add('hidden');
+            renderVendorCenterTable();
         }
 
         function setVendorFilter(status) {
@@ -2756,7 +2801,17 @@ async function deleteWithDriverVehicle(id) {
             const tbody=document.getElementById('vendor-center-table');if(!tbody)return;
             let rows=cwdVendorCenterData.vendors||[];
             if(cwdVendorFilter!=='all')rows=rows.filter(v=>v.status===cwdVendorFilter);
-            if(!rows.length){tbody.innerHTML='<tr><td colspan="6" class="py-8 text-center text-slate-400">No vendors in this view.</td></tr>';return;}
+            if(cwdVendorMobileSearch){
+                rows=rows.filter(v=>{
+                    const primary=String(v.primary_whatsapp||'').replace(/\D/g,'').slice(-10);
+                    const alternate=String(v.alternate_mobile||'').replace(/\D/g,'').slice(-10);
+                    return primary.includes(cwdVendorMobileSearch)||alternate.includes(cwdVendorMobileSearch);
+                });
+            }
+            if(!rows.length){
+                const msg=cwdVendorMobileSearch?'No vendor found for this mobile number.':'No vendors in this view.';
+                tbody.innerHTML='<tr><td colspan="6" class="py-8 text-center text-slate-400">'+msg+'</td></tr>';return;
+            }
             tbody.innerHTML=rows.map(v=>{
                 const date=v.created_at?new Date(v.created_at).toLocaleDateString('en-IN'):'—';
                 return '<tr class="hover:bg-slate-50 cursor-pointer" onclick="openVendorDetail(\''+v.id+'\')"><td class="py-3 px-3"><b>'+escapeAdminHtml(v.owner_business_name)+'</b><div class="text-[9px] text-indigo-700 font-bold">'+escapeAdminHtml(v.vendor_code)+'</div></td><td class="py-3 px-3"><a onclick="event.stopPropagation()" class="text-emerald-700 font-bold" target="_blank" href="https://wa.me/91'+escapeAdminHtml(String(v.primary_whatsapp||'').replace(/\D/g,''))+'">'+escapeAdminHtml(v.primary_whatsapp||'—')+'</a></td><td class="py-3 px-3">'+escapeAdminHtml(v.base_location||'—')+'</td><td class="py-3 px-3">'+escapeAdminHtml(date)+'</td><td class="py-3 px-3">'+vendorStatusBadge(v.status)+'</td><td class="py-3 px-3 text-right"><button onclick="event.stopPropagation();openVendorDetail(\''+v.id+'\')" class="bg-indigo-950 text-white rounded-lg px-3 py-2 text-[9px] font-bold">View Details</button></td></tr>';
@@ -2861,9 +2916,7 @@ async function deleteWithDriverVehicle(id) {
               vehicles:vehicles.map(v=>({
                 id:v.id,vehicle_number:v.vehicle_number,make_model:v.make_model,category:v.category,
                 manufacturing_year:Number(v.manufacturing_year),fuel:v.fuel,seating:Number(v.seating),
-                commercial_permit_type:v.commercial_permit_type,insurance_policy_number:v.insurance_policy_number,
-                insurance_expiry:v.insurance_expiry||null,puc_number:v.puc_number,puc_expiry:v.puc_expiry||null,
-                permit_fitness_number:v.permit_fitness_number||null,permit_fitness_expiry:v.permit_fitness_expiry||null
+                commercial_permit_type:v.commercial_permit_type
               }))
             };
             try{
@@ -2873,11 +2926,35 @@ async function deleteWithDriverVehicle(id) {
             }catch(e){alert(e.message)}
         }
 
+        function vendorVehiclePhotosHtml(vehicleId,media){
+            const slots=[['front','Front'],['right','Right Side'],['left','Left Side'],['rear','Rear'],['interior','Interior']];
+            const files=(media||[]).filter(m=>String(m.vehicle_id)===String(vehicleId));
+            const count=files.length;
+            return '<div class="mt-4 pt-4 border-t border-slate-100"><div class="flex items-center justify-between gap-2 mb-2"><h6 class="text-xs font-black text-slate-800">Vehicle Photos</h6><span class="text-[9px] font-black px-2 py-1 rounded-full '+(count?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-700')+'">'+count+'/5 uploaded</span></div>'+
+              '<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">'+slots.map(([slot,label])=>{
+                const file=files.find(m=>m.view_type===slot);
+                if(!file)return '<div class="border border-dashed border-slate-200 rounded-xl p-2 min-h-[88px] flex flex-col items-center justify-center text-center"><span class="text-[10px] font-bold text-slate-500">'+label+'</span><span class="text-[9px] text-slate-400 mt-1">Not uploaded</span></div>';
+                const url=file.signed_url?escapeAdminHtml(file.signed_url):'';
+                const title=escapeAdminHtml(file.original_filename||label);
+                if(file.mime_type==='application/pdf'){
+                  return '<div class="border border-slate-200 rounded-xl p-2 min-h-[88px] flex flex-col items-center justify-center text-center"><span class="text-[10px] font-bold text-slate-700">'+label+'</span>'+(url?'<a href="'+url+'" target="_blank" rel="noopener" class="mt-2 text-[9px] font-black text-indigo-700 underline">Open PDF</a>':'<span class="text-[9px] text-slate-400 mt-1">PDF uploaded</span>')+'</div>';
+                }
+                return '<div class="border border-slate-200 rounded-xl p-2"><div class="text-[10px] font-bold text-slate-700 mb-1">'+label+'</div>'+(url?'<a href="'+url+'" target="_blank" rel="noopener" title="'+title+'"><img src="'+url+'" alt="'+label+' vehicle photo" class="w-full h-20 object-cover rounded-lg bg-slate-100"></a>':'<div class="h-20 rounded-lg bg-slate-100 grid place-items-center text-[9px] text-slate-400">Uploaded</div>')+'</div>';
+              }).join('')+'</div></div>';
+        }
+
         function renderVendorDetail(d){
-            const v=d.vendor||{},p=d.payout||{},vehicles=d.vehicles||[],terms=d.terms||[];
+            const v=d.vendor||{},p=d.payout||{},vehicles=d.vehicles||[],media=d.vehicle_media||[],terms=d.terms||[];
             document.getElementById('vendor-detail-subtitle').textContent=(v.owner_business_name||'Vendor')+' · '+(v.vendor_code||'');
-            const vehicleCards=vehicles.map((x,i)=>'<div class="border border-slate-200 rounded-2xl p-4"><div class="flex justify-between gap-3"><h5 class="font-black text-slate-900">Vehicle '+(i+1)+'</h5><span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(x.category||'')+'</span></div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">'+inlineField('Vehicle Number','vehicle.'+i+'.vehicle_number',x.vehicle_number,'text','maxlength="20" style="text-transform:uppercase"')+
-              inlineField('Make / Model','vehicle.'+i+'.make_model',x.make_model)+inlineField('Manufacturing Year','vehicle.'+i+'.manufacturing_year',x.manufacturing_year,'number')+inlineField('Fuel','vehicle.'+i+'.fuel',x.fuel)+inlineField('Seating','vehicle.'+i+'.seating',x.seating,'number')+inlineField('Permit Type','vehicle.'+i+'.commercial_permit_type',x.commercial_permit_type)+inlineField('Insurance Policy','vehicle.'+i+'.insurance_policy_number',x.insurance_policy_number)+inlineField('Insurance Expiry','vehicle.'+i+'.insurance_expiry',x.insurance_expiry||'','date')+inlineField('PUC Number','vehicle.'+i+'.puc_number',x.puc_number)+inlineField('PUC Expiry','vehicle.'+i+'.puc_expiry',x.puc_expiry||'','date')+inlineField('Permit / Fitness No.','vehicle.'+i+'.permit_fitness_number',x.permit_fitness_number||'')+inlineField('Permit / Fitness Expiry','vehicle.'+i+'.permit_fitness_expiry',x.permit_fitness_expiry||'','date')+'</div></div>').join('')||'<p class="text-slate-400 text-xs">No vehicles found.</p>';
+            const vehicleCards=vehicles.map((x,i)=>{
+              const active=x.is_active===true;
+              const status=active
+                ? '<span class="text-[9px] font-black bg-emerald-100 text-emerald-700 rounded-full px-2 py-1">Active</span>'
+                : '<span class="text-[9px] font-black bg-amber-100 text-amber-800 rounded-full px-2 py-1">Pending Vehicle Review</span>';
+              const approve=active?'':'<button type="button" onclick="updateVendorVehicleStatusFromDetail(\''+escapeAdminHtml(x.id)+'\',true)" class="bg-emerald-600 text-white rounded-lg px-3 py-2 text-[9px] font-black">Approve Vehicle</button>';
+              return '<div class="border border-slate-200 rounded-2xl p-4"><div class="flex flex-wrap items-center justify-between gap-3"><div class="flex items-center gap-2"><h5 class="font-black text-slate-900">Vehicle '+(i+1)+'</h5>'+status+'</div><div class="flex items-center gap-2"><span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(x.category||'')+'</span>'+approve+'</div></div><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">'+inlineField('Vehicle Number','vehicle.'+i+'.vehicle_number',x.vehicle_number,'text','maxlength="20" style="text-transform:uppercase"')+
+              inlineField('Make / Model','vehicle.'+i+'.make_model',x.make_model)+inlineField('Manufacturing Year','vehicle.'+i+'.manufacturing_year',x.manufacturing_year,'number')+inlineField('Fuel','vehicle.'+i+'.fuel',x.fuel)+inlineField('Seating','vehicle.'+i+'.seating',x.seating,'number')+inlineField('Permit Type','vehicle.'+i+'.commercial_permit_type',x.commercial_permit_type)+'</div>'+vendorVehiclePhotosHtml(x.id,media)+'</div>';
+            }).join('')||'<p class="text-slate-400 text-xs">No vehicles found.</p>';
 
             const lastTerms=terms[0];
             document.getElementById('vendor-detail-body').innerHTML=
@@ -2907,6 +2984,21 @@ async function deleteWithDriverVehicle(id) {
             if(!v?.primary_whatsapp)return alert('Vendor WhatsApp number is missing.');
             const msg=cwdVendorApprovalMessage(v);
             window.open('https://wa.me/91'+String(v.primary_whatsapp).replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank');
+        }
+
+        async function updateVendorVehicleStatusFromDetail(vehicleId,isActive){
+            const v=cwdSelectedVendorDetail?.vendor;if(!v||!vehicleId)return;
+            if(isActive&&!confirm('Approve this vehicle for vendor bookings?'))return;
+            try{
+                await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({
+                    action:'set_vendor_vehicle_status',
+                    vendor_id:v.id,
+                    vehicle_id:vehicleId,
+                    is_active:Boolean(isActive)
+                })});
+                await loadVendorControlCenter();
+                await openVendorDetail(v.id);
+            }catch(e){alert(e.message)}
         }
 
         async function updateVendorStatusFromDetail(status){
@@ -2948,12 +3040,6 @@ async function deleteWithDriverVehicle(id) {
               editSelect('Fuel','ev-fuel-'+i,x.fuel,[['','Select'],['Petrol','Petrol'],['Diesel','Diesel'],['CNG','CNG'],['Petrol+CNG','Petrol+CNG'],['Electric','Electric'],['Hybrid','Hybrid'],['Other','Other']])+
               editSelect('Seating','ev-seat-'+i,x.seating,[['','Select'],['5','4+1'],['7','6+1'],['8','7+1'],['13','12+1'],['18','17+1']])+
               editSelect('Permit Type','ev-permit-'+i,x.commercial_permit_type,[['','Select'],['Tourist Permit / T-Permit','Tourist Permit / T-Permit'],['Contract Carriage','Contract Carriage'],['All India Tourist Permit','All India Tourist Permit'],['Local Commercial Permit','Local Commercial Permit'],['Other','Other']])+
-              editField('Insurance Policy','ev-ins-'+i,x.insurance_policy_number)+
-              editField('Insurance Expiry','ev-insexp-'+i,x.insurance_expiry||'','date')+
-              editField('PUC Number','ev-puc-'+i,x.puc_number)+
-              editField('PUC Expiry','ev-pucexp-'+i,x.puc_expiry||'','date')+
-              editField('Permit / Fitness No.','ev-fit-'+i,x.permit_fitness_number||'')+
-              editField('Permit / Fitness Expiry','ev-fitexp-'+i,x.permit_fitness_expiry||'','date')+
               '</div></div>').join('');
 
             body.innerHTML='<div class="space-y-5">'+
@@ -2991,13 +3077,7 @@ async function deleteWithDriverVehicle(id) {
               manufacturing_year:Number(document.getElementById('ev-year-'+i).value),
               fuel:document.getElementById('ev-fuel-'+i).value,
               seating:Number(document.getElementById('ev-seat-'+i).value),
-              commercial_permit_type:document.getElementById('ev-permit-'+i).value,
-              insurance_policy_number:document.getElementById('ev-ins-'+i).value.trim(),
-              insurance_expiry:document.getElementById('ev-insexp-'+i).value||null,
-              puc_number:document.getElementById('ev-puc-'+i).value.trim(),
-              puc_expiry:document.getElementById('ev-pucexp-'+i).value||null,
-              permit_fitness_number:document.getElementById('ev-fit-'+i).value.trim()||null,
-              permit_fitness_expiry:document.getElementById('ev-fitexp-'+i).value||null
+              commercial_permit_type:document.getElementById('ev-permit-'+i).value
             }));
             const payload={
               action:'update_vendor_profile',

@@ -88,7 +88,9 @@
     .optional-pill{white-space:nowrap;background:#eef4ff;color:#31558f;border:1px solid #d9e5f7;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:900}
     .photo-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
     .photo-slot{background:#fff;border:1px solid #dce4ef;border-radius:14px;padding:10px;min-width:0}
-    .photo-slot-title{display:flex;justify-content:space-between;gap:6px;align-items:center;margin-bottom:8px}.photo-slot-title strong{font-size:11px;color:#1e2c48}.photo-slot-title span{font-size:8px;color:#64748b}
+    .photo-slot-title{display:flex;justify-content:space-between;gap:6px;align-items:center;margin-bottom:8px}.photo-slot-title strong{font-size:11px;color:#1e2c48}
+    .photo-state-badge{display:none;align-items:center;white-space:nowrap;border-radius:999px;padding:4px 7px;font-size:8px;font-weight:900}
+    .photo-state-badge.ready{display:inline-flex;background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
     .photo-preview{height:82px;border-radius:10px;background:#f6f8fc;border:1px dashed #cbd5e1;display:grid;place-items:center;overflow:hidden;color:#94a3b8;font-size:9px;text-align:center;padding:6px}
     .photo-preview img{width:100%;height:100%;object-fit:cover;border-radius:8px}.photo-preview .pdf-ready{font-weight:900;color:#9a3412;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:8px}
     .photo-controls{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
@@ -119,6 +121,7 @@
       .card{padding:17px;border-radius:18px}
       .grid{grid-template-columns:1fr}.full{grid-column:auto}
       .actions{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 28%);padding-top:24px;padding-bottom:2px}
+      .panel[data-panel="2"] .actions{position:static;background:none;padding-top:10px}
       .btn{padding:13px 15px}
       .brandbar{align-items:center;margin-bottom:12px}
       .brand{gap:10px}
@@ -268,10 +271,10 @@
   let vehicleCount=0;
   let vehicleMaster=[];
   const PHOTO_SLOTS=[
-    ['front','Front'],
+    ['front','Front View'],
     ['right','Right Side'],
     ['left','Left Side'],
-    ['rear','Rear'],
+    ['rear','Rear View'],
     ['interior','Interior']
   ];
   const photoState=new WeakMap();
@@ -301,10 +304,10 @@
 
   function photoSlotsHtml(){
     return '<div class="vehicle-photos">'+
-      '<div class="vehicle-photo-head"><div><h4>Vehicle Photos</h4><p>Front, right, left, rear and interior. Optional during registration. Camera photos are automatically compressed before upload.</p></div><span class="optional-pill">OPTIONAL</span></div>'+
+      '<div class="vehicle-photo-head"><div><h4>Vehicle Photos</h4><p>Please upload recent, clear photos of the same vehicle. The full vehicle should be visible in exterior photos. Front, right, left, rear and interior are optional during registration. Camera photos are automatically compressed before upload.</p></div><span class="optional-pill">OPTIONAL</span></div>'+
       '<div class="photo-grid">'+PHOTO_SLOTS.map(function(item){
         return '<div class="photo-slot" data-photo-slot="'+item[0]+'">'+
-          '<div class="photo-slot-title"><strong>'+item[1]+'</strong><span>Optional</span></div>'+
+          '<div class="photo-slot-title"><strong>'+item[1]+'</strong><span class="photo-state-badge" data-photo-badge></span></div>'+
           '<div class="photo-preview"><span>No file selected</span></div>'+
           '<div class="photo-controls">'+
             '<button type="button" class="photo-btn" data-camera-btn>📷 Camera</button>'+
@@ -372,6 +375,7 @@
     const preview=slotEl.querySelector('.photo-preview');
     const info=slotEl.querySelector('.photo-info');
     const remove=slotEl.querySelector('[data-remove-photo]');
+    const stateBadge=slotEl.querySelector('[data-photo-badge]');
     if(state.previewUrl){URL.revokeObjectURL(state.previewUrl);state.previewUrl=null;}
     preview.replaceChildren();
     if(state.file?.type?.startsWith('image/')){
@@ -383,11 +387,16 @@
       const empty=document.createElement('span');empty.textContent='No file selected';preview.appendChild(empty);
     }
     info.className='photo-info'+(state.error?' error':state.file?' ready':'');
+    const compressed=Boolean(state.file&&state.originalSize&&state.originalSize>state.file.size);
     info.textContent=state.error
       ? state.error
       : state.file
-        ? state.file.name+' • '+sizeText(state.file.size)+(state.originalSize&&state.originalSize>state.file.size?' • compressed':'')
+        ? '✓ '+(state.file.type==='application/pdf'?'PDF ready':'Photo ready')+' · '+sizeText(state.file.size)+(compressed?' · Compressed':'')
         : 'JPG, PNG or PDF • max 5 MB after optimization';
+    if(stateBadge){
+      stateBadge.className='photo-state-badge'+(state.file&&!state.error?' ready':'');
+      stateBadge.textContent=state.file&&!state.error?'✓ Ready':'';
+    }
     remove.style.display=state.file?'block':'none';
   }
 

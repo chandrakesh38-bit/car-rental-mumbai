@@ -84,6 +84,13 @@ function vendorPayoutFromRate(p,rate){
  return km*n(rate.outstation_rate_per_km)+days*n(rate.driver_allowance_per_day)+night*n(rate.night_charge);
 }
 async function signedPhoto(path){if(!path)return null;try{const r=await fetch(base()+'/storage/v1/object/sign/cwd-vendor-trip-photos/'+path,{method:'POST',headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':'application/json'},body:JSON.stringify({expiresIn:900})});const d=await r.json();if(!r.ok)return null;const u=d.signedURL||d.signedUrl;return u?(u.startsWith('http')?u:base()+'/storage/v1'+u):null}catch{return null}}
+async function signedRegistrationPhoto(path){if(!path)return null;try{const r=await fetch(base()+'/storage/v1/object/sign/cwd-vendor-registration-photos/'+path,{method:'POST',headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':'application/json'},body:JSON.stringify({expiresIn:900})});const d=await r.json();if(!r.ok)return null;const u=d.signedURL||d.signedUrl;return u?(u.startsWith('http')?u:base()+'/storage/v1'+u):null}catch{return null}}
+async function vendorRegistrationMedia(vendorId){
+ try{
+  const rows=await db('cwd_vendor_vehicle_media?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id,vehicle_id,view_type,object_path,original_filename,mime_type,size_bytes,created_at&order=created_at.asc');
+  return Promise.all((rows||[]).map(async row=>({...row,signed_url:await signedRegistrationPhoto(row.object_path)})));
+ }catch{return []}
+}
 function parseCwdBookingDate(value){
  const raw=String(value||'').trim().replace(/(\d{1,2})(st|nd|rd|th)/i,'$1');
  const m=raw.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4}),\s*(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
@@ -217,17 +224,18 @@ async function handler(request){
    if(u.searchParams.get('dashboard')==='1'){
     const vendorId=u.searchParams.get('vendor_id');
     if(vendorId){
-      const [vendor,payout,vehicles,terms,offers,allocations,settlements]=await Promise.all([
+      const [vendor,payout,vehicles,terms,offers,allocations,settlements,vehicleMedia]=await Promise.all([
         db('cwd_vendors?id=eq.'+encodeURIComponent(vendorId)+'&select=*&limit=1'),
         db('cwd_vendor_payout_accounts?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=*&limit=1'),
         db('cwd_vendor_vehicles?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=*&order=created_at.asc'),
         db('cwd_vendor_terms_acceptances?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=*&order=accepted_at.desc'),
         db('cwd_vendor_offers?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id,booking_id,status,estimated_vendor_payout,responded_at,created_at&order=created_at.desc'),
         db('cwd_vendor_allocations?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id,booking_id,status,vehicle_number,driver_name,driver_mobile,allocated_at,updated_at&order=allocated_at.desc'),
-        db('cwd_vendor_settlement_ledger?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=booking_id,vendor_final_payout,payout_status,payout_due_at,paid_at,utr_reference,updated_at&order=updated_at.desc')
+        db('cwd_vendor_settlement_ledger?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=booking_id,vendor_final_payout,payout_status,payout_due_at,paid_at,utr_reference,updated_at&order=updated_at.desc'),
+        vendorRegistrationMedia(vendorId)
       ]);
       if(!vendor?.[0])fail('Vendor not found.',404);
-      return json({success:true,vendor:vendor[0],payout:payout?.[0]||null,vehicles:vehicles||[],terms:terms||[],offers:offers||[],allocations:allocations||[],settlements:settlements||[]});
+      return json({success:true,vendor:vendor[0],payout:payout?.[0]||null,vehicles:vehicles||[],vehicle_media:vehicleMedia||[],terms:terms||[],offers:offers||[],allocations:allocations||[],settlements:settlements||[]});
     }
     const [vendors,offers,allocations,settlements]=await Promise.all([
       db('cwd_vendors?select=id,vendor_code,owner_business_name,primary_whatsapp,alternate_mobile,email,base_location,status,created_at&order=created_at.desc'),

@@ -93,9 +93,24 @@ async function db(path, options = {}) {
   });
   const raw = await response.text();
   if (!response.ok) {
-    let code = '';
-    try { code = String(JSON.parse(raw)?.code || ''); } catch {}
+    let code = '', dbMessage = '', details = '';
+    try {
+      const parsed = JSON.parse(raw);
+      code = String(parsed?.code || '');
+      dbMessage = String(parsed?.message || '');
+      details = String(parsed?.details || '');
+    } catch {}
+    console.error('[vendor-register db]', {
+      method: options.method || 'GET',
+      path: String(path || '').split('?')[0],
+      status: response.status,
+      code,
+      dbMessage: dbMessage.slice(0, 300),
+      details: details.slice(0, 300)
+    });
     if (code === '23505') fail('This mobile number or vehicle number is already registered.', 409);
+    if (code === '23502') fail('Vendor registration could not be saved because a required database field is missing.', 503);
+    if (code === '23514') fail('Vendor registration could not be saved because one of the details failed a database check.', 503);
     fail('Unable to save vendor registration. Please try again.', 503);
   }
   return raw ? JSON.parse(raw) : null;

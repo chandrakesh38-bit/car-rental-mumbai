@@ -99,6 +99,10 @@
     .photo-info{font-size:8px;color:#7b879b;line-height:1.35;margin-top:7px;word-break:break-word}.photo-info.ready{color:#166534;font-weight:800}.photo-info.error{color:#b91c1c;font-weight:800}
     .photo-upload-summary{margin:10px auto 0;max-width:420px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;padding:10px 12px;font-size:11px;color:#475569;line-height:1.45}
     .photo-upload-summary.warn{background:#fff7ed;border-color:#fed7aa;color:#9a3412}.photo-upload-summary.ok{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+    .existing-vendor-box{display:none;grid-column:1/-1;background:#eefbf3;border:1px solid #bbebcb;border-radius:14px;padding:13px 14px;color:#166534}
+    .existing-vendor-box.show{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .existing-vendor-box strong{display:block;font-size:12px}.existing-vendor-box small{display:block;font-size:10px;margin-top:3px;line-height:1.4;color:#4b6b58}
+    .existing-vendor-box button{border:0;background:#166534;color:white;border-radius:10px;padding:9px 11px;font-size:10px;font-weight:900;white-space:nowrap}
     @media(min-width:780px){
       .wrap{padding-top:24px}
       .hero{padding:31px 30px}
@@ -175,7 +179,11 @@
         <div class="section-head"><div class="section-icon">👤</div><div><h2>Business / Owner Details</h2><div class="subtitle">Tell us about your business and primary contact details.</div></div></div>
         <div class="grid">
           <div><label>Owner / business name *</label><input name="owner_business_name" maxlength="160" placeholder="e.g. Sharma Tours & Travels" required></div>
-          <div><label>Primary WhatsApp mobile *</label><input name="primary_whatsapp" inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" placeholder="9876543210" required></div>
+          <div><label>Primary WhatsApp mobile *</label><input id="primary-whatsapp" name="primary_whatsapp" inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" placeholder="9876543210" required></div>
+          <div id="existing-vendor-box" class="existing-vendor-box">
+            <div><strong>Already registered with CWD ✓</strong><small>You can add another vehicle without entering business or payout details again.</small></div>
+            <button type="button" id="existing-add-vehicle-btn">Add Another Vehicle →</button>
+          </div>
           <div><label>Alternate mobile</label><input name="alternate_mobile" inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" placeholder="Optional"></div>
           <div><label>Email</label><input name="email" type="email" maxlength="254" placeholder="yourname@example.com"></div>
           <div><label>Base location / area *</label><input name="base_location" maxlength="160" placeholder="e.g. Vikhroli, Mumbai" required></div>
@@ -210,7 +218,7 @@
 
     <section class="panel" data-panel="2">
       <div class="card">
-        <div class="section-head"><div class="section-icon">🚘</div><div><h2>Vehicle Details</h2><div class="subtitle">Add one or more vehicles. Vehicle photos are optional, but help us review the vehicle condition faster.</div></div></div>
+        <div class="section-head"><div class="section-icon">🚘</div><div><h2>Vehicle Details</h2><div class="subtitle" id="vehicle-step-subtitle">Add one or more vehicles. Vehicle photos are optional, but help us review the vehicle condition faster.</div></div></div>
         <div id="vehicles"></div>
         <button type="button" class="add" id="add-vehicle">+ Add another vehicle</button>
         <div class="actions"><button type="button" class="btn btn-secondary" data-back>← Back</button><button type="button" class="btn btn-primary" data-next>Continue to Terms →</button></div>
@@ -241,8 +249,8 @@
 
   <section id="registration-success" class="success-card">
     <div class="success-icon">✓</div>
-    <h2>Registration Successful</h2>
-    <p>Your vendor registration has been submitted to Car With Driver India for review.</p>
+    <h2 id="success-title">Registration Successful</h2>
+    <p id="success-message">Your vendor registration has been submitted to Car With Driver India for review.</p>
     <div class="vendor-code-box">
       <small>Your Vendor Code</small>
       <strong id="success-vendor-code">—</strong>
@@ -280,6 +288,69 @@
   const photoState=new WeakMap();
   let photoUploadBusy=false;
   let uploadSession=null;
+  let existingVendorMode=false;
+  let existingVendorCode=null;
+  let vendorLookupBusy=false;
+  let lookupSequence=0;
+
+  function primaryMobileValue(){
+    return String(document.getElementById('primary-whatsapp')?.value||'').replace(/\D/g,'').slice(-10);
+  }
+
+  function setExistingVendorBox(show){
+    document.getElementById('existing-vendor-box')?.classList.toggle('show',Boolean(show));
+  }
+
+  async function lookupExistingVendor(showBox=true){
+    const mobile=primaryMobileValue();
+    if(!/^[6-9][0-9]{9}$/.test(mobile)){if(showBox)setExistingVendorBox(false);return null;}
+    const seq=++lookupSequence;
+    vendorLookupBusy=true;
+    try{
+      const res=await fetch('/api/vendor-register?mobile='+encodeURIComponent(mobile),{cache:'no-store'});
+      const data=await res.json().catch(()=>({}));
+      if(seq!==lookupSequence)return null;
+      if(!res.ok||!data.success)return null;
+      existingVendorCode=data.exists?data.vendor_code:null;
+      if(showBox)setExistingVendorBox(Boolean(data.exists));
+      return data;
+    }catch(_){
+      return null;
+    }finally{
+      if(seq===lookupSequence)vendorLookupBusy=false;
+    }
+  }
+
+  function setExistingWizardMode(on){
+    existingVendorMode=Boolean(on);
+    const wizard=document.getElementById('wizard-tabs');
+    if(tabs[1])tabs[1].style.display=existingVendorMode?'none':'';
+    if(wizard)wizard.style.gridTemplateColumns=existingVendorMode?'repeat(3,1fr)':'repeat(4,1fr)';
+    const subtitle=document.getElementById('vehicle-step-subtitle');
+    if(subtitle)subtitle.textContent=existingVendorMode
+      ? 'Add your new vehicle. It will stay pending until CWD reviews and approves it.'
+      : 'Add one or more vehicles. Vehicle photos are optional, but help us review the vehicle condition faster.';
+    submit.textContent=existingVendorMode?'Submit New Vehicle →':'Submit Vendor Registration →';
+  }
+
+  function startExistingVehicleFlow(){
+    const mobile=primaryMobileValue();
+    if(!/^[6-9][0-9]{9}$/.test(mobile))return;
+    setExistingWizardMode(true);
+    vehicles.querySelectorAll('.vehicle').forEach(clearVehiclePhotos);
+    vehicles.replaceChildren();
+    vehicleCount=0;
+    addVehicle();
+    completedStep=1;
+    showStep(2);
+  }
+
+  function exitExistingVehicleFlow(){
+    setExistingWizardMode(false);
+    completedStep=-1;
+    showStep(0);
+    lookupExistingVendor(true);
+  }
 
   function modelOptionsHtml(){
     const rows=vehicleMaster.map(v=>'<option value="'+String(v.full_name||'').replace(/"/g,'&quot;')+'">'+String(v.full_name||'')+'</option>').join('');
@@ -531,14 +602,35 @@
 
   document.getElementById('payout-mode').addEventListener('change',payoutVisibility);
   document.getElementById('add-vehicle').addEventListener('click',()=>addVehicle());
-  document.querySelectorAll('[data-next]').forEach(btn=>btn.addEventListener('click',function(){
+  document.getElementById('existing-add-vehicle-btn').addEventListener('click',startExistingVehicleFlow);
+  const primaryInput=document.getElementById('primary-whatsapp');
+  primaryInput.addEventListener('input',function(){
+    this.value=this.value.replace(/\D/g,'').slice(-10);
+    existingVendorCode=null;lookupSequence++;
+    setExistingVendorBox(false);
+    if(existingVendorMode)setExistingWizardMode(false);
+  });
+  primaryInput.addEventListener('blur',()=>lookupExistingVendor(true));
+
+  document.querySelectorAll('[data-next]').forEach(btn=>btn.addEventListener('click',async function(){
+    if(currentStep===0&&!existingVendorMode){
+      const mobile=primaryMobileValue();
+      if(/^[6-9][0-9]{9}$/.test(mobile)){
+        const found=await lookupExistingVendor(true);
+        if(found?.exists){startExistingVehicleFlow();return;}
+      }
+    }
     if(!validateStep(currentStep))return;
     completedStep=Math.max(completedStep,currentStep);
     showStep(currentStep+1);
   }));
-  document.querySelectorAll('[data-back]').forEach(btn=>btn.addEventListener('click',()=>showStep(currentStep-1)));
+  document.querySelectorAll('[data-back]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(existingVendorMode&&currentStep===2){exitExistingVehicleFlow();return;}
+    showStep(currentStep-1);
+  }));
   tabs.forEach(tab=>tab.addEventListener('click',function(){
     const target=Number(tab.dataset.step);
+    if(existingVendorMode&&target===0){exitExistingVehicleFlow();return;}
     if(target<=completedStep+1){
       if(target>currentStep&&!validateStep(currentStep))return;
       if(target>currentStep)completedStep=Math.max(completedStep,currentStep);
@@ -554,6 +646,7 @@
     form.reset();
     vehicles.replaceChildren();
     vehicleCount=0;currentStep=0;completedStep=-1;
+    existingVendorMode=false;existingVendorCode=null;setExistingWizardMode(false);setExistingVendorBox(false);
     await loadVehicleMaster();
     addVehicle();
     payoutVisibility();
@@ -703,6 +796,7 @@
     }
 
     const payload={
+      action:existingVendorMode?'add_vehicle':'register',
       owner_business_name:fd.get('owner_business_name'),
       primary_whatsapp:fd.get('primary_whatsapp'),
       alternate_mobile:fd.get('alternate_mobile'),
@@ -730,6 +824,10 @@
       completedStep=3;
       uploadSession={vendorCode:data.vendor_code,uploadToken:data.upload_token};
       document.getElementById('success-vendor-code').textContent=data.vendor_code;
+      document.getElementById('success-title').textContent=existingVendorMode?'Vehicle Submitted for Review':'Registration Successful';
+      document.getElementById('success-message').textContent=existingVendorMode
+        ? 'Your new vehicle has been added to your existing CWD vendor profile and is pending review.'
+        : 'Your vendor registration has been submitted to Car With Driver India for review.';
       form.style.display='none';
       document.getElementById('wizard-tabs').style.display='none';
       document.querySelector('.hero').style.display='none';
@@ -743,7 +841,7 @@
     }catch(err){
       status.className='status err';status.style.display='block';status.textContent=err.message||'Unable to submit registration.';
     }finally{
-      submit.disabled=false;submit.textContent='Submit Vendor Registration →';
+      submit.disabled=false;submit.textContent=existingVendorMode?'Submit New Vehicle →':'Submit Vendor Registration →';
     }
   });
 })();

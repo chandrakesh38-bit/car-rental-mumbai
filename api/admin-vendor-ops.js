@@ -85,11 +85,38 @@ function vendorPayoutFromRate(p,rate){
 }
 async function signedPhoto(path){if(!path)return null;try{const r=await fetch(base()+'/storage/v1/object/sign/cwd-vendor-trip-photos/'+path,{method:'POST',headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':'application/json'},body:JSON.stringify({expiresIn:900})});const d=await r.json();if(!r.ok)return null;const u=d.signedURL||d.signedUrl;return u?(u.startsWith('http')?u:base()+'/storage/v1'+u):null}catch{return null}}
 async function signedRegistrationPhoto(path){if(!path)return null;try{const r=await fetch(base()+'/storage/v1/object/sign/cwd-vendor-registration-photos/'+path,{method:'POST',headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':'application/json'},body:JSON.stringify({expiresIn:900})});const d=await r.json();if(!r.ok)return null;const u=d.signedURL||d.signedUrl;return u?(u.startsWith('http')?u:base()+'/storage/v1'+u):null}catch{return null}}
-async function vendorRegistrationMedia(vendorId){
- try{
-  const rows=await db('cwd_vendor_vehicle_media?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id,vehicle_id,view_type,object_path,original_filename,mime_type,size_bytes,created_at&order=created_at.asc');
-  return Promise.all((rows||[]).map(async row=>({...row,signed_url:await signedRegistrationPhoto(row.object_path)})));
- }catch{return []}
+async function vendorRegistrationMedia(vendorId,vehicles){
+ const slots=['front','right','left','rear','interior'],out=[];
+ for(const vehicle of vehicles||[]){
+  const prefix=vendorId+'/'+vehicle.id;
+  try{
+   const response=await fetch(base()+'/storage/v1/object/list/cwd-vendor-registration-photos',{
+    method:'POST',
+    headers:{apikey:key(),Authorization:'Bearer '+key(),'Content-Type':'application/json'},
+    body:JSON.stringify({prefix,limit:100,offset:0,sortBy:{column:'name',order:'asc'}})
+   });
+   if(!response.ok)continue;
+   const rows=await response.json();
+   for(const row of rows||[]){
+    const name=String(row?.name||'');
+    if(!slots.includes(name))continue;
+    const path=prefix+'/'+name;
+    const mime=String(row?.metadata?.mimetype||row?.metadata?.contentType||'');
+    out.push({
+      id:String(row?.id||path),
+      vehicle_id:vehicle.id,
+      view_type:name,
+      object_path:path,
+      original_filename:name,
+      mime_type:mime,
+      size_bytes:Number(row?.metadata?.size||0),
+      created_at:row?.created_at||null,
+      signed_url:await signedRegistrationPhoto(path)
+    });
+   }
+  }catch{}
+ }
+ return out;
 }
 function parseCwdBookingDate(value){
  const raw=String(value||'').trim().replace(/(\d{1,2})(st|nd|rd|th)/i,'$1');
@@ -224,17 +251,17 @@ async function handler(request){
    if(u.searchParams.get('dashboard')==='1'){
     const vendorId=u.searchParams.get('vendor_id');
     if(vendorId){
-      const [vendor,payout,vehicles,terms,offers,allocations,settlements,vehicleMedia]=await Promise.all([
+      const [vendor,payout,vehicles,terms,offers,allocations,settlements]=await Promise.all([
         db('cwd_vendors?id=eq.'+encodeURIComponent(vendorId)+'&select=*&limit=1'),
         db('cwd_vendor_payout_accounts?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=*&limit=1'),
         db('cwd_vendor_vehicles?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=*&order=created_at.asc'),
         db('cwd_vendor_terms_acceptances?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=*&order=accepted_at.desc'),
         db('cwd_vendor_offers?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id,booking_id,status,estimated_vendor_payout,responded_at,created_at&order=created_at.desc'),
         db('cwd_vendor_allocations?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=id,booking_id,status,vehicle_number,driver_name,driver_mobile,allocated_at,updated_at&order=allocated_at.desc'),
-        db('cwd_vendor_settlement_ledger?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=booking_id,vendor_final_payout,payout_status,payout_due_at,paid_at,utr_reference,updated_at&order=updated_at.desc'),
-        vendorRegistrationMedia(vendorId)
+        db('cwd_vendor_settlement_ledger?vendor_id=eq.'+encodeURIComponent(vendorId)+'&select=booking_id,vendor_final_payout,payout_status,payout_due_at,paid_at,utr_reference,updated_at&order=updated_at.desc')
       ]);
       if(!vendor?.[0])fail('Vendor not found.',404);
+      const vehicleMedia=await vendorRegistrationMedia(vendorId,vehicles||[]);
       return json({success:true,vendor:vendor[0],payout:payout?.[0]||null,vehicles:vehicles||[],vehicle_media:vehicleMedia||[],terms:terms||[],offers:offers||[],allocations:allocations||[],settlements:settlements||[]});
     }
     const [vendors,offers,allocations,settlements]=await Promise.all([

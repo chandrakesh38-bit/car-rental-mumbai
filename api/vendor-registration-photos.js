@@ -26,12 +26,25 @@ async function supabase(path, options = {}) {
 async function db(path, options = {}) {
   const response = await supabase('/rest/v1/' + path, options);
   const raw = await response.text();
-  if (!response.ok) {
-    let message = 'Unable to save vehicle photo.';
-    try { const data = JSON.parse(raw); if (data?.message) message += ' ' + String(data.message).slice(0, 160); } catch {}
-    fail(message, 503);
-  }
+  if (!response.ok) fail('Unable to verify vendor registration.', 503);
   return raw ? JSON.parse(raw) : null;
+}
+
+async function ensureBucket() {
+  const check = await supabase('/storage/v1/bucket/' + BUCKET, { method:'GET' });
+  if (check.ok) return;
+  if (check.status !== 404) fail('Vehicle photo storage is temporarily unavailable.', 503);
+  const create = await supabase('/storage/v1/bucket', {
+    method:'POST',
+    body:JSON.stringify({
+      id:BUCKET,
+      name:BUCKET,
+      public:false,
+      file_size_limit:MAX_FILE_SIZE,
+      allowed_mime_types:TYPES
+    })
+  });
+  if (!create.ok && create.status !== 409) fail('Unable to prepare vehicle photo storage.', 503);
 }
 
 function clean(value, max = 180) { return String(value || '').trim().slice(0, max); }
@@ -83,9 +96,12 @@ export default async function handler(request) {
     validateMeta(slot, type, size);
 
     const { vendor, vehicle } = await authorize(body.vendor_code, body.upload_token, body.vehicle_number);
+    await ensureBucket();
+    const objectPath = vendor.id + '/' + vehicle.id + '/' + slot;
 
     if (action === 'prepare') {
-      const objectPath = vendor.id + '/' + vehicle.id + '/' + slot + '-' + crypto.randomUUID();
+      // One current photo per view. Replacing a selection should replace the old object.
+      await removeObject(objectPath);
       const response = await supabase('/storage/v1/object/upload/sign/' + BUCKET + '/' + objectPath, { method:'POST', body:'{}' });
       const data = await response.json().catch(()=>({}));
       if (!response.ok || !data.url) fail('Unable to start photo upload. Please try again.', 503);
@@ -95,9 +111,7 @@ export default async function handler(request) {
     }
 
     if (action !== 'verify') fail('Invalid photo upload action.');
-    const objectPath = clean(body.object_path, 500);
-    const expectedPrefix = vendor.id + '/' + vehicle.id + '/' + slot + '-';
-    if (!objectPath.startsWith(expectedPrefix)) fail('Invalid photo upload reference.', 403);
+    if (clean(body.object_path, 500) !== objectPath) fail('Invalid photo upload reference.', 403);
 
     const response = await supabase('/storage/v1/object/authenticated/' + BUCKET + '/' + objectPath, { method:'GET' });
     if (!response.ok) fail('Photo file was not received. Please retry.', 409);
@@ -111,23 +125,10 @@ export default async function handler(request) {
       throw error;
     }
 
-    const existing = (await db('cwd_vendor_vehicle_media?vehicle_id=eq.' + encodeURIComponent(vehicle.id) + '&view_type=eq.' + encodeURIComponent(slot) + '&select=object_path&limit=1'))?.[0];
-    const rows = await db('cwd_vendor_vehicle_media?on_conflict=vehicle_id,view_type', {
-      method:'POST',
-      headers:{ Prefer:'resolution=merge-duplicates,return=representation' },
-      body:JSON.stringify({
-        vendor_id:vendor.id,
-        vehicle_id:vehicle.id,
-        view_type:slot,
-        object_path:objectPath,
-        original_filename:filename,
-        mime_type:actualType,
-        size_bytes:bytes.length,
-        updated_at:new Date().toISOString()
-      })
+    return json({
+      success:true,
+      file:{ view_type:slot, original_filename:filename, mime_type:actualType, size_bytes:bytes.length, object_path:objectPath }
     });
-    if (existing?.object_path && existing.object_path !== objectPath) await removeObject(existing.object_path);
-    return json({ success:true, file:rows?.[0] || { view_type:slot, mime_type:actualType, size_bytes:bytes.length } });
   } catch (error) {
     return json({ success:false, message:error?.message || 'Unable to upload vehicle photo.' }, error?.status || 500);
   }

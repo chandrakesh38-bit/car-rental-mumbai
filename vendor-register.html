@@ -178,7 +178,7 @@
       <div class="card">
         <div class="section-head"><div class="section-icon">👤</div><div><h2>Business / Owner Details</h2><div class="subtitle">Tell us about your business and primary contact details.</div></div></div>
         <div class="grid">
-          <div><label>Owner / business name *</label><input name="owner_business_name" maxlength="160" placeholder="e.g. Sharma Tours & Travels" required></div>
+          <div><label>Owner / business name *</label><input name="owner_business_name" minlength="2" maxlength="160" placeholder="e.g. Sharma Tours & Travels" required></div>
           <div><label>Primary WhatsApp mobile *</label><input id="primary-whatsapp" name="primary_whatsapp" inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" placeholder="9876543210" required></div>
           <div id="existing-vendor-box" class="existing-vendor-box">
             <div><strong>Already registered with CWD ✓</strong><small>You can add another vehicle without entering business or payout details again.</small></div>
@@ -186,9 +186,9 @@
           </div>
           <div><label>Alternate mobile</label><input name="alternate_mobile" inputmode="numeric" maxlength="10" pattern="[6-9][0-9]{9}" placeholder="Optional"></div>
           <div><label>Email</label><input name="email" type="email" maxlength="254" placeholder="yourname@example.com"></div>
-          <div><label>Base location / area *</label><input name="base_location" maxlength="160" placeholder="e.g. Vikhroli, Mumbai" required></div>
+          <div><label>Base location / area *</label><input name="base_location" minlength="2" maxlength="160" placeholder="e.g. Vikhroli, Mumbai" required></div>
           <div><label>PAN *</label><input name="pan" maxlength="10" autocapitalize="characters" placeholder="ABCDE1234F" required></div>
-          <div class="full"><label>Address *</label><textarea name="address" maxlength="1000" placeholder="Enter complete address" required></textarea></div>
+          <div class="full"><label>Address *</label><textarea name="address" minlength="5" maxlength="1000" placeholder="Enter complete address" required></textarea></div>
         </div>
         <div class="actions"><button type="button" class="btn btn-primary" data-next>Continue to Payout →</button></div>
       </div>

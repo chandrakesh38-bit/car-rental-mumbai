@@ -506,6 +506,9 @@ let mumbaiMetroLocations = [
         let outstationQuotedSignature = '';
         let outstationStopSequence = 0;
         let airportRouteQuote = null;
+        let airportRouteSequence = 0;
+        let airportQuotedSignature = '';
+        const googleSelectionVersions = new Map();
         const AIRPORT_MAX_METERS = 30000;
         const outstationPlaceSelections = new Map();
         const outstationSearchTimers = new Map();
@@ -593,6 +596,7 @@ function showCustomAlert(message) {
         }
 
         function setWDSubTab(tab) {
+            if (currentWDSubTab === 'airport' && tab !== 'airport') invalidateAirportRoute();
             currentWDSubTab = tab;
             ['local', 'outstation', 'airport'].forEach(t => {
                 const btn = document.getElementById(`subtab-${t}`);
@@ -695,7 +699,8 @@ function showCustomAlert(message) {
 
         function setAirportTransferType(type) {
             currentAirportType = type;
-            airportRouteQuote = null;
+            invalidateAirportRoute();
+            googleSelectionVersions.set('wd-airport-pickup', (googleSelectionVersions.get('wd-airport-pickup') || 0) + 1);
             const btnDrop = document.getElementById('btn-airport-drop');
             const btnPickup = document.getElementById('btn-airport-pickup');
             const formBox = document.getElementById('airport-dynamic-form');
@@ -778,7 +783,8 @@ function showCustomAlert(message) {
                 `;
             }
 
-          updateDatePlaceholder('wd-airport-date', 'wd-airport-date-placeholder');      
+          updateDatePlaceholder('wd-airport-date', 'wd-airport-date-placeholder');
+          calculateDriverFare();
                 
         }
 
@@ -897,14 +903,29 @@ function onPickupDateChange() {
             return payload;
         }
 
+        function airportRouteSignature() {
+            const input = document.getElementById('wd-airport-pickup');
+            return JSON.stringify([currentAirportType, document.getElementById('wd-airport-terminal')?.value, input?.dataset.googlePlaceId, input?.value.trim()]);
+        }
+
+        function invalidateAirportRoute() {
+            airportRouteSequence++;
+            airportRouteQuote = null;
+            airportQuotedSignature = '';
+        }
+
         async function updateAirportRouteEstimate() {
             if (currentWDSubTab !== 'airport') return null;
             const input = document.getElementById('wd-airport-pickup');
             const terminal = document.getElementById('wd-airport-terminal')?.value;
             const status = document.getElementById('wd-airport-location-status');
             const placeId = input?.dataset.googlePlaceId || '';
-            airportRouteQuote = null;
-            if (!input?.value.trim() || !placeId || !terminal) {
+            invalidateAirportRoute();
+            const sequence = airportRouteSequence;
+            const signature = airportRouteSignature();
+            const isCurrent = () => sequence === airportRouteSequence && currentWDSubTab === 'airport' && input === document.getElementById('wd-airport-pickup') && signature === airportRouteSignature();
+            calculateDriverFare();
+            if (!input?.value.trim() || !placeId || !terminal || (currentAirportType === 'drop' && input.dataset.pickupAllowed !== 'true')) {
                 if (status && currentAirportType === 'pickup') status.textContent = '';
                 calculateDriverFare();
                 return null;
@@ -919,7 +940,11 @@ function onPickupDateChange() {
                     customerPlaceId: placeId,
                     airportType: currentAirportType
                 });
+                if (!isCurrent()) return null;
+                const meters = Number(result.distanceMeters);
+                if (!Number.isFinite(meters) || meters <= 0) throw new Error('Unable to check Airport Transfer availability.');
                 airportRouteQuote = result;
+                airportQuotedSignature = signature;
                 if (Number(result.distanceMeters) > AIRPORT_MAX_METERS) {
                     if (status) {
                         status.textContent = 'This location is outside our Airport Transfer service area. Please use Outstation booking for this trip.';
@@ -935,6 +960,7 @@ function onPickupDateChange() {
                 }
                 return result;
             } catch (error) {
+                if (!isCurrent()) return null;
                 if (status) {
                     status.textContent = error.message || 'Unable to check Airport Transfer availability.';
                     status.className = 'text-[10px] text-rose-600 font-semibold mt-1';
@@ -963,9 +989,14 @@ function onPickupDateChange() {
             const input = document.getElementById(inputId);
             const dropdown = document.getElementById(dropdownId);
             if (!input || !dropdown) return;
-            if (inputId === 'wd-airport-pickup') {
+            const version = (googleSelectionVersions.get(inputId) || 0) + 1;
+            googleSelectionVersions.set(inputId, version);
+            const isCurrent = () => googleSelectionVersions.get(inputId) === version && document.getElementById(inputId) === input;
+            if (inputId === 'wd-local-pickup' || inputId === 'wd-airport-pickup') {
                 input.dataset.googlePlaceId = '';
-                airportRouteQuote = null;
+                input.dataset.pickupAllowed = '';
+                if (inputId === 'wd-airport-pickup') invalidateAirportRoute();
+                calculateDriverFare();
             }
             const existing = outstationSearchTimers.get('google:' + inputId);
             if (existing) clearTimeout(existing);
@@ -978,7 +1009,7 @@ function onPickupDateChange() {
             const timer = setTimeout(async () => {
                 try {
                     const payload = await publicMapsRequest('autocomplete', { input: query });
-                    if (input.value.trim() !== query) return;
+                    if (!isCurrent() || input.value.trim() !== query) return;
                     dropdown.innerHTML = '';
                     const suggestions = payload.suggestions || [];
                     if (!suggestions.length) {
@@ -1002,6 +1033,7 @@ function onPickupDateChange() {
                         option.append(icon, wrap);
                         option.addEventListener('mousedown', async event => {
                             event.preventDefault();
+                            if (!isCurrent()) return;
                             input.value = place.text || place.mainText || '';
                             input.dataset.googlePlaceId = place.placeId || '';
                             input.dataset.pickupAllowed = '';
@@ -1015,13 +1047,15 @@ function onPickupDateChange() {
                             if (needsPickupCheck) {
                                 const status = pickupStatusElement(inputId);
                                 try {
-                                    const check = await validatePickupPlaceId(place.placeId);
+                                    const check = await validatePickupPlaceId(place.placeId, inputId === 'wd-local-pickup' ? 'local' : 'airport');
+                                    if (!isCurrent() || input.dataset.googlePlaceId !== place.placeId) return;
                                     input.dataset.pickupAllowed = 'true';
                                     if (status) {
                                         status.textContent = '✓ Pickup available in ' + check.serviceArea;
                                         status.className = 'text-[10px] text-emerald-700 font-semibold mt-1';
                                     }
                                 } catch (error) {
+                                    if (!isCurrent() || input.dataset.googlePlaceId !== place.placeId) return;
                                     input.dataset.pickupAllowed = 'false';
                                     input.classList.add('border-red-500');
                                     if (status) {
@@ -1030,6 +1064,7 @@ function onPickupDateChange() {
                                     }
                                 }
                             }
+                            calculateDriverFare();
                             if (inputId === 'wd-airport-pickup') {
                                 await updateAirportRouteEstimate();
                             }
@@ -1395,6 +1430,7 @@ function onPickupDateChange() {
         }
 
         function getCarCost(car) {
+            if (currentWDSubTab !== 'outstation' && driverFareReadinessMessage()) return null;
             const nightCharge = currentDriverNightCharge(car);
             if (currentWDSubTab === 'local') {
                 const pkg = document.getElementById('wd-local-package').value;
@@ -1421,7 +1457,7 @@ function onPickupDateChange() {
                 return;
             }
 
-            const readinessMessage = currentWDSubTab === 'outstation' ? outstationFareReadinessMessage() : '';
+            const readinessMessage = driverFareReadinessMessage();
             wdFleet.forEach(car => {
                 const fare = getCarCost(car);
                 const card = document.createElement('div');
@@ -1484,6 +1520,29 @@ function onPickupDateChange() {
                 container.appendChild(card);
             });
         }
+
+        function driverFareReadinessMessage() {
+            if (currentWDSubTab === 'outstation') return outstationFareReadinessMessage();
+            const local = currentWDSubTab === 'local';
+            const prefix = local ? 'wd-local' : 'wd-airport';
+            const input = document.getElementById(prefix + '-pickup');
+            if (!input?.value.trim() || !input.dataset.googlePlaceId) return local ? 'Select pickup' : 'Select transfer location';
+            if ((local || currentAirportType === 'drop') && input.dataset.pickupAllowed !== 'true') return 'Verify pickup';
+            if (!validateJourneyDateTimes([prefix + '-date', prefix + '-hour', prefix + '-ampm'], null, true)) return 'Complete valid date and time';
+            if (local && !['8hr_80km', '10hr_100km', '12hr_120km'].includes(document.getElementById('wd-local-package')?.value)) return 'Choose local package';
+            if (!withDriverRatesLoadedFromDb) return 'Loading live fares';
+            if (!local) {
+                if (!['pickup','drop'].includes(currentAirportType) || !['t1','t2','nmia'].includes(document.getElementById('wd-airport-terminal')?.value)) return 'Choose airport transfer';
+                if (!airportRouteQuote || airportQuotedSignature !== airportRouteSignature() || !Number.isFinite(Number(airportRouteQuote.distanceMeters)) || Number(airportRouteQuote.distanceMeters) <= 0) return 'Waiting for airport route';
+                if (Number(airportRouteQuote.distanceMeters) > AIRPORT_MAX_METERS) return 'Outside Airport service area';
+            }
+            return '';
+        }
+
+        // Delegation also covers Airport fields rebuilt when direction changes.
+        for (const eventName of ['input', 'change']) document.addEventListener(eventName, event => {
+            if (/^wd-(local|airport)-(date|hour|ampm|package)$/.test(event.target?.id || '')) calculateDriverFare();
+        });
 
         function outstationFareReadinessMessage() {
             if (!currentOutstationJourneyType) return 'Choose trip type';
@@ -1648,6 +1707,13 @@ function onPickupDateChange() {
         }
 
         function handleBookThisCarClick(carName, fare) {
+            if (currentWDSubTab !== 'outstation') {
+                const message = driverFareReadinessMessage();
+                if (message) { calculateDriverFare(); showCustomAlert(message + ' before booking.'); return; }
+                const car = wdFleet.find(item => item.name === carName);
+                if (!car) return;
+                fare = getCarCost(car);
+            }
             if (currentWDSubTab === 'outstation') {
                 const message = outstationFareReadinessMessage();
                 if (message) {
@@ -1974,6 +2040,16 @@ function onPickupDateChange() {
             const input = document.getElementById(config.inputId);
             const status = document.getElementById(config.statusId);
             if (!input) return;
+            const guarded = mode === 'local' || mode === 'airport';
+            const version = (googleSelectionVersions.get(config.inputId) || 0) + 1;
+            if (guarded) {
+                googleSelectionVersions.set(config.inputId, version);
+                input.dataset.googlePlaceId = '';
+                input.dataset.pickupAllowed = '';
+                if (mode === 'airport') invalidateAirportRoute();
+                calculateDriverFare();
+            }
+            const isCurrent = () => !guarded || (googleSelectionVersions.get(config.inputId) === version && document.getElementById(config.inputId) === input);
             if (status) {
                 status.textContent = 'Waiting for location permission…';
                 status.className = 'text-[10px] text-slate-500 mt-1';
@@ -1981,9 +2057,11 @@ function onPickupDateChange() {
             try {
                 const position = await requestBrowserLocation();
                 const result = await reverseGeocodeCurrentPosition(position);
+                if (!isCurrent()) return;
                 input.value = result.address || (result.latitude + ', ' + result.longitude);
                 input.dataset.googlePlaceId = result.placeId || '';
                 const check = await validatePickupPlaceId(result.placeId, mode);
+                if (!isCurrent()) return;
                 input.dataset.pickupAllowed = 'true';
                 if (mode === 'outstation') {
                     outstationPlaceSelections.set('wd-out-pickup', {
@@ -1996,11 +2074,13 @@ function onPickupDateChange() {
                 } else if (mode === 'airport') {
                     await updateAirportRouteEstimate();
                 }
+                calculateDriverFare();
                 if (status && mode !== 'airport') {
                     status.textContent = '✓ Current location selected · Pickup available in ' + check.serviceArea;
                     status.className = 'text-[10px] text-emerald-700 font-semibold mt-1';
                 }
             } catch (error) {
+                if (!isCurrent()) return;
                 if (status) {
                     status.textContent = geolocationErrorMessage(error);
                     status.className = 'text-[10px] text-rose-600 mt-1';

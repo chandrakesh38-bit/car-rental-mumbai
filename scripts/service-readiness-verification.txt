@@ -1,0 +1,28 @@
+Local and Airport fare readiness - testing only
+
+Numeric fares and booking are gated by service-specific readiness. Local requires
+selected/validated Maharashtra pickup, future date/time and a supported package.
+Airport requires a selected customer Place, future date/time, valid direction and
+terminal, current positive route <=30km, and existing metro pickup eligibility for
+Airport Drop. Optional flight number stays optional. Prices are unchanged.
+
+Local address edits clear old Place validation. Date/time changes refresh cards.
+Airport terminal/direction changes invalidate route readiness immediately. Route
+sequence/signature and selection/GPS guards reject obsolete asynchronous results.
+Valid edits recover/recalculate without another Explore click.
+
+Passed offline browser regressions: Outstation Explore -> blank Local -> blank
+Airport; reverse switches; partial/invalid dates and unselected text; Local edits,
+package/time changes; Airport terminal/direction, pending/failed/zero/over-limit
+routes, stale response rejection and valid recovery; direct invalid booking guard.
+Test 1 passed with unchanged assertions. Maharashtra 32 API/final-validation cases,
+Airport/Self Drive bounds and all-India drops passed with mocked backend fixtures.
+Syntax and static build passed. Existing page generator drift was excluded using
+byte-preserved HTML snapshots. No generated page changes are part of this fix.
+
+Run: OFFLINE_FIXTURES=1 node scripts/test-service-readiness.mjs
+Also: OFFLINE_FIXTURES=1 node scripts/test-outstation-readiness.mjs
+And: node scripts/test-pickup-eligibility.mjs
+Set PLAYWRIGHT_MODULE to the available Playwright module when needed.
+Fonts/CDN scripts, Maps and pricing were mocked; this is behavior evidence, not
+live Google or production-layout verification. No real submissions or OTP calls.

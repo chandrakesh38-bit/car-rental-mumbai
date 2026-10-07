@@ -1,4 +1,5 @@
-import { getSecurityDepositBreakup, syncSecurityDepositReceived, markFullSecurityDepositRefund, appendSecurityDepositRefundMarker } from '../lib/security-deposit-accounting.mjs';
+let securityDepositAccountingModule;
+const securityDepositAccounting = () => securityDepositAccountingModule ||= import('../lib/security-deposit-accounting.mjs');
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
 const base = () => String(process.env.SUPABASE_URL || '').replace(/\/$/, '');
 const serviceKey = () => process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -46,6 +47,7 @@ async function razor(path, options = {}) {
   return data;
 }
 async function syncBooking(bookingId, paymentMode = 'bank_transfer') {
+  const { getSecurityDepositBreakup, syncSecurityDepositReceived } = await securityDepositAccounting();
   const payments = await db('booking_payments?booking_id=eq.' + encodeURIComponent(bookingId) + '&select=amount,status,payment_method,razorpay_payment_id,razorpay_payment_link_id,created_at');
   const paid = (payments || []).filter(p => p.status === 'paid').reduce((sum,p) => sum + Number(p.amount || 0), 0);
   const bookings = await db('inquiries?booking_id=eq.' + encodeURIComponent(bookingId) + '&select=*&limit=1');
@@ -139,6 +141,7 @@ async function handle(request) {
     const booking = bookings?.[0]; if (!booking) return json({success:false,message:'Booking not found.'},404);
 
     if (action === 'mark_security_deposit_refund') {
+      const { getSecurityDepositBreakup, markFullSecurityDepositRefund, appendSecurityDepositRefundMarker } = await securityDepositAccounting();
       const method = String(body.payment_method || '').toLowerCase();
       if (!['cash','bank_transfer','offline_upi'].includes(method)) {
         return json({success:false,message:'Choose a valid offline refund method.'},400);

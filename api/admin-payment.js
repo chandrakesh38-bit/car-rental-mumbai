@@ -1,3 +1,5 @@
+let securityDepositAccountingModule;
+const securityDepositAccounting = () => securityDepositAccountingModule ||= import('../lib/security-deposit-accounting.mjs');
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
 const base = () => String(process.env.SUPABASE_URL || '').replace(/\/$/, '');
 const serviceKey = () => process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -44,14 +46,26 @@ async function razor(path, options = {}) {
   if (!r.ok) throw Object.assign(new Error(data?.error?.description || 'Razorpay request failed.'), { status: 502 });
   return data;
 }
-async function syncBooking(bookingId) {
-  const payments = await db('booking_payments?booking_id=eq.' + encodeURIComponent(bookingId) + '&select=amount,status');
+async function syncBooking(bookingId, paymentMode = 'bank_transfer') {
+  const { getSecurityDepositBreakup, syncSecurityDepositReceived } = await securityDepositAccounting();
+  const payments = await db('booking_payments?booking_id=eq.' + encodeURIComponent(bookingId) + '&select=amount,status,payment_method,razorpay_payment_id,razorpay_payment_link_id,created_at');
   const paid = (payments || []).filter(p => p.status === 'paid').reduce((sum,p) => sum + Number(p.amount || 0), 0);
-  const bookings = await db('inquiries?booking_id=eq.' + encodeURIComponent(bookingId) + '&select=total_fare&limit=1');
-  const fare = Number(bookings?.[0]?.total_fare || 0);
+  const bookings = await db('inquiries?booking_id=eq.' + encodeURIComponent(bookingId) + '&select=*&limit=1');
+  const booking = bookings?.[0];
+  const fare = Number(booking?.total_fare || 0);
   const payment_status = paid <= 0 ? 'pending' : paid >= fare && fare > 0 ? 'paid' : 'partially_paid';
   await db('inquiries?booking_id=eq.' + encodeURIComponent(bookingId), { method:'PATCH', headers:{Prefer:'return=minimal'}, body:JSON.stringify({paid_amount:paid,payment_status,updated_at:new Date().toISOString()}) });
-  return { paid, fare, payment_status };
+
+  let security_deposit = booking ? getSecurityDepositBreakup({...booking, paid_amount:paid}, paid) : null;
+  let accounting_warning = '';
+  if (booking && security_deposit?.is_self_drive && security_deposit.security_deposit > 0) {
+    try {
+      security_deposit = await syncSecurityDepositReceived({...booking, paid_amount:paid}, paid, paymentMode);
+    } catch (error) {
+      accounting_warning = error?.message || 'Security deposit accounting sync failed.';
+    }
+  }
+  return { paid, fare, payment_status, security_deposit, accounting_warning };
 }
 async function reconcile(record) {
   const link = await razor('payment_links/' + encodeURIComponent(record.razorpay_payment_link_id));
@@ -99,7 +113,15 @@ async function handle(request) {
       } else {
         rows = reconciled;
       }
-      return json({success:true,payments:rows || []});
+      const latestPaid = (rows || []).find(p => p.status === 'paid');
+      const paymentMode = latestPaid?.payment_method || (latestPaid?.razorpay_payment_id || latestPaid?.razorpay_payment_link_id ? 'bank_transfer' : 'bank_transfer');
+      const summary = await syncBooking(bookingId, paymentMode);
+      return json({
+        success:true,
+        payments:rows || [],
+        security_deposit:summary.security_deposit,
+        accounting_warning:summary.accounting_warning || ''
+      });
     }
     const body = await request.json();
     const bookingId = String(body.booking_id || ''), action = String(body.action || '');
@@ -117,6 +139,44 @@ async function handle(request) {
     }
     const bookings = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&limit=1');
     const booking = bookings?.[0]; if (!booking) return json({success:false,message:'Booking not found.'},404);
+
+    if (action === 'mark_security_deposit_refund') {
+      const { getSecurityDepositBreakup, markFullSecurityDepositRefund, appendSecurityDepositRefundMarker } = await securityDepositAccounting();
+      const method = String(body.payment_method || '').toLowerCase();
+      if (!['cash','bank_transfer','offline_upi'].includes(method)) {
+        return json({success:false,message:'Choose a valid offline refund method.'},400);
+      }
+
+      const summary = await syncBooking(bookingId, method);
+      const freshRows = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&limit=1');
+      const freshBooking = freshRows?.[0] || {...booking, paid_amount:summary.paid};
+      await markFullSecurityDepositRefund(freshBooking, summary.paid, method, adminUser?.email);
+
+      const breakup = getSecurityDepositBreakup(freshBooking, summary.paid);
+      const bookingDetails = appendSecurityDepositRefundMarker(
+        freshBooking.booking_details,
+        breakup.security_deposit,
+        method,
+        adminUser?.email
+      );
+      await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId), {
+        method:'PATCH',
+        headers:{Prefer:'return=minimal'},
+        body:JSON.stringify({booking_details:bookingDetails,updated_at:new Date().toISOString()})
+      });
+      const refreshed = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&limit=1');
+      return json({
+        success:true,
+        booking:refreshed?.[0] || {...freshBooking,booking_details:bookingDetails},
+        security_deposit:{
+          ...breakup,
+          refund_marked:true,
+          deposit_refunded:breakup.security_deposit,
+          deposit_held:0
+        }
+      });
+    }
+
     if (action === 'update_final_charges') {
       const nonNegative = value => {
         const n = Number(value || 0);
@@ -180,8 +240,8 @@ async function handle(request) {
         booking_id:bookingId,payment_type:'offline',amount,status:'paid',payment_method:method,
         recorded_by:String(adminUser?.email || '').toLowerCase(),paid_at:new Date().toISOString()
       })});
-      const updated = await syncBooking(bookingId);
-      return json({success:true,payment:rows?.[0],summary:updated});
+      const updated = await syncBooking(bookingId, method);
+      return json({success:true,payment:rows?.[0],summary:updated,accounting_warning:updated.accounting_warning || ''});
     }
     if (action === 'remove_offline') {
       const paymentId = String(body.payment_id || '');

@@ -1,3 +1,4 @@
+import { getSecurityDepositBreakup, syncSecurityDepositReceived } from '../lib/security-deposit-accounting.mjs';
 export const config = { runtime: 'edge' };
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json'}});
 const hex=bytes=>Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');
@@ -16,9 +17,16 @@ async function db(path,options={}){
 async function sync(bookingId){
   const ps=await db('booking_payments?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=amount,status');
   const paid=(ps||[]).filter(p=>p.status==='paid').reduce((n,p)=>n+Number(p.amount||0),0);
-  const bs=await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=total_fare&limit=1');
-  const fare=Number(bs?.[0]?.total_fare||0),status=paid<=0?'pending':paid>=fare&&fare>0?'paid':'partially_paid';
+  const bs=await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&limit=1');
+  const booking=bs?.[0];
+  const fare=Number(booking?.total_fare||0),status=paid<=0?'pending':paid>=fare&&fare>0?'paid':'partially_paid';
   await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({paid_amount:paid,payment_status:status,updated_at:new Date().toISOString()})});
+  if(booking){
+    const breakup=getSecurityDepositBreakup({...booking,paid_amount:paid},paid);
+    if(breakup.is_self_drive&&breakup.security_deposit>0){
+      await syncSecurityDepositReceived({...booking,paid_amount:paid},paid,'bank_transfer');
+    }
+  }
 }
 async function handle(request){
   if(request.method!=='POST')return json({ok:false},405);

@@ -1,0 +1,23 @@
+Verification: Maharashtra pickup expansion (testing only)
+
+Local City / Outstation use Google geocode state=Maharashtra, country=India,
+non-partial structured results and valid coordinates. Client address text cannot
+assert eligibility. Final booking independently re-fetches Google details.
+Airport uses its original city rule and 30km cap; Self Drive retains 50km cap.
+All-India drops and pricing are unchanged.
+
+Passed: syntax, git diff --check, static build, 32 Maharashtra API/final-booking
+fixtures, outside/missing/ambiguous state cases, invalid geometry, lookup failure,
+required Place selection, outside-state drops, Airport and Self Drive boundaries.
+Passed: Test 1 via OFFLINE_FIXTURES=1 node scripts/test-outstation-readiness.mjs.
+All original booking/fare assertions retained; CDN JS/CSS and fonts stubbed only
+inside test harness. No live Maps/database/messages/OTP/bookings executed.
+Offline screenshot/layout result is not evidence of production typography/layout.
+
+Build note: existing generator differs from committed page customizations.
+Build completed, but unrelated generated changes were excluded; existing pages
+and shared template both received only the two pickup placeholder changes.
+
+Economics: distant pickups retain existing local package pricing and Outstation
+Vikhroli base/return routing. No repositioning surcharge or config change added.
+Operational availability/economics require business review separately.

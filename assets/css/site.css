@@ -208,3 +208,7 @@ header .text-amber-300 { color: var(--ocean-tertiary) !important; }
 @media (prefers-reduced-motion: reduce) {
     .first-trip-confetti-layer { display: none; }
 }
+
+/* Guided trip completion keeps booking disabled until readiness succeeds. */
+.journey-completion-action { color: inherit; font: inherit; text-decoration: underline; text-underline-offset: .2em; border-radius: .35rem; min-height: 44px; padding: .25rem; cursor: pointer; }
+.journey-completion-action:focus-visible, .journey-attention { outline: 3px solid #4f46e5 !important; outline-offset: 4px; }

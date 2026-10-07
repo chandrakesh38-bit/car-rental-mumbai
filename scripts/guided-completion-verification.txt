@@ -1,0 +1,26 @@
+Guided With Driver completion - testing only
+
+Incomplete card fare labels are now native buttons for navigating to the first
+missing/invalid trip field. Book This Car remains separately disabled until all
+existing readiness checks pass. Targets cover Local pickup/date/time/package,
+Outstation trip type/pickup/stops/drop/dates, and Airport location/date/terminal.
+Actions re-evaluate the current form at activation and never create a booking.
+Selected places awaiting verification, pending/failed routes and pricing do not
+get a misleading missing-field navigation action. Existing status wording stays.
+
+Focus is visibly outlined. Native buttons support Enter/Space. Scrolling respects
+reduced motion, reserves header spacing, and re-centers after viewport resize for
+a mobile keyboard. Browser tests exercise desktop/mobile input focus, keyboard
+activation, pending/failed routes, disabled booking and recovery to valid booking.
+
+Verification uses offline font/CDN/Maps/pricing fixtures. The supplied Library
+screenshot could not be materialized (transfer failed); no claim of reference
+image inspection. Generated test screenshots inspected for target highlight,
+not production typography/layout. Actual mobile keyboard behavior remains a
+manual-device check. Existing service-readiness, Test 1 and 32 Maharashtra fixture
+suites are required. Syntax/static build checked, with existing unrelated HTML
+build drift excluded by preserving original bytes. No pricing/geography changes,
+real bookings, OTP, data writes or production updates.
+
+Run OFFLINE_FIXTURES=1 node scripts/test-guided-completion.mjs for mobile.
+Set GUIDED_DESKTOP=1 as well for desktop. Use PLAYWRIGHT_MODULE when necessary.

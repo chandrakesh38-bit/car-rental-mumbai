@@ -1496,7 +1496,7 @@ function onPickupDateChange() {
                             </div>
                             <div class="text-right">
                                 <span class="text-[10px] text-slate-400 block font-semibold">Estimated Fare</span>
-                                <span class="text-xl font-black text-indigo-950">${fare === null ? readinessMessage : '₹' + fare.toLocaleString('en-IN')}</span>
+                                <span data-fare-readiness class="text-xl font-black text-indigo-950">${fare === null ? readinessMessage : '₹' + fare.toLocaleString('en-IN')}</span>
                                 ${currentWDSubTab === 'outstation' && fare !== null ? `<span class="block text-xs font-bold text-emerald-700 mt-1">₹${(fare - Math.round(fare * 0.05)).toLocaleString('en-IN')} with FIRSTTRIP</span><span class="block text-[10px] text-slate-500">5% off your first booking</span>` : ''}
                             </div>
                         </div>
@@ -1514,11 +1514,89 @@ function onPickupDateChange() {
                         </div>
                     </div>
                     <button type="button" ${fare === null ? 'disabled' : ''} onclick="handleBookThisCarClick('${car.name}', ${fare === null ? 0 : fare})" class="w-full ${fare === null ? 'bg-slate-300 cursor-not-allowed' : 'bg-indigo-950 hover:bg-indigo-900'} text-white font-bold py-2.5 rounded-xl transition text-xs tracking-wide shadow-sm">
-                        ${fare === null ? readinessMessage : 'Book This Car'}
+                        Book This Car
                     </button>
                 `;
+                if (fare === null && guidedCompletionTarget()) {
+                    const label = card.querySelector('[data-fare-readiness]');
+                    const action = document.createElement('button');
+                    action.type = 'button';
+                    action.className = 'journey-completion-action';
+                    action.dataset.completeJourney = 'true';
+                    action.textContent = readinessMessage + ' →';
+                    action.setAttribute('aria-label', readinessMessage + '. Go to the required trip field');
+                    action.setAttribute('aria-controls', guidedCompletionTarget().id);
+                    action.addEventListener('click', guideJourneyCompletion);
+                    label.replaceChildren(action);
+                }
                 container.appendChild(card);
             });
+        }
+
+        function incompleteDateField(prefix, comparison = new Date()) {
+            const date = document.getElementById(prefix + 'date');
+            const hour = document.getElementById(prefix + 'hour');
+            const ampm = document.getElementById(prefix + 'ampm');
+            if (!date?.value) return date;
+            if (!hour?.value || !Number.isInteger(Number(hour.value)) || Number(hour.value) < 1 || Number(hour.value) > 12) return hour;
+            if (!['AM','PM'].includes(ampm?.value)) return ampm;
+            const value = createLocalDateTime(date.value, Number(hour.value), ampm.value);
+            if (!Number.isFinite(value.getTime())) return date;
+            if (value <= comparison) return value.toDateString() === comparison.toDateString() ? hour : date;
+            return null;
+        }
+
+        function guidedCompletionTarget() {
+            // Readiness remains authoritative. Navigation never computes or books a fare.
+            if (!driverFareReadinessMessage()) return null;
+            const field = id => document.getElementById(id);
+            if (currentWDSubTab === 'outstation') {
+                if (!currentOutstationJourneyType) return field('wd-out-one-way');
+                for (const input of [field('wd-out-pickup'), ...document.querySelectorAll('[data-outstation-stop-input="true"]'), field('wd-out-destination')]) {
+                    if (!input) continue;
+                    const optionalStop = input.dataset.outstationStopInput === 'true';
+                    if (optionalStop && !input.value.trim()) continue;
+                    if (!input.value.trim() || !outstationPlaceSelections.has(input.id)) return input;
+                }
+                const pickupDate = incompleteDateField('wd-out-p');
+                if (pickupDate) return pickupDate;
+                const pickup = createLocalDateTime(field('wd-out-pdate').value, Number(field('wd-out-phour').value), field('wd-out-pampm').value);
+                return incompleteDateField('wd-out-r', pickup);
+            }
+            const local = currentWDSubTab === 'local';
+            const prefix = local ? 'wd-local-' : 'wd-airport-';
+            const input = field(prefix + 'pickup');
+            if (!input?.value.trim() || !input.dataset.googlePlaceId || ((local || currentAirportType === 'drop') && input.dataset.pickupAllowed === 'false')) return input;
+            // Selected Place still being verified: do not pretend it is missing.
+            if ((local || currentAirportType === 'drop') && input.dataset.pickupAllowed !== 'true') return null;
+            const date = incompleteDateField(prefix);
+            if (date) return date;
+            if (local) return ['8hr_80km','10hr_100km','12hr_120km'].includes(field('wd-local-package')?.value) ? null : field('pkg-card-8hr');
+            if (!['pickup','drop'].includes(currentAirportType)) return field('btn-airport-drop');
+            if (!['t1','t2','nmia'].includes(field('wd-airport-terminal')?.value)) return field('wd-airport-terminal');
+            if (Number(airportRouteQuote?.distanceMeters) > AIRPORT_MAX_METERS) return input;
+            return null; // Pending/failed route or pricing is not a missing form field.
+        }
+
+        function guideJourneyCompletion() {
+            const target = guidedCompletionTarget();
+            if (!target) return;
+            document.querySelectorAll('.journey-attention').forEach(el => el.classList.remove('journey-attention'));
+            target.classList.add('journey-attention');
+            const header = document.querySelector('body > nav');
+            target.style.scrollMarginTop = ((header?.getBoundingClientRect().height || 80) + 20) + 'px';
+            target.style.scrollMarginBottom = '24px';
+            const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+            target.focus({ preventScroll: true });
+            target.scrollIntoView({ behavior, block: 'center' });
+            target.addEventListener('blur', () => target.classList.remove('journey-attention'), { once: true });
+            // Re-center after the mobile keyboard changes the visible viewport.
+            const viewport = window.visualViewport;
+            if (viewport) {
+                const recenter = () => { if (document.activeElement === target) target.scrollIntoView({ behavior: 'auto', block: 'center' }); };
+                viewport.addEventListener('resize', recenter, { once: true });
+                setTimeout(() => viewport.removeEventListener('resize', recenter), 1200);
+            }
         }
 
         function driverFareReadinessMessage() {

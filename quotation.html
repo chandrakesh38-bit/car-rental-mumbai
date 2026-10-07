@@ -489,10 +489,10 @@
               if (type === 'pickup') {
                 setStatus('pickup', 'Checking pickup service area…');
                 try {
-                  const result = await mapsRequest('validate-pickup', { placeId: selected.placeId });
+                  const result = await mapsRequest('validate-pickup', { placeId: selected.placeId, pickupScope: 'outstation' });
                   if (!result.allowed) {
                     pickupSelection = null;
-                    setStatus('pickup', result.message || 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.', 'error');
+                    setStatus('pickup', result.message || 'Please select a verified pickup in Maharashtra from Google suggestions.', 'error');
                     clearFare();
                     return;
                   }
@@ -799,8 +799,8 @@
               if (validatePickup) {
                 localStatus('Checking pickup service area…');
                 try {
-                  const result = await mapsRequest('validate-pickup', {placeId: selected.placeId});
-                  if (!result.allowed) throw new Error(result.message || 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.');
+                  const result = await mapsRequest('validate-pickup', {placeId: selected.placeId, pickupScope: 'local'});
+                  if (!result.allowed) throw new Error(result.message || 'Please select a verified pickup in Maharashtra from Google suggestions.');
                   localStatus('✓ Pickup location available.', 'ok');
                   refreshLocalFare();
                 } catch (error) {
@@ -868,8 +868,8 @@
       const total = Number($('local-total-rent').value);
       if (!Number.isFinite(total) || total <= 0) throw new Error('Please enter a valid Total Rent.');
 
-      const check = await mapsRequest('validate-pickup', {placeId: localPickupSelection.placeId});
-      if (!check.allowed) throw new Error(check.message || 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.');
+      const check = await mapsRequest('validate-pickup', {placeId: localPickupSelection.placeId, pickupScope: 'local'});
+      if (!check.allowed) throw new Error(check.message || 'Please select a verified pickup in Maharashtra from Google suggestions.');
 
       const details = localPackageDetails(pkg);
 

@@ -53,6 +53,12 @@ try {
     if(url.endsWith('/api/mobile-otp')) return json({success:false},503);
     if(url==='https://verify.msg91.com/otp-provider.js') return route.fulfill({body:''});
     if(req.method()!=='GET')throw Error('Unexpected mutation blocked: '+url);
+    if(process.env.OFFLINE_FIXTURES === '1' && !url.startsWith('http://127.0.0.1:')) {
+      // Offline behavior test only: no CDN, font, Maps or database network access.
+      if(url.includes('@supabase/supabase-js')) return route.fulfill({contentType:'text/javascript',body:`window.supabase={createClient:(base)=>({from:(table)=>{const q={select:()=>q,eq:()=>q,order:()=>q,abortSignal:()=>q,then:(resolve,reject)=>fetch(base+'/rest/v1/'+table).then(r=>r.json()).then(data=>({data,error:null})).then(resolve,reject)};return q}})};`});
+      if(url.includes('cdn.tailwindcss.com')) return route.fulfill({contentType:'text/javascript',body:`const style=document.createElement('style');style.textContent='.hidden{display:none!important} .grid{display:grid} .grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))} .grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))} *{box-sizing:border-box} img,input,select{max-width:100%}';document.head.append(style);`});
+      return route.fulfill({body:''});
+    }
     if(!url.startsWith('http://127.0.0.1:')) {
       if(!cache.has(url)) cache.set(url,(async()=>{const r=await route.fetch();return {status:r.status(),headers:r.headers(),body:await r.body()};})());
       return route.fulfill(await cache.get(url));

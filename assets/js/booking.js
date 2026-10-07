@@ -871,10 +871,10 @@ function onPickupDateChange() {
             });
         });
 
-        async function validatePickupPlaceId(placeId) {
+        async function validatePickupPlaceId(placeId, pickupScope = currentWDSubTab) {
             if (!placeId) throw new Error('Please select the pickup location from Google suggestions.');
-            const result = await publicMapsRequest('validate-pickup', { placeId });
-            if (!result.allowed) throw new Error(result.message || 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.');
+            const result = await publicMapsRequest('validate-pickup', { placeId, pickupScope });
+            if (!result.allowed) throw new Error(result.message || (pickupScope === 'airport' ? 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.' : 'Please select a verified pickup in Maharashtra from Google suggestions.'));
             return result;
         }
 
@@ -1538,7 +1538,7 @@ function onPickupDateChange() {
                     missing = true; 
                 } else if (!localPickupInput.dataset.googlePlaceId || localPickupInput.dataset.pickupAllowed !== 'true') {
                     localPickupInput.classList.add('border-red-500');
-                    showCustomAlert('Please select a pickup in Mumbai, Thane, or Navi Mumbai from Google suggestions.');
+                    showCustomAlert('Please select a pickup in Maharashtra from Google suggestions.');
                     return false;
                 } else {
                     localPickupInput.classList.remove('border-red-500');
@@ -1983,7 +1983,7 @@ function onPickupDateChange() {
                 const result = await reverseGeocodeCurrentPosition(position);
                 input.value = result.address || (result.latitude + ', ' + result.longitude);
                 input.dataset.googlePlaceId = result.placeId || '';
-                const check = await validatePickupPlaceId(result.placeId);
+                const check = await validatePickupPlaceId(result.placeId, mode);
                 input.dataset.pickupAllowed = 'true';
                 if (mode === 'outstation') {
                     outstationPlaceSelections.set('wd-out-pickup', {

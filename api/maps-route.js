@@ -1,3 +1,5 @@
+import { maharashtraPickup } from '../lib/pickup-eligibility.mjs';
+
 export const config = { runtime: 'edge' };
 
 const BASE_ADDRESS = 'Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai, Maharashtra 400079';
@@ -185,8 +187,9 @@ function pickupServiceArea(components, formattedAddress = '') {
   return null;
 }
 
-async function validatePickupPlace(placeId) {
+async function validatePickupPlace(placeId, pickupScope) {
   const details = await placeDetails(placeId);
+  if (['local', 'outstation'].includes(pickupScope)) return { ...details, ...maharashtraPickup(details.geocodeResult) };
   const area = pickupServiceArea(details.components || {}, details.address);
   return { ...details, allowed: Boolean(area), serviceArea: area || '' };
 }
@@ -216,7 +219,8 @@ async function placeDetails(placeId) {
     city: String(components.locality || components.sublocality || components.administrative_area_level_2 || ''),
     state: String(components.administrative_area_level_1 || ''),
     postalCode: String(components.postal_code || ''),
-    components
+    components,
+    geocodeResult: result
   };
 }
 
@@ -341,17 +345,17 @@ async function reverseGeocode(lat, lng) {
 
     if (action === 'place-details') {
       const details = await placeDetails(body.placeId);
-      const { components, ...safe } = details;
+      const { components, geocodeResult, ...safe } = details;
       return json({ success: true, ...safe });
     }
 
     if (action === 'validate-pickup') {
-      const result = await validatePickupPlace(body.placeId);
-      const { components, ...safe } = result;
+      const result = await validatePickupPlace(body.placeId, body.pickupScope);
+      const { components, geocodeResult, ...safe } = result;
       return json({
         success: true,
         ...safe,
-        message: safe.allowed ? 'Pickup location is serviceable.' : 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.'
+        message: safe.message || (safe.allowed ? 'Pickup location is serviceable.' : 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.')
       });
     }
 
@@ -372,6 +376,8 @@ async function reverseGeocode(lat, lng) {
     }
 
     if (action === 'route') {
+      const pickupCheck = await validatePickupPlace(body.pickupPlaceId, 'outstation');
+      if (!pickupCheck.allowed) return json({ success: false, message: pickupCheck.message }, 400);
       const result = await computeRoute(body.pickupPlaceId, body.stopPlaceIds, body.finalDropPlaceId, body.journeyType);
       return json({ success: true, ...result });
     }

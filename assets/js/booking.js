@@ -503,11 +503,13 @@ let mumbaiMetroLocations = [
         let wdOutstationDays = 1;
         let wdOutstationRouteQuote = null;
         let outstationRouteSequence = 0;
+        let outstationQuotedSignature = '';
         let outstationStopSequence = 0;
         let airportRouteQuote = null;
         const AIRPORT_MAX_METERS = 30000;
         const outstationPlaceSelections = new Map();
         const outstationSearchTimers = new Map();
+        const outstationSelectionVersions = new Map();
         let chosenCarName = '';
         let chosenFareAmount = 0;
         let firstTripFareBeforeDiscount = 0;
@@ -946,6 +948,7 @@ function onPickupDateChange() {
 
         function invalidateOutstationRoute(message = '') {
             outstationRouteSequence += 1;
+            outstationQuotedSignature = '';
             wdOutstationRouteQuote = null;
             wdOutstationKm = 0;
             const status = document.getElementById('wd-out-route-status');
@@ -1047,6 +1050,8 @@ function onPickupDateChange() {
             const input = document.getElementById(inputId);
             const dropdown = document.getElementById(dropdownId);
             if (!input || !dropdown) return;
+            const version = (outstationSelectionVersions.get(inputId) || 0) + 1;
+            outstationSelectionVersions.set(inputId, version);
             outstationPlaceSelections.delete(inputId);
             if (inputId === 'wd-out-pickup') {
                 delete input.dataset.pickupAllowed;
@@ -1069,7 +1074,7 @@ function onPickupDateChange() {
             const timer = setTimeout(async () => {
                 try {
                     const payload = await publicMapsRequest('autocomplete', { input: query });
-                    if (input.value.trim() !== query) return;
+                    if (input.value.trim() !== query || outstationSelectionVersions.get(inputId) !== version) return;
                     dropdown.innerHTML = '';
                     const suggestions = payload.suggestions || [];
                     if (!suggestions.length) {
@@ -1093,18 +1098,23 @@ function onPickupDateChange() {
                         option.append(icon, textWrap);
                         option.addEventListener('mousedown', async event => {
                             event.preventDefault();
+                            if (outstationSelectionVersions.get(inputId) !== version) return;
+                            const selectionVersion = version + 1;
+                            outstationSelectionVersions.set(inputId, selectionVersion);
                             input.value = place.text || place.mainText || '';
                             dropdown.classList.add('hidden');
                             if (inputId === 'wd-out-pickup') {
                                 const status = pickupStatusElement(inputId);
                                 try {
                                     const check = await validatePickupPlaceId(place.placeId);
+                                    if (outstationSelectionVersions.get(inputId) !== selectionVersion) return;
                                     input.dataset.pickupAllowed = 'true';
                                     if (status) {
                                         status.textContent = '✓ Pickup available in ' + check.serviceArea;
                                         status.className = 'text-[10px] text-emerald-700 font-semibold mt-1';
                                     }
                                 } catch (error) {
+                                    if (outstationSelectionVersions.get(inputId) !== selectionVersion) return;
                                     input.dataset.pickupAllowed = 'false';
                                     input.classList.add('border-red-500');
                                     outstationPlaceSelections.delete(inputId);
@@ -1211,7 +1221,7 @@ function onPickupDateChange() {
             const finalDrop = outstationPlaceSelections.get('wd-out-destination');
             if (strict && (!pickupInput?.value.trim() || !pickup)) throw new Error('Please select the pickup location from Google suggestions.');
             if (strict && (!finalInput?.value.trim() || !finalDrop)) throw new Error('Please select the final drop from Google suggestions.');
-            if (!pickup || !finalDrop) return null;
+            if (!pickupInput?.value.trim() || !finalInput?.value.trim() || !pickup || !finalDrop) return null;
 
             const stops = [];
             for (const input of document.querySelectorAll('[data-outstation-stop-input="true"]')) {
@@ -1231,8 +1241,10 @@ function onPickupDateChange() {
                 return;
             }
             const selections = collectOutstationRouteSelections(false);
+            invalidateOutstationRoute('');
             if (!selections) return;
-            const sequence = ++outstationRouteSequence;
+            const sequence = outstationRouteSequence;
+            const signature = currentOutstationRouteSignature();
             const status = document.getElementById('wd-out-route-status');
             if (status) {
                 status.textContent = 'Calculating complete vehicle route from Vikhroli base…';
@@ -1245,13 +1257,19 @@ function onPickupDateChange() {
                     finalDropPlaceId: selections.finalDrop.placeId,
                     journeyType: currentOutstationJourneyType
                 });
-                if (sequence !== outstationRouteSequence) return;
-                wdOutstationRouteQuote = payload;
+                if (sequence !== outstationRouteSequence || signature !== currentOutstationRouteSignature()) return;
                 if (payload.journeyType !== currentOutstationJourneyType) {
                     invalidateOutstationRoute('Route type changed. Please recalculate the fare.');
                     return;
                 }
-                wdOutstationKm = Number(payload.routeKmRoundedUp) || 0;
+                const routeKm = Number(payload.routeKmRoundedUp);
+                if (!Number.isFinite(routeKm) || routeKm <= 0) {
+                    invalidateOutstationRoute('Unable to calculate route distance. Please try again.');
+                    return;
+                }
+                wdOutstationRouteQuote = payload;
+                wdOutstationKm = routeKm;
+                outstationQuotedSignature = signature;
                 if (status) {
                     status.textContent = '';
                     status.classList.add('hidden');
@@ -1382,7 +1400,7 @@ function onPickupDateChange() {
                 const pkg = document.getElementById('wd-local-package').value;
                 return (car.rates.local[pkg] || 3000) + nightCharge;
             } else if (currentWDSubTab === 'outstation') {
-                if (!currentOutstationJourneyType) return null;
+                if (outstationFareReadinessMessage()) return null;
                 const includedKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
                 return (includedKm * car.rates.outstationPerKm) + (wdOutstationDays * Number(car.rates.driverAllowance || 0)) + nightCharge;
             } else if (currentWDSubTab === 'airport') {
@@ -1403,6 +1421,7 @@ function onPickupDateChange() {
                 return;
             }
 
+            const readinessMessage = currentWDSubTab === 'outstation' ? outstationFareReadinessMessage() : '';
             wdFleet.forEach(car => {
                 const fare = getCarCost(car);
                 const card = document.createElement('div');
@@ -1421,10 +1440,10 @@ function onPickupDateChange() {
                     }
                 } else if (currentWDSubTab === 'outstation') {
                     const includedKm = Math.max(wdOutstationKm, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                    kmIncludedText = currentOutstationJourneyType && wdOutstationRouteQuote
+                    kmIncludedText = !readinessMessage
                         ? `${includedKm.toLocaleString('en-IN')} km included`
                         : currentOutstationJourneyType ? 'Enter route to see included km' : 'Choose a trip type to see included km';
-                    hrsIncludedText = currentOutstationJourneyType
+                    hrsIncludedText = !readinessMessage
                         ? `${wdOutstationDays * 24} hours (${wdOutstationDays} day${wdOutstationDays === 1 ? '' : 's'})`
                         : 'Trip duration';
                 } else if (currentWDSubTab === 'airport') {
@@ -1441,7 +1460,7 @@ function onPickupDateChange() {
                             </div>
                             <div class="text-right">
                                 <span class="text-[10px] text-slate-400 block font-semibold">Estimated Fare</span>
-                                <span class="text-xl font-black text-indigo-950">${fare === null ? 'Choose trip type' : '₹' + fare.toLocaleString('en-IN')}</span>
+                                <span class="text-xl font-black text-indigo-950">${fare === null ? readinessMessage : '₹' + fare.toLocaleString('en-IN')}</span>
                                 ${currentWDSubTab === 'outstation' && fare !== null ? `<span class="block text-xs font-bold text-emerald-700 mt-1">₹${(fare - Math.round(fare * 0.05)).toLocaleString('en-IN')} with FIRSTTRIP</span><span class="block text-[10px] text-slate-500">5% off your first booking</span>` : ''}
                             </div>
                         </div>
@@ -1459,14 +1478,25 @@ function onPickupDateChange() {
                         </div>
                     </div>
                     <button type="button" ${fare === null ? 'disabled' : ''} onclick="handleBookThisCarClick('${car.name}', ${fare === null ? 0 : fare})" class="w-full ${fare === null ? 'bg-slate-300 cursor-not-allowed' : 'bg-indigo-950 hover:bg-indigo-900'} text-white font-bold py-2.5 rounded-xl transition text-xs tracking-wide shadow-sm">
-                        ${fare === null ? 'Choose Trip Type' : 'Book This Car'}
+                        ${fare === null ? readinessMessage : 'Book This Car'}
                     </button>
                 `;
                 container.appendChild(card);
             });
         }
 
-        function validateJourneyDateTimes(pickupIds, returnIds) {
+        function outstationFareReadinessMessage() {
+            if (!currentOutstationJourneyType) return 'Choose trip type';
+            if (!collectOutstationRouteSelections(false)) return 'Complete route';
+            if (!validateJourneyDateTimes(['wd-out-pdate', 'wd-out-phour', 'wd-out-pampm'], ['wd-out-rdate', 'wd-out-rhour', 'wd-out-rampm'], true)) return 'Complete valid dates';
+            if (!withDriverRatesLoadedFromDb || !publicOutstationMinimumLoaded) return 'Loading live fares';
+            if (!wdOutstationRouteQuote || !Number.isFinite(wdOutstationKm) || wdOutstationKm <= 0 ||
+                wdOutstationRouteQuote.journeyType !== currentOutstationJourneyType ||
+                outstationQuotedSignature !== currentOutstationRouteSignature()) return 'Waiting for route';
+            return '';
+        }
+
+        function validateJourneyDateTimes(pickupIds, returnIds, silent = false) {
             const readDateTime = ids => {
                 const [date, hour, ampm] = ids.map(id => document.getElementById(id)?.value);
                 const numericHour = Number(hour);
@@ -1487,6 +1517,7 @@ function onPickupDateChange() {
                 else if (end <= pickup) message = 'Return date and time must be later than pickup date and time.';
             }
             if (!message) return true;
+            if (silent) return false;
             showCustomAlert(message);
             const field = document.getElementById(invalidIds[0]);
             field?.classList.add('border-red-500');
@@ -1558,7 +1589,9 @@ function onPickupDateChange() {
                         showCustomAlert(error.message);
                         return false;
                     }
-                    if (!wdOutstationRouteQuote || !wdOutstationKm) {
+                    if (!wdOutstationRouteQuote || !Number.isFinite(wdOutstationKm) || wdOutstationKm <= 0 ||
+                        outstationQuotedSignature !== currentOutstationRouteSignature() ||
+                        wdOutstationRouteQuote.journeyType !== currentOutstationJourneyType) {
                         const routeStatus = document.getElementById('wd-out-route-status')?.textContent?.trim();
                         showCustomAlert(routeStatus && !/^Calculating/i.test(routeStatus)
                             ? routeStatus
@@ -1615,6 +1648,17 @@ function onPickupDateChange() {
         }
 
         function handleBookThisCarClick(carName, fare) {
+            if (currentWDSubTab === 'outstation') {
+                const message = outstationFareReadinessMessage();
+                if (message) {
+                    calculateDriverFare();
+                    showCustomAlert(message + ' before booking.');
+                    return;
+                }
+                const car = wdFleet.find(item => item.name === carName);
+                if (!car) return;
+                fare = getCarCost(car);
+            }
             window.cwdTrackEvent?.('book_car_click', {
                 service_type: 'with_driver', trip_type: currentWDSubTab,
                 journey_type: currentWDSubTab === 'outstation' ? currentOutstationJourneyType : undefined,

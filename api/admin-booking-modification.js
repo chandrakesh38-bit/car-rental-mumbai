@@ -10,6 +10,7 @@ const updateDetails = (...args) => bookingLogic.updateDetails(...args);
 const parseLocal = (...args) => bookingLogic.parseLocal(...args);
 const tripDays = (...args) => bookingLogic.tripDays(...args);
 const moneyRound = (...args) => bookingLogic.moneyRound(...args);
+const pickupEditPolicy = (...args) => bookingLogic.pickupEditPolicy(...args);
 const securityDepositAccounting = () => import('../lib/security-deposit-accounting.mjs');
 
 const base=()=>String(process.env.SUPABASE_URL||'').replace(/\/$/,'');
@@ -48,6 +49,18 @@ const getPayments = id => db(payPath(id) + '&select=*&order=created_at.desc');
 const sumPaid = rows => moneyRound((rows || []).filter(p => p.status === 'paid').reduce((s, p) => s + Number(p.amount || 0), 0));
 const validId = id => /^CWD-WD-\d{6}-\d{4}$/.test(id);
 
+async function getPickupPolicy(id,current) {
+  if (!current.eligible || !current.dates_supported || current.is_self_drive)
+    return pickupEditPolicy(current);
+  try {
+    const events = await db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(id)+'&select=started_at,ended_at&limit=1');
+    const row=events?.[0];
+    return pickupEditPolicy(current,{trip_started:!!(row?.started_at||row?.ended_at)});
+  } catch {
+    return {editable:false,requires_confirmation:false,reason:'Cannot verify vendor trip start status. Please retry.'};
+  }
+}
+
 export async function GET(request) {
   try {
     await requireAdmin(request);
@@ -55,8 +68,11 @@ export async function GET(request) {
     const id = new URL(request.url).searchParams.get('booking_id') || '';
     if (!validId(id)) fail('Invalid booking ID.');
     const b = await getBooking(id), payments = await getPayments(id);
+    const current=snapshot(b,sumPaid(payments));
+    const policy=await getPickupPolicy(id,current);
     return json({success:true,booking_id:id,customer_name:b.customer_name,customer_phone:b.customer_phone,
-      current:snapshot(b,sumPaid(payments)),history:history(b.booking_details).slice(0,30),preview_only:isPreviewOnly()});
+      current:{...current,pickup_editable:policy.editable,pickup_confirmation_required:policy.requires_confirmation,
+        pickup_lock_reason:policy.reason},history:history(b.booking_details).slice(0,30),preview_only:isPreviewOnly()});
   } catch (error) { return json({success:false,message:error.message || 'Modification cannot load.'},error.status || 500); }
 }
 

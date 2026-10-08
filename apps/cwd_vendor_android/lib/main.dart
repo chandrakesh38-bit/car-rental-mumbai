@@ -58,10 +58,12 @@ class _VendorHomeState extends State<VendorHome> {
   Future<void> _refresh() async {
     try {
       final items = await _vault.load();
-      if (mounted) setState(() {
-        _saved = items;
-        _busy = false;
-      });
+      if (mounted) {
+        setState(() {
+          _saved = items;
+          _busy = false;
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _busy = false);
       _notice('Secure storage unavailable.');
@@ -354,9 +356,11 @@ class _VendorWebPageState extends State<VendorWebPage> {
   }
 
   void _notice(String message) {
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
   }
 
   Future<void> _back() async {
@@ -400,12 +404,17 @@ class _VendorWebPageState extends State<VendorWebPage> {
                 ),
                 onWebViewCreated: (controller) => _web = controller,
                 onLoadStart: (controller, url) {
-                  if (mounted) setState(() {
-                    _loading = true; _error = null;
-                  });
+                  if (mounted) {
+                    setState(() {
+                      _loading = true;
+                      _error = null;
+                    });
+                  }
                 },
                 onLoadStop: (controller, url) {
-                  if (mounted) setState(() => _loading = false);
+                  if (mounted) {
+                    setState(() => _loading = false);
+                  }
                 },
                 onReceivedError: (controller, request, error) {
                   if (request.isForMainFrame == true && mounted) {

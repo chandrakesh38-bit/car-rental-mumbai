@@ -6,6 +6,9 @@ cd "$(dirname "$0")/.."
 flutter create --platforms=android --project-name=cwd_vendor_android \
   --org com.carwithdriverindia --android-language kotlin --no-pub .
 
+# flutter create adds a default MyApp test that is not part of CWD.
+rm -f test/widget_test.dart
+
 mkdir -p assets/images
 if [[ -f ../../logo.png ]]; then
   cp ../../logo.png assets/images/cwd-logo.png

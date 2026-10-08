@@ -127,6 +127,7 @@ async function modifyBooking(request){
   let payments=await getPayments(id);
   const old=snapshot(b,sumPaid(payments));
   const change=calculateChange(b,old,body);
+  if(isPreviewOnly())return json({success:true,preview_only:true,simulation:{previous_total:old.total_fare,revised_total:change.total,paid:old.paid_amount,balance:Math.max(0,moneyRound(change.total-old.paid_amount)),excess_paid:Math.max(0,moneyRound(old.paid_amount-change.total)),revised_return:change.returnDate?.toISOString()||null}});
   payments=await cancelPendingPayments(id,payments);
   const paid=sumPaid(payments);
   if(String(body.expected_updated_at??'')!==String((await getBooking(id)).updated_at??''))fail('Booking changed while payment links were checked. Refresh.',409);

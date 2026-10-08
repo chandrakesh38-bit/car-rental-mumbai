@@ -221,7 +221,7 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
             ],
           ]),
           if(allocated)group('Cancellation',[
-            const OutlinedButton.icon(onPressed:null,
+            OutlinedButton.icon(onPressed:null,
               icon:Icon(Icons.lock),label:Text('Cancel Locked')),
             const Text('Contact CWD admin for trip changes.'),
           ]),

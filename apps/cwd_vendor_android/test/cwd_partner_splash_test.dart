@@ -18,7 +18,9 @@ void main() {
     expect(find.text('CWD Partner'), findsOneWidget);
     expect(find.text('Vendor login ready'), findsNothing);
 
-    await tester.pump(const Duration(milliseconds: 2400));
+    await tester.pump(const Duration(milliseconds: 2900));
+    expect(find.byKey(const Key('cwd-partner-splash-screen')), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 150));
     await tester.pumpAndSettle();
     expect(find.text('Vendor login ready'), findsOneWidget);
     expect(find.byKey(const Key('cwd-partner-splash-screen')), findsNothing);

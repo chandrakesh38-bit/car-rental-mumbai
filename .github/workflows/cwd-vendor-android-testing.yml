@@ -6,6 +6,10 @@ on:
       - testing
     paths:
       - 'apps/cwd_vendor_android/**'
+      - 'scripts/test-vendor-app-ops.mjs'
+      - 'lib/vendor-app-auth-core.mjs'
+      - 'api/vendor-app-ops.js'
+      - 'api/vendor-app-auth.js'
       - '.github/workflows/cwd-vendor-android-testing.yml'
 
 permissions:

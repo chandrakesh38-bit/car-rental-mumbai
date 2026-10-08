@@ -2,6 +2,27 @@
 
 Flutter + InAppWebView shell over CWD's existing secure vendor portal.
 
+## Release status / external dependencies
+
+- **3 seconds** City Sky Drive splash: implemented.
+- **Flutter real-data UI and vendor-scoped API**: implemented on testing;
+  never represent the demo as a live bookings application.
+- **Database auth migration**: SQL file prepared, NOT APPLIED. The connected
+  Supabase account does not expose the CWD vendor project. Do not run it on
+  unrelated Supabase projects.
+- **Vercel testing flags**: app authentication and write switches remain
+  disabled until the migration and one final login check are confirmed.
+- **MSG91**: configured on the CWD Vercel project but native real OTP has
+  not yet been verified on a device.
+- **FCM push**: cannot be enabled without Firebase project, Android app
+  registration and service credentials. Foreground periodic updates
+  are not background push.
+- **Release signing**: a stable, owner-controlled Android signing key is
+  still needed before distributing to real partners. GitHub debug builds
+  are for internal review only.
+- **Live data rule**: never run mock acceptance/cancellation/trip writes
+  against a real customer booking. Require an admin-approved final test.
+
 ## Vendor-authenticated operational screens
 
 After approved OTP login, show **real vendor data** through

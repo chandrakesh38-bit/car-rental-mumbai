@@ -51,6 +51,7 @@ export async function GET(request) {
 
 
 function validAmount(value,label){
+  if(value==null||value==='')fail(label+' is required.');
   const n=Number(value);
   if(!Number.isFinite(n)||n<0||n>10000000||Math.abs(n*100-Math.round(n*100))>0.001)fail('Invalid '+label+'.');
   return moneyRound(n);

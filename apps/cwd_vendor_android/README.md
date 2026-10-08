@@ -1,6 +1,24 @@
-# CWD Partner Android — V0.5 (Internal Testing Only)
+# CWD Partner Android — V0.6 (Internal Testing Only)
 
 Flutter + InAppWebView shell over CWD's existing secure vendor portal.
+
+## Vendor-authenticated operational screens
+
+After approved OTP login, show **real vendor data** through
+`GET /api/vendor-app-ops` rather than sample/demo content.
+Includes Home, New / Accepted / Allocated / Ongoing / Completed / Cancelled,
+My Cars, vendor-specific records, earnings, driver details, navigation to
+pickup/destination, mandatory odometer-camera trip forms and profile logout.
+Native UI never sends arbitrary vendor_id; the server binds the account to
+the bearer session. Real write actions require separate backend approval.
+
+Safety: Flutter APK runs in Safe Mode unless it is built with
+`--dart-define=CWD_VENDOR_SHARED_DB_APPROVED=true`.
+**Do not set** this flag until migration is applied to the correct CWD
+Supabase project and the backend login/write gates are configured.
+Static splash/branding and keypad checks are safe without it.
+Foreground offer polling is **not** background push notifications; true FCM
+requires a dedicated Firebase project and validated messaging credentials.
 
 ## Finalized CWD Partner branding and City Skyline Drive splash
 

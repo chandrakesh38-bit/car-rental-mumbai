@@ -5,7 +5,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'app_config.dart';
 import 'vendor_auth_service.dart';
-import 'vendor_dashboard_preview.dart';
+import 'vendor_live_dashboard.dart';
 import 'vendor_feedback.dart';
 
 const loginTeal=Color(0xFF00897B);
@@ -231,8 +231,8 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
     if(_loading)return const Scaffold(body:Center(
       child:CircularProgressIndicator(color:loginTeal)));
     if(_result?.approved==true){
-      return VendorDashboardPreview(
-        onLogout:_logout,approvedVendorName:_result?.name);
+      return VendorLiveDashboard(
+        onLogout:_logout,vendorName:_result?.name);
     }
     return Scaffold(
       backgroundColor:const Color(0xFFF1F5F9),

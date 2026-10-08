@@ -1156,11 +1156,14 @@ class _BookingPreviewState extends State<BookingPreview> {
                     Text(b.fullDropAddress ?? 'Address pending',
                       style: const TextStyle(fontSize: 13)),
                     const SizedBox(height: 8),
-                    OutlinedButton.icon(
+                    FilledButton.icon(
                       onPressed: b.fullDropAddress == null
                         ? null : () => navigateTo(b.fullDropAddress!),
-                      icon: const Icon(Icons.map_outlined, size: 17),
-                      label: const Text('Open Drop in Maps'),
+                      icon: const Icon(Icons.navigation_outlined, size: 18),
+                      label: const Text('Navigate to Destination'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: teal,
+                        minimumSize: const Size.fromHeight(43)),
                     ),
                   ],
                 ],

@@ -153,4 +153,15 @@ async function saveModification({id,b,old,change,details,entry,paid}) {
   return finishModification({id,b,old,change,entry,paid,saved:saved[0],details});
 }
 
+async function syncDriverFare(id,booking,change,entry) {
+  const oldRows=await db('cwd_booking_commercial_overrides?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1');
+  const original=oldRows?.[0]?.original_customer_fare??booking.fare_amount??change.base;
+  await db('cwd_booking_commercial_overrides',{method:'POST',
+    headers:{Prefer:'resolution=merge-duplicates,return=minimal'},
+    body:JSON.stringify({booking_id:id,original_customer_fare:Number(original),
+      negotiated_customer_fare:change.base,customer_override_reason:'Booking modification: '+change.reason,
+      customer_overridden_at:entry.at,customer_overridden_by:entry.by,updated_at:entry.at})
+  });
+}
+
 export async function POST() { return json({success:false,message:'Modification is not yet enabled.'},503); }

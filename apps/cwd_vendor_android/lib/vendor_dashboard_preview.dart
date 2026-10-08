@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'vendor_celebration.dart';
+import 'vendor_feedback.dart';
 import 'vendor_demo_models.dart';
 
 const teal = Color(0xFF1AA6A0);
@@ -16,7 +19,19 @@ String dateLabel(DateTime d) {
       d.minute.toString().padLeft(2, '0') + (d.hour < 12 ? ' AM' : ' PM');
 }
 
-String payout(int value) => '₹' + value.toString();
+String payout(int value) {
+  final raw = value.abs().toString();
+  if (raw.length <= 3) return '₹' + (value < 0 ? '-' : '') + raw;
+  final last = raw.substring(raw.length - 3);
+  var front = raw.substring(0, raw.length - 3);
+  final pieces = <String>[];
+  while (front.length > 2) {
+    pieces.insert(0, front.substring(front.length - 2));
+    front = front.substring(0, front.length - 2);
+  }
+  if (front.isNotEmpty) pieces.insert(0, front);
+  return '₹' + (value < 0 ? '-' : '') + pieces.join(',') + ',' + last;
+}
 bool sameDate(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
 
@@ -57,6 +72,7 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
   late final List<VendorDemoVehicle> fleet = makeDemoVehicles();
   late final List<VendorDemoBooking> bookings = makeDemoBookings(fleet);
   int page = 0;
+  String? pressedCard;
   VendorBookingStatus? filter;
   bool todayOnly = false;
   String vehicleId = 'dzire01';
@@ -69,10 +85,12 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
       b.status == VendorBookingStatus.allocated).length;
 
   void goBookings({VendorBookingStatus? status, bool today = false}) {
+    VendorFeedback.click();
     setState(() { page = 1; filter = status; todayOnly = today; });
   }
 
   Future<void> openBooking(VendorDemoBooking b) async {
+    VendorFeedback.click();
     await Navigator.of(context).push(MaterialPageRoute<void>(
       builder: (_) => BookingPreview(
         booking: b, fleet: fleet, onChange: () {
@@ -122,7 +140,10 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
           Text('Car With Driver India',
             style: TextStyle(fontSize: 12, color: Color(0xFFE6FAF9))),
         ])),
-      IconButton(onPressed: () => setState(() => page = 3),
+      IconButton(onPressed: () {
+          VendorFeedback.click();
+          setState(() => page = 3);
+        },
         icon: const CircleAvatar(
           backgroundColor: Colors.white, radius: 21,
           child: Icon(Icons.person, color: teal, size: 27))),
@@ -146,15 +167,17 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
       backgroundColor: Colors.white,
       selectedIndex: page,
       indicatorColor: const Color(0xFFD8F3F0),
-      onDestinationSelected: (index) =>
-          setState(() { page = index; filter = null; todayOnly = false; }),
+      onDestinationSelected: (index) {
+        VendorFeedback.click();
+        setState(() { page = index; filter = null; todayOnly = false; });
+      },
       destinations: const [
         NavigationDestination(icon: Icon(Icons.home_outlined),
           selectedIcon: Icon(Icons.home), label: 'Home'),
         NavigationDestination(icon: Icon(Icons.receipt_long_outlined),
           selectedIcon: Icon(Icons.receipt_long), label: 'Bookings'),
         NavigationDestination(icon: Icon(Icons.directions_car_outlined),
-          selectedIcon: Icon(Icons.directions_car), label: 'Fleet'),
+          selectedIcon: Icon(Icons.directions_car), label: 'My Cars'),
         NavigationDestination(icon: Icon(Icons.person_outline),
           selectedIcon: Icon(Icons.person), label: 'Profile'),
       ],
@@ -162,11 +185,21 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
   );
 
   Widget homeCard(String title, IconData icon, int count, VoidCallback open) =>
-      Container(
+    AnimatedScale(
+      scale: pressedCard == title ? 0.967 : 1.0,
+      duration: const Duration(milliseconds: 160),
+      curve: Curves.easeOutCubic,
+      child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         decoration: whiteCard(),
-        child: InkWell(
-          onTap: open, borderRadius: BorderRadius.circular(19),
+        child: Material(type: MaterialType.transparency, child: InkWell(
+          onTapDown: (_) => setState(() => pressedCard = title),
+          onTapCancel: () => setState(() => pressedCard = null),
+          onTap: () {
+            setState(() => pressedCard = null);
+            open();
+          },
+          borderRadius: BorderRadius.circular(19),
           child: Padding(padding: const EdgeInsets.symmetric(
             horizontal: 17, vertical: 23),
             child: Row(children: [
@@ -191,19 +224,15 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
               const Icon(Icons.chevron_right, color: ink),
             ]),
           ),
-        ),
-      );
+        )),
+      ),
+    );
 
   Widget home() => ListView(
     padding: const EdgeInsets.fromLTRB(17, 20, 17, 28),
     children: [
       demoNotice(),
-      const Text('Vendor Operations', style: TextStyle(fontSize: 20,
-        color: ink, fontWeight: FontWeight.w800)),
-      const SizedBox(height: 7),
-      const Text('Simple booking management, all in one place',
-        style: TextStyle(color: muted, fontSize: 13)),
-      const SizedBox(height: 16),
+      const SizedBox(height: 3),
       homeCard('New Bookings', Icons.auto_awesome_outlined,
         count(VendorBookingStatus.newOffer),
         () => goBookings(status: VendorBookingStatus.newOffer)),
@@ -229,6 +258,8 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
       }
       return filter == null || b.status == filter;
     }).toList()..sort((a, b) => a.pickupAt.compareTo(b.pickupAt));
+    final activeTitle = todayOnly ? "Today's Pickups" :
+      (filter == null ? 'All Bookings' : filter!.label + ' Bookings');
     final filters = <VendorBookingStatus?>[
       null, VendorBookingStatus.newOffer, VendorBookingStatus.accepted,
       VendorBookingStatus.allocated, VendorBookingStatus.ongoing,
@@ -239,12 +270,28 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
       children: [
         demoNotice(),
         Row(children: [
-          Expanded(child: Text(todayOnly ? "Today's Pickups" : 'All Bookings',
+          Expanded(child: Text(activeTitle,
             style: const TextStyle(fontSize: 21,
               fontWeight: FontWeight.w800))),
           if (todayOnly) TextButton(
             onPressed: () => goBookings(), child: const Text('All')),
         ]),
+        const SizedBox(height: 12),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE3F5F3),
+            border: Border(left: BorderSide(color: teal, width: 4)),
+            borderRadius: BorderRadius.circular(9)),
+          child: Row(children: [
+            const Icon(Icons.visibility_outlined, color: blue, size: 17),
+            const SizedBox(width: 8),
+            Text('Viewing: ' + activeTitle,
+              style: const TextStyle(fontWeight: FontWeight.w700,
+                color: blue, fontSize: 12)),
+          ]),
+        ),
         const SizedBox(height: 12),
         if (!todayOnly) SizedBox(height: 46,
           child: ListView(scrollDirection: Axis.horizontal,
@@ -254,7 +301,10 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
                 selected: item == filter,
                 selectedColor: const Color(0xFFD9F1EF),
                 label: Text(item?.label ?? 'All'),
-                onSelected: (_) => setState(() => filter = item)),
+                onSelected: (_) {
+                  VendorFeedback.click();
+                  setState(() => filter = item);
+                }),
             )).toList(),
           )),
         const SizedBox(height: 12),
@@ -294,13 +344,19 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
         detailLine(Icons.location_on_outlined,
           b.pickupArea + ' → ' + b.dropArea),
         detailLine(Icons.currency_rupee_outlined,
-          'Estimated Vendor Payout: ' + payout(b.payout)),
+          b.isCompleted && b.approvedFinalEarning != null
+            ? 'Your Final Earning: ' + payout(b.approvedFinalEarning!)
+            : 'Your Estimated Earning: ' + payout(b.payout)),
         const SizedBox(height: 12),
         OutlinedButton(
           onPressed: () => openBooking(b),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size.fromHeight(46)),
-          child: const Text('View Details'),
+          child: const Row(mainAxisSize: MainAxisSize.min, children: [
+            Text('View Details'),
+            SizedBox(width: 8),
+            Icon(Icons.arrow_forward_rounded, size: 17),
+          ]),
         ),
       ],
     ),
@@ -313,7 +369,7 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
     padding: const EdgeInsets.fromLTRB(16, 20, 16, 28),
     children: [
       demoNotice(),
-      const Text('Manage Fleet',
+      const Text('My Cars',
         style: TextStyle(fontWeight: FontWeight.w800, fontSize: 21)),
       const SizedBox(height: 12),
       Container(
@@ -321,24 +377,49 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
         decoration: whiteCard(),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Your Fleet', style: TextStyle(
+            const Text('My Cars', style: TextStyle(
               fontSize: 18, fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
             const Text('Select a car to manage availability',
               style: TextStyle(color: muted)),
             const SizedBox(height: 12),
-            ...fleet.map((car) => ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Color(0xFFE9F6F5),
-                child: Icon(Icons.directions_car, color: blue)),
-              title: Text(car.number, style: const TextStyle(
-                fontWeight: FontWeight.w800)),
-              subtitle: Text(car.model),
-              trailing: Icon(car.id == vehicleId
-                ? Icons.check_circle : Icons.chevron_right,
-                color: car.id == vehicleId ? teal : muted),
-              onTap: () => setState(() => vehicleId = car.id),
-            )),
+            ...fleet.map((car) {
+              final selected = car.id == vehicleId;
+              return AnimatedScale(
+                scale: selected ? 1.0 : 0.985,
+                duration: const Duration(milliseconds: 230),
+                curve: Curves.easeOutBack,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeOutCubic,
+                  margin: const EdgeInsets.symmetric(vertical: 5),
+                  decoration: BoxDecoration(
+                    color: selected ? const Color(0xFFE6F6F4) :
+                      const Color(0xFFFCFDFE),
+                    border: Border.all(
+                      color: selected ? teal : const Color(0xFFE3E5E8),
+                      width: selected ? 2 : 1),
+                    borderRadius: BorderRadius.circular(13)),
+                  child: Material(type: MaterialType.transparency, child:
+                    ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: Color(0xFFE9F6F5),
+                        child: Icon(Icons.directions_car, color: blue)),
+                      title: Text(car.number, style: const TextStyle(
+                        fontWeight: FontWeight.w800)),
+                      subtitle: Text(car.model),
+                      trailing: selected
+                        ? const Icon(Icons.check_circle, color: teal)
+                        : const Icon(Icons.chevron_right, color: muted),
+                      onTap: () {
+                        VendorFeedback.click();
+                        setState(() => vehicleId = car.id);
+                      },
+                    ),
+                  ),
+                ),
+              );
+            }),
           ],
         ),
       ),
@@ -376,12 +457,18 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
                 fontSize: 17))),
             IconButton(
               icon: const Icon(Icons.chevron_left),
-              onPressed: () => setState(() =>
-                month = DateTime(month.year, month.month-1))),
+              onPressed: () {
+                VendorFeedback.click();
+                setState(() =>
+                  month = DateTime(month.year, month.month-1));
+              }),
             IconButton(
               icon: const Icon(Icons.chevron_right),
-              onPressed: () => setState(() =>
-                month = DateTime(month.year, month.month+1))),
+              onPressed: () {
+                VendorFeedback.click();
+                setState(() =>
+                  month = DateTime(month.year, month.month+1));
+              }),
           ]),
           GridView.count(
             crossAxisCount: 7, childAspectRatio: 1,
@@ -405,8 +492,11 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
                   blocked ? const Color(0xFFE9EBEE) :
                   const Color(0xFFE7F6F3);
                 return InkWell(
-                  onTap: () => notify(booked ? 'Booked, cannot block.' :
-                    blocked ? 'Blocked day.' : 'Available day.'),
+                  onTap: () {
+                    VendorFeedback.click();
+                    notify(booked ? 'Booked, cannot block.' :
+                      blocked ? 'Blocked day.' : 'Available day.');
+                  },
                   child: Container(
                     decoration: BoxDecoration(
                       color: bg, borderRadius: BorderRadius.circular(8)),
@@ -441,7 +531,10 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
               tooltip: 'Delete block',
               icon: const Icon(Icons.delete_outline,
                 color: Color(0xFFBF4250)),
-              onPressed: () => setState(() => car.removeBlock(range))),
+              onPressed: () {
+                VendorFeedback.click();
+                setState(() => car.removeBlock(range));
+              }),
           )),
           const SizedBox(height: 9),
           FilledButton.icon(
@@ -459,6 +552,7 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
   }
 
   Future<void> blockCar() async {
+    VendorFeedback.click();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final range = await showDateRangePicker(
@@ -512,11 +606,50 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
       const SizedBox(height: 14),
       Container(
         decoration: whiteCard(),
+        child: Column(children: [
+          ValueListenableBuilder<bool>(
+            valueListenable: VendorFeedback.soundEnabled,
+            builder: (context, enabled, child) => SwitchListTile.adaptive(
+              secondary: Icon(enabled
+                ? Icons.volume_up_outlined : Icons.volume_off_outlined,
+                color: purple),
+              title: const Text('Button & Alert Sounds',
+                style: TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text(enabled ? 'On · Tap sounds and success alerts'
+                : 'Muted · All app effects are silent'),
+              value: enabled,
+              activeTrackColor: teal,
+              onChanged: (value) {
+                VendorFeedback.setSoundEnabled(value);
+                if (value) VendorFeedback.click();
+              },
+            ),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.notifications_active_outlined,
+              color: purple),
+            title: const Text('Test New Booking Sound'),
+            subtitle: const Text('Preview only · push not connected'),
+            trailing: const Icon(Icons.play_circle_outline, color: teal),
+            onTap: () {
+              VendorFeedback.newBooking();
+              notify('Demo new booking alert • push integration comes later.');
+            },
+          ),
+        ]),
+      ),
+      const SizedBox(height: 14),
+      Container(
+        decoration: whiteCard(),
         child: ListTile(
           leading: const Icon(Icons.directions_car, color: purple),
-          title: const Text('Manage Fleet'),
+          title: const Text('Manage My Car'),
           trailing: const Icon(Icons.chevron_right),
-          onTap: () => setState(() => page = 2),
+          onTap: () {
+            VendorFeedback.click();
+            setState(() => page = 2);
+          },
         ),
       ),
     ],

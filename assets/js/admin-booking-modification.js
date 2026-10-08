@@ -86,7 +86,7 @@ function cwdRenderBookingEditor(data){
     if(!c.is_self_drive)html+='<p class="mb-3 text-xs text-amber-800">Vendor payout and allocation will not change automatically. Inform vendor separately.</p>';
     html+='<label class="block text-xs font-bold text-slate-700">Reason for Modification<textarea id="cwd-mod-reason" maxlength="500" rows="2" required placeholder="e.g. Customer requested early return" class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm"></textarea></label>';
     html+='<div id="cwd-mod-preview" class="mt-3 rounded-xl border bg-white p-3 text-xs"></div>';
-    html+='<button type="button" id="cwd-mod-save" class="mt-3 w-full rounded-xl bg-indigo-800 px-4 py-3 text-sm font-black text-white hover:bg-indigo-900">Save Booking Modification</button>';
+    html+='<button type="button" id="cwd-mod-save" class="mt-3 w-full rounded-xl bg-indigo-800 px-4 py-3 text-sm font-black text-white hover:bg-indigo-900">'+(data.preview_only?'Simulate Modification (No Save)':'Save Booking Modification')+'</button>';
   }
   if(data.history?.length)html+='<button type="button" id="cwd-mod-share" class="mt-3 w-full rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-800">Share Revised Confirmation on WhatsApp</button>';
   html+='<details class="mt-4 rounded-xl border bg-white p-3"><summary class="cursor-pointer text-xs font-bold">Modification History ('+(data.history?.length||0)+')</summary><div class="mt-2 max-h-60 overflow-y-auto">'+cwdModificationHistory(data.history)+'</div></details>';

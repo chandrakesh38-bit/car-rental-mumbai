@@ -527,12 +527,6 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
       shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(15))),
   );
 
-  Future<void> _launch(Uri uri) async{
-    VendorFeedback.click();
-    try{await launchUrl(uri,mode:LaunchMode.externalApplication);}
-    catch(_){_notify('Unable to open support.');}
-  }
-
   Widget _support()=>Padding(
     padding:const EdgeInsets.fromLTRB(16,0,16,22),
     child:Column(children:[

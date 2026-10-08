@@ -1,6 +1,16 @@
-import { snapshot, history, updateDetails, parseLocal, tripDays, moneyRound } from '../lib/booking-modification.mjs';
-// Booking modification API: testing branch only.
-import { syncSecurityDepositReceived } from '../lib/security-deposit-accounting.mjs';
+// Vercel compiles file-based API handlers to CommonJS. Load ESM helpers lazily.
+let bookingLogic;
+async function loadBookingLogic() {
+  bookingLogic ||= await import('../lib/booking-modification.mjs');
+  return bookingLogic;
+}
+const snapshot = (...args) => bookingLogic.snapshot(...args);
+const history = (...args) => bookingLogic.history(...args);
+const updateDetails = (...args) => bookingLogic.updateDetails(...args);
+const parseLocal = (...args) => bookingLogic.parseLocal(...args);
+const tripDays = (...args) => bookingLogic.tripDays(...args);
+const moneyRound = (...args) => bookingLogic.moneyRound(...args);
+const securityDepositAccounting = () => import('../lib/security-deposit-accounting.mjs');
 
 const base=()=>String(process.env.SUPABASE_URL||'').replace(/\/$/,'');
 const roleKey=()=>process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -41,6 +51,7 @@ const validId = id => /^CWD-WD-\d{6}-\d{4}$/.test(id);
 export async function GET(request) {
   try {
     await requireAdmin(request);
+    await loadBookingLogic();
     const id = new URL(request.url).searchParams.get('booking_id') || '';
     if (!validId(id)) fail('Invalid booking ID.');
     const b = await getBooking(id), payments = await getPayments(id);
@@ -119,6 +130,7 @@ async function modifyBooking(request){
   const origin=request.headers.get('origin');
   if(origin&&origin!==new URL(request.url).origin)fail('Invalid request origin.',403);
   const user=await requireAdmin(request);
+  await loadBookingLogic();
   const raw=await request.text();
   if(raw.length>15000)fail('Modification request is too large.',413);
   const body=JSON.parse(raw),id=String(body.booking_id||'');
@@ -187,7 +199,7 @@ async function finishModification({id,b,old,change,entry,paid,saved,details}) {
   }
   let accountingWarning='';
   if(old.is_self_drive&&change.deposit>0) {
-    try{await syncSecurityDepositReceived({...saved,paid_amount:paid},paid,'bank_transfer');}
+    try{const {syncSecurityDepositReceived}=await securityDepositAccounting();await syncSecurityDepositReceived({...saved,paid_amount:paid},paid,'bank_transfer');}
     catch(error){accountingWarning=error.message||'Deposit accounting requires review.';}
   }
   return json({success:true,current:snapshot(saved,paid),history:history(details).slice(0,30),

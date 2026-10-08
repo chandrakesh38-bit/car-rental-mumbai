@@ -83,7 +83,7 @@ function validAmount(value,label){
   if(!Number.isFinite(n)||n<0||n>10000000||Math.abs(n*100-Math.round(n*100))>0.001)fail('Invalid '+label+'.');
   return moneyRound(n);
 }
-function calculateChange(booking,current,body){
+function calculateChange(booking,current,body,policy){
   if(!current.eligible)fail('Completed or cancelled bookings cannot be modified.',409);
   const reason=String(body.reason||'').replace(/[\r\n]+/g,' ').trim();
   if(reason.length<4||reason.length>500)fail('Enter a modification reason (4 to 500 characters).');
@@ -99,7 +99,11 @@ function calculateChange(booking,current,body){
     if(!pickup||(current.supports_return&&!returnDate))fail('Invalid pickup or return date and time.');
     if(current.supports_return&&returnDate<=pickup)fail('Return must be after pickup.');
     if(current.is_self_drive&&(returnDate-pickup)/3600000<24)fail('Self Drive bookings require minimum 24 hours.');
-    if(current.booking_status==='ongoing'&&body.pickup_at!==current.pickup_at)fail('Pickup time is locked after the trip begins.',409);
+    if(body.pickup_at!==current.pickup_at) {
+      if(!policy?.editable) fail(policy?.reason || 'Pickup cannot be modified after the trip has started.',409);
+      if(policy.requires_confirmation && body.confirm_trip_not_started!==true)
+        fail('Please confirm that this booking has not actually started before modifying pickup.',409);
+    }
   }else if(body.pickup_at||body.return_at)fail('This booking has an unsupported date format; dates cannot be edited.',409);
   const km=current.trip_type==='outstation'&&current.included_km!==null?validAmount(body.included_km,'included KM'):null;
   const days=current.trip_type==='outstation'&&pickup&&returnDate?tripDays(pickup,returnDate):current.trip_days;
@@ -155,7 +159,8 @@ async function modifyBooking(request){
   if(String(body.expected_updated_at??'')!==String(b.updated_at??''))fail('Booking was updated. Refresh and retry.',409);
   let payments=await getPayments(id);
   const old=snapshot(b,sumPaid(payments));
-  const change=calculateChange(b,old,body);
+  const pickupPolicy=await getPickupPolicy(id,old);
+  const change=calculateChange(b,old,body,pickupPolicy);
   if(isPreviewOnly())return json({success:true,preview_only:true,simulation:{previous_total:old.total_fare,revised_total:change.total,paid:old.paid_amount,balance:Math.max(0,moneyRound(change.total-old.paid_amount)),excess_paid:Math.max(0,moneyRound(old.paid_amount-change.total)),revised_return:change.returnDate?.toISOString()||null}});
   payments=await cancelPendingPayments(id,payments);
   const paid=sumPaid(payments);

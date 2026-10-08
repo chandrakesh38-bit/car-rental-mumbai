@@ -12,6 +12,8 @@ void main(){
         find.byKey(const Key('vendor-mobile-input')));
       expect(phone.keyboardType,TextInputType.number);
       expect(phone.inputFormatters,isNotEmpty);
+      await tester.ensureVisible(find.text('Preview numeric OTP keypad'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Preview numeric OTP keypad'));
       await tester.pumpAndSettle();
       for(var i=0;i<4;i++){

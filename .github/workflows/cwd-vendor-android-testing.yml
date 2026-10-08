@@ -27,6 +27,12 @@ jobs:
       - name: Verify vendor offer privacy
         run: node scripts/test-vendor-offer-privacy.mjs
 
+      - name: Verify vendor app auth isolation and approval rules
+        run: node scripts/test-vendor-app-auth-core.mjs
+
+      - name: Verify vendor auth API syntax
+        run: node --check api/vendor-app-auth.js
+
       - name: Set up Java
         uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:

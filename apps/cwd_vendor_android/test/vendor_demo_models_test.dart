@@ -62,11 +62,16 @@ void main() {
         .firstWhere((b) => b.status == VendorBookingStatus.completed);
     expect(done.finalEarning?.fixedKm, 480);
     expect(done.finalEarning?.extraKmFare, 360);
-    expect(done.finalEarning?.extraHoursFare, 200);
+    expect(done.finalEarning?.extraHoursFare, 0);
     expect(done.finalEarning?.toll, 700);
     expect(done.finalEarning?.parking, 150);
     expect(done.finalEarning?.total, 6100);
     expect(done.approvedFinalEarning, 6100);
+    const localExtras = VendorDemoEarning(
+      fixedKm: 80, fixedFare: 1900, extraHours: 2,
+      extraHourRate: 100, extraKm: 10, extraKmRate: 13);
+    expect(localExtras.extraHoursFare, 200);
+    expect(localExtras.extraKmFare, 130);
     final open = makeDemoBookings(cars).first;
     expect(open.approvedFinalEarning, isNull);
   });

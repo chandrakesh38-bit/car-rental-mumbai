@@ -341,11 +341,11 @@ List<VendorDemoBooking> makeDemoBookings(List<VendorDemoVehicle> cars) {
       nightRate: 300,
       finalEarning: const VendorDemoEarning(
         fixedKm: 480,
-        fixedFare: 3800,
+        fixedFare: 4000,
         driverAllowance: 600,
         extraKm: 30,
         extraKmRate: 12,
-        extraHours: 2,
+        extraHours: 0, // Outstation has no separate hourly extras
         extraHourRate: 100,
         toll: 700,
         parking: 150,

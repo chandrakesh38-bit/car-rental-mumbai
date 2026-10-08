@@ -24,3 +24,5 @@ async function db(path,options={}){
   if(!res.ok)fail('Database request failed ('+res.status+'): '+raw.slice(0,180),503);
   return raw?JSON.parse(raw):null;
 }
+
+export async function GET() { return json({success:false,message:'Feature not ready'},503); }

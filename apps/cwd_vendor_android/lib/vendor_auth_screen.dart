@@ -92,6 +92,17 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
     });
   }
 
+  // Android OEM keyboards can stay dismissed after a scroll/focus change.
+  // Request the numeric IME explicitly whenever the user taps the field.
+  void _focusMobileKeyboard() {
+    _mobileFocus.requestFocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if(mounted && _mobileFocus.hasFocus) {
+        SystemChannels.textInput.invokeMethod<void>('TextInput.show');
+      }
+    });
+  }
+
   Future<void> _sendOtp() async {
     VendorFeedback.click();
     final number=_mobile.text.trim();
@@ -229,7 +240,7 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
         child:ConstrainedBox(
           constraints:const BoxConstraints(maxWidth:480),
           child:SingleChildScrollView(
-            keyboardDismissBehavior:ScrollViewKeyboardDismissBehavior.onDrag,
+            keyboardDismissBehavior:ScrollViewKeyboardDismissBehavior.manual,
             child:Column(children:[
               _hero(),
               Transform.translate(
@@ -330,24 +341,60 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
       const SizedBox(height:8),
       TextField(
         key:const Key('vendor-mobile-input'),
-        controller:_mobile,focusNode:_mobileFocus,
-        keyboardType:TextInputType.number,
+        controller:_mobile,
+        focusNode:_mobileFocus,
+        enabled:true,
+        readOnly:false,
+        showCursor:true,
+        enableInteractiveSelection:true,
+        keyboardType:const TextInputType.numberWithOptions(
+          decimal:false,signed:false),
         textInputAction:TextInputAction.done,
-        inputFormatters:[FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(10)],
-        style:const TextStyle(fontSize:17,fontWeight:FontWeight.w700),
+        autofillHints:const [AutofillHints.telephoneNumberNational],
+        autocorrect:false,
+        enableSuggestions:false,
+        maxLines:1,
+        inputFormatters:[
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(10),
+        ],
+        style:const TextStyle(
+          fontSize:17,color:loginInk,fontWeight:FontWeight.w700),
+        cursorColor:loginTeal,
         decoration:InputDecoration(
-          prefixIcon:const Icon(Icons.phone_outlined,color:loginMuted),
-          prefix:const Text('+91  | ',style:TextStyle(
-            fontWeight:FontWeight.w700,color:loginInk)),
-          hintText:'9876543210',filled:true,
+          prefixIconConstraints:const BoxConstraints(
+            minWidth:109,minHeight:50),
+          prefixIcon:GestureDetector(
+            behavior:HitTestBehavior.opaque,
+            onTap:_focusMobileKeyboard,
+            child:const Padding(
+              padding:EdgeInsets.only(left:12,right:8),
+              child:Row(mainAxisSize:MainAxisSize.min,children:[
+                Icon(Icons.phone_outlined,color:loginMuted,size:20),
+                SizedBox(width:8),
+                Text('+91',style:TextStyle(
+                  fontWeight:FontWeight.w700,fontSize:15,color:loginInk)),
+                SizedBox(width:8),
+                SizedBox(height:23,child:VerticalDivider(
+                  thickness:1,color:Color(0xFFCBD5E1))),
+              ]),
+            ),
+          ),
+          hintText:'Enter 10-digit number',
+          hintStyle:const TextStyle(
+            color:Color(0xFF94A3B8),fontSize:14,
+            fontWeight:FontWeight.w400),
+          filled:true,
           fillColor:const Color(0xFFF8FAFC),
           border:OutlineInputBorder(
             borderRadius:BorderRadius.circular(14)),
           focusedBorder:OutlineInputBorder(
             borderRadius:BorderRadius.circular(14),
             borderSide:const BorderSide(color:loginTeal,width:2))),
-        onChanged:(_)=>setState(()=>_error=null),
+        onTap:_focusMobileKeyboard,
+        onChanged:(_){
+          if(_error!=null)setState(()=>_error=null);
+        },
         onSubmitted:(_)=>_sendOtp(),
       ),
       if(_error!=null)_errorCard(),

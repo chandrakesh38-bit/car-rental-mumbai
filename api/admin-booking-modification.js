@@ -37,4 +37,13 @@ const getPayments = id => db(payPath(id) + '&select=*&order=created_at.desc');
 const sumPaid = rows => moneyRound((rows || []).filter(p => p.status === 'paid').reduce((s, p) => s + Number(p.amount || 0), 0));
 const validId = id => /^CWD-WD-\d{6}-\d{4}$/.test(id);
 
-export async function GET() { return json({success:false,message:'Feature not ready'},503); }
+export async function GET(request) {
+  try {
+    await requireAdmin(request);
+    const id = new URL(request.url).searchParams.get('booking_id') || '';
+    if (!validId(id)) fail('Invalid booking ID.');
+    const b = await getBooking(id), payments = await getPayments(id);
+    return json({success:true,booking_id:id,customer_name:b.customer_name,customer_phone:b.customer_phone,
+      current:snapshot(b,sumPaid(payments)),history:history(b.booking_details).slice(0,30)});
+  } catch (error) { return json({success:false,message:error.message || 'Modification cannot load.'},error.status || 500); }
+}

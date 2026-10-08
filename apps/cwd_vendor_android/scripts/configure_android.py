@@ -156,8 +156,8 @@ for values_dir in ("values", "values-night"):
     anchor = '<item name="android:windowBackground">@drawable/launch_background</item>'
     if anchor in text and 'android:statusBarColor' not in text:
         text = text.replace(anchor,
-            anchor + '\\n        <item name="android:statusBarColor">#064E45</item>'
-            + '\\n        <item name="android:windowLightStatusBar">false</item>',
+            anchor + '\n        <item name="android:statusBarColor">#064E45</item>'
+            + '\n        <item name="android:windowLightStatusBar">false</item>',
             1)
         styles.write_text(text)
 

@@ -1,6 +1,33 @@
-# CWD Vendor Android — V0.3 (Internal Testing Only)
+# CWD Vendor Android — V0.4 (Internal Testing Only)
 
 Flutter + InAppWebView shell over CWD's existing secure vendor portal.
+
+## V0.4 Vendor Login & Registration
+
+Native login screen based on the owner's login HTML:
+- Registered +91 mobile numeric-only keyboard (10 digits).
+- Four OTP boxes numeric-only keyboard with paste/next focus.
+- MSG91 OTP challenge controlled by server: no mock success.
+- Pending/rejected/suspended statuses cannot open the dashboard.
+- Active vendor retains existing vendor code, vehicles and payout account.
+- Register Now opens the existing CWD registration form only on authorized
+  isolated staging; no duplicate onboarding flow.
+- Remembered secure mobile session; logout revokes server session.
+- Support links, UI transitions and safe-mode keypad preview.
+
+Testing gate: The current CWD Preview still shares its Supabase backend
+variables with Production. A NEW isolated staging Supabase project with
+vendor tables and separate CWD_VENDOR_APP_* env vars is required.
+Do not change CWD_VENDOR_APP_AUTH_ENABLED to true until those prerequisites
+are verified. The unconfigured testing APK only previews the login/keypad
+and does not send real SMS, approve vendors or read production bookings.
+
+Auth design: api/vendor-app-auth.js, lib/vendor-app-server.mjs,
+lib/vendor-app-auth-core.mjs; database draft at
+apps/cwd_vendor_android/STAGING_SCHEMA_DRAFT.sql. Not yet migrated.
+Full vendor-specific authenticated booking API and push notifications
+are separate upcoming tasks; the currently approved dashboard is still
+a clearly labeled demo UI (not real vendor data).
 
 ## V0.3 interactive design preview (UI testing, no live vendor accounts)
 

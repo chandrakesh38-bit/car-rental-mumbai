@@ -63,7 +63,9 @@ Widget detailLine(IconData icon, String value) => Padding(
 );
 
 class VendorDashboardPreview extends StatefulWidget {
-  const VendorDashboardPreview({super.key});
+  const VendorDashboardPreview({super.key,this.onLogout,this.approvedVendorName});
+  final VoidCallback? onLogout;
+  final String? approvedVendorName;
   @override
   State<VendorDashboardPreview> createState() => _VendorDashboardPreviewState();
 }
@@ -579,25 +581,26 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
       Container(
         padding: const EdgeInsets.all(18),
         decoration: whiteCard(),
-        child: const Column(crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Demo Vendor', style: TextStyle(
-              fontSize: 20, fontWeight: FontWeight.w800)),
-            SizedBox(height: 5),
-            Text('CWD verification and login will be connected later',
+            Text(widget.approvedVendorName ?? 'Demo Vendor',
+              style: const TextStyle(
+                fontSize: 20, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 5),
+            const Text('Booking dashboard is still in UI testing',
               style: TextStyle(color: muted)),
-            Divider(height: 30),
-            Text('Vendor Reliability / Rating',
+            const Divider(height: 30),
+            const Text('Vendor Reliability / Rating',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
-            SizedBox(height: 10),
-            Row(children: [
+            const SizedBox(height: 10),
+            const Row(children: [
               Icon(Icons.star_border, color: purple),
               SizedBox(width: 8),
               Text('Not rated yet', style: TextStyle(
                 fontWeight: FontWeight.w700)),
             ]),
-            SizedBox(height: 9),
-            Text('Acceptance, cancellation and on-time performance '
+            const SizedBox(height: 9),
+            const Text('Acceptance, cancellation and on-time performance '
               'will appear only after authenticated vendor data exists.',
               style: TextStyle(color: muted, fontSize: 12)),
           ],
@@ -652,6 +655,19 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
           },
         ),
       ),
+      if(widget.onLogout!=null)...[
+        const SizedBox(height: 13),
+        Container(
+          decoration: whiteCard(),
+          child: ListTile(
+            leading: const Icon(Icons.logout,color: Color(0xFFB54350)),
+            title: const Text('Logout',
+              style: TextStyle(fontWeight: FontWeight.w700)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: widget.onLogout,
+          ),
+        ),
+      ],
     ],
   );
 }

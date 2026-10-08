@@ -2,6 +2,38 @@
 
 Flutter + InAppWebView shell over CWD's existing secure vendor portal.
 
+## V0.3 interactive design preview (UI testing, no live vendor accounts)
+
+The safe-mode APK shows a clickable mock dashboard using fictional sample data:
+- Home contains five simple cards with counts (New Bookings, Today's Pickups,
+  Ongoing Trips, Completed, Cancelled); the active section is highlighted.
+- My Cars supports animated selection and demo date blocking.
+- Pending offer displays general pickup/destination area only, with matching
+  vehicle dropdown. Selecting the car never changes the vendor payout.
+- After Accept, Cancel is disabled. Only a server-authorized admin may enable
+  cancellation, and allocated trips still require admin approval.
+- Allocated demo booking displays example public-location addresses and a
+  Google Maps navigation button; the call icon never calls a demo number.
+- Completed booking has a sample breakdown of fixed kilometers, driver
+  allowance, extra km/hours (only where applicable), night charge, toll,
+  parking, state tax and final earning. Live settlements will derive strictly
+  from CWD's approved vendor ledger.
+- On-screen click feedback, acceptance confetti and alert preview are muted
+  by a persisted switch in Profile. Sound playback respects device settings.
+- Real push notifications require secure vendor login, device tokens,
+  backend event delivery and Android notification-channel configuration.
+  The preview "Test New Booking Sound" is NOT a real push notification.
+
+Existing CWD server/business data is not modified by this demo UI. The
+application stays fail-closed until a verified isolated preview backend exists.
+
+Important: GitHub-hosted Flutter debug builds use an ephemeral Android signing
+certificate, so different build runs may not install as upgrades over previous
+testing versions. Uninstall the previous CWD Vendor TEST app before installing
+this debug build (after saving any local-only test data). A persistent protected
+signing key must be set up for seamless future upgrades; never commit private
+keystores or secret passwords.
+
 ## Implemented source features
 
 - Native branded vendor home

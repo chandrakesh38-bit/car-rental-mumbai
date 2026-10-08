@@ -245,6 +245,7 @@ class CitySkyDrivePainter extends CustomPainter {
           const Color(0x2354A7A0),
           Colors.transparent,
         ],
+        [0.0, .52, 1.0],
       );
     canvas.drawRect(screen, haze);
 

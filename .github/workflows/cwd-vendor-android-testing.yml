@@ -24,6 +24,9 @@ jobs:
       - name: Verify existing vendor portal JavaScript
         run: node scripts/test-vendor-booking-html.mjs
 
+      - name: Verify vendor offer privacy
+        run: node scripts/test-vendor-offer-privacy.mjs
+
       - name: Set up Java
         uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:

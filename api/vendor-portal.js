@@ -1,3 +1,4 @@
+import {vendorOfferAreaSummary, vendorOfferSafePricing} from '../lib/vendor-offer-privacy.mjs';
 const json=(d,s=200)=>new Response(JSON.stringify(d),{status:s,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
 const base=()=>String(process.env.SUPABASE_URL||'').replace(/\/$/,'');
 const key=()=>process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -73,7 +74,7 @@ async function handler(request){
   const u=new URL(request.url);
   if(request.method==='GET'){
    const offer=u.searchParams.get('offer'),allocation=u.searchParams.get('allocation');
-   if(offer){const o=await byOffer(offer);if(!o||['revoked','expired'].includes(o.status))fail('Offer link is invalid or expired.',410);const loc=customerTripLocations({route:o.route_summary});return json({success:true,mode:'offer',offer:{booking_id:o.booking_id,vehicle:o.vehicle_required,trip_type:o.trip_type,route:loc.customerRoute,start_at:o.start_at,final_drop_at:o.final_drop_at,estimated_km:o.estimated_km,estimated_vendor_payout:o.estimated_vendor_payout,status:o.status,pricing_snapshot:o.pricing_snapshot}})}
+   if(offer){const o=await byOffer(offer);if(!o||['revoked','expired'].includes(o.status))fail('Offer link is invalid or expired.',410);const areas=vendorOfferAreaSummary(o.route_summary);return json({success:true,mode:'offer',offer:{booking_id:o.booking_id,vehicle:o.vehicle_required,trip_type:o.trip_type,pickup_area:areas.pickup_area,destination_area:areas.destination_area,route:areas.route,start_at:o.start_at,final_drop_at:o.final_drop_at,estimated_km:o.estimated_km,estimated_vendor_payout:o.estimated_vendor_payout,status:o.status,pricing_snapshot:vendorOfferSafePricing(o.pricing_snapshot)}})}
    if(allocation){const a=await byAlloc(allocation);if(!a||a.revoked_at||['cancelled','reallocated'].includes(a.status))fail('Allocation link is invalid or revoked.',410);const [b,t,o]=await Promise.all([booking(a.booking_id),db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(a.booking_id)+'&select=*&limit=1'),db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a.offer_id)+'&select=vehicle_required,pricing_snapshot&limit=1')]);const allocationView={...a,early_start_approved_at:o?.[0]?.pricing_snapshot?.early_start_approved_at||null};return json({success:true,mode:'allocation',allocation:allocationView,booking:piiBooking(b,o?.[0]?.vehicle_required||''),trip:t?.[0]||null})}
    fail('Secure token is required.',401);
   }

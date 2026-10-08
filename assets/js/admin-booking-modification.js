@@ -69,7 +69,10 @@ function cwdRenderBookingEditor(data){
     if(data.preview_only)html+='<p class="mb-3 rounded-lg bg-amber-50 p-3 text-xs font-semibold text-amber-800">TESTING PREVIEW: Simulation only. Live booking and payments will NOT be changed because the database is shared.</p>';
     if(c.dates_supported){
       html+='<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">';
-      html+=cwdModField('Pickup (India time)','cwd-mod-pickup',c.pickup_at,'type="datetime-local" required '+(c.booking_status==='ongoing'?'readonly':''));
+      html+=cwdModField('Pickup (India time)','cwd-mod-pickup',c.pickup_at,'type="datetime-local" required '+(c.pickup_editable?'':'readonly'));
+      if(c.pickup_editable)html+='<button type="button" id="cwd-mod-change-pickup" class="mt-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-800">📅 Change Pickup Date / Time</button>';
+      else html+='<p class="mt-2 rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-600">'+cwdModEsc(c.pickup_lock_reason||'Pickup cannot be edited after the trip starts.')+'</p>';
+      if(c.pickup_confirmation_required)html+='<label class="mt-2 block rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-950"><input id="cwd-mod-not-started" type="checkbox" class="mr-2 align-middle">I confirm the vehicle/driver has not started this trip.</label>';
       if(c.supports_return)html+=cwdModField('Return (India time)','cwd-mod-return',c.return_at,'type="datetime-local" required');
       html+='</div>';
     }else html+='<p class="mb-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">Existing date format is not supported for editing. You can still revise the agreed fare.</p>';
@@ -119,6 +122,10 @@ function cwdBindBookingEditor(){
     el.addEventListener('input',cwdModPreview);el.addEventListener('change',cwdModPreview);
   }
   root.querySelector('#cwd-mod-save')?.addEventListener('click',cwdSaveBookingEditor);
+  root.querySelector('#cwd-mod-change-pickup')?.addEventListener('click',()=>{
+    const input=document.getElementById('cwd-mod-pickup');
+    try{input?.showPicker();}catch{input?.focus();}
+  });
   cwdModPreview();
 }
 
@@ -133,7 +140,8 @@ async function cwdSaveBookingEditor(){
     delivery_charge:c.is_self_drive?Number(cwdModValue('cwd-mod-delivery')):0,
     included_km:c.included_km!==null?Number(cwdModValue('cwd-mod-km')):null,
     pickup_at:c.dates_supported?cwdModValue('cwd-mod-pickup'):'',
-    return_at:c.dates_supported&&c.supports_return?cwdModValue('cwd-mod-return'):''};
+    return_at:c.dates_supported&&c.supports_return?cwdModValue('cwd-mod-return'):'',
+    confirm_trip_not_started:!!document.getElementById('cwd-mod-not-started')?.checked};
   const total=payload.rental_amount+payload.security_deposit+payload.delivery_charge+c.extras_amount;
   if(!Number.isFinite(total)||total<0){alert('Check revised charges.');return;}
   const explanation='Revise booking '+id+'?\n\nOriginal: '+cwdModMoney(c.total_fare)

@@ -164,4 +164,31 @@ async function syncDriverFare(id,booking,change,entry) {
   });
 }
 
+async function finishModification({id,b,old,change,entry,paid,saved,details}) {
+  if(!old.is_self_drive) {
+    try { await syncDriverFare(id,b,change,entry); }
+    catch(error) {
+      let restored=false;
+      try {
+        const originalStatus=paid<=0?'pending':paid>=Number(b.total_fare||0)?'paid':'partially_paid';
+        const rows=await db(bookingPath(id)+'&updated_at=eq.'+encodeURIComponent(entry.at),{
+          method:'PATCH',headers:{Prefer:'return=representation'},
+          body:JSON.stringify({booking_details:b.booking_details,fare_amount:b.fare_amount,
+            original_fare:b.original_fare,total_fare:b.total_fare,paid_amount:paid,
+            payment_status:originalStatus,updated_at:new Date().toISOString()})
+        });
+        restored=!!rows?.length;
+      }catch{}
+      fail('Vendor fare sync failed. '+(restored?'Previous fare restored.':'Manual reconciliation required.')+' '+error.message,503);
+    }
+  }
+  let accountingWarning='';
+  if(old.is_self_drive&&change.deposit>0) {
+    try{await syncSecurityDepositReceived({...saved,paid_amount:paid},paid,'bank_transfer');}
+    catch(error){accountingWarning=error.message||'Deposit accounting requires review.';}
+  }
+  return json({success:true,current:snapshot(saved,paid),history:history(details).slice(0,30),
+    accounting_warning:accountingWarning,vendor_notice:!old.is_self_drive});
+}
+
 export async function POST() { return json({success:false,message:'Modification is not yet enabled.'},503); }

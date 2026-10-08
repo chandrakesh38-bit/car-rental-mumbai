@@ -16,7 +16,7 @@ const securityDepositAccounting = () => import('../lib/security-deposit-accounti
 const base=()=>String(process.env.SUPABASE_URL||'').replace(/\/$/,'');
 const roleKey=()=>process.env.SUPABASE_SERVICE_ROLE_KEY;
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
-const isPreviewOnly=()=>process.env.VERCEL_ENV!=='production'&&process.env.CWD_BOOKING_MODIFICATION_PREVIEW_WRITES!=='enabled';
+const isPreviewOnly=()=>process.env.VERCEL_ENV!=='production';
 function fail(message,status=400){throw Object.assign(new Error(message),{status});}
 async function requireAdmin(request){
   const token=request.headers.get('authorization')?.replace(/^Bearer\s+/i,'');
@@ -100,6 +100,7 @@ function calculateChange(booking,current,body,policy){
     if(current.supports_return&&returnDate<=pickup)fail('Return must be after pickup.');
     if(current.is_self_drive&&(returnDate-pickup)/3600000<24)fail('Self Drive bookings require minimum 24 hours.');
     if(body.pickup_at!==current.pickup_at) {
+      if(pickup.getTime()<=Date.now())fail('Choose a future pickup date and time.',409);
       if(!policy?.editable) fail(policy?.reason || 'Pickup cannot be modified after the trip has started.',409);
       if(policy.requires_confirmation && body.confirm_trip_not_started!==true)
         fail('Please confirm that this booking has not actually started before modifying pickup.',409);
@@ -162,9 +163,13 @@ async function modifyBooking(request){
   const pickupPolicy=await getPickupPolicy(id,old);
   const change=calculateChange(b,old,body,pickupPolicy);
   if(isPreviewOnly())return json({success:true,preview_only:true,simulation:{previous_total:old.total_fare,revised_total:change.total,paid:old.paid_amount,balance:Math.max(0,moneyRound(change.total-old.paid_amount)),excess_paid:Math.max(0,moneyRound(old.paid_amount-change.total)),revised_return:change.returnDate?.toISOString()||null}});
-  payments=await cancelPendingPayments(id,payments);
+  if(change.total!==old.total_fare)payments=await cancelPendingPayments(id,payments);
   const paid=sumPaid(payments);
   if(String(body.expected_updated_at??'')!==String((await getBooking(id)).updated_at??''))fail('Booking changed while payment links were checked. Refresh.',409);
+  if(change.pickup && body.pickup_at!==old.pickup_at) {
+    const latestPolicy=await getPickupPolicy(id,old);
+    if(!latestPolicy.editable)fail(latestPolicy.reason||'Pickup is no longer editable. Refresh.',409);
+  }
   const now=new Date().toISOString();
   const entry={at:now,by:String(user.email||'').toLowerCase(),reason:change.reason,
     before:{pickup:old.pickup_at,return:old.return_at,rental:old.rental_amount,deposit:old.security_deposit,

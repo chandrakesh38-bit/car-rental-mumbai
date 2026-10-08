@@ -154,3 +154,22 @@ async function cwdSaveBookingEditor(){
   }catch(error){alert(error.message||'Unable to save booking modification.');
     if(button.isConnected){button.disabled=false;button.textContent='Save Booking Modification';}}
 }
+
+function cwdShareRevisedBooking(){
+  const data=cwdModContext,c=data?.current;
+  if(!data||!c||!data.history?.length)return;
+  let message;
+  try{
+    message=bookingConfirmationText(currentAdminBooking)
+      .replace('✅ *BOOKING CONFIRMED*','🔄 *BOOKING UPDATED*')
+      .replace('Your booking is now confirmed. ✅','Please refer to these updated booking details.');
+  }catch(error){alert('Please refresh booking details before sharing.');return;}
+  if(c.is_self_drive)message=message.replace('💰 *Total Fare:*',
+    '💰 *Revised Rental:* '+cwdModMoney(c.rental_amount)+'\n'
+    +'🔒 *Refundable Security Deposit:* '+cwdModMoney(c.security_deposit)+'\n'
+    +'💰 *Total Fare:*');
+  const phone=String(data.customer_phone||'').replace(/\D/g,'').replace(/^0+/,'');
+  const mobile=phone.length===10?'91'+phone:phone;
+  if(!/^\d{10,15}$/.test(mobile)){alert('Customer mobile number is invalid.');return;}
+  window.open('https://wa.me/'+mobile+'?text='+encodeURIComponent(message),'_blank','noopener');
+}

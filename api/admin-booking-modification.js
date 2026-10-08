@@ -189,7 +189,7 @@ async function saveModification({id,b,old,change,details,entry,paid}) {
   const patch={booking_details:details,fare_amount:change.base,original_fare:change.base,total_fare:change.total,
     paid_amount:paid,payment_status:paymentStatus,updated_at:now};
   const version=b.updated_at?'&updated_at=eq.'+encodeURIComponent(b.updated_at):'&updated_at=is.null';
-  const saved=await db(bookingPath(id)+version,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify(patch)});
+  const saved=await db(bookPath(id)+version,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify(patch)});
   if(!saved?.length)fail('Booking changed while saving. Refresh and retry.',409);
   return finishModification({id,b,old,change,entry,paid,saved:saved[0],details});
 }
@@ -212,7 +212,7 @@ async function finishModification({id,b,old,change,entry,paid,saved,details}) {
       let restored=false;
       try {
         const originalStatus=paid<=0?'pending':paid>=Number(b.total_fare||0)?'paid':'partially_paid';
-        const rows=await db(bookingPath(id)+'&updated_at=eq.'+encodeURIComponent(entry.at),{
+        const rows=await db(bookPath(id)+'&updated_at=eq.'+encodeURIComponent(entry.at),{
           method:'PATCH',headers:{Prefer:'return=representation'},
           body:JSON.stringify({booking_details:b.booking_details,fare_amount:b.fare_amount,
             original_fare:b.original_fare,total_fare:b.total_fare,paid_amount:paid,

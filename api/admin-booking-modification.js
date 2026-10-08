@@ -47,3 +47,5 @@ export async function GET(request) {
       current:snapshot(b,sumPaid(payments)),history:history(b.booking_details).slice(0,30)});
   } catch (error) { return json({success:false,message:error.message || 'Modification cannot load.'},error.status || 500); }
 }
+
+export async function POST() { return json({success:false,message:'Modification is not yet enabled.'},503); }

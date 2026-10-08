@@ -11,18 +11,23 @@ assert.equal(vendorLoginStatus('needs_correction').kind,'correction');
 assert.equal(validOtp('1234'),true);
 assert.equal(validOtp('123A'),false);
 assert.equal(validOtp('12345'),false);
-const env={CWD_VENDOR_APP_AUTH_ENABLED:'true',VERCEL_ENV:'preview',
- CWD_VENDOR_APP_SUPABASE_URL:'https://testing123.supabase.co',
- CWD_VENDOR_APP_STAGING_PROJECT_REF:'testing123',
- CWD_VENDOR_APP_SERVICE_ROLE_KEY:'test-secret-not-real',
- CWD_VENDOR_APP_SESSION_SECRET:'X'.repeat(48),
- CWD_VENDOR_APP_MSG91_WIDGET_ID:'fake-widget',
- CWD_VENDOR_APP_MSG91_WIDGET_TOKEN:'fake-token',
- CWD_VENDOR_APP_MSG91_AUTH_KEY:'fake-authkey',
- SUPABASE_URL:'https://production123.supabase.co'};
-assert.ok(vendorAuthConfig(env));
-assert.equal(vendorAuthConfig({...env,SUPABASE_URL:env.CWD_VENDOR_APP_SUPABASE_URL}),null);
+const env={
+ CWD_VENDOR_APP_AUTH_ENABLED:'true',
+ CWD_VENDOR_APP_SHARED_DB_MODE:'true',
+ VERCEL_ENV:'preview',VERCEL_GIT_COMMIT_REF:'testing',
+ SUPABASE_URL:'https://example-ref.supabase.co',
+ SUPABASE_SERVICE_ROLE_KEY:'dummy-not-real',
+ MSG91_AUTH_KEY:'A'.repeat(48),
+ NEXT_PUBLIC_MSG91_WIDGET_ID:'widget-demo',
+ NEXT_PUBLIC_MSG91_WIDGET_TOKEN:'widget-token-demo',
+};
+const safe=vendorAuthConfig(env);
+assert.ok(safe);
+assert.equal(safe.writesEnabled,false);
+assert.equal(vendorAuthConfig({...env,VERCEL_GIT_COMMIT_REF:'main'}),null);
 assert.equal(vendorAuthConfig({...env,VERCEL_ENV:'production'}),null);
-assert.equal(vendorAuthConfig({...env,CWD_VENDOR_APP_STAGING_PROJECT_REF:'other'}),null);
+assert.equal(vendorAuthConfig({...env,CWD_VENDOR_APP_SHARED_DB_MODE:'false'}),null);
 assert.equal(vendorAuthConfig({...env,CWD_VENDOR_APP_AUTH_ENABLED:'false'}),null);
+assert.equal(vendorAuthConfig({...env,SUPABASE_URL:'http://localhost'}),null);
+assert.equal(vendorAuthConfig({...env,CWD_VENDOR_APP_TESTING_LIVE_WRITES_ENABLED:'true'}).writesEnabled,true);
 console.log('Vendor mobile/status/OTP/staging isolation gates: PASS');

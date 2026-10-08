@@ -53,23 +53,23 @@ void main(){
 
       phone.controller!.selection=const TextSelection.collapsed(offset:3);
       expect(phone.controller!.selection.baseOffset,3);
-      await tester.testTextInput.updateEditingValue(const TextEditingValue(
+      tester.testTextInput.updateEditingValue(const TextEditingValue(
         text:'987543210',selection:TextSelection.collapsed(offset:3)));
       await tester.pump();
       expect(phone.controller!.text,'987543210');
       expect(phone.controller!.selection.baseOffset,3);
-      await tester.testTextInput.updateEditingValue(const TextEditingValue(
+      tester.testTextInput.updateEditingValue(const TextEditingValue(
         text:'9876543210',selection:TextSelection.collapsed(offset:4)));
       await tester.pump();
       expect(phone.controller!.text,'9876543210');
       expect(phone.controller!.selection.baseOffset,4);
 
       // Paste/alphanumeric keyboard streams are cleaned to digits.
-      await tester.testTextInput.updateEditingValue(const TextEditingValue(
+      tester.testTextInput.updateEditingValue(const TextEditingValue(
         text:'98abc76543210',selection:TextSelection.collapsed(offset:13)));
       await tester.pump();
       expect(phone.controller!.text,'9876543210');
-      await tester.testTextInput.updateEditingValue(const TextEditingValue(
+      tester.testTextInput.updateEditingValue(const TextEditingValue(
         text:'98765432101234',selection:TextSelection.collapsed(offset:14)));
       await tester.pump();
       expect(phone.controller!.text,'9876543210');

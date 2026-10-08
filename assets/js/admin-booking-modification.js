@@ -65,7 +65,8 @@ function cwdRenderBookingEditor(data){
   let html='';
   if(!c.eligible)html='<p class="text-xs font-semibold text-amber-800">Completed and cancelled bookings are locked. Existing records remain available below.</p>';
   else{
-    html='<p class="text-xs text-slate-600 mb-3">Original booking ID and successful payment history stay unchanged. Changes will be logged.</p>';
+    html='<p class="text-xs text-slate-600 mb-3">Original booking ID and successful payment history stay unchanged. Changes will be logged when saving is enabled.</p>';
+    if(data.preview_only)html+='<p class="mb-3 rounded-lg bg-amber-50 p-3 text-xs font-semibold text-amber-800">TESTING PREVIEW: Simulation only. Live booking and payments will NOT be changed because the database is shared.</p>';
     if(c.dates_supported){
       html+='<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">';
       html+=cwdModField('Pickup (India time)','cwd-mod-pickup',c.pickup_at,'type="datetime-local" required '+(c.booking_status==='ongoing'?'readonly':''));

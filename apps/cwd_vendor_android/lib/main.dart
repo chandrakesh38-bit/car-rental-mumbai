@@ -6,14 +6,16 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'app_config.dart';
 import 'vendor_dashboard_preview.dart';
+import 'vendor_feedback.dart';
 import 'link_vault.dart';
 import 'vendor_link.dart';
 
 const navy = Color(0xFF122F50);
 const green = Color(0xFF128467);
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await VendorFeedback.initialize();
   runApp(const CwdVendorApp());
 }
 

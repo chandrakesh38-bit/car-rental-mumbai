@@ -145,6 +145,12 @@ async function cwdSaveBookingEditor(){
   try{
     const result=await adminApi('/api/admin-booking-modification',{
       method:'POST',body:JSON.stringify(payload)});
+    if(result.preview_only){
+      const s=result.simulation;
+      alert('TESTING SIMULATION ONLY — no changes were saved.\n\nRevised Total: '+cwdModMoney(s.revised_total)+'\nAlready Paid: '+cwdModMoney(s.paid)+'\nBalance: '+cwdModMoney(s.balance)+'\nExcess: '+cwdModMoney(s.excess_paid));
+      button.disabled=false;button.textContent='Simulate Modification (No Save)';
+      return;
+    }
     const notices=['Booking modification saved.'];
     if(result.accounting_warning)notices.push('Accounting warning: '+result.accounting_warning);
     if(result.vendor_notice)notices.push('Please notify the vendor and verify their payout/package.');

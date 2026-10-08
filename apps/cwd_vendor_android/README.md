@@ -79,3 +79,8 @@ code or mobile number alone is NOT a secure login.
 10. Clear saved secure links and install/uninstall behavior.
 
 No production release, no Play Store publishing, no automatic migrations.
+
+Build note: Flutter 3.47 uses Android Gradle Plugin 9. The stable
+flutter_inappwebview 6.1.5 fails on removed proguard-android.txt;
+V0.1 pins 6.2.0-beta.3, whose Android build uses the supported rule.
+This is a testing-only pre-release dependency requiring real-device QA.

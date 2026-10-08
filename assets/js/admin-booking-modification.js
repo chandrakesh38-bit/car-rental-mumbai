@@ -120,3 +120,37 @@ function cwdBindBookingEditor(){
   root.querySelector('#cwd-mod-save')?.addEventListener('click',cwdSaveBookingEditor);
   cwdModPreview();
 }
+
+async function cwdSaveBookingEditor(){
+  const c=cwdModContext?.current,id=cwdModId(),button=document.getElementById('cwd-mod-save');
+  if(!c||!button||id!==cwdModContext.booking_id)return;
+  const reason=cwdModValue('cwd-mod-reason').trim();
+  if(reason.length<4){alert('Please enter the reason for modification.');return;}
+  const payload={booking_id:id,expected_updated_at:c.updated_at,reason,
+    rental_amount:Number(cwdModValue('cwd-mod-rent')),
+    security_deposit:c.is_self_drive?Number(cwdModValue('cwd-mod-deposit')):0,
+    delivery_charge:c.is_self_drive?Number(cwdModValue('cwd-mod-delivery')):0,
+    included_km:c.included_km!==null?Number(cwdModValue('cwd-mod-km')):null,
+    pickup_at:c.dates_supported?cwdModValue('cwd-mod-pickup'):'',
+    return_at:c.dates_supported&&c.supports_return?cwdModValue('cwd-mod-return'):''};
+  const total=payload.rental_amount+payload.security_deposit+payload.delivery_charge+c.extras_amount;
+  if(!Number.isFinite(total)||total<0){alert('Check revised charges.');return;}
+  const explanation='Revise booking '+id+'?\n\nOriginal: '+cwdModMoney(c.total_fare)
+    +'\nRevised: '+cwdModMoney(total)+'\nPaid: '+cwdModMoney(c.paid_amount)
+    +'\n\nAll successful payments will remain unchanged.'
+    +(c.is_self_drive?'':'\nVendor payout must be coordinated separately.');
+  if(!confirm(explanation))return;
+  button.disabled=true;button.textContent='Saving changes…';
+  try{
+    const result=await adminApi('/api/admin-booking-modification',{
+      method:'POST',body:JSON.stringify(payload)});
+    const notices=['Booking modification saved.'];
+    if(result.accounting_warning)notices.push('Accounting warning: '+result.accounting_warning);
+    if(result.vendor_notice)notices.push('Please notify the vendor and verify their payout/package.');
+    await loadInquiries();
+    await renderBookingDetail();
+    if(typeof loadVendorOpsPanel==='function')await loadVendorOpsPanel();
+    alert(notices.join('\n'));
+  }catch(error){alert(error.message||'Unable to save booking modification.');
+    if(button.isConnected){button.disabled=false;button.textContent='Save Booking Modification';}}
+}

@@ -697,6 +697,7 @@ class _BookingPreviewState extends State<BookingPreview> {
         SnackBar(content: Text(s)));
 
   Future<void> accept() async {
+    VendorFeedback.click();
     if (selected == null) {
       inform('Select a matching car before accepting.');
       return;
@@ -710,10 +711,16 @@ class _BookingPreviewState extends State<BookingPreview> {
           '. Customer contact details unlock only after CWD admin allotment.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialog, false),
+            onPressed: () {
+              VendorFeedback.click();
+              Navigator.pop(dialog, false);
+            },
             child: const Text('Back')),
           FilledButton(
-            onPressed: () => Navigator.pop(dialog, true),
+            onPressed: () {
+              VendorFeedback.click();
+              Navigator.pop(dialog, true);
+            },
             child: const Text('Accept')),
         ],
       ),
@@ -721,10 +728,21 @@ class _BookingPreviewState extends State<BookingPreview> {
     if (answer != true) return;
     setState(() => widget.booking.acceptWithVehicle(selected!));
     widget.onChange();
-    inform('Demo accepted; awaiting CWD admin allotment.');
+    VendorFeedback.accepted();
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const VendorCelebration(),
+    );
   }
 
   Future<void> cancel() async {
+    VendorFeedback.click();
+    if (!widget.booking.canCancel) {
+      inform('Cancel is locked after acceptance. Contact CWD admin.');
+      return;
+    }
     String? reason;
     final details = TextEditingController();
     final confirmed = await showModalBottomSheet<bool>(
@@ -748,7 +766,10 @@ class _BookingPreviewState extends State<BookingPreview> {
                     border: OutlineInputBorder()),
                   items: cancellationReasons.map((item) =>
                     DropdownMenuItem(value: item, child: Text(item))).toList(),
-                  onChanged: (value) => update(() => reason = value),
+                  onChanged: (value) {
+                    VendorFeedback.click();
+                    update(() => reason = value);
+                  },
                 ),
                 if (reason == 'Other') ...[
                   const SizedBox(height: 11),
@@ -781,14 +802,20 @@ class _BookingPreviewState extends State<BookingPreview> {
                 FilledButton(
                   onPressed: reason == null || 
                     (reason == 'Other' && details.text.trim().isEmpty)
-                    ? null : () => Navigator.pop(sheet, true),
+                    ? null : () {
+                      VendorFeedback.click();
+                      Navigator.pop(sheet, true);
+                    },
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
                     backgroundColor: const Color(0xFFBB4551)),
                   child: Text(widget.booking.isAllotted
                     ? 'Request Admin Cancellation' : 'Confirm Cancel')),
                 TextButton(
-                  onPressed: () => Navigator.pop(sheet, false),
+                  onPressed: () {
+                    VendorFeedback.click();
+                    Navigator.pop(sheet, false);
+                  },
                   child: const Text('Go Back')),
               ],
             ),
@@ -799,6 +826,10 @@ class _BookingPreviewState extends State<BookingPreview> {
     final note = details.text;
     details.dispose();
     if (confirmed != true || reason == null || !mounted) return;
+    if (!widget.booking.canCancel) {
+      inform('CWD admin has locked cancellation.');
+      return;
+    }
     setState(() => widget.booking.cancel(
       reason: reason!, note: note));
     widget.onChange();
@@ -807,19 +838,153 @@ class _BookingPreviewState extends State<BookingPreview> {
       : 'Cancelled in demo only.');
   }
 
+  Future<void> navigateTo(String address) async {
+    VendorFeedback.click();
+    if (address.trim().isEmpty) {
+      inform('Pickup address is not available.');
+      return;
+    }
+    final nav = Uri(
+      scheme: 'google.navigation',
+      queryParameters: {'q': address},
+    );
+    final fallback = Uri.https('www.google.com', '/maps/dir/', {
+      'api': '1',
+      'destination': address,
+    });
+    try {
+      // Android Google Maps navigation deep link, then public maps fallback.
+      final ok = await launchUrl(nav, mode: LaunchMode.externalApplication);
+      if (!ok) await launchUrl(fallback, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      try {
+        await launchUrl(fallback, mode: LaunchMode.externalApplication);
+      } catch (_) {
+        inform('Unable to open Google Maps on this phone.');
+      }
+    }
+  }
+
+  Future<void> callCustomer() async {
+    VendorFeedback.click();
+    final booking = widget.booking;
+    if (!booking.isAllotted || booking.id.startsWith('DEMO-')) {
+      inform('Demo mode: no real customer number will be dialed.');
+      return;
+    }
+    final digits = (booking.customerMobile ?? '').replaceAll(
+      RegExp(r'[^0-9+]'), '');
+    if (digits.length < 10) {
+      inform('Customer number is not available.');
+      return;
+    }
+    try {
+      await launchUrl(Uri(scheme: 'tel', path: digits),
+        mode: LaunchMode.externalApplication);
+    } catch (_) {
+      inform('Could not open the phone dialer.');
+    }
+  }
+
+  Widget chargeRow(String label, String description, int amount, {
+    bool total = false,
+  }) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Expanded(child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(
+            fontWeight: total ? FontWeight.w900 : FontWeight.w600,
+            color: total ? teal : ink, fontSize: total ? 16 : 13)),
+          if (description.isNotEmpty) Text(description,
+            style: const TextStyle(fontSize: 11, color: muted)),
+        ],
+      )),
+      const SizedBox(width: 8),
+      Text(payout(amount), style: TextStyle(
+        color: total ? teal : ink,
+        fontSize: total ? 21 : 14,
+        fontWeight: total ? FontWeight.w900 : FontWeight.w700)),
+    ]),
+  );
+
+  Widget finalEarnings(VendorDemoEarning value) => Container(
+    decoration: whiteCard(),
+    padding: const EdgeInsets.all(17),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('Your Final Earning · Breakup',
+        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+      const SizedBox(height: 5),
+      const Text('Sample final settlement after CWD review',
+        style: TextStyle(fontSize: 12, color: muted)),
+      const Divider(height: 25),
+      chargeRow('Fixed KM', value.fixedKm.toString() + ' KM included',
+        value.fixedFare),
+      chargeRow('Driver Allowance', 'Approved allowance',
+        value.driverAllowance),
+      chargeRow('Extra KM',
+        value.extraKm.toString() + ' KM × ' + payout(value.extraKmRate) + '/KM',
+        value.extraKmFare),
+      chargeRow('Extra Hours',
+        value.extraHours.toString() + ' hrs × ' +
+          payout(value.extraHourRate) + '/hr (if applicable)',
+        value.extraHoursFare),
+      chargeRow('Night Charge',
+        value.nights.toString() + ' × ' + payout(value.nightRate),
+        value.nightFare),
+      chargeRow('Toll', 'Actual / approved', value.toll),
+      chargeRow('Parking', 'Actual / approved', value.parking),
+      chargeRow('State Tax', 'Actual / approved', value.stateTax),
+      if (value.otherApproved > 0)
+        chargeRow('Other Approved', '', value.otherApproved),
+      if (value.deductions > 0)
+        chargeRow('Deductions', 'Approved deductions', -value.deductions),
+      const Divider(height: 26),
+      chargeRow('Total Final Earning', 'Demo settlement only', value.total,
+        total: true),
+    ]),
+  );
+
+  Widget rateDetails(VendorDemoBooking b) => Container(
+    decoration: whiteCard(),
+    padding: const EdgeInsets.all(17),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('Your Extra Charge Rates',
+        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+      const SizedBox(height: 11),
+      detailLine(Icons.speed_outlined,
+        'Fixed KM included: ' + b.includedKm.toString() + ' KM'),
+      detailLine(Icons.add_road_outlined,
+        'Extra KM: ' + payout(b.extraKmRate) + ' / KM'),
+      detailLine(Icons.access_time_outlined,
+        'Extra Hours (if applicable): ' + payout(b.extraHourRate) + ' / hr'),
+      detailLine(Icons.nights_stay_outlined,
+        'Night Charge (11 PM–4 AM): ' + payout(b.nightRate) + ' / night'),
+      const SizedBox(height: 6),
+      const Text('Toll, parking and state tax are subject to actuals '
+        'and CWD settlement review. Exact charges depend on trip terms.',
+        style: TextStyle(color: muted, fontSize: 12)),
+    ]),
+  );
+
   @override
   Widget build(BuildContext context) {
     final b = widget.booking;
     final canAccept = b.status == VendorBookingStatus.newOffer;
-    final canCancel = canAccept ||
-      b.status == VendorBookingStatus.accepted ||
+    final showCancelLock = b.status == VendorBookingStatus.accepted ||
       b.status == VendorBookingStatus.allocated;
     final options = widget.fleet.where((car) =>
       b.matchingVehicleIds.contains(car.id)).toList();
+    final matchingSelected = options.where(
+      (car) => car.id == b.selectedVehicleId).toList();
+    final assignedNumber = matchingSelected.isEmpty
+      ? null : matchingSelected.first.number;
+
     return Scaffold(
       backgroundColor: canvas,
       appBar: AppBar(
-        title: const Text('Booking Details'),
+        title: Text('Booking · ' + b.status.label),
         foregroundColor: Colors.white,
         flexibleSpace: Container(decoration: const BoxDecoration(
           gradient: LinearGradient(colors: [blue, teal]))),
@@ -832,12 +997,23 @@ class _BookingPreviewState extends State<BookingPreview> {
             decoration: BoxDecoration(
               color: const Color(0xFFFFF0D8),
               borderRadius: BorderRadius.circular(12)),
-            child: const Text('UI DEMO • No live booking actions',
+            child: const Text('UI DEMO • Sample booking, no live actions',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE4F6F3),
+              border: const Border(left: BorderSide(color: teal, width: 4)),
+              borderRadius: BorderRadius.circular(10)),
+            child: Text('Currently Viewing: ' + b.status.label,
+              style: const TextStyle(fontWeight: FontWeight.w800, color: blue)),
           ),
           const SizedBox(height: 13),
           Container(
-            decoration: whiteCard(), padding: const EdgeInsets.all(17),
+            decoration: whiteCard(),
+            padding: const EdgeInsets.all(17),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
@@ -848,6 +1024,12 @@ class _BookingPreviewState extends State<BookingPreview> {
                 const SizedBox(height: 12),
                 Text(b.carModel, style: const TextStyle(
                   fontWeight: FontWeight.w800, fontSize: 20)),
+                if (assignedNumber != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text('Vehicle: ' + assignedNumber,
+                      style: const TextStyle(color: muted, fontSize: 12)),
+                  ),
                 const Divider(height: 25),
                 detailLine(Icons.route_outlined, b.tripType),
                 detailLine(Icons.calendar_today_outlined,
@@ -858,73 +1040,145 @@ class _BookingPreviewState extends State<BookingPreview> {
                   'Pickup Area: ' + b.pickupArea),
                 detailLine(Icons.flag_outlined,
                   'Destination Area: ' + b.dropArea),
-                const Divider(height: 26),
-                const Text('Estimated Vendor Payout',
-                  style: TextStyle(fontSize: 13, color: muted)),
-                Text(payout(b.payout), style: const TextStyle(
-                  fontSize: 27, color: teal, fontWeight: FontWeight.w900)),
+                const Divider(height: 25),
+                Text(b.isCompleted && b.approvedFinalEarning != null
+                    ? 'Your Final Earning'
+                    : 'Your Estimated Earning',
+                  style: const TextStyle(fontSize: 13, color: muted)),
                 const SizedBox(height: 5),
-                const Text('Matching car selection does not change payout.',
-                  style: TextStyle(fontSize: 12, color: muted)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 13),
-          Container(
-            decoration: whiteCard(), padding: const EdgeInsets.all(17),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(b.isAllotted
-                    ? 'Customer & Trip Details'
-                    : 'Customer Details Locked',
-                  style: const TextStyle(fontWeight: FontWeight.w800,
-                    fontSize: 17)),
-                const SizedBox(height: 10),
-                if (!b.isAllotted) const Row(children: [
-                  Icon(Icons.lock_outline, color: purple),
-                  SizedBox(width: 9),
-                  Expanded(child: Text('Only general areas are visible. '
-                    'Customer name, phone and exact addresses remain hidden '
-                    'until admin allocation.',
-                    style: TextStyle(fontSize: 13, color: muted))),
-                ]) else const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Demo customer · personal details masked'),
-                    SizedBox(height: 6),
-                    Text('Full pickup and drop details become available '
-                      'here after verified CWD allocation.'),
-                  ],
+                Text(payout(b.isCompleted && b.approvedFinalEarning != null
+                    ? b.approvedFinalEarning! : b.payout),
+                  style: const TextStyle(fontSize: 27, color: teal,
+                    fontWeight: FontWeight.w900)),
+                if (!b.isCompleted) const Padding(
+                  padding: EdgeInsets.only(top: 4),
+                  child: Text('Car choice does not change this estimated payout.',
+                    style: TextStyle(fontSize: 12, color: muted)),
                 ),
               ],
             ),
           ),
-          if (options.isNotEmpty) ...[
+          if (!b.isCompleted &&
+              b.status != VendorBookingStatus.cancelled) ...[
+            const SizedBox(height: 13),
+            rateDetails(b),
+          ],
+          if (b.isCompleted && b.finalEarning != null) ...[
+            const SizedBox(height: 13),
+            finalEarnings(b.finalEarning!),
+          ],
+          // Cancelled cards intentionally contain NO customer detail panel.
+          if (b.status != VendorBookingStatus.cancelled) ...[
             const SizedBox(height: 13),
             Container(
-              decoration: whiteCard(), padding: const EdgeInsets.all(17),
+              decoration: whiteCard(),
+              padding: const EdgeInsets.all(17),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Select Matching Car',
-                    style: TextStyle(fontSize: 17,
-                      fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 7),
-                  const Text('Only compatible registered cars are listed.',
+                  Text(b.isAllotted
+                      ? 'Customer & Trip Details'
+                      : 'Customer Details Locked',
+                    style: const TextStyle(fontWeight: FontWeight.w800,
+                      fontSize: 17)),
+                  const SizedBox(height: 11),
+                  if (!b.isAllotted) const Row(children: [
+                    Icon(Icons.lock_outline, color: purple),
+                    SizedBox(width: 10),
+                    Expanded(child: Text(
+                      'Only pickup and destination areas are shown. '
+                      'Full addresses and customer contact become available '
+                      'after CWD admin allocation.',
+                      style: TextStyle(fontSize: 13, color: muted))),
+                  ]) else ...[
+                    Row(children: [
+                      Expanded(child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Customer Name', style: TextStyle(
+                            color: muted, fontSize: 12)),
+                          Text(b.customerName ?? 'Not provided',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 15)),
+                          const SizedBox(height: 7),
+                          Text(b.id.startsWith('DEMO-')
+                            ? 'Phone: DEMO · no real number'
+                            : 'Phone: ' + (b.customerMobile ?? 'Unavailable'),
+                            style: const TextStyle(color: muted, fontSize: 12)),
+                        ],
+                      )),
+                      SizedBox(
+                        width: 44, height: 44,
+                        child: IconButton.filled(
+                          tooltip: 'Call customer',
+                          icon: const Icon(Icons.call, size: 19),
+                          onPressed: callCustomer,
+                          style: IconButton.styleFrom(
+                            backgroundColor: teal, foregroundColor: Colors.white),
+                        ),
+                      ),
+                    ]),
+                    const Divider(height: 27),
+                    const Text('Full Pickup Address', style: TextStyle(
+                      fontWeight: FontWeight.w800, fontSize: 14)),
+                    const SizedBox(height: 5),
+                    Text(b.fullPickupAddress ?? 'Address pending',
+                      style: const TextStyle(fontSize: 13)),
+                    const SizedBox(height: 9),
+                    FilledButton.icon(
+                      onPressed: b.fullPickupAddress == null
+                        ? null : () => navigateTo(b.fullPickupAddress!),
+                      icon: const Icon(Icons.navigation_outlined, size: 18),
+                      label: const Text('Navigate to Pickup'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: teal,
+                        minimumSize: const Size.fromHeight(43)),
+                    ),
+                    const Divider(height: 27),
+                    const Text('Destination / Final Drop', style: TextStyle(
+                      fontWeight: FontWeight.w800, fontSize: 14)),
+                    const SizedBox(height: 5),
+                    Text(b.fullDropAddress ?? 'Address pending',
+                      style: const TextStyle(fontSize: 13)),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: b.fullDropAddress == null
+                        ? null : () => navigateTo(b.fullDropAddress!),
+                      icon: const Icon(Icons.map_outlined, size: 17),
+                      label: const Text('Open Drop in Maps'),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+          // Matching dropdown belongs to NEW offers only.
+          if (canAccept && options.isNotEmpty) ...[
+            const SizedBox(height: 13),
+            Container(
+              decoration: whiteCard(),
+              padding: const EdgeInsets.all(17),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Select Matching Car', style: TextStyle(
+                    fontWeight: FontWeight.w800, fontSize: 17)),
+                  const SizedBox(height: 6),
+                  const Text('Choose one of your registered compatible cars.',
                     style: TextStyle(fontSize: 13, color: muted)),
                   const SizedBox(height: 11),
                   DropdownButtonFormField<String>(
                     initialValue: selected,
                     isExpanded: true,
                     decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Matching vehicle'),
-                    items: options.map((v) =>
-                      DropdownMenuItem(value: v.id, child: Text(
-                        v.model + ' · ' + v.number,
+                      labelText: 'Matching vehicle',
+                      border: OutlineInputBorder()),
+                    items: options.map((v) => DropdownMenuItem(
+                      value: v.id,
+                      child: Text(v.model + ' · ' + v.number,
                         overflow: TextOverflow.ellipsis))).toList(),
-                    onChanged: canAccept
-                      ? (value) => setState(() => selected = value)
-                      : null,
+                    onChanged: (value) {
+                      VendorFeedback.click();
+                      setState(() => selected = value);
+                    },
                   ),
                 ],
               ),
@@ -932,8 +1186,8 @@ class _BookingPreviewState extends State<BookingPreview> {
           ],
           if (b.cancellationRequested) const Padding(
             padding: EdgeInsets.symmetric(vertical: 13),
-            child: Text('Cancellation requested — awaiting CWD approval',
-              style: TextStyle(color: Color(0xFF98621D),
+            child: Text('Cancellation requested · awaiting CWD admin',
+              style: TextStyle(color: Color(0xFF996322),
                 fontWeight: FontWeight.w700)),
           ),
           if (canAccept) ...[
@@ -946,19 +1200,39 @@ class _BookingPreviewState extends State<BookingPreview> {
                 backgroundColor: teal,
                 minimumSize: const Size.fromHeight(50))),
           ],
-          if (b.status == VendorBookingStatus.accepted) const Padding(
-            padding: EdgeInsets.symmetric(vertical: 15),
-            child: Text('Accepted. Waiting for CWD admin allotment.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.w700, color: teal)),
-          ),
-          if (canCancel && !b.cancellationRequested) ...[
+          if (b.status == VendorBookingStatus.accepted)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Text('Offer accepted · waiting for CWD allocation',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: teal,
+                  fontWeight: FontWeight.w700)),
+            ),
+          if (showCancelLock) ...[
+            const SizedBox(height: 9),
+            OutlinedButton.icon(
+              onPressed: b.canCancel && !b.cancellationRequested
+                  ? cancel : null,
+              icon: Icon(b.canCancel
+                ? Icons.cancel_outlined : Icons.lock_outline),
+              label: Text(b.canCancel
+                ? 'Cancel Booking' : 'Cancel Locked'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48)),
+            ),
+            if (!b.canCancel)
+              const Padding(padding: EdgeInsets.only(top: 7, bottom: 4),
+                child: Text(
+                  'Only CWD admin can re-enable cancellation after acceptance.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: muted, fontSize: 12))),
+          ],
+          if (canAccept) ...[
             const SizedBox(height: 10),
             OutlinedButton.icon(
               onPressed: cancel,
               icon: const Icon(Icons.cancel_outlined),
-              label: Text(b.isAllotted
-                ? 'Request Cancellation' : 'Cancel Booking'),
+              label: const Text('Cancel Booking'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(48),
                 foregroundColor: const Color(0xFFB84550))),

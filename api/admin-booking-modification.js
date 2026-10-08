@@ -5,6 +5,7 @@ import { syncSecurityDepositReceived } from '../lib/security-deposit-accounting.
 const base=()=>String(process.env.SUPABASE_URL||'').replace(/\/$/,'');
 const roleKey=()=>process.env.SUPABASE_SERVICE_ROLE_KEY;
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
+const isPreviewOnly=()=>process.env.VERCEL_ENV!=='production'&&process.env.CWD_BOOKING_MODIFICATION_PREVIEW_WRITES!=='enabled';
 function fail(message,status=400){throw Object.assign(new Error(message),{status});}
 async function requireAdmin(request){
   const token=request.headers.get('authorization')?.replace(/^Bearer\s+/i,'');

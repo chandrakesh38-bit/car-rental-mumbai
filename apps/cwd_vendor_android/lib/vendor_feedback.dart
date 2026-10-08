@@ -9,6 +9,18 @@ class VendorFeedback {
   static const _store = FlutterSecureStorage();
   static const _soundPref = 'cwd_vendor_sound_enabled_v1';
   static final ValueNotifier<bool> soundEnabled = ValueNotifier<bool>(true);
+  static const MethodChannel _androidSound =
+      MethodChannel('cwd_vendor_feedback');
+
+  static Future<void> _playNotificationTone() async {
+    try {
+      // SystemSoundType.alert is intentionally not used on Android because
+      // Flutter ignores that sound type on mobile platforms.
+      await _androidSound.invokeMethod<void>('playNotification');
+    } catch (_) {
+      // Vibration still communicates success on phones without a ringtone.
+    }
+  }
 
   static Future<void> initialize() async {
     try {
@@ -36,14 +48,14 @@ class VendorFeedback {
 
   static void accepted() {
     if (soundEnabled.value) {
-      unawaited(SystemSound.play(SystemSoundType.alert));
+      unawaited(_playNotificationTone());
     }
     unawaited(HapticFeedback.mediumImpact());
   }
 
   static void newBooking() {
     if (soundEnabled.value) {
-      unawaited(SystemSound.play(SystemSoundType.alert));
+      unawaited(_playNotificationTone());
     }
     unawaited(HapticFeedback.mediumImpact());
   }

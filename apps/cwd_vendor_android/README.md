@@ -1,4 +1,4 @@
-# CWD Vendor Android — V0.1 (Internal Testing Only)
+# CWD Vendor Android — V0.3 (Internal Testing Only)
 
 Flutter + InAppWebView shell over CWD's existing secure vendor portal.
 
@@ -19,7 +19,9 @@ The safe-mode APK shows a clickable mock dashboard using fictional sample data:
   parking, state tax and final earning. Live settlements will derive strictly
   from CWD's approved vendor ledger.
 - On-screen click feedback, acceptance confetti and alert preview are muted
-  by a persisted switch in Profile. Sound playback respects device settings.
+  by a persisted switch in Profile. For Android, notification-tone playback
+  uses a secure native MethodChannel and the device notification ringtone.
+  Silent/DND and system audio settings can suppress sound.
 - Real push notifications require secure vendor login, device tokens,
   backend event delivery and Android notification-channel configuration.
   The preview "Test New Booking Sound" is NOT a real push notification.

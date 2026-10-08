@@ -46,4 +46,51 @@ if 'applicationId = "com.carwithdriverindia.vendor.testing"' not in gradle:
     raise SystemExit("Android applicationId change was not applied. Check Gradle template.")
 gradle_file.write_text(gradle)
 
-print("CWD vendor staging Android config: OK")
+# Flutter create regenerates MainActivity on every build. Add the short,
+# Android-native notification ringtone MethodChannel as a reproducible step.
+kotlin_files = list((root / "android/app/src/main/kotlin").rglob("MainActivity.kt"))
+if len(kotlin_files) != 1:
+    raise SystemExit("Expected one generated Android MainActivity.kt.")
+activity_file = kotlin_files[0]
+existing = activity_file.read_text()
+package = re.search(r"^package\s+([\w.]+)", existing, re.MULTILINE)
+if not package:
+    raise SystemExit("Unable to determine the generated Kotlin package.")
+activity_file.write_text("""package """ + package.group(1) + """
+
+import android.media.AudioManager
+import android.media.RingtoneManager
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
+
+class MainActivity : FlutterActivity() {
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "cwd_vendor_feedback"
+        ).setMethodCallHandler { call, result ->
+            if (call.method != "playNotification") {
+                result.notImplemented()
+            } else {
+                try {
+                    val manager = getSystemService(AUDIO_SERVICE) as AudioManager
+                    // Respect silent/vibrate mode and Android DND/audio policy.
+                    if (manager.ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+                        val uri = RingtoneManager.getDefaultUri(
+                            RingtoneManager.TYPE_NOTIFICATION
+                        )
+                        RingtoneManager.getRingtone(applicationContext, uri)?.play()
+                    }
+                    result.success(null)
+                } catch (_: Exception) {
+                    result.success(null)
+                }
+            }
+        }
+    }
+}
+""")
+
+print("CWD vendor staging Android config and notification sound: OK")

@@ -33,4 +33,8 @@ async function getBooking(id) {
   return items[0];
 }
 
+const getPayments = id => db(payPath(id) + '&select=*&order=created_at.desc');
+const sumPaid = rows => moneyRound((rows || []).filter(p => p.status === 'paid').reduce((s, p) => s + Number(p.amount || 0), 0));
+const validId = id => /^CWD-WD-\d{6}-\d{4}$/.test(id);
+
 export async function GET() { return json({success:false,message:'Feature not ready'},503); }

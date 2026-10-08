@@ -11,7 +11,7 @@ class CwdPartnerSplash extends StatefulWidget {
   const CwdPartnerSplash({
     super.key,
     required this.child,
-    this.duration = const Duration(milliseconds: 2200),
+    this.duration = const Duration(seconds: 3),
   });
 
   final Widget child;

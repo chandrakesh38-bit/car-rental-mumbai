@@ -16,7 +16,7 @@ circular clipped CWD logo, then automatically transitions to the login. No
 network image or long blocking initialization is required.
 
 Locked design spec: CWD Partner Splash / Option 13 / City Sky Drive / circular
-logo / subtle car drives away / 2.2-second intro / automatic login / no
+logo / subtle car drives away / 3-second intro / automatic login / no
 artificial wait for sound-preference storage.
 
 **Release boundary:** These are finalized branding and splash changes,

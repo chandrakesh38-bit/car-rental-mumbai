@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'app_config.dart';
+import 'vendor_dashboard_preview.dart';
 import 'link_vault.dart';
 import 'vendor_link.dart';
 
@@ -27,7 +28,7 @@ class CwdVendorApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: navy),
           scaffoldBackgroundColor: const Color(0xFFF4F7FB),
         ),
-        home: const VendorHome(),
+        home: AppConfig.ready ? const VendorHome() : const VendorDashboardPreview(),
       );
 }
 

@@ -448,7 +448,8 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
         ),
       ))),
       const SizedBox(height:18),
-      Row(mainAxisAlignment:MainAxisAlignment.center,children:[
+      Wrap(alignment:WrapAlignment.center,
+        crossAxisAlignment:WrapCrossAlignment.center,children:[
         const Text('Did not receive the code?',
           style:TextStyle(color:loginMuted,fontSize:12)),
         TextButton(

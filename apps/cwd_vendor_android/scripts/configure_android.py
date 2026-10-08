@@ -20,7 +20,7 @@ if "android.permission.INTERNET" not in manifest:
     )
 manifest = re.sub(
     r'android:label="[^"]*"',
-    'android:label="CWD Vendor TEST"',
+    'android:label="CWD Partner"',
     manifest,
     count=1,
 )
@@ -93,4 +93,72 @@ class MainActivity : FlutterActivity() {
 }
 """)
 
-print("CWD vendor staging Android config and notification sound: OK")
+
+# Native Android splash prevents the startup blank/white frame *before*
+# Flutter paints the animated city/road scene. Modern Android 12+ chooses a
+# centered system icon; older versions use a branded layered background.
+res = root / "android/app/src/main/res"
+launch_background = """<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:startColor="#064E45"
+                android:centerColor="#07565B"
+                android:endColor="#071D2B"
+                android:angle="270" />
+        </shape>
+    </item>
+    <item android:gravity="center" android:width="124dp"
+          android:height="124dp">
+        <shape android:shape="oval">
+            <solid android:color="#075D62"/>
+            <stroke android:width="2dp" android:color="#65DCCC" />
+        </shape>
+    </item>
+    <item android:drawable="@mipmap/ic_launcher"
+          android:gravity="center" android:width="98dp"
+          android:height="98dp"/>
+</layer-list>
+"""
+for drawable in ("drawable", "drawable-v21"):
+    folder = res / drawable
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "launch_background.xml").write_text(launch_background)
+
+# Android 12/API 31+ system splash attributes. Match dark background and
+# use the actual CWD launcher icon; no network loading and no white flash.
+values31 = res / "values-v31"
+values31.mkdir(parents=True, exist_ok=True)
+(values31 / "styles.xml").write_text("""<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowSplashScreenBackground">#064E45</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#075D62</item>
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:statusBarColor">#064E45</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">?android:colorBackground</item>
+        <item name="android:statusBarColor">#064E45</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
+""")
+
+# Keep pre-31 status bar dark and unify launch/Flutter backgrounds.
+for values_dir in ("values", "values-night"):
+    styles = res / values_dir / "styles.xml"
+    if not styles.is_file():
+        continue
+    text = styles.read_text()
+    anchor = '<item name="android:windowBackground">@drawable/launch_background</item>'
+    if anchor in text and 'android:statusBarColor' not in text:
+        text = text.replace(anchor,
+            anchor + '\\n        <item name="android:statusBarColor">#064E45</item>'
+            + '\\n        <item name="android:windowLightStatusBar">false</item>',
+            1)
+        styles.write_text(text)
+
+print("CWD Partner native splash, app label and notification sound: OK")

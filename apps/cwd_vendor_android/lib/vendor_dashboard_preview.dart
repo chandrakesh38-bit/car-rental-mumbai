@@ -137,7 +137,7 @@ class _VendorDashboardPreviewState extends State<VendorDashboardPreview> {
       const Expanded(child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('CWD Vendor', style: TextStyle(fontSize: 23,
+          Text('CWD Partner', style: TextStyle(fontSize: 23,
             fontWeight: FontWeight.w800, color: Colors.white)),
           Text('Car With Driver India',
             style: TextStyle(fontSize: 12, color: Color(0xFFE6FAF9))),

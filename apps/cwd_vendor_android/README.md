@@ -1,6 +1,28 @@
-# CWD Vendor Android — V0.4 (Internal Testing Only)
+# CWD Partner Android — V0.5 (Internal Testing Only)
 
 Flutter + InAppWebView shell over CWD's existing secure vendor portal.
+
+## Finalized CWD Partner branding and City Skyline Drive splash
+
+CWD Partner is the locked consumer-facing Android application name and UI
+brand. The original `com.carwithdriverindia.vendor.testing` package ID is
+preserved in testing builds to avoid accidental production replacement.
+
+The native Android launch background is teal and immediate, including a
+circular branded badge, on Android 7–11 and a matching system splash background
+and icon on Android 12+. In Flutter a lightweight local `CustomPainter`
+animates coastal skyline illumination, road lines and a **moving car** with a
+circular clipped CWD logo, then automatically transitions to the login. No
+network image or long blocking initialization is required.
+
+Locked design spec: CWD Partner Splash / Option 13 / City Sky Drive / circular
+logo / subtle car drives away / 2.2-second intro / automatic login / no
+artificial wait for sound-preference storage.
+
+**Release boundary:** These are finalized branding and splash changes,
+NOT a real vendor production launch. The normal safe-mode preview remains
+locked until account auth, database boundaries, actual vendor bookings and
+push delivery are verified. No customer/vendor live data is modified.
 
 ## V0.4 Vendor Login & Registration
 

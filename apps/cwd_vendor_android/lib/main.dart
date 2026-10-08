@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -6,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'app_config.dart';
 import 'vendor_auth_screen.dart';
+import 'cwd_partner_splash.dart';
 import 'vendor_feedback.dart';
 import 'link_vault.dart';
 import 'vendor_link.dart';
@@ -15,22 +17,24 @@ const green = Color(0xFF128467);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await VendorFeedback.initialize();
+  // Native splash covers engine startup. Show the Flutter skyline instantly
+  // rather than holding a white screen while reading sound preferences.
   runApp(const CwdVendorApp());
+  unawaited(VendorFeedback.initialize());
 }
 
 class CwdVendorApp extends StatelessWidget {
   const CwdVendorApp({super.key});
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'CWD Vendor TEST',
+        title: 'CWD Partner',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: navy),
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF00897B)),
           scaffoldBackgroundColor: const Color(0xFFF4F7FB),
         ),
-        home: const VendorAuthGate(),
+        home: const CwdPartnerSplash(child: VendorAuthGate()),
       );
 }
 
@@ -165,7 +169,7 @@ class _VendorHomeState extends State<VendorHome> {
       appBar: AppBar(
         backgroundColor: navy,
         foregroundColor: Colors.white,
-        title: const Text('CWD Vendor'),
+        title: const Text('CWD Partner'),
         actions: const [
           Center(child: Padding(
             padding: EdgeInsets.only(right: 16),
@@ -307,7 +311,7 @@ class _VendorHomeState extends State<VendorHome> {
             ))),
           const SizedBox(height: 22),
           const Center(child: Text(
-            'CWD Vendor • Internal testing only',
+            'CWD Partner • Internal testing only',
             style: TextStyle(color: Color(0xFF68778A), fontSize: 11),
           )),
         ],

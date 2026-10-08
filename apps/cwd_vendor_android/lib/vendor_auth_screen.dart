@@ -284,7 +284,7 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
         const Expanded(child:Column(
           crossAxisAlignment:CrossAxisAlignment.start,
           children:[
-            Text('CWD Vendor App',style:TextStyle(color:Colors.white,
+            Text('CWD Partner',style:TextStyle(color:Colors.white,
               fontWeight:FontWeight.w800,fontSize:20)),
             Text('Trusted Trips. Growing Together.',
               style:TextStyle(color:Color(0xFF99F6E4),fontSize:11)),
@@ -661,7 +661,7 @@ class VendorRegisterEntry extends StatelessWidget {
           child:Column(mainAxisSize:MainAxisSize.min,children:[
             const Icon(Icons.how_to_reg_outlined,color:loginTeal,size:52),
             const SizedBox(height:14),
-            const Text('Existing CWD Vendor Registration',
+            const Text('Existing CWD Partner Registration',
               textAlign:TextAlign.center,
               style:TextStyle(fontSize:19,fontWeight:FontWeight.w800)),
             const SizedBox(height:12),

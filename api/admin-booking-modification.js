@@ -142,4 +142,15 @@ async function modifyBooking(request){
   return await saveModification({id,b,old,change,details,entry,paid});
 }
 
+async function saveModification({id,b,old,change,details,entry,paid}) {
+  const now=entry.at;
+  const paymentStatus=paid<=0?'pending':paid>=change.total?'paid':'partially_paid';
+  const patch={booking_details:details,fare_amount:change.base,original_fare:change.base,total_fare:change.total,
+    paid_amount:paid,payment_status:paymentStatus,updated_at:now};
+  const version=b.updated_at?'&updated_at=eq.'+encodeURIComponent(b.updated_at):'&updated_at=is.null';
+  const saved=await db(bookingPath(id)+version,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify(patch)});
+  if(!saved?.length)fail('Booking changed while saving. Refresh and retry.',409);
+  return finishModification({id,b,old,change,entry,paid,saved:saved[0],details});
+}
+
 export async function POST() { return json({success:false,message:'Modification is not yet enabled.'},503); }

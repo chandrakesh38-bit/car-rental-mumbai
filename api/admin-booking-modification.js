@@ -191,4 +191,4 @@ async function finishModification({id,b,old,change,entry,paid,saved,details}) {
     accounting_warning:accountingWarning,vendor_notice:!old.is_self_drive});
 }
 
-export async function POST() { return json({success:false,message:'Modification is not yet enabled.'},503); }
+export async function POST(request) { try { return await modifyBooking(request); } catch(e) { return json({success:false,message:e.message},e.status||500); } }

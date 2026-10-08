@@ -93,3 +93,30 @@ function cwdRenderBookingEditor(data){
   if(c.eligible)cwdBindBookingEditor();
   root.querySelector('#cwd-mod-share')?.addEventListener('click',cwdShareRevisedBooking);
 }
+
+function cwdModValue(id){return document.getElementById(id)?.value||'';}
+function cwdModPreview(){
+  const c=cwdModContext?.current,box=document.getElementById('cwd-mod-preview');
+  if(!c||!box)return;
+  const rent=Number(cwdModValue('cwd-mod-rent'));
+  const deposit=c.is_self_drive?Number(cwdModValue('cwd-mod-deposit')):0;
+  const delivery=c.is_self_drive?Number(cwdModValue('cwd-mod-delivery')):0;
+  const total=Math.round((rent+deposit+delivery+c.extras_amount)*100)/100;
+  const balance=Math.max(0,Math.round((total-c.paid_amount)*100)/100);
+  const excess=Math.max(0,Math.round((c.paid_amount-total)*100)/100);
+  box.innerHTML='<div class="mb-2 font-bold text-slate-800">Revised Payment Summary</div>'
+    +'<div class="flex justify-between"><span>Previous Total</span><b>'+cwdModMoney(c.total_fare)+'</b></div>'
+    +'<div class="flex justify-between"><span>Revised Total (incl. extras)</span><b>'+cwdModMoney(total)+'</b></div>'
+    +'<div class="flex justify-between"><span>Payments already received</span><b>'+cwdModMoney(c.paid_amount)+'</b></div>'
+    +'<div class="flex justify-between border-t pt-2 mt-2"><span>Balance Payable</span><b>'+cwdModMoney(balance)+'</b></div>'
+    +(excess?'<p class="mt-2 text-amber-800 font-semibold">Excess received: '+cwdModMoney(excess)+'. Refund is manual and is not automatically issued.</p>':'')
+    +(c.is_self_drive?'<p class="mt-2 text-slate-500">Refundable deposit included in revised total: '+cwdModMoney(deposit)+'</p>':'');
+}
+function cwdBindBookingEditor(){
+  const root=document.getElementById('cwd-modify-content');
+  for(const el of root.querySelectorAll('input, textarea')) {
+    el.addEventListener('input',cwdModPreview);el.addEventListener('change',cwdModPreview);
+  }
+  root.querySelector('#cwd-mod-save')?.addEventListener('click',cwdSaveBookingEditor);
+  cwdModPreview();
+}

@@ -112,4 +112,34 @@ async function cancelPendingPayments(id,rows){
   return getPayments(id);
 }
 
+
+async function modifyBooking(request){
+  const origin=request.headers.get('origin');
+  if(origin&&origin!==new URL(request.url).origin)fail('Invalid request origin.',403);
+  const user=await requireAdmin(request);
+  const raw=await request.text();
+  if(raw.length>15000)fail('Modification request is too large.',413);
+  const body=JSON.parse(raw),id=String(body.booking_id||'');
+  if(!validId(id))fail('Invalid booking ID.');
+  const b=await getBooking(id);
+  if(String(body.expected_updated_at??'')!==String(b.updated_at??''))fail('Booking was updated. Refresh and retry.',409);
+  let payments=await getPayments(id);
+  const old=snapshot(b,sumPaid(payments));
+  const change=calculateChange(b,old,body);
+  payments=await cancelPendingPayments(id,payments);
+  const paid=sumPaid(payments);
+  if(String(body.expected_updated_at??'')!==String((await getBooking(id)).updated_at??''))fail('Booking changed while payment links were checked. Refresh.',409);
+  const now=new Date().toISOString();
+  const entry={at:now,by:String(user.email||'').toLowerCase(),reason:change.reason,
+    before:{pickup:old.pickup_at,return:old.return_at,rental:old.rental_amount,deposit:old.security_deposit,
+      delivery:old.delivery_charge,total:old.total_fare,included_km:old.included_km},
+    after:{pickup:change.pickup?change.pickup.toISOString():old.pickup_at,
+      return:change.returnDate?change.returnDate.toISOString():old.return_at,
+      rental:change.rental,deposit:change.deposit,delivery:change.delivery,total:change.total,included_km:change.km},
+    paid};
+  const details=updateDetails(b,old,change,entry);
+  if(details.length>60000)fail('Booking modification history is full. Contact support.',409);
+  return await saveModification({id,b,old,change,details,entry,paid});
+}
+
 export async function POST() { return json({success:false,message:'Modification is not yet enabled.'},503); }

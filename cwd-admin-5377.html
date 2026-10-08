@@ -1948,7 +1948,7 @@
             if (!session?.access_token) throw new Error('Admin session expired. Please log in again.');
             const response = await fetch(path,{...options,headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,...(options.headers||{})}});
             const data = await response.json().catch(()=>({}));
-            if (!response.ok || !data.success) throw new Error(data.message || 'Request failed.');
+            if (!response.ok || !data.success) throw new Error(data.message || ('Request failed (HTTP '+response.status+').'));
             return data;
         }
 
@@ -3522,5 +3522,6 @@ document.addEventListener('click',e=>{
     setTimeout(()=>el.classList.remove('cwd-action-flash'),320);
 });
 </script>
+<script defer src="/assets/js/admin-booking-modification.js"></script>
 </body>
 </html>

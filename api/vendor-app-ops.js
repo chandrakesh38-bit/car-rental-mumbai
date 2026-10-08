@@ -169,6 +169,9 @@ async function respondOffer(cfg,vid,body){
  const response=String(body.response||'');
  if(!['accepted','declined'].includes(response))fail('Invalid booking response.');
  if(offer.status!=='offered')fail('Offer has already been answered.',409);
+ const reason=String(body.reason||'').trim().slice(0,160);
+ if(response==='declined'&&!reason)
+   fail('Select a reason before declining this booking.',400);
  let selected=null;
  if(response==='accepted'){
    const vehicle=(await vendorDb(cfg,'cwd_vendor_vehicles?id=eq.'+
@@ -182,10 +185,26 @@ async function respondOffer(cfg,vid,body){
   '&vendor_id=eq.'+eq(vid)+'&status=eq.offered',{
    method:'PATCH',headers:{Prefer:'return=representation'},
    body:JSON.stringify({status:response,responded_at:now(),
-      ...(selected?{selected_vendor_vehicle_id:selected}:{})}),
+      ...(selected?{selected_vendor_vehicle_id:selected}:{}),
+      ...(reason?{vendor_response_reason:reason}:{})}),
  });
  if(changed?.length!==1)fail('Offer has already changed. Refresh your bookings.',409);
  return json({success:true,status:response});
+}
+async function cancelAcceptedOffer(cfg,vid,body) {
+ const offer=await ownedOffer(cfg,vid,body.offer_id);
+ if(offer.status!=='accepted'||!offer.vendor_cancel_unlocked_at)
+   fail('Cancellation is locked. Contact the CWD admin.',403);
+ const reason=String(body.reason||'').trim().slice(0,160);
+ if(!reason)fail('Cancellation reason required.');
+ const changed=await vendorDb(cfg,'cwd_vendor_offers?id=eq.'+eq(offer.id)+
+   '&vendor_id=eq.'+eq(vid)+'&status=eq.accepted',{
+    method:'PATCH',headers:{Prefer:'return=representation'},
+    body:JSON.stringify({status:'declined',responded_at:now(),
+      vendor_response_reason:reason,vendor_cancel_unlocked_at:null}),
+ });
+ if(changed?.length!==1)fail('Offer is no longer cancellable.',409);
+ return json({success:true,status:'declined'});
 }
 async function saveDriver(cfg,vid,body){
  const a=await ownedAllocation(cfg,vid,body.allocation_id);
@@ -362,6 +381,7 @@ export default async function handler(request){
    switch(body.action){
      case 'respond_offer':return await respondOffer(cfg,vendor.id,body);
      case 'save_driver':return await saveDriver(cfg,vendor.id,body);
+     case 'cancel_accepted_offer':return await cancelAcceptedOffer(cfg,vendor.id,body);
      case 'block_vehicle':
      case 'unblock_vehicle':return await blockVehicle(cfg,vendor.id,body);
      default:fail('Unsupported action.');

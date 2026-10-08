@@ -66,6 +66,9 @@ alter table public.cwd_vendor_offers
     references public.cwd_vendor_vehicles(id);
 alter table public.cwd_vendor_offers
   add column if not exists vendor_cancel_unlocked_at timestamptz;
+alter table public.cwd_vendor_offers
+  add column if not exists vendor_response_reason text;
+
 
 alter table public.cwd_vendor_app_login_challenges enable row level security;
 alter table public.cwd_vendor_app_sessions enable row level security;

@@ -82,4 +82,34 @@ function calculateChange(booking,current,body){
   return {reason,rental,deposit,delivery,pickup,returnDate,km,days,base,total};
 }
 
+
+async function razor(path,method='GET'){
+  const id=process.env.RAZORPAY_KEY_ID,secret=process.env.RAZORPAY_KEY_SECRET;
+  if(!id||!secret)fail('Razorpay configuration is missing.',503);
+  const res=await fetch('https://api.razorpay.com/v1/'+path,{method,headers:{Authorization:'Basic '+btoa(id+':'+secret),'Content-Type':'application/json'}});
+  const result=await res.json().catch(()=>({}));
+  if(!res.ok)fail(result?.error?.description||'Razorpay request failed.',502);
+  return result;
+}
+async function cancelPendingPayments(id,rows){
+  for(const row of rows.filter(p=>p.status==='pending'&&p.razorpay_payment_link_id)){
+    const ref=encodeURIComponent(row.razorpay_payment_link_id);
+    const remote=await razor('payment_links/'+ref);
+    let patch=null;
+    if(remote.status==='paid'){
+      const payment=Array.isArray(remote.payments)?remote.payments.find(p=>p.status==='captured'):null;
+      if(!payment)fail('A payment may have just arrived. Refresh before modifying this booking.',409);
+      patch={status:'paid',razorpay_payment_id:payment.id,paid_at:new Date((payment.created_at||Math.floor(Date.now()/1000))*1000).toISOString()};
+    }else if(['cancelled','expired'].includes(remote.status))patch={status:'cancelled',cancelled_at:new Date().toISOString()};
+    else if(['created','issued'].includes(remote.status)){
+      await razor('payment_links/'+ref+'/cancel','POST');
+      patch={status:'cancelled',cancelled_at:new Date().toISOString()};
+    }else fail('An unsettled Razorpay payment link needs review before modification.',409);
+    await db('booking_payments?id=eq.'+encodeURIComponent(row.id),{
+      method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({...patch,updated_at:new Date().toISOString()})
+    });
+  }
+  return getPayments(id);
+}
+
 export async function POST() { return json({success:false,message:'Modification is not yet enabled.'},503); }

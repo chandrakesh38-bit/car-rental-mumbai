@@ -25,4 +25,12 @@ async function db(path,options={}){
   return raw?JSON.parse(raw):null;
 }
 
+const bookPath = id => 'inquiries?booking_id=eq.' + encodeURIComponent(id);
+const payPath = id => 'booking_payments?booking_id=eq.' + encodeURIComponent(id);
+async function getBooking(id) {
+  const items = await db(bookPath(id) + '&select=*&limit=1');
+  if (!items?.[0]) fail('Booking not found.', 404);
+  return items[0];
+}
+
 export async function GET() { return json({success:false,message:'Feature not ready'},503); }

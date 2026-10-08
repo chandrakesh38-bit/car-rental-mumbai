@@ -48,4 +48,38 @@ export async function GET(request) {
   } catch (error) { return json({success:false,message:error.message || 'Modification cannot load.'},error.status || 500); }
 }
 
+
+function validAmount(value,label){
+  const n=Number(value);
+  if(!Number.isFinite(n)||n<0||n>10000000||Math.abs(n*100-Math.round(n*100))>0.001)fail('Invalid '+label+'.');
+  return moneyRound(n);
+}
+function calculateChange(booking,current,body){
+  if(!current.eligible)fail('Completed or cancelled bookings cannot be modified.',409);
+  const reason=String(body.reason||'').replace(/[\r\n]+/g,' ').trim();
+  if(reason.length<4||reason.length>500)fail('Enter a modification reason (4 to 500 characters).');
+  const rental=validAmount(body.rental_amount,'rental amount');
+  const deposit=current.is_self_drive?validAmount(body.security_deposit,'security deposit'):0;
+  const delivery=current.is_self_drive?validAmount(body.delivery_charge,'delivery charge'):0;
+  if(current.is_self_drive&&deposit!==current.security_deposit&&(current.paid_amount>0||current.deposit_refunded))
+    fail('Security deposit cannot change after a payment or refund is recorded.',409);
+  let pickup=null,returnDate=null;
+  if(current.dates_supported){
+    pickup=parseLocal(body.pickup_at);
+    returnDate=current.supports_return?parseLocal(body.return_at):null;
+    if(!pickup||(current.supports_return&&!returnDate))fail('Invalid pickup or return date and time.');
+    if(current.supports_return&&returnDate<=pickup)fail('Return must be after pickup.');
+    if(current.is_self_drive&&(returnDate-pickup)/3600000<24)fail('Self Drive bookings require minimum 24 hours.');
+    if(current.booking_status==='ongoing'&&body.pickup_at!==current.pickup_at)fail('Pickup time is locked after the trip begins.',409);
+  }else if(body.pickup_at||body.return_at)fail('This booking has an unsupported date format; dates cannot be edited.',409);
+  const km=current.trip_type==='outstation'&&current.included_km!==null?validAmount(body.included_km,'included KM'):null;
+  const days=current.trip_type==='outstation'&&pickup&&returnDate?tripDays(pickup,returnDate):current.trip_days;
+  const base=moneyRound(rental+deposit+delivery),total=moneyRound(base+current.extras_amount);
+  const changed=rental!==current.rental_amount||deposit!==current.security_deposit||delivery!==current.delivery_charge||
+    (current.dates_supported&&(body.pickup_at!==current.pickup_at||(current.supports_return&&body.return_at!==current.return_at)))||
+    (km!==null&&km!==current.included_km);
+  if(!changed)fail('No booking changes were entered.');
+  return {reason,rental,deposit,delivery,pickup,returnDate,km,days,base,total};
+}
+
 export async function POST() { return json({success:false,message:'Modification is not yet enabled.'},503); }

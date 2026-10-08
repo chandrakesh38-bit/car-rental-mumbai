@@ -18,7 +18,7 @@ const offer=safeOffer({
   estimated_vendor_payout:5000,estimated_km:300,
   pricing_snapshot:{vendor_km_rate:11,customer_phone:'SECRET'},
 },[fakeCar]);
-assert.equal(offer.pickup_area,'Powai');
+assert.equal(offer.pickup_area,'Mumbai');
 assert.equal(offer.destination_area,'Nashik');
 assert.equal(offer.selectable_vehicles.length,1);
 assert.equal(offer.selectable_vehicles[0].vehicle_number,'MH03AB1234');

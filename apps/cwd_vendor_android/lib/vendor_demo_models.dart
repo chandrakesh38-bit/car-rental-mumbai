@@ -46,6 +46,16 @@ class VendorDemoBooking {
     this.cancelReason,
     this.cancelNote,
     this.cancellationRequested = false,
+    this.adminCancellationAllowed = false,
+    this.includedKm = 240,
+    this.extraKmRate = 11,
+    this.extraHourRate = 100,
+    this.nightRate = 300,
+    this.customerName,
+    this.customerMobile,
+    this.fullPickupAddress,
+    this.fullDropAddress,
+    this.finalEarning,
   });
 
   final String id;
@@ -62,6 +72,30 @@ class VendorDemoBooking {
   String? cancelReason;
   String? cancelNote;
   bool cancellationRequested;
+  bool adminCancellationAllowed;
+  final int includedKm;
+  final int extraKmRate;
+  final int extraHourRate;
+  final int nightRate;
+  final String? customerName;
+  final String? customerMobile;
+  final String? fullPickupAddress;
+  final String? fullDropAddress;
+  final VendorDemoEarning? finalEarning;
+
+  bool get canCancel => status == VendorBookingStatus.newOffer ||
+      (adminCancellationAllowed &&
+          (status == VendorBookingStatus.accepted ||
+           status == VendorBookingStatus.allocated));
+  bool get isCompleted => status == VendorBookingStatus.completed;
+  int? get approvedFinalEarning =>
+      isCompleted ? finalEarning?.total : null;
+
+  /// Admin permission comes from a verified backend response.
+  /// Never expose an owner-toggle control in vendor screens.
+  void setAdminCancellationPermission(bool allowed) {
+    adminCancellationAllowed = allowed;
+  }
 
   bool get isAllotted => switch (status) {
         VendorBookingStatus.allocated ||
@@ -107,21 +141,61 @@ class VendorDemoBooking {
     if (reason == 'Other' && cleaned.isEmpty) {
       throw ArgumentError('Please specify the cancellation reason.');
     }
-    if (status == VendorBookingStatus.ongoing ||
-        status == VendorBookingStatus.completed ||
-        status == VendorBookingStatus.cancelled) {
-      throw StateError('Contact CWD support about this booking.');
+    if (!canCancel) {
+      throw StateError('Cancellation is locked. Only CWD admin can enable it.');
     }
     cancelReason = reason;
     cancelNote = cleaned.isEmpty ? null : cleaned;
     if (status == VendorBookingStatus.allocated) {
-      // Allocated trips must not disappear or become cancelled without
-      // the admin approving the vendor's cancellation request.
       cancellationRequested = true;
+      adminCancellationAllowed = false;
     } else {
       status = VendorBookingStatus.cancelled;
+      adminCancellationAllowed = false;
     }
   }
+}
+
+/// Fictional UI amounts only. Real totals must use approved settlement ledger.
+class VendorDemoEarning {
+  const VendorDemoEarning({
+    required this.fixedKm,
+    required this.fixedFare,
+    this.driverAllowance = 0,
+    this.extraKm = 0,
+    this.extraKmRate = 0,
+    this.extraHours = 0,
+    this.extraHourRate = 0,
+    this.nights = 0,
+    this.nightRate = 0,
+    this.toll = 0,
+    this.parking = 0,
+    this.stateTax = 0,
+    this.otherApproved = 0,
+    this.deductions = 0,
+  });
+
+  final int fixedKm;
+  final int fixedFare;
+  final int driverAllowance;
+  final int extraKm;
+  final int extraKmRate;
+  final int extraHours;
+  final int extraHourRate;
+  final int nights;
+  final int nightRate;
+  final int toll;
+  final int parking;
+  final int stateTax;
+  final int otherApproved;
+  final int deductions;
+
+  int get extraKmFare => extraKm * extraKmRate;
+  int get extraHoursFare => extraHours * extraHourRate;
+  int get nightFare => nights * nightRate;
+  int get total => fixedFare + driverAllowance + extraKmFare +
+      extraHoursFare + nightFare + toll + parking + stateTax +
+      otherApproved - deductions;
 }
 
 class VendorDemoVehicle {
@@ -216,6 +290,14 @@ List<VendorDemoBooking> makeDemoBookings(List<VendorDemoVehicle> cars) {
       matchingVehicleIds: const ['carens01'],
       selectedVehicleId: 'carens01',
       status: VendorBookingStatus.allocated,
+      customerName: 'Demo Customer',
+      customerMobile: '0000000000',
+      fullPickupAddress: 'Bandra Kurla Complex, Mumbai, Maharashtra',
+      fullDropAddress: 'Nashik, Maharashtra',
+      includedKm: 480,
+      extraKmRate: 12,
+      extraHourRate: 100,
+      nightRate: 300,
     ),
     VendorDemoBooking(
       id: 'DEMO-TRIP-004',
@@ -229,6 +311,14 @@ List<VendorDemoBooking> makeDemoBookings(List<VendorDemoVehicle> cars) {
       matchingVehicleIds: const ['dzire02'],
       selectedVehicleId: 'dzire02',
       status: VendorBookingStatus.ongoing,
+      customerName: 'Demo Customer',
+      customerMobile: '0000000000',
+      fullPickupAddress: 'Thane Station, Thane, Maharashtra',
+      fullDropAddress: 'Chhatrapati Shivaji Maharaj International Airport, Mumbai',
+      includedKm: 80,
+      extraKmRate: 12,
+      extraHourRate: 100,
+      nightRate: 300,
     ),
     VendorDemoBooking(
       id: 'DEMO-DONE-005',
@@ -241,6 +331,26 @@ List<VendorDemoBooking> makeDemoBookings(List<VendorDemoVehicle> cars) {
       payout: 6100,
       matchingVehicleIds: const ['carens01'],
       status: VendorBookingStatus.completed,
+      customerName: 'Demo Customer',
+      customerMobile: '0000000000',
+      fullPickupAddress: 'Nerul, Navi Mumbai, Maharashtra',
+      fullDropAddress: 'Alibaug, Maharashtra',
+      includedKm: 480,
+      extraKmRate: 12,
+      extraHourRate: 100,
+      nightRate: 300,
+      finalEarning: const VendorDemoEarning(
+        fixedKm: 480,
+        fixedFare: 3800,
+        driverAllowance: 600,
+        extraKm: 30,
+        extraKmRate: 12,
+        extraHours: 2,
+        extraHourRate: 100,
+        toll: 700,
+        parking: 150,
+        stateTax: 290,
+      ),
     ),
     VendorDemoBooking(
       id: 'DEMO-CANCEL-006',

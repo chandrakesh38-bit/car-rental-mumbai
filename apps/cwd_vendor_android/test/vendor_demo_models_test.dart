@@ -34,13 +34,41 @@ void main() {
     expect(booking.cancelNote, 'Fixture reason');
   });
 
-  test('Allocated cancellation requires admin approval', () {
+  test('After Accept, Cancel is locked until verified admin enables', () {
+    final booking = makeDemoBookings(cars).first;
+    booking.acceptWithVehicle('dzire01');
+    expect(booking.canCancel, isFalse);
+    expect(() => booking.cancel(reason: 'Driver unavailable'), throwsStateError);
+    booking.setAdminCancellationPermission(true);
+    expect(booking.canCancel, isTrue);
+    booking.cancel(reason: 'Driver unavailable');
+    expect(booking.status, VendorBookingStatus.cancelled);
+  });
+
+  test('Allocated cancellation is locked until admin enables', () {
     final booking = makeDemoBookings(cars)
         .firstWhere((b) => b.status == VendorBookingStatus.allocated);
+    expect(booking.canCancel, isFalse);
+    expect(() => booking.cancel(reason: 'Driver unavailable'), throwsStateError);
+    booking.setAdminCancellationPermission(true);
     booking.cancel(reason: 'Driver unavailable');
     expect(booking.status, VendorBookingStatus.allocated);
     expect(booking.cancellationRequested, isTrue);
     expect(booking.isAllotted, isTrue);
+  });
+
+  test('Completed breakdown is internally consistent and final is separate', () {
+    final done = makeDemoBookings(cars)
+        .firstWhere((b) => b.status == VendorBookingStatus.completed);
+    expect(done.finalEarning?.fixedKm, 480);
+    expect(done.finalEarning?.extraKmFare, 360);
+    expect(done.finalEarning?.extraHoursFare, 200);
+    expect(done.finalEarning?.toll, 700);
+    expect(done.finalEarning?.parking, 150);
+    expect(done.finalEarning?.total, 6100);
+    expect(done.approvedFinalEarning, 6100);
+    final open = makeDemoBookings(cars).first;
+    expect(open.approvedFinalEarning, isNull);
   });
 
   test('Booked days cannot be blocked', () {

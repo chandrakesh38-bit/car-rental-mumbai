@@ -17,7 +17,20 @@ class VendorLiveBooking extends StatefulWidget {
 }
 class _VendorLiveBookingState extends State<VendorLiveBooking> {
   bool busy=false;
-  Map<String,dynamic> get item=>widget.booking;
+  Map<String,dynamic>? _latest;
+  Map<String,dynamic> get item=>_latest??widget.booking;
+  Future<void> refreshDetail()async{
+    final response=await widget.api.dashboard();
+    final list=(response[widget.isAllocation?'allocations':'offers'] as List?)??[];
+    for(final value in list){
+      if(value is! Map)continue;
+      if(value['id']==widget.booking['id']&&mounted){
+        setState(()=>_latest=Map<String,dynamic>.from(value));
+        break;
+      }
+    }
+    await widget.onChanged();
+  }
   Map<String,dynamic> data(dynamic val)=>val is Map
     ?Map<String,dynamic>.from(val):<String,dynamic>{};
   String val(dynamic x)=>x?.toString()??'';
@@ -41,7 +54,7 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
     try {
       await widget.api.action(action,payload);
       await widget.onChanged();
-      if(mounted)Navigator.pop(context,true);
+      if(mounted)Navigator.pop(context,action=='respond_offer'&&payload['response']=='accepted'?'accepted':true);
     }catch(e){inform(e.toString());}
     finally{if(mounted)setState(()=>busy=false);}
   }
@@ -147,6 +160,13 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
       :<String>[];
     final earning=data(item['final_earning']);
     final status=val(item['status']);
+    final localTrip=val(item['trip_type']).toLowerCase().contains('local');
+    final detailsReady=val(item['vehicle_number']).trim().isNotEmpty&&
+      val(item['driver_name']).trim().isNotEmpty&&
+      RegExp(r'^[6-9][0-9]{9}$').hasMatch(val(item['driver_mobile']));
+    final eligibleAt=DateTime.tryParse(val(item['can_start_at']));
+    final mayStart=item['early_start_approved']==true||
+      (eligibleAt!=null&&!DateTime.now().isBefore(eligibleAt));
     return Scaffold(
       backgroundColor:partnerSurface,
       appBar:AppBar(backgroundColor:partnerTeal,foregroundColor:Colors.white,
@@ -157,23 +177,26 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
             row('Booking ID',item['booking_id']),
             row('Trip Type',item['trip_type']),
             row('Vehicle',item['vehicle_required']),
-            row('Estimated Earning',money(item['estimated_payout'])),
-            if(!allocated)row('Estimated KM',item['estimated_km']),
+            row('Aapko milega',money(item['estimated_payout'])),
+            row('Trip KM',item['estimated_km']),
             row('Pickup',localDate(allocated?item['pickup_at']:item['start_at'])),
             row('Final Drop',localDate(item['final_drop_at'])),
           ]),
-          group('Rates',[
-            row('KM/day',rates['minimum_km_per_day']),
-            row('Rate/KM',money(rates['vendor_km_rate'])),
-            row('Driver Allowance',money(rates['vendor_da'])),
-            row('Night',money(rates['vendor_night'])),
-            row('Night Window','11 PM – 4 AM'),
-            if(rates['local_package']!=null)row(
-              'Local Package',rates['local_package']),
-            if(rates['local_extra_km']!=null)row(
-              'Local Extra KM',money(rates['local_extra_km'])),
-            if(rates['local_extra_hour']!=null)row(
-              'Local Extra Hr',money(rates['local_extra_hour'])),
+          group('Payment Details',[
+            if(!localTrip)...[
+              row('Trip KM',item['estimated_km']),
+              row('Min. KM/day','200 KM'),
+              row('Rate per KM',money(rates['vendor_km_rate'])+'/KM'),
+              row('Extra KM',money(rates['vendor_km_rate'])+'/KM'),
+              row('Driver bhatta',money(rates['vendor_da'])+'/day'),
+              row('Night charge',money(rates['vendor_night'])),
+              row('Night timing','10:01 PM – 5:59 AM'),
+            ],
+            if(localTrip)...[
+              row('Package',rates['local_package']),
+              row('Extra KM',money(rates['vendor_km_rate'])+'/KM'),
+              row('Extra hour',money(rates['local_extra_hour'])),
+            ],
           ]),
           if(!allocated)group('Pickup & Destination',[
             row('Pickup Area',item['pickup_area']),
@@ -185,12 +208,12 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
                 ?()=>decline():null,child:const Text('Decline Booking')),
             ],
             if(status=='accepted')...[
-              const Text('Waiting for CWD admin allocation.'),
+              const Text('CWD will assign your booking soon.'),
               OutlinedButton(onPressed:
                 item['cancel_unlocked']==true&&widget.allowChanges
                   ?()=>decline(accepted:true):null,
                 child:Text(item['cancel_unlocked']==true
-                  ?'Cancel (Admin Unlocked)':'Cancel Locked · Admin Control')),
+                  ?'Cancel Booking':'Cancel? Call CWD')),
             ],
           ]),
           if(allocated)group('Customer & Trip Details',[
@@ -223,20 +246,24 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
             if(status=='allocated'||status=='ongoing')
               OutlinedButton.icon(onPressed:widget.allowChanges
                 ?()=>VendorLiveTrip.driverDialog(context,widget.api,
-                  item,widget.onChanged):null,
+                  item,refreshDetail):null,
                 icon:const Icon(Icons.edit),label:const Text('Driver Details')),
           ]),
           if(allocated&&status=='allocated')group('Start Trip',[
-            FilledButton(onPressed:widget.allowChanges
+            if(!detailsReady)const Text('Save driver details first.'),
+            if(detailsReady&&!mayStart)Text(
+              'Start Trip opens 3 hours before pickup. Available '+localDate(item['can_start_at']),
+              style:const TextStyle(color:partnerMuted)),
+            FilledButton(onPressed:widget.allowChanges&&detailsReady&&mayStart
               ?()=>VendorLiveTrip.tripDialog(context,widget.api,
-                item,widget.onChanged,start:true):null,
+                item,refreshDetail,start:true):null,
               child:const Text('START TRIP')),
           ]),
           if(allocated&&status=='ongoing')group('Trip Ongoing',[
             row('Starting KM',data(item['trip'])['starting_odometer']),
             FilledButton(onPressed:widget.allowChanges
               ?()=>VendorLiveTrip.tripDialog(context,widget.api,
-                item,widget.onChanged,start:false):null,
+                item,refreshDetail,start:false):null,
               child:const Text('END TRIP')),
           ]),
           if(allocated&&status=='completed')group('Final Earning',[

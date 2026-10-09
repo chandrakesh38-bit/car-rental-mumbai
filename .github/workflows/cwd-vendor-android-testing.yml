@@ -7,6 +7,9 @@ on:
     paths:
       - 'apps/cwd_vendor_android/**'
       - 'scripts/test-vendor-app-ops.mjs'
+      - 'scripts/test-vendor-admin-ops-ui.mjs'
+      - 'cwd-admin-5377.html'
+      - 'lib/vendor-offer-privacy.mjs'
       - 'lib/vendor-app-auth-core.mjs'
       - 'api/vendor-app-ops.js'
       - 'api/vendor-app-auth.js'
@@ -27,6 +30,9 @@ jobs:
 
       - name: Check Android configurator syntax
         run: python3 -m py_compile apps/cwd_vendor_android/scripts/configure_android.py
+
+      - name: Validate admin vendor cancellation UI script and safety
+        run: node scripts/test-vendor-admin-ops-ui.mjs
 
       - name: Verify existing vendor portal JavaScript
         run: node scripts/test-vendor-booking-html.mjs

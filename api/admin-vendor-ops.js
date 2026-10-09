@@ -236,6 +236,7 @@ async function snapshot(id){
 }
 async function buildLedgers(b,a,t,over={}){
  const snap=a?.pricing_snapshot||{};
+ const newPolicy=snap.pricing_policy_version==='CWD-KM-200-TIER-V1';
  const trip=String(b.trip_type||'').toLowerCase();
  const days=Math.max(1,Math.floor(n(over.duty_days||snap.duty_days,1)));
  const actualKm=n(over.billable_km,t.calculated_trip_km);
@@ -267,18 +268,28 @@ async function buildLedgers(b,a,t,over={}){
    vendorBillableKm=actualKm;
    vendorBase=n(vendorPackages[pack])+customerExtraKm*vendorKmRate+customerExtraHours*n(snap.local_extra_hour);
  }else{
-   if(!customerIncludedKm)customerIncludedKm=Math.max(n(snap.estimated_km),days*240);
-   customerExtraKm=Math.max(0,actualKm-customerIncludedKm);
-   customerExtraKmCharge=customerExtraKm*customerKmRate;
-   customerBillableKm=Math.max(customerIncludedKm,actualKm);
-   vendorBillableKm=Math.max(actualKm,days*vendorMinKm);
+   if(newPolicy){
+     customerIncludedKm=Math.max(n(b.included_km),n(snap.estimated_km),days*MIN_OUTSTATION_KM_DAY);
+     customerBillableKm=Math.max(customerIncludedKm,actualKm);
+     vendorBillableKm=customerBillableKm; // never diverge from customer billable KM
+     customerKmRate=n(snap.customer_extra_km_rate,n(snap.customer_km_rate)+1);
+     customerExtraKm=Math.max(0,customerBillableKm-customerIncludedKm);
+     customerExtraKmCharge=customerExtraKm*customerKmRate;
+   }else{
+     if(!customerIncludedKm)customerIncludedKm=Math.max(n(snap.estimated_km),days*240);
+     customerExtraKm=Math.max(0,actualKm-customerIncludedKm);
+     customerExtraKmCharge=customerExtraKm*customerKmRate;
+     customerBillableKm=Math.max(customerIncludedKm,actualKm);
+     vendorBillableKm=Math.max(actualKm,days*vendorMinKm);
+   }
    vendorBase=vendorBillableKm*vendorKmRate;
    customerDa=days*n(snap.customer_da);
    vendorDa=days*n(snap.vendor_da);
  }
- const customerNight=night?n(snap.customer_night):0;
- const vendorNight=night?n(snap.vendor_night):0;
- const customerTotal=bookingFare+customerExtraKmCharge+customerExtraHourCharge+customerNight+actuals.toll+actuals.parking+actuals.state_tax+actuals.other;
+ // Future quotes include scheduled night charges already. Never add twice at closure.
+ const customerNight=newPolicy?Math.floor(n(snap.night_count))*CUSTOMER_NIGHT_CHARGE:(night?n(snap.customer_night):0);
+ const vendorNight=newPolicy?Math.floor(n(snap.night_count))*VENDOR_NIGHT_CHARGE:(night?n(snap.vendor_night):0);
+ const customerTotal=bookingFare+customerExtraKmCharge+customerExtraHourCharge+(newPolicy?0:customerNight)+actuals.toll+actuals.parking+actuals.state_tax+actuals.other;
  const advance=n(b.paid_amount),balance=Math.max(0,customerTotal-advance);
  const standardVendorPreActual=vendorBase+vendorDa+vendorNight;
  const agreedVendorPreActual=snap.vendor_final_payout_override!==null&&snap.vendor_final_payout_override!==undefined?n(snap.vendor_final_payout_override):standardVendorPreActual;
@@ -720,7 +731,7 @@ async function handler(request){
     const extraKmCharge=extraKm*n(ledger.customer_km_rate);
     const extraHours=trip.includes('local')?n(ps.extra_hours):0;
     const extraHourCharge=extraHours*n(ps.customer_local_extra_hour);
-    const total=bookingFare+extraKmCharge+extraHourCharge+n(ledger.customer_night)+n(ledger.toll)+n(ledger.parking)+n(ledger.state_tax)+n(ledger.approved_other);
+    const total=bookingFare+extraKmCharge+extraHourCharge+(ps.pricing_policy_version==='CWD-KM-200-TIER-V1'?0:n(ledger.customer_night))+n(ledger.toll)+n(ledger.parking)+n(ledger.state_tax)+n(ledger.approved_other);
     const balance=Math.max(0,total-n(ledger.customer_advance));
     await db('cwd_customer_billing_ledger?booking_id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({customer_total:total,customer_balance:balance,updated_at:new Date().toISOString()})});
     await db('inquiries?booking_id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({extra_km:extraKm,extra_km_rate:n(ledger.customer_km_rate),extra_km_charge:extraKmCharge,night_charge:n(ledger.customer_night),toll_charge:n(ledger.toll),parking_charge:n(ledger.parking),state_tax_charge:n(ledger.state_tax),other_charge:n(ledger.approved_other),total_fare:total,final_charges_updated_at:new Date().toISOString(),updated_at:new Date().toISOString()})});

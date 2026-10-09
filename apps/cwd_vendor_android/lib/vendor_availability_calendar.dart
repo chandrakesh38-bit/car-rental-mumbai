@@ -123,8 +123,8 @@ class _CalendarState extends State<VendorAvailabilityCalendar> {
             onPressed:month.isBefore(maxMonth)?()=>setState(()=>
               month=DateTime.utc(month.year,month.month+1)):null),
         ]),
-        const Row(children:[
-          for(final label in ['S','M','T','W','T','F','S'])
+        Row(children:[
+          for(final label in const ['S','M','T','W','T','F','S'])
             Expanded(child:Center(child:Text(label))),
         ]),
         Expanded(child:GridView.builder(

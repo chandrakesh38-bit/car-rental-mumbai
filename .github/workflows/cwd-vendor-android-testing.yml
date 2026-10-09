@@ -13,6 +13,11 @@ on:
       - 'lib/vendor-app-auth-core.mjs'
       - 'api/vendor-app-ops.js'
       - 'api/vendor-app-auth.js'
+      - 'lib/cwd-pricing.mjs'
+      - 'lib/booking-validation.mjs'
+      - 'api/admin-vendor-ops.js'
+      - 'scripts/test-cwd-pricing-policy.mjs'
+      - 'assets/js/booking.js'
       - '.github/workflows/cwd-vendor-android-testing.yml'
 
 permissions:
@@ -30,6 +35,14 @@ jobs:
 
       - name: Check Android configurator syntax
         run: python3 -m py_compile apps/cwd_vendor_android/scripts/configure_android.py
+
+      - name: Verify CWD customer/vendor km pricing and night boundaries
+        run: |
+          node scripts/test-cwd-pricing-policy.mjs
+          node --check api/admin-vendor-ops.js
+          node --check api/vendor-app-ops.js
+          node --check lib/booking-validation.mjs
+          node --check assets/js/booking.js
 
       - name: Validate admin vendor cancellation UI script and safety
         run: node scripts/test-vendor-admin-ops-ui.mjs

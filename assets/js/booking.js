@@ -2369,8 +2369,8 @@ function onPickupDateChange() {
             // FIRSTTRIP is withdrawn. All displayed fares match server-verified prices.
             firstTripOfferApplied = false;
             chosenFareAmount = firstTripFareBeforeDiscount;
-            const fare = document.getElementById('modal-fare');
-            if (fare) { fare.textContent = '₹' + chosenFareAmount.toLocaleString('en-IN'); fare.parentElement?.classList.remove('hidden'); }
+            const previewFare = document.getElementById('modal-fare');
+            if (previewFare) { previewFare.textContent = '₹' + chosenFareAmount.toLocaleString('en-IN'); previewFare.parentElement?.classList.remove('hidden'); }
             document.getElementById('modal-original-fare')?.classList.add('hidden');
             document.getElementById('first-trip-offer-panel')?.classList.add('hidden');
             document.getElementById('outstation-review-fare-summary')?.classList.add('hidden');

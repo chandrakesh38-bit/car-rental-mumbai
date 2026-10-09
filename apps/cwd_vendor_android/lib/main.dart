@@ -89,7 +89,7 @@ class _VendorHomeState extends State<VendorHome> {
     final content = (await Clipboard.getData('text/plain'))?.text ?? '';
     if (!mounted) return;
     if (content.isEmpty) {
-      _notice('Copy a CWD testing booking link first.');
+      _notice('Copy a CWD booking link first.');
     } else {
       setState(() => _input.text = content.trim());
     }
@@ -97,12 +97,12 @@ class _VendorHomeState extends State<VendorHome> {
 
   Future<void> _open([String? text]) async {
     if (!AppConfig.ready) {
-      _notice('Testing backend is not isolated/configured.');
+      _notice('CWD booking service is unavailable.');
       return;
     }
     final link = VendorLink.parse(text ?? _input.text);
     if (link == null) {
-      _notice('Invalid testing link. Production links are blocked.');
+      _notice('Invalid CWD booking link.');
       return;
     }
     try {
@@ -122,7 +122,7 @@ class _VendorHomeState extends State<VendorHome> {
   void _register() {
     final origin = AppConfig.origin;
     if (!AppConfig.ready || origin == null) {
-      _notice('Staging backend isolation must be verified first.');
+      _notice('CWD booking service is unavailable.');
       return;
     }
     Navigator.of(context).push(MaterialPageRoute<void>(
@@ -170,8 +170,8 @@ class _VendorHomeState extends State<VendorHome> {
         backgroundColor: navy,
         foregroundColor: Colors.white,
         title: const Text('CWD Partner'),
-        actions: const [
-          Center(child: Padding(
+        actions: [
+          if (!AppConfig.productionRelease) const Center(child: Padding(
             padding: EdgeInsets.only(right: 16),
             child: Text('TESTING', style: TextStyle(
               color: Color(0xFF91E7CE), fontSize: 11,
@@ -241,7 +241,7 @@ class _VendorHomeState extends State<VendorHome> {
           )),
           const SizedBox(height: 7),
           const Text(
-            'Paste the testing booking offer or allocation link sent by CWD.',
+            'Paste the CWD booking offer or allocation link sent by CWD.',
             style: TextStyle(fontSize: 13, color: Color(0xFF5B6880)),
           ),
           const SizedBox(height: 12),
@@ -251,7 +251,7 @@ class _VendorHomeState extends State<VendorHome> {
             autocorrect: false, enableSuggestions: false,
             decoration: InputDecoration(
               filled: true, fillColor: Colors.white,
-              hintText: 'Paste staging vendor booking link',
+              hintText: 'Paste CWD vendor booking link',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12)),
               suffixIcon: IconButton(
@@ -310,9 +310,11 @@ class _VendorHomeState extends State<VendorHome> {
               ),
             ))),
           const SizedBox(height: 22),
-          const Center(child: Text(
-            'CWD Partner • Internal testing only',
-            style: TextStyle(color: Color(0xFF68778A), fontSize: 11),
+          Center(child: Text(
+            AppConfig.productionRelease
+              ? 'CWD Partner · Car With Driver India'
+              : 'CWD Partner · Internal testing only',
+            style: const TextStyle(color: Color(0xFF68778A), fontSize: 11),
           )),
         ],
       ),

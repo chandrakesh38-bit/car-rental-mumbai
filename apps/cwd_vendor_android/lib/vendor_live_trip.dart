@@ -44,8 +44,7 @@ class VendorLiveTrip {
     try{
       await api.action('save_driver',values);
       await onChanged();
-      if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content:Text('Driver details saved')));
+      if(context.mounted)Navigator.pop(context,true); // closes only the edit dialog
     }catch(e){
       if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content:Text(e.toString())));
@@ -203,8 +202,7 @@ class VendorLiveTrip {
       await onChanged();
       if(context.mounted){
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(
-          start?'Trip started successfully':'Trip ended. Sent to CWD for review.')));
+        Navigator.pop(context,true); // returns to the same booking details page
       }
     }catch(e){
       if(context.mounted){

@@ -37,6 +37,18 @@ const allocated=allocationSafe({
   pickup_location:'A Secret Address',destination:'Nashik',route:'A Secret Address → Nashik',
 },null,null);
 assert.equal(allocated.customer.customer_mobile,'9876543210');
+assert.equal(allocated.customer.pickup_address,'A Secret Address');
+assert.equal(allocated.customer.destination,'Nashik');
+// Match actual production schema: inquiries has route/full_address,
+// but no pickup_location or destination columns.
+const productionInquiry={customer_name:'Example',customer_phone:'9876543210',
+  route:'Godrej Hillside Colony Vikhroli Base → Hotel in Powai → Lonavala → Hotel in Powai → Godrej Hillside Colony Vikhroli Base',
+  trip_type:'round_trip'};
+const round=allocationSafe({id:'round-alloc',booking_id:'CWD-ROUND',
+  status:'allocated'},null,productionInquiry,null,null);
+assert.equal(round.customer.pickup_address,'Hotel in Powai');
+assert.equal(round.customer.destination,'Lonavala');
+assert.equal(round.customer.drop_address,'Hotel in Powai');
 assert.equal(allocated.final_earning,null);
 const settled=allocationSafe({
   id:'alloc-id',booking_id:'CWD-TEST',status:'approved',

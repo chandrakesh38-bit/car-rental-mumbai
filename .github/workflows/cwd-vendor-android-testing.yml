@@ -17,6 +17,8 @@ on:
       - 'lib/booking-validation.mjs'
       - 'api/admin-vendor-ops.js'
       - 'scripts/test-cwd-pricing-policy.mjs'
+      - 'scripts/test-first-trip-offer.mjs'
+      - 'lib/first-trip-offer.mjs'
       - 'scripts/test-vendor-booking-html.mjs'
       - 'vendor-booking.html'
       - 'api/vendor-portal.js'
@@ -42,6 +44,7 @@ jobs:
       - name: Verify CWD customer/vendor km pricing and night boundaries
         run: |
           node scripts/test-cwd-pricing-policy.mjs
+          node scripts/test-first-trip-offer.mjs
           node --check api/admin-vendor-ops.js
           node --check api/vendor-app-ops.js
           node --check lib/booking-validation.mjs

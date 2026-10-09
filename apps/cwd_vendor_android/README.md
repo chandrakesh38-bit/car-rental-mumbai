@@ -33,10 +33,7 @@ pickup/destination, mandatory odometer-camera trip forms and profile logout.
 Native UI never sends arbitrary vendor_id; the server binds the account to
 the bearer session. Real write actions require separate backend approval.
 
-Safety: Flutter APK runs in Safe Mode unless it is built with
-`--dart-define=CWD_VENDOR_SHARED_DB_APPROVED=true`.
-**Do not set** this flag until migration is applied to the correct CWD
-Supabase project and the backend login/write gates are configured.
+Safety: Flutter APK runs in Safe Mode unless an isolated staging backend is explicitly configured with `CWD_VENDOR_STAGING_ISOLATED=true` and a valid testing deployment URL. The former `CWD_VENDOR_SHARED_DB_APPROVED` override is intentionally ignored; production-shared database access must never unlock the test app. Do not enable this flag until staging isolation, database migrations, and backend auth/write gates are verified.
 Static splash/branding and keypad checks are safe without it.
 Foreground offer polling is **not** background push notifications; true FCM
 requires a dedicated Firebase project and validated messaging credentials.

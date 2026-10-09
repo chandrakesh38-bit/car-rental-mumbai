@@ -32,6 +32,7 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
   int page=0;
   String filter='All';
   bool fetching=true;
+  bool _foreground=true;
 
   List<Map<String,dynamic>> records(String key)=>
     ((data?[key] as List?)??[]).whereType<Map>()
@@ -43,11 +44,12 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
     WidgetsBinding.instance.addObserver(this);
     reload();
     _refreshTimer=Timer.periodic(const Duration(seconds:60),
-      (_){if(mounted)reload(quiet:true);});
+      (_){if(mounted&&_foreground)reload(quiet:true);});
   }
   @override
   void didChangeAppLifecycleState(AppLifecycleState state){
-    if(state==AppLifecycleState.resumed)reload(quiet:true);
+    _foreground=state==AppLifecycleState.resumed;
+    if(_foreground)reload(quiet:true);
   }
   @override
   void dispose(){
@@ -93,10 +95,22 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
     ...records('offers').map((b)=>{...b,'_allocated':false}),
     ...records('allocations').map((b)=>{...b,'_allocated':true}),
   ];
+  List<Map<String,dynamic>> get approvedEarnings=>
+    records('allocations').where((b){
+      final earning=b['final_earning'];
+      return earning is Map && earning['vendor_final_payout']!=null;
+    }).toList();
+  num earningAmount(Map<String,dynamic> b){
+    final earning=b['final_earning'];
+    if(earning is! Map)return 0;
+    return num.tryParse(earning['vendor_final_payout']?.toString()??'')??0;
+  }
   bool matches(Map<String,dynamic> b,String value){
     final status=b['status']?.toString()??'';
     if(value=='All')return true;
     if(value=='New')return status=='offered';
+    if(value=='Accepted')return status=='accepted';
+    if(value=='Allocated')return status=='allocated';
     if(value=='Ongoing')return status=='ongoing';
     if(value=='Completed')return status=='completed';
     if(value=='Cancelled')return ['declined','cancelled'].contains(status);
@@ -135,6 +149,9 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
       ?Map<String,dynamic>.from(item['customer']):<String,dynamic>{};
     final route=item['route'] is Map
       ?Map<String,dynamic>.from(item['route']):<String,dynamic>{};
+    final earning=item['final_earning'] is Map
+      ?Map<String,dynamic>.from(item['final_earning']):<String,dynamic>{};
+    final approved=earning['vendor_final_payout']!=null;
     final pickup=allocated
       ?customer['pickup_address']??route['pickup_area']??''
       :item['pickup_area']??'';
@@ -166,9 +183,9 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
               style:const TextStyle(color:partnerMuted,fontSize:12)),
             const SizedBox(height:9),
             Row(mainAxisAlignment:MainAxisAlignment.spaceBetween,children:[
-              const Text('Estimated Earning',
-                style:TextStyle(color:partnerMuted,fontSize:12)),
-              Text(money(item['estimated_payout']),
+              Text(approved?'Approved Earning':'Estimated Earning',
+                style:const TextStyle(color:partnerMuted,fontSize:12)),
+              Text(money(approved?earning['vendor_final_payout']:item['estimated_payout']),
                 style:const TextStyle(color:partnerTeal,
                   fontSize:19,fontWeight:FontWeight.w900)),
             ]),
@@ -179,7 +196,7 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
   }
 
   Widget home(){
-    const filters=['New',"Today's Pickups",'Ongoing','Completed','Cancelled'];
+    const filters=['New','Accepted',"Today's Pickups",'Ongoing','Completed','Cancelled'];
     return RefreshIndicator(onRefresh:reload,
       child:ListView(children:[
         Padding(padding:const EdgeInsets.fromLTRB(19,19,16,15),
@@ -222,8 +239,8 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
     );
   }
   Widget bookings(){
-    const filters=['All','New',"Today's Pickups",'Ongoing','Completed',
-      'Cancelled'];
+    const filters=['All','New','Accepted','Allocated',"Today's Pickups",
+      'Ongoing','Completed','Cancelled'];
     final items=allBookings.where((b)=>matches(b,filter)).toList();
     return Column(children:[
       SingleChildScrollView(scrollDirection:Axis.horizontal,

@@ -351,6 +351,75 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
       }),
     ]);
   }
+  Widget earnings(){
+    final approved=approvedEarnings;
+    final allocations=records('allocations');
+    final underReview=allocations.where((a)=>
+      a['status']=='completed' && a['final_earning']==null).length;
+    final total=approved.fold<num>(0,(sum,b)=>sum+earningAmount(b));
+    final paid=approved.where((b)=>
+      (b['final_earning'] as Map)['payout_status']=='paid')
+      .fold<num>(0,(sum,b)=>sum+earningAmount(b));
+    final pending=total-paid;
+    return RefreshIndicator(onRefresh:reload,
+      child:ListView(padding:const EdgeInsets.all(14),children:[
+        const Text('My Earnings',style:TextStyle(
+          fontSize:23,fontWeight:FontWeight.w900,color:partnerInk)),
+        const SizedBox(height:5),
+        const Text('Only CWD admin-approved settlements appear here.',
+          style:TextStyle(color:partnerMuted,fontSize:12)),
+        const SizedBox(height:15),
+        Row(children:[
+          Expanded(child:_earningSummary('Approved',money(total))),
+          Expanded(child:_earningSummary('Paid',money(paid))),
+          Expanded(child:_earningSummary('Pending',money(pending))),
+        ]),
+        if(underReview>0)Padding(
+          padding:const EdgeInsets.symmetric(vertical:12),
+          child:Text(underReview.toString()+
+            ' completed trip(s) are waiting for CWD admin review.',
+            style:const TextStyle(color:partnerMuted)),
+        ),
+        const SizedBox(height:10),
+        if(approved.isEmpty)const Padding(
+          padding:EdgeInsets.all(24),
+          child:Text('No approved earnings yet. Completed trips will appear after CWD approval.',
+            textAlign:TextAlign.center)),
+        ...approved.map((b){
+          final e=Map<String,dynamic>.from(b['final_earning'] as Map);
+          final isPaid=e['payout_status']=='paid';
+          final when=isPaid?e['paid_at']:e['payout_due_at'];
+          return Card(color:Colors.white,
+            child:ListTile(
+              onTap:()=>openBooking({...b,'_allocated':true}),
+              title:Text(b['booking_id']?.toString()??'Booking',
+                style:const TextStyle(fontWeight:FontWeight.w800)),
+              subtitle:Text(isPaid
+                ?'Paid · '+dateLabel(when)
+                :'Pending · Due '+dateLabel(when)),
+              trailing:Column(mainAxisSize:MainAxisSize.min,
+                crossAxisAlignment:CrossAxisAlignment.end,children:[
+                Text(money(e['vendor_final_payout']),
+                  style:const TextStyle(color:partnerTeal,
+                    fontSize:17,fontWeight:FontWeight.w900)),
+                Text(isPaid?'Paid':'Pending',
+                  style:TextStyle(fontSize:11,
+                    color:isPaid?partnerTeal:partnerMuted)),
+              ]),
+            ));
+        }),
+      ]));
+  }
+  Widget _earningSummary(String title,String amount)=>
+    Card(color:Colors.white,child:Padding(
+      padding:const EdgeInsets.symmetric(vertical:15,horizontal:5),
+      child:Column(children:[
+        Text(amount,style:const TextStyle(color:partnerTeal,
+          fontWeight:FontWeight.w900,fontSize:15)),
+        const SizedBox(height:5),
+        Text(title,style:const TextStyle(color:partnerMuted,
+          fontSize:11,fontWeight:FontWeight.w700)),
+      ])));
   Widget profile(){
     final v=data?['vendor'] is Map
       ?Map<String,dynamic>.from(data!['vendor']):<String,dynamic>{};
@@ -387,7 +456,7 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
 
   @override
   Widget build(BuildContext context){
-    const sections=['Home','Bookings','My Cars','Profile'];
+    const sections=['Home','Bookings','My Cars','Earnings','Profile'];
     return Scaffold(
       backgroundColor:partnerSurface,
       appBar:AppBar(backgroundColor:partnerTeal,foregroundColor:Colors.white,
@@ -404,7 +473,7 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
               child:Text('Booking changes require CWD activation',
                 style:TextStyle(color:partnerMuted,fontSize:11))),
           Expanded(child:switch(page){
-            0=>home(),1=>bookings(),2=>cars(),_=>profile(),
+            0=>home(),1=>bookings(),2=>cars(),3=>earnings(),_=>profile(),
           }),
         ]),
       bottomNavigationBar:NavigationBar(selectedIndex:page,
@@ -415,6 +484,8 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
             label:'Bookings'),
           NavigationDestination(icon:Icon(Icons.directions_car_outlined),
             label:'My Cars'),
+          NavigationDestination(icon:Icon(Icons.payments_outlined),
+            label:'Earnings'),
           NavigationDestination(icon:Icon(Icons.person_outline),
             label:'Profile'),
         ]),

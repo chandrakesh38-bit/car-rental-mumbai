@@ -9,7 +9,7 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
             baseDeliveryCharge: 500,
             extraDeliveryChargePerKm: 25,
             freeThresholdKm: 25,
-            minimumOutstationKmPerDay: 240,
+            minimumOutstationKmPerDay: 200,
         };
 
         function pricingRuleKey(name) {
@@ -31,7 +31,7 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
             data.forEach(rule => {
                 const key = pricingRuleKey(rule.rule_name);
                 const value = Number(rule.rule_value);
-                if (key && Number.isFinite(value) && value >= 0) livePricingRules[key] = value;
+                if (key && key !== 'minimumOutstationKmPerDay' && Number.isFinite(value) && value >= 0) livePricingRules[key] = value;
                 if (key === 'minimumOutstationKmPerDay' && Number.isFinite(value) && value > 0) publicOutstationMinimumLoaded = true;
             });
             updateOutstationFarePromo();
@@ -336,14 +336,14 @@ let mumbaiMetroLocations = [
             const rate = Number(sedan.rates.outstationPerKm);
             const allowance = Number(sedan.rates.driverAllowance || 0);
             const minimumKm = Number(livePricingRules.minimumOutstationKmPerDay || 0);
-            label.textContent = `${sedan.name}: ₹${rate}/km + ₹${allowance}/day · Min. ${minimumKm} km/day`;
+            label.textContent = `${sedan.name}: first ${minimumKm} km/day ₹${rate}/km, extra ₹${rate+1}/km + ₹${allowance}/day`;
         }
 
         function updateQuickRouteLiveFares() {
             if (!withDriverRatesLoadedFromDb) return;
             const validCars = wdFleet.filter(car => Number(car?.rates?.outstationPerKm) > 0);
             if (!validCars.length) return;
-            const minKm = Number(livePricingRules.minimumOutstationKmPerDay || 240);
+            const minKm = Number(livePricingRules.minimumOutstationKmPerDay || 200);
             const lowest = [...validCars].sort((a, b) => {
                 const aCost = (minKm * Number(a.rates.outstationPerKm)) + Number(a.rates.driverAllowance || 0);
                 const bCost = (minKm * Number(b.rates.outstationPerKm)) + Number(b.rates.driverAllowance || 0);
@@ -354,10 +354,10 @@ let mumbaiMetroLocations = [
                 const fareLabel = card.querySelector('[data-live-route-fare]');
                 if (!fareLabel || !km) return;
                 const billableKm = Math.max(km, minKm);
-                const estimatedFare = Math.round(
-                    billableKm * Number(lowest.rates.outstationPerKm) +
-                    Number(lowest.rates.driverAllowance || 0)
-                );
+                const baseKm=Math.min(billableKm,minKm);
+                const extraKm=Math.max(0,billableKm-baseKm);
+                const rate=Number(lowest.rates.outstationPerKm);
+                const estimatedFare = Math.round(baseKm*rate+extraKm*(rate+1)+Number(lowest.rates.driverAllowance||0));
                 fareLabel.textContent = `${lowest.name} · from ₹${estimatedFare.toLocaleString('en-IN')}`;
             });
         }
@@ -389,7 +389,7 @@ let mumbaiMetroLocations = [
                         },
                         outstationPerKm: Number(row.outstation_rate_per_km) || 0,
                         driverAllowance: Number(row.driver_allowance_per_day) || 0,
-                        nightCharge: Number(row.customer_night_charge) || 0,
+                        nightCharge: 500, // testing: night charge for customer, endpoint times only
                         airport: {
                             t1: Number(row.airport_t1_rate) || 0,
                             t2: Number(row.airport_t2_rate) || 0,
@@ -1352,11 +1352,11 @@ function onPickupDateChange() {
             const hour = to24Hour(hourValue, ampmValue);
             const minute = Number(minuteValue) || 0;
             const totalMinutes = hour * 60 + minute;
-            // Night charge applies from 10:00 PM through 6:00 AM.
-            if (!(totalMinutes >= 22 * 60 || totalMinutes <= 6 * 60)) return null;
+            // Night charge applies only to pickup/drop endpoints between 10:01 PM and 5:59 AM.
+            if (!(totalMinutes >= 22 * 60 + 1 || totalMinutes <= 5 * 60 + 59)) return null;
             const date = new Date(dateValue + 'T12:00:00');
             if (!Number.isFinite(date.getTime())) return null;
-            if (totalMinutes <= 6 * 60) date.setDate(date.getDate() - 1);
+            if (totalMinutes <= 5 * 60 + 59) date.setDate(date.getDate() - 1);
             return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
         }
 
@@ -1402,6 +1402,7 @@ function onPickupDateChange() {
                 );
                 if (p) nights.add(p);
             }
+            if (currentWDSubTab === 'outstation' && document.getElementById('wd-out-pdate')?.value === document.getElementById('wd-out-rdate')?.value) return nights.size > 0 ? 1 : 0;
             return nights.size;
         }
 
@@ -1437,8 +1438,10 @@ function onPickupDateChange() {
                 return (car.rates.local[pkg] || 3000) + nightCharge;
             } else if (currentWDSubTab === 'outstation') {
                 if (outstationFareReadinessMessage()) return null;
-                const includedKm = Math.max(wdOutstationKm || 0, wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
-                return (includedKm * car.rates.outstationPerKm) + (wdOutstationDays * Number(car.rates.driverAllowance || 0)) + nightCharge;
+                const minKm=wdOutstationDays*200;
+                const includedKm=Math.max(Math.ceil(wdOutstationKm||0),minKm);
+                const extraKm=Math.max(0,includedKm-minKm);
+                return (minKm*car.rates.outstationPerKm)+(extraKm*(car.rates.outstationPerKm+1))+(wdOutstationDays*Number(car.rates.driverAllowance||0))+nightCharge;
             } else if (currentWDSubTab === 'airport') {
                 const termInput = document.getElementById('wd-airport-terminal');
                 const term = termInput ? termInput.value : 't2';
@@ -2270,7 +2273,7 @@ function onPickupDateChange() {
             firstTripFareBeforeDiscount = Number(fare) || 0;
             // CWD-FIRSTTRIP-VALUE-02: auto-apply the existing 5% FIRSTTRIP offer
             // on Outstation fare review so paid-traffic visitors see the effective fare immediately.
-            firstTripOfferApplied = currentWDSubTab === 'outstation' && firstTripFareBeforeDiscount > 0;
+            firstTripOfferApplied = false; // FIRSTTRIP withdrawn for new bookings
             const couponInput = document.getElementById('first-trip-coupon-code');
             if (couponInput) couponInput.value = firstTripOfferApplied ? 'FIRSTTRIP' : '';
             document.getElementById('first-trip-coupon-error')?.classList.add('hidden');
@@ -2363,6 +2366,15 @@ function onPickupDateChange() {
         }
 
         function renderFirstTripOffer(animate = false) {
+            // FIRSTTRIP is withdrawn. All displayed fares match server-verified prices.
+            firstTripOfferApplied = false;
+            chosenFareAmount = firstTripFareBeforeDiscount;
+            const fare = document.getElementById('modal-fare');
+            if (fare) { fare.textContent = '₹' + chosenFareAmount.toLocaleString('en-IN'); fare.parentElement?.classList.remove('hidden'); }
+            document.getElementById('modal-original-fare')?.classList.add('hidden');
+            document.getElementById('first-trip-offer-panel')?.classList.add('hidden');
+            document.getElementById('outstation-review-fare-summary')?.classList.add('hidden');
+            return;
             const fare = document.getElementById('modal-fare');
             const original = document.getElementById('modal-original-fare');
             const button = document.getElementById('first-trip-coupon-apply');
@@ -2857,7 +2869,7 @@ async function handleBookingSubmit(e) {
         const returnHour = parseInt(document.getElementById('wd-out-rhour').value);
         const returnAmPm = document.getElementById('wd-out-rampm').value;
 
-        const extraKmRate = car?.rates?.outstationPerKm || 0;
+        const extraKmRate = Number(car?.rates?.outstationPerKm || 0) + 1;
         const driverAllowance = Number(car?.rates?.driverAllowance || 0);
 
         const startDateTime = createLocalDateTime(
@@ -2872,10 +2884,7 @@ async function handleBookingSubmit(e) {
             returnAmPm
         );
 
-        const includedKm = Math.max(
-            wdOutstationKm,
-            wdOutstationDays * livePricingRules.minimumOutstationKmPerDay
-        );
+        const includedKm = Math.max(Math.ceil(wdOutstationKm||0), wdOutstationDays * 200);
         const routeText = [
             'Vikhroli Base',
             selections.pickup.name,
@@ -2895,8 +2904,8 @@ async function handleBookingSubmit(e) {
 📅 Final Drop: ${formatBookingDateTime(returnDateTime)}
 ⏱ ${wdOutstationDays} Day${wdOutstationDays > 1 ? 's' : ''} | ${includedKm.toLocaleString('en-IN')} km included
 ${currentOutstationJourneyType === 'one-way' ? '↩️ One-way fare includes the vehicle’s empty return distance; driver allowance applies to trip days only.\n' : ''}🗺 Route distance: ${wdOutstationRouteQuote?.distanceKmExact || wdOutstationKm} km
-💰 ₹${extraKmRate}/KM | Driver ₹${driverAllowance}/Day
-🌙 Night: ₹${Number(car?.rates?.nightCharge || 0).toLocaleString('en-IN')} when vehicle is actually driven between 10 PM–6 AM
+💰 First ${wdOutstationDays * 200} KM: ₹${Number(car?.rates?.outstationPerKm || 0)}/KM | Extra KM: ₹${extraKmRate}/KM | Driver ₹${driverAllowance}/Day
+🌙 Night: ₹500 if trip starts or ends between 10:01 PM–5:59 AM; max one charge on same date
 
 ✓ Incl: Fuel, Driver
 ✕ Excl: Toll, Parking, State Tax (as per actual)

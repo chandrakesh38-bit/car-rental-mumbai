@@ -1500,7 +1500,7 @@ function onPickupDateChange() {
                             <div class="text-right">
                                 <span class="text-[10px] text-slate-400 block font-semibold">Estimated Fare</span>
                                 <span data-fare-readiness class="text-xl font-black text-indigo-950">${fare === null ? readinessMessage : '₹' + fare.toLocaleString('en-IN')}</span>
-                                ${currentWDSubTab === 'outstation' && fare !== null ? `<span class="block text-xs font-bold text-emerald-700 mt-1">₹${(fare - Math.round(fare * 0.05)).toLocaleString('en-IN')} with FIRSTTRIP</span><span class="block text-[10px] text-slate-500">5% off your first booking</span>` : ''}
+                                
                             </div>
                         </div>
                         <div class="flex items-center space-x-3 text-xs text-slate-500 my-2 py-2 border-y border-slate-100">
@@ -2271,8 +2271,7 @@ function onPickupDateChange() {
             const locationStatus = document.getElementById('wd-current-location-status');
             if (locationStatus) locationStatus.textContent = '';
             firstTripFareBeforeDiscount = Number(fare) || 0;
-            // CWD-FIRSTTRIP-VALUE-02: auto-apply the existing 5% FIRSTTRIP offer
-            // on Outstation fare review so paid-traffic visitors see the effective fare immediately.
+            // No coupon for new bookings. Client fare must match server fare.
             firstTripOfferApplied = false; // FIRSTTRIP withdrawn for new bookings
             const couponInput = document.getElementById('first-trip-coupon-code');
             if (couponInput) couponInput.value = firstTripOfferApplied ? 'FIRSTTRIP' : '';
@@ -2440,6 +2439,7 @@ function onPickupDateChange() {
         }
 
         function applyFirstTripCoupon() {
+            return; // Coupon withdrawn; backend also rejects FIRSTTRIP.
             if (firstTripOfferApplied) return;
             const codeInput = document.getElementById('first-trip-coupon-code');
             const error = document.getElementById('first-trip-coupon-error');

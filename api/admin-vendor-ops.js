@@ -594,7 +594,7 @@ async function handler(request){
     const local=tripKind.includes('local');
     // For outstation, never trust manually entered vendor KM/night counts.
     // Customer booked KM is the single source of truth.
-    const bookedDays=Number(String(b.booking_details||'').match(/(\\d+)\\s*Days?\\s*\\|/i)?.[1]||0);
+    const bookedDays=Number(String(b.booking_details||'').match(/(\d+)\s*Days?\s*\|/i)?.[1]||0);
     const days=bookedDays>0?bookedDays:Math.max(1,Math.floor(n(body.duty_days,1)));
     if(outstation&&(!Number.isFinite(b.included_km)||b.included_km<=0))
       fail('Customer booked KM missing. Check booking details before making an offer.',409);

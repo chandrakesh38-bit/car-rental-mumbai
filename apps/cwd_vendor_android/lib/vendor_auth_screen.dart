@@ -33,6 +33,7 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
   bool _busy=false;
   bool _otpPreview=false;
   String? _error;
+  bool _notRegistered=false;
   int _resendSeconds=0;
   Timer? _resendTimer;
 
@@ -87,7 +88,7 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
     FocusManager.instance.primaryFocus?.unfocus();
     setState((){
       _step=VendorAuthStep.phone;
-      _challenge=null;_error=null;_otpPreview=false;
+      _challenge=null;_error=null;_notRegistered=false;_otpPreview=false;
       _resendSeconds=0;
     });
   }
@@ -117,7 +118,7 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
       return;
     }
     if(_busy)return;
-    setState((){_busy=true;_error=null;});
+    setState((){_busy=true;_error=null;_notRegistered=false;});
     try {
       final challenge=await _auth.sendOtp(number);
       if(!mounted)return;
@@ -132,7 +133,10 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
         if(mounted)_digitFocus.first.requestFocus();
       });
     } on VendorAuthException catch(e){
-      if(mounted)setState(()=>_error=e.message);
+      if(mounted)setState((){
+        _error=e.message;
+        _notRegistered=e.statusCode==404;
+      });
     } finally{
       if(mounted)setState(()=>_busy=false);
     }
@@ -207,7 +211,8 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
     _mobile.clear();
     _clearCode();
     setState((){
-      _result=null;_challenge=null;_step=VendorAuthStep.phone;_error=null;
+      _result=null;_challenge=null;_step=VendorAuthStep.phone;
+      _error=null;_notRegistered=false;
     });
   }
 
@@ -393,11 +398,30 @@ class _VendorAuthGateState extends State<VendorAuthGate> {
             borderSide:const BorderSide(color:loginTeal,width:2))),
         onTap:_focusMobileKeyboard,
         onChanged:(_){
-          if(_error!=null)setState(()=>_error=null);
+          if(_error!=null||_notRegistered){
+            setState((){
+              _error=null;
+              _notRegistered=false;
+            });
+          }
         },
         onSubmitted:(_)=>_sendOtp(),
       ),
       if(_error!=null)_errorCard(),
+      if(_notRegistered)
+        Padding(
+          padding:const EdgeInsets.only(top:8),
+          child:OutlinedButton.icon(
+            key:const Key('vendor-unregistered-register-cta'),
+            onPressed:_register,
+            icon:const Icon(Icons.person_add_alt_1_outlined),
+            label:const Text('Register Now'),
+            style:OutlinedButton.styleFrom(
+              foregroundColor:loginTeal,
+              side:const BorderSide(color:loginTeal),
+              minimumSize:const Size.fromHeight(43)),
+          ),
+        ),
       const SizedBox(height:16),
       _primaryButton('Send OTP',Icons.arrow_forward,_sendOtp,
         enabled:!_busy),

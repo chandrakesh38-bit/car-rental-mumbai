@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {vendorMobile,vendorLoginStatus,vendorOtpAdmission,vendorAuthConfig,validOtp} from '../lib/vendor-app-auth-core.mjs';
+import {vendorMobile,vendorLoginStatus,vendorOtpAdmission,vendorAuthConfig,vendorMsg91WidgetHeaders,validOtp} from '../lib/vendor-app-auth-core.mjs';
 assert.equal(vendorMobile('9876543210'),'9876543210');
 assert.equal(vendorMobile('+91 98765 43210'),'9876543210');
 assert.equal(vendorMobile('1234567890'),null);
@@ -30,6 +30,18 @@ const env={
 const safe=vendorAuthConfig(env);
 assert.ok(safe);
 assert.equal(safe.writesEnabled,false);
+const widgetHeaders=vendorMsg91WidgetHeaders(safe);
+assert.equal(widgetHeaders.token,env.NEXT_PUBLIC_MSG91_WIDGET_TOKEN);
+assert.equal(widgetHeaders['Content-Type'],'application/json');
+assert.equal(Object.hasOwn(widgetHeaders,'tokenauth'),false);
+assert.equal(Object.hasOwn(widgetHeaders,'Authorization'),false);
+const dedicated=vendorAuthConfig({...env,
+  CWD_VENDOR_APP_MSG91_WIDGET_TOKEN:'vendor-specific-token-12345',
+  CWD_VENDOR_APP_MSG91_WIDGET_ID:'aabbccddeeff001122334455'});
+assert.equal(dedicated.widgetId,'aabbccddeeff001122334455');
+assert.equal(dedicated.widgetToken,'vendor-specific-token-12345');
+assert.equal(vendorMsg91WidgetHeaders(dedicated).token,'vendor-specific-token-12345');
+assert.equal(vendorAuthConfig({...env,CWD_VENDOR_APP_MSG91_WIDGET_TOKEN:'bad key!'}),null);
 const separated=vendorAuthConfig({...env,CWD_VENDOR_APP_MSG91_WIDGET_ID:'aabbccddeeff001122334455'});
 assert.ok(separated);
 assert.equal(separated.widgetId,'aabbccddeeff001122334455');

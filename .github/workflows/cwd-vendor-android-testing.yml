@@ -91,8 +91,13 @@ jobs:
       - name: Build production-connected owner test APK
         working-directory: apps/cwd_vendor_android
         run: |
-          flutter build apk --debug --dart-define=CWD_PARTNER_PRODUCTION=true
-          cp build/app/outputs/flutter-apk/app-debug.apk build/app/outputs/flutter-apk/CWD-Partner-Owner-Live-Test.apk
+          # Release-optimized but uses Flutter's temporary DEBUG signing key.
+          # Package remains .vendor.testing; this is never vendor-distributable.
+          flutter build apk --release --dart-define=CWD_PARTNER_PRODUCTION=true
+          cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/CWD-Partner-Owner-Live-Test.apk
+          verifier=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)
+          test -n "$verifier"
+          "$verifier" verify build/app/outputs/flutter-apk/CWD-Partner-Owner-Live-Test.apk
 
       - name: Upload owner live-test APK (do not distribute)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

@@ -2,7 +2,7 @@ import {
  vendorAuthOrFail,vendorDb,findVendor,activeVendorForSession,
  cleanMobile,vendorLoginStatus,validOtp,sha256,tokenHex,authError
 } from '../lib/vendor-app-server.mjs';
-import {vendorOtpAdmission,vendorMsg91WidgetHeaders} from '../lib/vendor-app-auth-core.mjs';
+import {vendorOtpAdmission,vendorMsg91WidgetHeaders,vendorMsg91WidgetBody,vendorMobile} from '../lib/vendor-app-auth-core.mjs';
 
 export const config={runtime:'edge'};
 const json=(body,status=200)=>new Response(JSON.stringify(body),{
@@ -17,11 +17,10 @@ function guardedRequest(request) {
  if(origin && origin!==new URL(request.url).origin)fail('Invalid request origin.',403);
 }
 async function msg91(cfg,path,body) {
- const r=await fetch('https://control.msg91.com/api/v5/widget/'+path,{
-   // MSG91 allows the widget token via the "token" HTTP header.
-   // Keep credentials server-side and use vendor-specific token when set.
+ const r=await fetch('https://api.msg91.com/api/v5/widget/'+path,{
+   // Dedicated vendor widget token stays server-side in the documented body.
    method:'POST',headers:vendorMsg91WidgetHeaders(cfg),
-   body:JSON.stringify({widgetId:cfg.widgetId,...body}),
+   body:JSON.stringify(vendorMsg91WidgetBody(cfg,body)),
    signal:AbortSignal.timeout(15000),
  });
  let response;try{response=await r.json()}catch{response={}};
@@ -47,15 +46,18 @@ async function msg91(cfg,path,body) {
  }
  return response;
 }
-async function verifyAccess(cfg,accessToken){
- const r=await fetch('https://control.msg91.com/api/v5/widget/verifyAccessToken',{
-   method:'POST',headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({authkey:cfg.msg91Key,'access-token':accessToken}),
+async function verifyAccess(cfg,accessToken,mobile){
+ const r=await fetch('https://api.msg91.com/api/v5/widget/verifyAccessToken',{
+   method:'POST',headers:{'Content-Type':'application/json',authkey:cfg.msg91Key},
+   body:JSON.stringify({'access-token':accessToken}),
    signal:AbortSignal.timeout(15000),
  });
  const data=await r.json().catch(()=>({}));
  if(!r.ok||data.type!=='success')
    fail('OTP could not be verified. Please request a new code.',401);
+ // Use the provider-verified identifier, never just unverified JWT claims.
+ if(vendorMobile(data.message)!==mobile)
+   fail('OTP mobile does not match this login. Please request a new code.',401);
 }
 async function throttle(cfg,mobile,ip) {
  const since=encodeURIComponent(new Date(Date.now()-3600000).toISOString());
@@ -111,7 +113,7 @@ async function verifyOtp(cfg,body){
  const rows=await vendorDb(cfg,'cwd_vendor_app_login_challenges?challenge_hash=eq.'+
    hash+'&select=*&limit=1');
  const pending=rows?.[0];
- if(!pending||pending.verified_at||Date.parse(pending.expires_at)<=Date.now())
+ if(!pending||pending.verified_at||!Number.isFinite(Date.parse(pending.expires_at))||Date.parse(pending.expires_at)<=Date.now())
    fail('OTP expired. Please request a new OTP.',401);
  if(pending.attempt_count>=5)fail('Too many incorrect OTP attempts.',429);
  // Optimistic lock is also enforced when claiming verification below.
@@ -144,10 +146,11 @@ async function verifyOtp(cfg,body){
      fail('OTP session mismatch. Please request a new code.',401);
  }catch(e){if(e?.status)throw e;
    fail('OTP session mismatch. Please request a new code.',401);}
- await verifyAccess(cfg,accessToken);
+ await verifyAccess(cfg,accessToken,pending.mobile);
  const used=await vendorDb(cfg,
   'cwd_vendor_app_login_challenges?id=eq.'+
-  encodeURIComponent(pending.id)+'&verified_at=is.null',{
+  encodeURIComponent(pending.id)+'&verified_at=is.null&expires_at=gt.'+
+  encodeURIComponent(new Date().toISOString()),{
     method:'PATCH',headers:{Prefer:'return=representation'},
     body:JSON.stringify({verified_at:new Date().toISOString()}),
   });

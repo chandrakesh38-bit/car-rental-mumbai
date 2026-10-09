@@ -37,6 +37,9 @@ jobs:
       - name: Verify vendor app auth isolation and approval rules
         run: node scripts/test-vendor-app-auth-core.mjs
 
+      - name: Verify mocked vendor OTP API and session security
+        run: node scripts/test-vendor-app-auth-api.mjs
+
       - name: Verify vendor auth API syntax
         run: node --check api/vendor-app-auth.js
 

@@ -8,6 +8,15 @@ function token(){const b=new Uint8Array(32);crypto.getRandomValues(b);return [..
 function n(v,d=0){const x=Number(v);return Number.isFinite(x)&&x>=0?x:d}
 function iso(v){if(!v)return null;const d=new Date(v);return Number.isFinite(d.getTime())?d.toISOString():null}
 
+export function vendorPayoutDueAt(now=new Date()){
+ const date=now instanceof Date?now:new Date(now);
+ if(!Number.isFinite(date.getTime()))throw new RangeError('Invalid payout review timestamp');
+ const istDate=new Date(date.getTime()+330*60000).toISOString().slice(0,10);
+ const nextDayUtc=Date.parse(istDate+'T00:00:00.000Z')+86400000;
+ return new Date(nextDayUtc+10*3600000+30*60000);
+}
+
+
 async function requireAdmin(request){
  const tok=request.headers.get('authorization')?.replace(/^Bearer\s+/i,'');
  if(!tok)fail('Admin authentication required.',401);
@@ -273,7 +282,7 @@ async function buildLedgers(b,a,t,over={}){
  const standardVendorPreActual=vendorBase+vendorDa+vendorNight;
  const agreedVendorPreActual=snap.vendor_final_payout_override!==null&&snap.vendor_final_payout_override!==undefined?n(snap.vendor_final_payout_override):standardVendorPreActual;
  const vendorTotal=agreedVendorPreActual+actuals.toll+actuals.parking+actuals.state_tax+actuals.other-n(over.penalty);
- const due=new Date();due.setUTCDate(due.getUTCDate()+1);due.setUTCHours(10,30,0,0);
+ const due=vendorPayoutDueAt();
  return {
   customer:{
    booking_id:b.booking_id,customer_km_rate:customerKmRate,billable_km:customerBillableKm,customer_da:customerDa,customer_night:customerNight,

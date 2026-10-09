@@ -560,9 +560,9 @@ async function handler(request){
     if(!/^[0-9a-f-]{36}$/i.test(offerId))fail('Offer ID is required.');
     const offer=(await db('cwd_vendor_offers?id=eq.'+
       encodeURIComponent(offerId)+'&select=id,status&limit=1'))?.[0];
-    if(!offer||!['accepted','allocated'].includes(offer.status))
-      fail('Only accepted/allocated offers can be unlocked.',409);
-    const allowed=Boolean(body.allow);
+    if(!offer||offer.status!=='accepted')
+      fail('Only accepted, unallocated offers can be unlocked.',409);
+    const allowed=body.allow===true;
     await db('cwd_vendor_offers?id=eq.'+encodeURIComponent(offerId),{
       method:'PATCH',headers:{Prefer:'return=minimal'},
       body:JSON.stringify({vendor_cancel_unlocked_at:

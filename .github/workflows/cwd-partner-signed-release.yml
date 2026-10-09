@@ -4,6 +4,7 @@ name: CWD Partner - Signed Android APK
 # production backend deployment. No source files or credentials are
 # written to main. It is intentionally fail-closed without signing secrets.
 on:
+  workflow_dispatch:
   push:
     branches:
       - testing
@@ -95,6 +96,9 @@ jobs:
           signer=$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)
           test -n "$signer"
           "$signer" verify --print-certs "$apk"
+          aapt_bin=$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)
+          test -n "$aapt_bin"
+          "$aapt_bin" dump badging "$apk" | grep -F "package: name='com.carwithdriverindia.partner'"
           echo "CWD Partner APK SHA-256:"
           sha256sum "$apk"
 

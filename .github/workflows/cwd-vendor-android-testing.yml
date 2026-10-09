@@ -25,6 +25,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Check Android configurator syntax
+        run: python3 -m py_compile apps/cwd_vendor_android/scripts/configure_android.py
+
       - name: Verify existing vendor portal JavaScript
         run: node scripts/test-vendor-booking-html.mjs
 

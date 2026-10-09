@@ -73,7 +73,13 @@ async function throttle(cfg,mobile,ip) {
 async function sendOtp(cfg,request,body){
  const mobile=cleanMobile(body.mobile);
  const vendor=await findVendor(cfg,mobile);
- if(!vendor)fail('This mobile is not registered. Use Register Now.',404);
+ if(!vendor)
+   fail('This number is not registered with CWD Partner. Tap Register Now to join our vendor network.',404);
+ // Never send an OTP to rejected, suspended or still-pending accounts.
+ // Their status is a registration decision, NOT an SMS delivery failure.
+ const status=vendorLoginStatus(vendor.status);
+ if(status.kind!=='approved')
+   fail(status.message,403);
  const forwarded=request.headers.get('x-forwarded-for')||'unknown';
  const ip=String(forwarded).split(',')[0].trim().slice(0,100);
  const ipHash=await sha256(cfg.secret+'|'+ip);

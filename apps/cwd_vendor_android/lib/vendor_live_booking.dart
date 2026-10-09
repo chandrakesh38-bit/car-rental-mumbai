@@ -21,6 +21,15 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
   Map<String,dynamic> data(dynamic val)=>val is Map
     ?Map<String,dynamic>.from(val):<String,dynamic>{};
   String val(dynamic x)=>x?.toString()??'';
+  String localDate(dynamic input){
+    final d=DateTime.tryParse(input?.toString()??'')?.toLocal();
+    if(d==null)return 'Date to be confirmed';
+    final hour=d.hour%12==0?12:d.hour%12;
+    return d.day.toString().padLeft(2,'0')+'/' +
+      d.month.toString().padLeft(2,'0')+'/'+d.year.toString()+
+      ' · '+hour.toString()+':'+d.minute.toString().padLeft(2,'0')+
+      (d.hour>=12?' PM':' AM');
+  }
   void inform(String message){
     if(mounted)ScaffoldMessenger.of(context)
       .showSnackBar(SnackBar(content:Text(message)));
@@ -146,14 +155,22 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
             row('Trip Type',item['trip_type']),
             row('Vehicle',item['vehicle_required']),
             row('Estimated Earning',money(item['estimated_payout'])),
-            row('Pickup',allocated?item['pickup_at']:item['start_at']),
-            row('Final Drop',item['final_drop_at']),
+            if(!allocated)row('Estimated KM',item['estimated_km']),
+            row('Pickup',localDate(allocated?item['pickup_at']:item['start_at'])),
+            row('Final Drop',localDate(item['final_drop_at'])),
           ]),
           group('Rates',[
             row('KM/day',rates['minimum_km_per_day']),
             row('Rate/KM',money(rates['vendor_km_rate'])),
             row('Driver Allowance',money(rates['vendor_da'])),
             row('Night',money(rates['vendor_night'])),
+            row('Night Window','11 PM – 4 AM'),
+            if(rates['local_package']!=null)row(
+              'Local Package',rates['local_package']),
+            if(rates['local_extra_km']!=null)row(
+              'Local Extra KM',money(rates['local_extra_km'])),
+            if(rates['local_extra_hour']!=null)row(
+              'Local Extra Hr',money(rates['local_extra_hour'])),
           ]),
           if(!allocated)group('Pickup & Destination',[
             row('Pickup Area',item['pickup_area']),
@@ -169,7 +186,8 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
               OutlinedButton(onPressed:
                 item['cancel_unlocked']==true&&widget.allowChanges
                   ?()=>decline(accepted:true):null,
-                child:const Text('Cancel Locked · Admin Control')),
+                child:Text(item['cancel_unlocked']==true
+                  ?'Cancel (Admin Unlocked)':'Cancel Locked · Admin Control')),
             ],
           ]),
           if(allocated)group('Customer & Trip Details',[
@@ -208,16 +226,29 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
           ]),
           if(allocated&&status=='completed')group('Final Earning',[
             if(earning.isEmpty)const Text(
-              'Final payout is available after CWD admin review.'),
+              'Trip submitted. Final payout is available after CWD admin review.'),
+            if(earning.isEmpty&&data(item['trip'])['review_status']=='query_vendor')
+              const Text('CWD has requested a trip clarification. Contact admin.',
+                style:TextStyle(color:Colors.deepOrange)),
             if(earning.isNotEmpty)...[
               row('Billable KM',earning['billable_km']),
+              row('Vendor KM Rate',money(earning['vendor_km_rate'])),
               row('Driver Allowance',money(earning['vendor_da'])),
               row('Night',money(earning['vendor_night'])),
               row('Toll',money(earning['toll'])),
               row('Parking',money(earning['parking'])),
               row('State Tax',money(earning['state_tax'])),
+              row('Approved Other',money(earning['approved_other'])),
               row('Penalty',money(earning['penalty'])),
               row('Final Earning',money(earning['vendor_final_payout'])),
+              row('Payment Status',earning['payout_status']=='paid'
+                ?'Paid':'Pending payout'),
+              if(earning['payout_due_at']!=null)row(
+                'Payout Due',localDate(earning['payout_due_at'])),
+              if(earning['paid_at']!=null)row(
+                'Paid On',localDate(earning['paid_at'])),
+              if(earning['utr_reference']!=null)row(
+                'Payment Ref.',earning['utr_reference']),
             ],
           ]),
           if(allocated)group('Cancellation',[

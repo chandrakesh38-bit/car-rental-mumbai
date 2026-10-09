@@ -77,7 +77,7 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
       final allocated=((body['allocations'] as List?)??[])
         .whereType<Map>().where((a)=>a['status']=='allocated')
         .map((a)=>a['id'].toString()).toSet();
-      final fresh=knownAllocationIds==null?0:
+      final fresh=knownAllocationIds==null?allocated.length:
         allocated.difference(knownAllocationIds!).length;
       knownAllocationIds=allocated;
       if(fresh>0){

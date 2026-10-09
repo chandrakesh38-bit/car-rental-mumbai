@@ -119,6 +119,10 @@ export function allocationSafe(row,offer,booking,trip,settlement){
     trip_type:offer?.trip_type||'',vehicle_required:offer?.vehicle_required||'',
     pickup_at:offer?.start_at||null,final_drop_at:offer?.final_drop_at||null,
     estimated_payout:offer?.estimated_vendor_payout||0,
+    estimated_km:offer?.estimated_km||0,
+    selected_vehicle_id:offer?.selected_vendor_vehicle_id||null,
+    can_start_at:offer?.start_at?new Date(Date.parse(offer.start_at)-3*3600000).toISOString():null,
+    early_start_approved:Boolean(offer?.pricing_snapshot?.early_start_approved_at),
     pricing:vendorOfferSafePricing(offer?.pricing_snapshot),
     route:vendorOfferAreaSummary(offer?.route_summary),
     customer:customerAfterAllocation(booking),
@@ -350,6 +354,7 @@ async function saveTrip(cfg,vid,form){
    return json({success:true,status:'ongoing'});
  }
  if(action==='end_trip'){
+   const offerAtClose=await ownedOffer(cfg,vid,a.offer_id);
    if(a.status!=='trip_started'||!trip?.started_at||trip.ended_at)
      fail('Start Trip first, or trip is already closed.',409);
    if(km<Number(trip.starting_odometer))
@@ -373,7 +378,7 @@ async function saveTrip(cfg,vid,form){
        toll:charges.toll,parking:charges.parking,
        state_tax:charges.state_tax,other_amount:charges.other_amount,
        other_reason:note||null,
-       night_charge:String(form.get('night_charge'))==='yes',
+       night_charge:offerAtClose.pricing_snapshot?.pricing_policy_version==='CWD-KM-200-TIER-V1'?Number(offerAtClose.pricing_snapshot?.night_count||0)>0:String(form.get('night_charge'))==='yes',
        review_status:'review_required',
      }),
    });

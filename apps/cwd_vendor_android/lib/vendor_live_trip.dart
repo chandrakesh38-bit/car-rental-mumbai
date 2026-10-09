@@ -14,8 +14,9 @@ class VendorLiveTrip {
       AlertDialog(title:const Text('Driver & Vehicle Details'),
         content:SingleChildScrollView(child:Column(
           mainAxisSize:MainAxisSize.min,children:[
-            TextField(controller:plate,readOnly:true,
-              decoration:const InputDecoration(labelText:'Registered Car Plate (selected car)')),
+            TextField(controller:plate,readOnly:plate.text.trim().isNotEmpty,
+              textCapitalization:TextCapitalization.characters,
+              decoration:const InputDecoration(labelText:'Vehicle Number (required)')),
             TextField(controller:name,
               decoration:const InputDecoration(labelText:'Driver Name')),
             TextField(controller:phone,maxLength:10,

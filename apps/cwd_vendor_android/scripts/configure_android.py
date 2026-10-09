@@ -3,6 +3,7 @@
 from pathlib import Path
 import os
 import re
+import shutil
 
 root = Path(__file__).resolve().parent.parent
 manifest_file = root / "android/app/src/main/AndroidManifest.xml"
@@ -133,50 +134,68 @@ class MainActivity : FlutterActivity() {
 # Flutter paints the animated city/road scene. Modern Android 12+ chooses a
 # centered system icon; older versions use a branded layered background.
 res = root / "android/app/src/main/res"
+
+# The launcher icon is an adaptive icon: Android masks/crops its artwork.
+# Using it directly as the system splash icon cuts off the CWD wordmark.
+# Use the original branded PNG INSIDE a padded drawable instead, leaving
+# enough safe area for the Android 12+ system splash circle masking.
+brand = root / "assets/images/cwd-logo.png"
+if not brand.is_file():
+    raise SystemExit("The CWD brand logo is missing; cannot create splash.")
+drawable_nodpi = res / "drawable-nodpi"
+drawable_nodpi.mkdir(parents=True, exist_ok=True)
+shutil.copyfile(brand, drawable_nodpi / "cwd_splash_logo.png")
+
+drawable = res / "drawable"
+drawable.mkdir(parents=True, exist_ok=True)
+(drawable / "cwd_splash_mark.xml").write_text("""<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:gravity="center"
+          android:width="74dp"
+          android:height="74dp"
+          android:drawable="@drawable/cwd_splash_logo" />
+</layer-list>
+""")
+
+# Android 7-11: native launch background stays close to Flutter's initial
+# City Sky Drive frame, with a compact uncropped badge.
 launch_background = """<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
-            <gradient android:startColor="#064E45"
-                android:centerColor="#07565B"
-                android:endColor="#071D2B"
+            <gradient android:startColor="#073941"
+                android:centerColor="#0B4749"
+                android:endColor="#062D34"
                 android:angle="270" />
         </shape>
     </item>
-    <item android:gravity="center" android:width="124dp"
-          android:height="124dp">
-        <shape android:shape="oval">
-            <solid android:color="#075D62"/>
-            <stroke android:width="2dp" android:color="#65DCCC" />
-        </shape>
-    </item>
-    <item android:drawable="@mipmap/ic_launcher"
-          android:gravity="center" android:width="98dp"
-          android:height="98dp"/>
+    <item android:drawable="@drawable/cwd_splash_mark"
+          android:gravity="center" />
 </layer-list>
 """
-for drawable in ("drawable", "drawable-v21"):
-    folder = res / drawable
+for drawable_dir in ("drawable", "drawable-v21"):
+    folder = res / drawable_dir
     folder.mkdir(parents=True, exist_ok=True)
     (folder / "launch_background.xml").write_text(launch_background)
 
-# Android 12/API 31+ system splash attributes. Match dark background and
-# use the actual CWD launcher icon; no network loading and no white flash.
+# Android 12+: NEVER use @mipmap/ic_launcher as the splash's icon.
+# Its adaptive-icon mask is what caused the visibly cropped first-frame
+# logo in the owner's recorded Android launch.
 values31 = res / "values-v31"
 values31.mkdir(parents=True, exist_ok=True)
 (values31 / "styles.xml").write_text("""<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:windowSplashScreenBackground">#064E45</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
-        <item name="android:windowSplashScreenIconBackgroundColor">#075D62</item>
+        <item name="android:windowSplashScreenBackground">#062D34</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/cwd_splash_mark</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#062D34</item>
         <item name="android:windowBackground">@drawable/launch_background</item>
-        <item name="android:statusBarColor">#064E45</item>
+        <item name="android:statusBarColor">#062D34</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
-        <item name="android:statusBarColor">#064E45</item>
+        <item name="android:statusBarColor">#062D34</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
-import {matchedCar,safeOffer,allocationSafe}
+import {matchedCar,safeOffer,allocationSafe,indiaDate,bookedOnDate}
   from '../api/vendor-app-ops.js';
 
 const fakeCar={
   id:'vehicle-id-01',vehicle_number:'MH03AB1234',
   make_model:'Maruti Suzuki Dzire',category:'Sedan',is_active:true,
 };
+assert.equal(indiaDate('2026-10-08T20:00:00Z'),'2026-10-09');
+assert.equal(bookedOnDate('2026-10-09','2026-10-08T20:00:00Z','2026-10-09T15:00:00Z'),true);
+assert.equal(bookedOnDate('2026-10-10','2026-10-08T20:00:00Z','2026-10-09T15:00:00Z'),false);
 assert.equal(matchedCar('Maruti Suzuki Dzire',fakeCar),true);
 assert.equal(matchedCar('Hyundai Aura',fakeCar),false);
 assert.equal(matchedCar('Sedan',fakeCar),true);

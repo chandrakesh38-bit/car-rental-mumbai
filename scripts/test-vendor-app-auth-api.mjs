@@ -12,10 +12,11 @@ Object.assign(process.env,{
 });
 const mobile='9876543210', reqId='mock-request-123456';
 const jwt=id=>'e30.'+Buffer.from(JSON.stringify({requestId:id})).toString('base64url')+'.mock';
-let vendor, challenges, sessions, providerCalls, sendReply, verifyReply, accessReply;
+let vendor, challenges, sessions, providerCalls, sendReply, verifyReply, accessReply, reservationFailure;
 function reset(){
  vendor={id:'vendor-1',status:'active',primary_whatsapp:mobile,vendor_code:'V1',owner_business_name:'Test'};
  challenges=[];sessions=[];providerCalls=[];
+ reservationFailure=false;
  sendReply={type:'success',message:reqId};
  verifyReply={type:'success',message:jwt(reqId)};
  accessReply={type:'success',message:'91'+mobile};
@@ -44,6 +45,22 @@ globalThis.fetch=async(url,opt={})=>{
  assert.equal(u.hostname,'example.supabase.co','Unexpected network destination');
  const table=u.pathname.split('/').at(-1);
  if(table==='cwd_vendors')return Response.json(vendor?[vendor]:[]);
+ if(table==='cwd_vendor_app_reserve_otp'){
+  if(reservationFailure)return new Response(null,{status:503});
+  assert.equal(opt.method,'POST');assert.equal(body.p_vendor_id,vendor.id);
+  assert.match(body.p_challenge_hash,/^[a-f0-9]{64}$/);
+  assert.match(body.p_ip_hash,/^[a-f0-9]{64}$/);
+  const recent=challenges.filter(r=>Date.parse(r.created_at)>=Date.now()-3600000);
+  const byMobile=recent.filter(r=>r.mobile===body.p_mobile);
+  if(byMobile.length>=5||recent.filter(r=>r.ip_hash===body.p_ip_hash).length>=20)
+   return Response.json({code:'rate_limited'});
+  if(byMobile.some(r=>Date.parse(r.created_at)>Date.now()-30000))
+   return Response.json({code:'cooldown'});
+  challenges.push({id:'row-'+challenges.length,created_at:new Date().toISOString(),
+   expires_at:new Date().toISOString(),attempt_count:0,challenge_hash:body.p_challenge_hash,
+   mobile:body.p_mobile,ip_hash:body.p_ip_hash,vendor_id:body.p_vendor_id,msg91_req_id:'pending'});
+  return Response.json({code:'reserved'});
+ }
  const rows=table==='cwd_vendor_app_login_challenges'?challenges:sessions;
  const matches=row=>[...u.searchParams].every(([k,v])=>{
   if(['select','limit'].includes(k))return true;
@@ -84,7 +101,16 @@ for(const status of ['pending','pending_review','rejected','suspended']){
 }
 reset();vendor=null;assert.equal((await send()).status,404);assert.equal(providerCalls.length,0);
 reset();sendReply={type:'error',code:'401',message:'Invalid authentication'};
-assert.equal((await send()).status,503);assert.equal(challenges.length,0);assert.equal(sessions.length,0);
+assert.equal((await send()).status,503);assert.equal(challenges.length,1);assert.equal(sessions.length,0);
+assert.equal(challenges[0].msg91_req_id,'pending');
+assert.equal((await send()).status,429);assert.equal(providerCalls.length,1);
+reset();reservationFailure=true;
+assert.equal((await send()).status,503);assert.equal(providerCalls.length,0);
+reset();
+const sends=await Promise.all(Array.from({length:12},()=>send()));
+assert.equal(sends.filter(r=>r.status===200).length,1);
+assert.equal(sends.filter(r=>r.status===429).length,11);
+assert.equal(providerCalls.length,1);
 for(const kind of ['expired','bad-date','attempts','request-mismatch','identity-mismatch','provider-rejection','suspended']){
  reset();const c=(await send()).body.challenge;
  if(kind==='expired')challenges[0].expires_at=new Date(0).toISOString();

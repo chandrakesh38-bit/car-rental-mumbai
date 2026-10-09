@@ -59,21 +59,6 @@ async function verifyAccess(cfg,accessToken,mobile){
  if(vendorMobile(data.message)!==mobile)
    fail('OTP mobile does not match this login. Please request a new code.',401);
 }
-async function throttle(cfg,mobile,ip) {
- const since=encodeURIComponent(new Date(Date.now()-3600000).toISOString());
- const [byMobile,byIp]=await Promise.all([
-  vendorDb(cfg,'cwd_vendor_app_login_challenges?mobile=eq.'+
-    encodeURIComponent(mobile)+'&created_at=gte.'+since+'&select=id,created_at&limit=7'),
-  vendorDb(cfg,'cwd_vendor_app_login_challenges?ip_hash=eq.'+
-    ip+'&created_at=gte.'+since+'&select=id&limit=21'),
- ]);
- if((byMobile?.length||0)>=5 || (byIp?.length||0)>=20)
-   fail('Too many OTP requests. Please try again later.',429);
- const newest=byMobile?.map(x=>Date.parse(x.created_at)||0)
-   .reduce((a,b)=>Math.max(a,b),0)||0;
- if(newest&&Date.now()-newest<30000)
-   fail('Please wait 30 seconds before requesting another OTP.',429);
-}
 async function sendOtp(cfg,request,body){
  const mobile=cleanMobile(body.mobile);
  const vendor=await findVendor(cfg,mobile);
@@ -82,20 +67,33 @@ async function sendOtp(cfg,request,body){
  const forwarded=request.headers.get('x-forwarded-for')||'unknown';
  const ip=String(forwarded).split(',')[0].trim().slice(0,100);
  const ipHash=await sha256(cfg.secret+'|'+ip);
- await throttle(cfg,mobile,ipHash);
+ const challenge=tokenHex();
+ const challengeHash=await sha256(challenge);
+ const reservation=await vendorDb(cfg,'rpc/cwd_vendor_app_reserve_otp',{
+   method:'POST',body:JSON.stringify({p_vendor_id:vendor.id,p_mobile:mobile,
+     p_ip_hash:ipHash,p_challenge_hash:challengeHash}),
+ });
+ if(reservation?.code==='cooldown')
+   fail('Please wait 30 seconds before requesting another OTP.',429);
+ if(reservation?.code==='rate_limited')
+   fail('Too many OTP requests. Please try again later.',429);
+ if(reservation?.code==='not_approved')
+   fail('Your vendor account is no longer approved. Contact CWD support.',403);
+ if(reservation?.code!=='reserved')
+   fail('Vendor login is temporarily unavailable.',503);
  const response=await msg91(cfg,'sendOtp',{identifier:'91'+mobile});
  const reqId=typeof response.message==='string'?response.message:'';
  if(!/^[A-Za-z0-9_-]{8,128}$/.test(reqId))
    fail('OTP session could not be initialized. Try again.',503);
- const challenge=tokenHex();
- await vendorDb(cfg,'cwd_vendor_app_login_challenges',{
-   method:'POST',headers:{Prefer:'return=minimal'},
+ const saved=await vendorDb(cfg,'cwd_vendor_app_login_challenges?challenge_hash=eq.'+
+   challengeHash+'&msg91_req_id=eq.pending&verified_at=is.null',{
+   method:'PATCH',headers:{Prefer:'return=representation'},
    body:JSON.stringify({
-      challenge_hash:await sha256(challenge),mobile,
-      vendor_id:vendor.id,msg91_req_id:reqId,ip_hash:ipHash,
+      msg91_req_id:reqId,
       expires_at:expIso(300),last_sent_at:new Date().toISOString(),
    }),
  });
+ if(saved?.length!==1)fail('OTP session could not be initialized. Try again.',503);
  return json({success:true,challenge,otp_length:4,expires_in:300,
    message:'OTP has been sent to your registered mobile number.'});
 }

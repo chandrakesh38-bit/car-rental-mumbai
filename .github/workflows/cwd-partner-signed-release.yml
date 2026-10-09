@@ -36,6 +36,8 @@ jobs:
   signed-apk:
     needs: signing-check
     if: needs.signing-check.outputs.ready == 'true'
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -103,3 +105,23 @@ jobs:
           path: apps/cwd_vendor_android/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 30
+
+      # Public download URL works on Android without GitHub login. Marked
+      # prerelease until CWD owner completes live booking tests.
+      - name: Publish owner-review APK on GitHub Releases
+        working-directory: apps/cwd_vendor_android
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=cwd-partner-latest
+          cp build/app/outputs/flutter-apk/app-release.apk "$RUNNER_TEMP/CWD-Partner.apk"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$tag" "$RUNNER_TEMP/CWD-Partner.apk#CWD-Partner.apk" --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$tag" "$RUNNER_TEMP/CWD-Partner.apk#CWD-Partner.apk" \
+              --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+              --title "CWD Partner Android — Owner Review" \
+              --notes "Signed CWD Partner APK for owner approval. Do not distribute to vendors until OTP, offer, allocation, trip and earnings checks pass."
+          fi
+          echo "Owner-review APK: https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/CWD-Partner.apk"

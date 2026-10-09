@@ -17,9 +17,11 @@ function guardedRequest(request) {
 }
 async function msg91(cfg,path,body) {
  const r=await fetch('https://control.msg91.com/api/v5/widget/'+path,{
+   // MSG91's documented widget REST contract sends widgetId and the
+   // action-specific fields only. The widget token is for its Web SDK.
    method:'POST',headers:{'Accept':'application/json',
-      'Content-Type':'application/json','tokenauth':cfg.widgetToken},
-   body:JSON.stringify({...body,widgetId:cfg.widgetId,tokenAuth:cfg.widgetToken}),
+      'Content-Type':'application/json'},
+   body:JSON.stringify({widgetId:cfg.widgetId,...body}),
    signal:AbortSignal.timeout(15000),
  });
  let response;try{response=await r.json()}catch{response={}};

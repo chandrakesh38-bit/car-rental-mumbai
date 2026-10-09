@@ -1,4 +1,4 @@
-name: CWD Vendor Android - Testing APK
+name: CWD Partner Android - Owner Test APK
 
 on:
   push:
@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 jobs:
-  vendor-apk-safe-mode:
+  vendor-apk-owner-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -79,20 +79,8 @@ jobs:
         working-directory: apps/cwd_vendor_android
         run: flutter test
 
-      - name: Build safe-mode debug APK (NO STAGING WRITE ACCESS)
-        working-directory: apps/cwd_vendor_android
-        run: flutter build apk --debug
-
-      - name: Upload internal testing APK
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: cwd-vendor-android-safe-mode
-          path: apps/cwd_vendor_android/build/app/outputs/flutter-apk/app-debug.apk
-          if-no-files-found: error
-          retention-days: 7
-
       # Owner-only live testing while permanent APK signing is configured.
-      # Debug certificate is ephemeral; NEVER distribute this build to vendors.
+      # Release-optimized APK has temporary debug signing; only for owner testing.
       - name: Verify release API hostname is pinned
         working-directory: apps/cwd_vendor_android
         run: flutter test test/production_release_config_test.dart --dart-define=CWD_PARTNER_PRODUCTION=true

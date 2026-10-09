@@ -1,40 +1,61 @@
-# CWD Partner — final Android APK release readiness
+# CWD Partner — production-connected final app release checklist
+Updated: 9 October 2026. Owner-approved 3-second City Sky Drive splash and
+Flutter vendor screens are preserved.
 
-Owner requested **the final usable Android app**, not another safe-mode design preview. This is the signed-release preparation checklist and a snapshot of the outstanding service dependencies.
+## What is operational today
+- The production `carswithdriverindia.com` backend is live on Vercel.
+- The verified CWD Supabase database already contains secure vendor sessions,
+  approval status, offers, allocations, trip events, car blocks and ledgers.
+- **Codex resolved the owner-tested MSG91 OTP login issue. Do not change the
+  working OTP implementation in `api/vendor-app-auth.js` or
+  `lib/vendor-app-auth-core.mjs` while releasing unrelated app updates.**
+- Approved vendors sign in using existing registration. Rejected, suspended,
+  pending and unregistered accounts cannot open the dashboard.
+- Vendor-owned offers only: pre-allocation addresses/customer data are hidden.
+- Matching registered vehicle selection, Accept/Decline, admin allocation,
+  cancellation unlock and vehicle-blocking are implemented.
+- Driver details; mandatory odometer photos; no Start Trip earlier than
+  three hours before pickup unless admin-approved; locked final closure.
+- Only admin-approved vendor settlement appears as a **final earning**.
 
-## App identity and delivery
-- Brand: **CWD Partner**; original City Sky Drive 3-second splash and owner-approved UI stay intact.
-- Final package ID: `com.carwithdriverindia.partner` (not the old `com.carwithdriverindia.vendor.testing`).
-- Production API host: `https://carswithdriverindia.com` (hard-coded and verified; no client-defined host).
-- Final deliverable: one **Android release APK** (not an AAB/Play Store release), with a permanent owner-controlled signing certificate.
-- APK workflow: `.github/workflows/cwd-partner-signed-release.yml`, on `testing` branch.
-- Required GitHub **Actions secrets**: `CWD_PARTNER_KEYSTORE_B64` and `CWD_PARTNER_KEYSTORE_PASSWORD`. The alias `cwd-partner` and keystore format PKCS12 are fixed. No keystore/password in Git.
-- GitHub CI skips the final signed-build job unless BOTH secrets exist; a safe-mode debug build is **not** the final APK.
+## Final UX finishing pass — testing branch
+- Vendor Home / Bookings / My Cars / Earnings / Profile with status filters.
+- Approved earnings show paid/pending totals, due date, payment date/reference,
+  while under-review trips show no premature final payout.
+- My Cars lists blocked dates with confirmation before unblocking.
+- Booking details show vendor-local rates, India-local trip dates, and clear
+  acceptance/cancellation state.
+- Trip dialogs validate KM, photo and driver input without losing the form.
+- Admin booking operations show an authorized cancellation unlock/lock button.
+- Overlapping accepted bookings for the same vendor car are rejected at the
+  API layer. DB-level concurrency exclusion remains a separate hardening task.
+- All changes are made in `testing` and must pass GitHub CI before selective
+  promotion. Never merge the diverged branches wholesale.
 
-## Required production backend (not yet active at authoring)
-A correctly signed APK alone does not unlock the vendor booking business logic. Release the reviewed `api/vendor-app-auth.js`, `api/vendor-app-ops.js`, `lib/vendor-app-server.mjs`, `lib/vendor-app-auth-core.mjs`, and `lib/vendor-offer-privacy.mjs` to `main` ONLY with the owner's explicit permission; do NOT merge the diverged testing branch wholesale. Keep existing customer booking logic and payment flows unchanged.
+## Blocking requirements for vendor-distributable Android APK
+1. Set the permanent Android signing secrets under GitHub Actions:
+   `CWD_PARTNER_KEYSTORE_B64` and `CWD_PARTNER_KEYSTORE_PASSWORD`.
+   The owner's PRIVATE signing kit must remain off the repository. The alias
+   is `cwd-partner` and release application ID is
+   `com.carwithdriverindia.partner`.
+2. `.github/workflows/cwd-partner-signed-release.yml` publishes an Android
+   release artifact and owner-review GitHub Release only if signing secrets
+   exist. A successful *signing-check* workflow with `signed-apk: skipped`
+   is **not** a release.
+3. Test the exact signed APK on a real Android phone with approved OTP,
+   vehicle offers, allocation, Start/End odometer camera, logout, and payouts.
+   Do not send vendors untested or debug-signed APKs.
+4. Android foreground 60-second polling + notification tone is currently
+   implemented. **True background FCM push notifications are not implemented**;
+   those require an owner-controlled Firebase project, Android app registration,
+   FCM service authorization, and an end-to-end delivery test.
+5. Avoid changes to the customer's OTP widget, pricing, payment process or
+   production data during APK packaging.
 
-Additive database migration on the **confirmed** CWD production Supabase project:
-`supabase/migrations/20261009_cwd_partner_app_auth.sql`.
-Verify the migration's RLS/service-role restrictions and vendor tables before applying it. It is NOT applied by building the APK.
+## Exact deliverable
+`CWD-Partner.apk`, final package ID
+`com.carwithdriverindia.partner`, signed using a stable owner-controlled
+keystore with consistent certificate for Android update continuity.
 
-Production Vercel environment has separate opt-in flags, all default OFF:
-- `CWD_VENDOR_APP_AUTH_ENABLED=true`
-- `CWD_VENDOR_APP_PRODUCTION_ENABLED=true`
-- `CWD_VENDOR_APP_PRODUCTION_WRITES_ENABLED=true` **only after** approved end-to-end auth, ownership, accept/allocate, odometer photo, final settlement checks.
-- Configure `CWD_VENDOR_APP_SESSION_SECRET` to a strong random secret in Vercel. Secrets never belong in Git or APK assets.
-- Use existing server MSG91 credentials; test with a real approved vendor only after activation.
-
-The `testing` preview currently inherits shared production Supabase variables. Never enable its booking writes or assume isolation.
-
-## Before giving the APK to vendors
-1. Verify the real production vendor-auth endpoint returns an auth error for unauthenticated requests (not a missing route/503 feature-gate error).
-2. Approved vendor OTP login works, while pending/rejected users cannot open bookings.
-3. A vendor receives only their own offers and accepts using one registered matching car; no customer details before allocation.
-4. Allocated trip shows customer details; driver fields, Start/End odometer photo, trip close lock and admin review match agreed rules.
-5. Final earning appears only after admin approval; no fake payouts.
-6. Signed release APK builds with verified signature and exact final application ID, installs on an Android phone and upgrades cleanly with the same keystore.
-7. If background push is a release requirement, provision Firebase/FCM credentials and validate Android notification delivery. **The current foreground polling is not push.**
-
-## Safety boundary
-CWD website `main`, production Supabase and existing booking/payment records remain unchanged until separately approved. This signed APK preparation alone does not constitute permission to change them.
+Provider authentication secrets remain only in Vercel; no OTP tokens or
+private keystore bytes belong in Flutter, the repository or customer messages.

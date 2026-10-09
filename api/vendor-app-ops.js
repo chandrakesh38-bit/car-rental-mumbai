@@ -94,7 +94,9 @@ function customerTripLocations(b){
   const destination=round
     ? String(locations.slice(1).find(v=>v.toLowerCase()!==pickup.toLowerCase())||last||'').trim()
     : last;
-  return {pickup,drop:round?pickup:last,destination};
+  // Full intermediate stops are disclosed only after CWD admin allocation.
+  const stops=locations.slice(1,-1);
+  return {pickup,drop:round?pickup:last,destination,stops};
 }
 function customerAfterAllocation(booking){
   if(!booking)return null;
@@ -102,7 +104,7 @@ function customerAfterAllocation(booking){
   return {customer_name:booking.customer_name||'',
     customer_mobile:booking.customer_phone||'',
     pickup_address:p.pickup,drop_address:p.drop,
-    destination:p.destination};
+    destination:p.destination,stops:p.stops};
 }
 export function allocationSafe(row,offer,booking,trip,settlement){
   const status=row.status==='trip_started'?'ongoing':

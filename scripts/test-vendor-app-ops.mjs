@@ -64,6 +64,14 @@ const round=allocationSafe({id:'round-alloc',booking_id:'CWD-ROUND',
 assert.equal(round.customer.pickup_address,'Hotel in Powai');
 assert.equal(round.customer.destination,'Lonavala');
 assert.equal(round.customer.drop_address,'Hotel in Powai');
+assert.deepEqual(round.customer.stops,['Lonavala']);
+const multi=allocationSafe(
+ {id:'multi',booking_id:'CWD-MULTI',status:'allocated'},null,
+ {customer_name:'Example',customer_phone:'9876543210',
+  route:'Godrej Hillside Colony Vikhroli Base → Vikhroli → Igatpuri → Nashik → Aurangabad',
+  trip_type:'one_way'},null,null);
+assert.deepEqual(multi.customer.stops,['Igatpuri','Nashik']);
+assert.equal(JSON.stringify(offer).includes('123 Secret Flat'),false);
 assert.equal(allocated.final_earning,null);
 const settled=allocationSafe({
   id:'alloc-id',booking_id:'CWD-TEST',status:'approved',

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {matchedCar,safeOffer,allocationSafe,indiaDate,bookedOnDate}
+import {matchedCar,safeOffer,allocationSafe,indiaDate,bookedOnDate,tripsOverlap}
   from '../api/vendor-app-ops.js';
 
 const fakeCar={
@@ -9,6 +9,18 @@ const fakeCar={
 assert.equal(indiaDate('2026-10-08T20:00:00Z'),'2026-10-09');
 assert.equal(bookedOnDate('2026-10-09','2026-10-08T20:00:00Z','2026-10-09T15:00:00Z'),true);
 assert.equal(bookedOnDate('2026-10-10','2026-10-08T20:00:00Z','2026-10-09T15:00:00Z'),false);
+const reserved={start_at:'2026-11-01T04:00:00Z',
+ final_drop_at:'2026-11-02T16:00:00Z',duty_days:2};
+assert.equal(tripsOverlap(reserved,{
+ start_at:'2026-11-02T04:00:00Z',
+ final_drop_at:'2026-11-03T04:00:00Z'}),true);
+assert.equal(tripsOverlap(reserved,{
+ start_at:'2026-11-02T16:00:00Z',
+ final_drop_at:'2026-11-03T04:00:00Z'}),false);
+assert.equal(tripsOverlap({start_at:'2026-11-01T04:00:00Z',duty_days:2},{
+ start_at:'2026-11-02T00:00:00Z',duty_days:1}),true);
+assert.equal(tripsOverlap({start_at:null},reserved),true);
+
 assert.equal(matchedCar('Maruti Suzuki Dzire',fakeCar),true);
 assert.equal(matchedCar('Hyundai Aura',fakeCar),false);
 assert.equal(matchedCar('Sedan',fakeCar),true);
@@ -55,7 +67,13 @@ assert.equal(round.customer.drop_address,'Hotel in Powai');
 assert.equal(allocated.final_earning,null);
 const settled=allocationSafe({
   id:'alloc-id',booking_id:'CWD-TEST',status:'approved',
-},null,null,null,{vendor_final_payout:6100,payout_status:'pending'});
+},null,null,null,{vendor_final_payout:6100,payout_status:'pending',payout_due_at:'2026-11-03T10:30:00Z',utr_reference:'private-payment-id'});
 assert.equal(settled.status,'completed');
 assert.equal(settled.final_earning.vendor_final_payout,6100);
+assert.equal(settled.final_earning.payout_due_at,'2026-11-03T10:30:00Z');
+assert.equal(settled.final_earning.utr_reference,null);
+const actuallyPaid=allocationSafe({id:'paid',booking_id:'CWD-PAID',status:'approved'},
+ null,null,null,{vendor_final_payout:6100,payout_status:'paid',
+ paid_at:'2026-11-03T09:30:00Z',utr_reference:'UTR-DEMO'});
+assert.equal(actuallyPaid.final_earning.utr_reference,'UTR-DEMO');
 console.log('Vendor app API ownership presentation & offer PII policy: PASS');

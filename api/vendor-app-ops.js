@@ -19,6 +19,20 @@ const number=(v,{max=10000000}={})=>{
 const now=()=>new Date().toISOString();
 const validUuid=s=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s));
 const cleanVehicle=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+// Reservations are evaluated on India-local calendar dates, not UTC midnight.
+export function indiaDate(iso) {
+ const ms=Date.parse(String(iso||''));
+ if(!Number.isFinite(ms))return null;
+ const parts=new Intl.DateTimeFormat('en-GB',{
+  timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit',
+ }).formatToParts(new Date(ms));
+ const v=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+ return v.year+'-'+v.month+'-'+v.day;
+}
+export function bookedOnDate(date,from,to) {
+ const start=indiaDate(from),end=indiaDate(to||from);
+ return !!(start&&end&&date>=start&&date<=end);
+}
 const brandTokens=['dzire','aura','ertiga','carens','innova','crysta','wagonr','swift','baleno','xuv','brezza','ciaz','honda city','city','creta','nexon'];
 export function matchedCar(required,vehicle){
   const req=String(required||'').toLowerCase();
@@ -184,6 +198,14 @@ async function respondOffer(cfg,vid,body){
      '&is_active=eq.true&select=id,make_model,category,vehicle_number&limit=1'))?.[0];
    if(!vehicle||!matchedCar(offer.vehicle_required,vehicle))
      fail('Select an approved matching registered car.',409);
+   const from=indiaDate(offer.start_at);
+   const until=indiaDate(offer.final_drop_at||offer.start_at);
+   if(!from||!until||until<from)
+     fail('Booking dates are incomplete. Contact CWD admin.',409);
+   const blocked=await vendorDb(cfg,'cwd_vendor_app_vehicle_blocks?vehicle_id=eq.'+
+     eq(vehicle.id)+'&blocked_date=gte.'+from+
+     '&blocked_date=lte.'+until+'&select=id&limit=1');
+   if(blocked?.length)fail('Selected car is blocked for these dates.',409);
    selected=vehicle.id;
  }
  const changed=await vendorDb(cfg,'cwd_vendor_offers?id=eq.'+eq(offer.id)+
@@ -364,13 +386,16 @@ async function blockVehicle(cfg,vid,body) {
    const offer=(await vendorDb(cfg,'cwd_vendor_offers?id=eq.'+
      eq(a.offer_id)+'&select=start_at,final_drop_at,selected_vendor_vehicle_id&limit=1'))?.[0];
    if(!offer)continue;
-   const scheduled=Date.parse(offer.start_at||'');
-   const ending=Date.parse(offer.final_drop_at||offer.start_at||'');
    if(offer.selected_vendor_vehicle_id===car.id&&
-      Number.isFinite(scheduled)&&
-      day<=ending && day+86400000>=scheduled)
+      bookedOnDate(date,offer.start_at,offer.final_drop_at))
      fail('Booked dates cannot be blocked.',409);
  }
+ // Also reserve a car after vendor acceptance but before admin allocation.
+ const accepted=await vendorDb(cfg,'cwd_vendor_offers?vendor_id=eq.'+
+   eq(vid)+'&selected_vendor_vehicle_id=eq.'+eq(car.id)+
+   '&status=eq.accepted&select=start_at,final_drop_at&limit=100');
+ if((accepted||[]).some(o=>bookedOnDate(date,o.start_at,o.final_drop_at)))
+   fail('Accepted-booking dates cannot be blocked.',409);
  await vendorDb(cfg,'cwd_vendor_app_vehicle_blocks',{
    method:'POST',headers:{Prefer:'return=minimal'},
    body:JSON.stringify({vendor_id:vid,vehicle_id:car.id,blocked_date:date,

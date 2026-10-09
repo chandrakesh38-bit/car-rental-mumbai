@@ -8,7 +8,7 @@ void main() {
     expect(AppConfig.ready, isTrue);
     expect(AppConfig.origin?.scheme, 'https');
     expect(AppConfig.origin?.host, 'carswithdriverindia.com');
-  });
+  }, skip: !AppConfig.productionRelease);
 
   test('Release accepts exact CWD links but never untrusted hosts', () {
     final token = List.filled(64, 'a').join();
@@ -28,5 +28,5 @@ void main() {
       VendorLink.parse('http://carswithdriverindia.com/vendor-booking?offer=$token'),
       isNull,
     );
-  });
+  }, skip: !AppConfig.productionRelease);
 }

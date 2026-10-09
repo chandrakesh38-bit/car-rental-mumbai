@@ -142,6 +142,9 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
   Widget build(BuildContext context){
     final allocated=widget.isAllocation;
     final customer=data(item['customer']),rates=data(item['pricing']);
+    final stops=customer['stops'] is List
+      ?(customer['stops'] as List).map((e)=>e.toString()).toList()
+      :<String>[];
     final earning=data(item['final_earning']);
     final status=val(item['status']);
     return Scaffold(
@@ -199,8 +202,20 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
             row('Pickup Address',customer['pickup_address']),
             navButton('Navigate to Pickup',val(customer['pickup_address'])),
             const Divider(height:25),
-            row('Destination',customer['drop_address']),
-            navButton('Navigate to Destination',val(customer['drop_address'])),
+            if(stops.isNotEmpty)...[
+              const Text('Intermediate Stops',style:TextStyle(
+                fontWeight:FontWeight.w800,color:partnerInk)),
+              ...stops.asMap().entries.map((entry)=>Column(
+                crossAxisAlignment:CrossAxisAlignment.stretch,children:[
+                  row('Stop '+(entry.key+1).toString(),entry.value),
+                  navButton('Navigate to Stop '+(entry.key+1).toString(),
+                    entry.value),
+                  const SizedBox(height:8),
+                ])),
+              const Divider(height:25),
+            ],
+            row('Final Drop',customer['drop_address']),
+            navButton('Navigate to Final Drop',val(customer['drop_address'])),
             const Divider(height:25),
             row('Vehicle Plate',item['vehicle_number']),
             row('Driver',item['driver_name']),

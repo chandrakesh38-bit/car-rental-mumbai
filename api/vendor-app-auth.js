@@ -2,7 +2,7 @@ import {
  vendorAuthOrFail,vendorDb,findVendor,activeVendorForSession,
  cleanMobile,vendorLoginStatus,validOtp,sha256,tokenHex,authError
 } from '../lib/vendor-app-server.mjs';
-import {vendorOtpAdmission} from '../lib/vendor-app-auth-core.mjs';
+import {vendorOtpAdmission,vendorMsg91WidgetHeaders} from '../lib/vendor-app-auth-core.mjs';
 
 export const config={runtime:'edge'};
 const json=(body,status=200)=>new Response(JSON.stringify(body),{
@@ -18,10 +18,9 @@ function guardedRequest(request) {
 }
 async function msg91(cfg,path,body) {
  const r=await fetch('https://control.msg91.com/api/v5/widget/'+path,{
-   // MSG91's documented widget REST contract sends widgetId and the
-   // action-specific fields only. The widget token is for its Web SDK.
-   method:'POST',headers:{'Accept':'application/json',
-      'Content-Type':'application/json'},
+   // MSG91 allows the widget token via the "token" HTTP header.
+   // Keep credentials server-side and use vendor-specific token when set.
+   method:'POST',headers:vendorMsg91WidgetHeaders(cfg),
    body:JSON.stringify({widgetId:cfg.widgetId,...body}),
    signal:AbortSignal.timeout(15000),
  });

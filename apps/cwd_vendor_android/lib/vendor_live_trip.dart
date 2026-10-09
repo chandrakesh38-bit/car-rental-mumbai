@@ -14,8 +14,8 @@ class VendorLiveTrip {
       AlertDialog(title:const Text('Driver & Vehicle Details'),
         content:SingleChildScrollView(child:Column(
           mainAxisSize:MainAxisSize.min,children:[
-            TextField(controller:plate,textCapitalization:TextCapitalization.characters,
-              decoration:const InputDecoration(labelText:'Registered Car Plate')),
+            TextField(controller:plate,readOnly:true,
+              decoration:const InputDecoration(labelText:'Registered Car Plate (selected car)')),
             TextField(controller:name,
               decoration:const InputDecoration(labelText:'Driver Name')),
             TextField(controller:phone,maxLength:10,
@@ -44,7 +44,8 @@ class VendorLiveTrip {
     try{
       await api.action('save_driver',values);
       await onChanged();
-      if(context.mounted)Navigator.pop(context,true);
+      if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content:Text('Driver details saved')));
     }catch(e){
       if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content:Text(e.toString())));
@@ -61,7 +62,6 @@ class VendorLiveTrip {
     final other=TextEditingController(text:'0');
     final otherReason=TextEditingController();
     bool pickedUp=false;
-    bool night=false;
     Uint8List? image;
     String photoName='odometer.jpg';
     String? validationError;
@@ -128,10 +128,6 @@ class VendorLiveTrip {
                   decoration:const InputDecoration(labelText:'Other Charges ₹')),
                 TextField(controller:otherReason,
                   decoration:const InputDecoration(labelText:'Other Reason')),
-                CheckboxListTile(
-                  title:const Text('Night Charge'),
-                  value:night,
-                  onChanged:(v)=>setInner(()=>night=v??false)),
               ],
             ],
           )),
@@ -177,7 +173,7 @@ class VendorLiveTrip {
       'toll':toll.text.trim(),'parking':parking.text.trim(),
       'state_tax':tax.text.trim(),'other_amount':other.text.trim(),
       'other_reason':otherReason.text.trim(),
-      'night_charge':night?'yes':'no',
+      // Night charge is derived automatically from booking start/end times.
     };
     odometer.dispose();toll.dispose();parking.dispose();tax.dispose();
     other.dispose();otherReason.dispose();
@@ -207,7 +203,8 @@ class VendorLiveTrip {
       await onChanged();
       if(context.mounted){
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        Navigator.pop(context,true);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(
+          start?'Trip started successfully':'Trip ended. Sent to CWD for review.')));
       }
     }catch(e){
       if(context.mounted){

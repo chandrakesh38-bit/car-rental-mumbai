@@ -262,19 +262,35 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
   }
   String blockedDate(DateTime d)=>d.year.toString()+'-'+
     d.month.toString().padLeft(2,'0')+'-'+d.day.toString().padLeft(2,'0');
-  Future<void> availability(Map<String,dynamic> car)async{
+  Future<void> availability(Map<String,dynamic> car,{String? selectedDate})async{
     if(data?['is_live_writes_enabled']!=true){
       notice('Changes are locked until CWD activates vendor access.');
       return;
     }
     final today=DateTime.now();
-    final day=await showDatePicker(context:context,
-      firstDate:DateTime(today.year,today.month,today.day),
-      lastDate:today.add(const Duration(days:365)),initialDate:today);
-    if(day==null||!mounted)return;
-    final date=blockedDate(day);
+    final day=selectedDate==null
+      ?await showDatePicker(context:context,
+        firstDate:DateTime(today.year,today.month,today.day),
+        lastDate:today.add(const Duration(days:365)),initialDate:today)
+      :null;
+    if(selectedDate==null&&day==null)return;
+    if(!mounted)return;
+    final date=selectedDate??blockedDate(day!);
     final blocked=records('vehicle_blocks').any((v)=>
       v['vehicle_id']==car['id']&&v['blocked_date']==date);
+    if(blocked){
+      final confirmed=await showDialog<bool>(context:context,
+        builder:(ctx)=>AlertDialog(
+          title:const Text('Unblock Car Date?'),
+          content:Text('Make '+date+' available for this car again?'),
+          actions:[
+            TextButton(onPressed:()=>Navigator.pop(ctx,false),
+              child:const Text('Keep Blocked')),
+            FilledButton(onPressed:()=>Navigator.pop(ctx,true),
+              child:const Text('Unblock Date')),
+          ]));
+      if(confirmed!=true||!mounted)return;
+    }
     try{
       await _api.action(blocked?'unblock_vehicle':'block_vehicle',{
         'vehicle_id':car['id'],'blocked_date':date,
@@ -291,16 +307,39 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
           style:TextStyle(fontWeight:FontWeight.w900,fontSize:22))),
       if(fleet.isEmpty)const Padding(padding:EdgeInsets.all(24),
         child:Text('Your approved cars will appear here.')),
-      ...fleet.map((v)=>Card(color:Colors.white,
-        margin:const EdgeInsets.symmetric(horizontal:14,vertical:7),
-        child:Padding(padding:const EdgeInsets.all(16),
-          child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+      ...fleet.map((v){
+        final blocked=records('vehicle_blocks')
+          .where((d)=>d['vehicle_id']==v['id']).toList()
+          ..sort((a,b)=>(a['blocked_date']?.toString()??'')
+            .compareTo(b['blocked_date']?.toString()??''));
+        return Card(color:Colors.white,
+          margin:const EdgeInsets.symmetric(horizontal:14,vertical:7),
+          child:Padding(padding:const EdgeInsets.all(16),
+            child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
             Text(v['make_model']?.toString()??'Car',
               style:const TextStyle(fontWeight:FontWeight.w800,fontSize:18)),
             const SizedBox(height:5),
             Text(v['vehicle_number']?.toString()??'',
               style:const TextStyle(color:partnerMuted)),
-            Text(v['is_active']==true?'Approved Vehicle':'Pending Approval',
+            Text(v['is_active']==true?'Approved Vehicle':'Inactive Vehicle',
+              style:const TextStyle(color:partnerMuted,fontSize:12)),
+            const SizedBox(height:12),
+            Text('Blocked Dates ('+blocked.length.toString()+')',
+              style:const TextStyle(fontWeight:FontWeight.w700,
+                color:partnerInk)),
+            const SizedBox(height:6),
+            if(blocked.isEmpty)const Text('No dates blocked',
+              style:TextStyle(color:partnerMuted,fontSize:12)),
+            if(blocked.isNotEmpty)Wrap(spacing:6,runSpacing:4,
+              children:blocked.take(30).map((entry)=>ActionChip(
+                tooltip:'Tap to unblock this date',
+                avatar:const Icon(Icons.event_busy_outlined,size:16),
+                label:Text(entry['blocked_date']?.toString()??''),
+                onPressed:()=>availability(v,
+                  selectedDate:entry['blocked_date']?.toString()),
+              )).toList()),
+            if(blocked.length>30)Text(
+              (blocked.length-30).toString()+' more blocked dates',
               style:const TextStyle(color:partnerMuted,fontSize:12)),
             Align(alignment:Alignment.centerRight,
               child:OutlinedButton.icon(
@@ -308,8 +347,8 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
                 icon:const Icon(Icons.calendar_month_outlined),
                 label:const Text('Block / Unblock Date'))),
           ]),
-        )),
-      ),
+        ));
+      }),
     ]);
   }
   Widget profile(){

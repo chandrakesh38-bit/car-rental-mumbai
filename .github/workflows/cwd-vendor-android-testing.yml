@@ -81,3 +81,23 @@ jobs:
           path: apps/cwd_vendor_android/build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
           retention-days: 7
+
+      # Owner-only live testing while permanent APK signing is configured.
+      # Debug certificate is ephemeral; NEVER distribute this build to vendors.
+      - name: Verify release API hostname is pinned
+        working-directory: apps/cwd_vendor_android
+        run: flutter test test/production_release_config_test.dart --dart-define=CWD_PARTNER_PRODUCTION=true
+
+      - name: Build production-connected owner test APK
+        working-directory: apps/cwd_vendor_android
+        run: |
+          flutter build apk --debug --dart-define=CWD_PARTNER_PRODUCTION=true
+          cp build/app/outputs/flutter-apk/app-debug.apk build/app/outputs/flutter-apk/CWD-Partner-Owner-Live-Test.apk
+
+      - name: Upload owner live-test APK (do not distribute)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: CWD-Partner-Owner-Live-Test-APK
+          path: apps/cwd_vendor_android/build/app/outputs/flutter-apk/CWD-Partner-Owner-Live-Test.apk
+          if-no-files-found: error
+          retention-days: 14

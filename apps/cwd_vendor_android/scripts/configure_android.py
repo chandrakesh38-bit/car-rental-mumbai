@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Apply internal/testing-only Android configuration to generated Flutter files."""
+"""Configure CWD Partner native Android assets and optional signed release."""
 from pathlib import Path
+import os
 import re
 
 root = Path(__file__).resolve().parent.parent
@@ -33,17 +34,51 @@ if 'android:allowBackup="false"' not in manifest:
 manifest_file.write_text(manifest)
 
 gradle = gradle_file.read_text()
+release_mode = os.environ.get("CWD_PARTNER_RELEASE_BUILD") == "true"
+package_id = (
+    "com.carwithdriverindia.partner" if release_mode
+    else "com.carwithdriverindia.vendor.testing"
+)
 gradle = re.sub(
     r'applicationId\s*=\s*"[^"]+"',
-    'applicationId = "com.carwithdriverindia.vendor.testing"',
+    f'applicationId = "{package_id}"',
     gradle,
     count=1,
 )
 gradle = re.sub(r'minSdk\s*=\s*[^\n]+', 'minSdk = 24', gradle, count=1)
 gradle = re.sub(r'targetSdk\s*=\s*[^\n]+', 'targetSdk = 36', gradle, count=1)
 gradle = re.sub(r'compileSdk\s*=\s*[^\n]+', 'compileSdk = 36', gradle, count=1)
-if 'applicationId = "com.carwithdriverindia.vendor.testing"' not in gradle:
+if f'applicationId = "{package_id}"' not in gradle:
     raise SystemExit("Android applicationId change was not applied. Check Gradle template.")
+
+if release_mode:
+    # Persistent, owner-controlled key is injected securely by GitHub Actions.
+    # No release key/password should ever be committed to this repository.
+    key_path = root / "android/app/cwd-partner-release.jks"
+    if not key_path.is_file() or key_path.stat().st_size < 1024:
+        raise SystemExit("Release key missing. Refusing unsigned/debug-signed final APK.")
+    if not os.environ.get("CWD_PARTNER_KEYSTORE_PASSWORD"):
+        raise SystemExit("Release signing password missing. Refusing final APK.")
+    signing = """    signingConfigs {
+        create("cwdPartnerRelease") {
+            storeFile = file("cwd-partner-release.jks")
+            storePassword = System.getenv("CWD_PARTNER_KEYSTORE_PASSWORD")
+            keyAlias = "cwd-partner"
+            keyPassword = System.getenv("CWD_PARTNER_KEYSTORE_PASSWORD")
+        }
+    }
+
+"""
+    anchor = "    buildTypes {"
+    debug_key = 'signingConfig = signingConfigs.getByName("debug")'
+    if gradle.count(anchor) != 1 or gradle.count(debug_key) != 1:
+        raise SystemExit("Unexpected Flutter Gradle release template; refusing to sign.")
+    gradle = gradle.replace(anchor, signing + anchor, 1)
+    gradle = gradle.replace(
+        debug_key,
+        'signingConfig = signingConfigs.getByName("cwdPartnerRelease")',
+        1,
+    )
 gradle_file.write_text(gradle)
 
 # Flutter create regenerates MainActivity on every build. Add the short,
@@ -161,4 +196,4 @@ for values_dir in ("values", "values-night"):
             1)
         styles.write_text(text)
 
-print("CWD Partner native splash, app label and notification sound: OK")
+print("CWD Partner Android native setup: " + ("SIGNED RELEASE" if release_mode else "TESTING") + " OK")

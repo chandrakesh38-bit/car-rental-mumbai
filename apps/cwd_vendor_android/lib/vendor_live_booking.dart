@@ -150,7 +150,7 @@ class _VendorLiveBookingState extends State<VendorLiveBooking> {
     return Scaffold(
       backgroundColor:partnerSurface,
       appBar:AppBar(backgroundColor:partnerTeal,foregroundColor:Colors.white,
-        title:Text('Booking · '+status)),
+        title:const Text('Booking Details')),
       body:busy?const Center(child:CircularProgressIndicator()):
         ListView(children:[
           group('Booking Details',[

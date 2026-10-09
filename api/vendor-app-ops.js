@@ -53,14 +53,19 @@ export function safeOffer(row,vehicles=[]){
 }
 function customerTripLocations(b){
   const raw=String(b?.route||'');
-  let locations=raw.split(/\s*→\s*/).map(v=>v.trim()).filter(Boolean);
+  let locations=raw.split(/\s*(?:→|➔|➜|->)\s*/).map(v=>v.trim()).filter(Boolean);
   const base=s=>/godrej hillside colony|vikhroli base/i.test(String(s));
   if(locations.length>1&&base(locations[0]))locations.shift();
   if(locations.length>1&&base(locations.at(-1)))locations.pop();
-  const pickup=String(b?.pickup_location||locations[0]||'').trim();
-  const drop=String(b?.destination||locations.at(-1)||'').trim();
+  // Live inquiries store detailed route information in the route field.
+  // pickup_location and destination do not exist on the production table.
+  const pickup=String(locations[0]||b?.full_address||'').trim();
+  const last=String(locations.at(-1)||'').trim();
   const round=/round/i.test(b?.trip_type||b?.booking_details||'');
-  return {pickup,drop:round?pickup:drop,destination:drop};
+  const destination=round
+    ? String(locations.slice(1).find(v=>v.toLowerCase()!==pickup.toLowerCase())||last||'').trim()
+    : last;
+  return {pickup,drop:round?pickup:last,destination};
 }
 function customerAfterAllocation(booking){
   if(!booking)return null;
@@ -143,7 +148,7 @@ async function listDashboard(cfg,vendor){
    if(!offer)continue;
    const [booking,trip,ledger]=await Promise.all([
      vendorDb(cfg,'inquiries?booking_id=eq.'+eq(a.booking_id)+
-       '&select=booking_id,customer_name,customer_phone,pickup_location,destination,route,trip_type,booking_details&limit=1'),
+       '&select=booking_id,customer_name,customer_phone,full_address,route,trip_type,booking_details&limit=1'),
      vendorDb(cfg,'cwd_vendor_trip_events?booking_id=eq.'+
        eq(a.booking_id)+'&select=starting_odometer,started_at,closing_odometer,ended_at,review_status&limit=1'),
      a.status==='approved'
@@ -219,6 +224,16 @@ async function saveDriver(cfg,vid,body){
  const allowed=(await vendorVehicles(cfg,vid)).some(v=>
    v.is_active&&cleanVehicle(v.vehicle_number)===vehicle);
  if(!allowed)fail('Vehicle must belong to your approved fleet.',409);
+ // A selected car is approved during offer acceptance, so the driver cannot
+ // substitute another plate without CWD admin approval.
+ const offer=await ownedOffer(cfg,vid,a.offer_id);
+ const selected=(await vendorDb(cfg,'cwd_vendor_vehicles?vehicle_number=eq.'+
+   eq(vehicle)+'&vendor_id=eq.'+eq(vid)+
+   '&select=id,vehicle_number,make_model,category&limit=1'))?.[0];
+ if(!selected||!matchedCar(offer.vehicle_required,selected)||
+     (offer.selected_vendor_vehicle_id&&
+      offer.selected_vendor_vehicle_id!==selected.id))
+   fail('Vehicle does not match the allocated car. Contact CWD admin.',409);
  if(!driver||driver.length>120||!(/^[6-9]\d{9}$/).test(mobile))
    fail('Enter driver name and a valid 10-digit mobile.',400);
  const updated=await vendorDb(cfg,'cwd_vendor_allocations?id=eq.'+eq(a.id)+

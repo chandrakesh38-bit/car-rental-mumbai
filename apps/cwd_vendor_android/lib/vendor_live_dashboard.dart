@@ -4,6 +4,7 @@ import 'vendor_auth_service.dart';
 import 'vendor_feedback.dart';
 import 'vendor_live_api.dart';
 import 'vendor_live_booking.dart';
+import 'vendor_availability_calendar.dart';
 
 const partnerTeal=Color(0xFF00897B);
 const partnerInk=Color(0xFF172C39);
@@ -28,6 +29,8 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
   Timer? _refreshTimer;
   Map<String,dynamic>? data;
   Set<String>? knownOfferIds;
+  Set<String>? knownAllocationIds;
+  int unreadAllocations=0;
   String? errorMessage;
   int page=0;
   String filter='All';
@@ -71,7 +74,20 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
         VendorFeedback.newBooking();
       }
       knownOfferIds=current;
+      final allocated=((body['allocations'] as List?)??[])
+        .whereType<Map>().where((a)=>a['status']=='allocated')
+        .map((a)=>a['id'].toString()).toSet();
+      final fresh=knownAllocationIds==null?0:
+        allocated.difference(knownAllocationIds!).length;
+      knownAllocationIds=allocated;
+      if(fresh>0){
+        VendorFeedback.newBooking();
+        WidgetsBinding.instance.addPostFrameCallback((_){
+          if(mounted)notice('CWD assigned a booking. Open Bookings → Allocated.');
+        });
+      }
       setState((){
+        if(fresh>0&&page!=1)unreadAllocations+=fresh;
         data=body;
         errorMessage=null;
         fetching=false;
@@ -125,16 +141,22 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
   }
   void openBooking(Map<String,dynamic> booking){
     VendorFeedback.click();
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      builder:(_)=>VendorLiveBooking(
-        api:_api,booking:booking,
+    Navigator.of(context).push(MaterialPageRoute<Object?>(
+      builder:(_)=>VendorLiveBooking(api:_api,booking:booking,
         isAllocation:booking['_allocated']==true,
         allowChanges:data?['is_live_writes_enabled']==true,
-        onChanged:reload,
-      ),
-    )).then((_)=>reload(quiet:true));
+        onChanged:reload),
+    )).then((result)async{
+      await reload(quiet:true);
+      if(!mounted)return;
+      if(result=='accepted'){
+        setState((){page=1;filter='Accepted';unreadAllocations=0;});
+        final next=allBookings.where((b)=>
+          b['booking_id']==booking['booking_id']&&b['status']=='accepted');
+        if(next.isNotEmpty)openBooking(next.first);
+      }
+    });
   }
-
   String dateLabel(dynamic value){
     final date=DateTime.tryParse(value?.toString()??'')?.toLocal();
     if(date==null)return 'Date to be confirmed';
@@ -197,46 +219,28 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
 
   Widget home(){
     const filters=['New','Accepted',"Today's Pickups",'Ongoing','Completed','Cancelled'];
-    return RefreshIndicator(onRefresh:reload,
-      child:ListView(children:[
-        Padding(padding:const EdgeInsets.fromLTRB(19,19,16,15),
-          child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-            Text('Welcome, '+(widget.vendorName??'CWD Partner'),
-              style:const TextStyle(fontSize:21,
-                fontWeight:FontWeight.w900,color:partnerInk)),
-            const SizedBox(height:6),
-            const Text('Your bookings and earnings.',
-              style:TextStyle(color:partnerMuted)),
-          ])),
-        GridView.count(crossAxisCount:2,childAspectRatio:1.8,
-          physics:const NeverScrollableScrollPhysics(),
-          shrinkWrap:true,
-          padding:const EdgeInsets.symmetric(horizontal:13),
-          crossAxisSpacing:7,mainAxisSpacing:7,
-          children:filters.map((name)=>Card(color:Colors.white,
-            child:InkWell(onTap:()=>setState((){
-              page=1;filter=name;
-            }),child:Padding(padding:const EdgeInsets.all(12),
-              child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-                Text(allBookings.where((b)=>matches(b,name)).length.toString(),
-                  style:const TextStyle(fontSize:25,
-                    fontWeight:FontWeight.w900,color:partnerTeal)),
-                Text(name,style:const TextStyle(
-                  fontSize:12,fontWeight:FontWeight.w700)),
-              ]),
-            )),
-          )).toList(),
-        ),
-        const Padding(padding:EdgeInsets.fromLTRB(18,18,14,10),
-          child:Text('Latest Bookings',
-            style:TextStyle(fontSize:17,fontWeight:FontWeight.w900))),
-        if(allBookings.isEmpty)const Padding(padding:EdgeInsets.all(25),
-          child:Text('No bookings yet. New offers will appear here.',
-            textAlign:TextAlign.center)),
-        ...allBookings.take(6).map(bookingCard),
-        const SizedBox(height:16),
-      ]),
-    );
+    return RefreshIndicator(onRefresh:reload,child:ListView(children:[
+      GridView.count(crossAxisCount:2,childAspectRatio:1.65,
+        physics:const NeverScrollableScrollPhysics(),shrinkWrap:true,
+        padding:const EdgeInsets.fromLTRB(12,18,12,12),
+        crossAxisSpacing:9,mainAxisSpacing:9,
+        children:filters.map((name)=>Card(color:Colors.white,
+          child:InkWell(onTap:()=>setState((){
+            page=1;filter=name;unreadAllocations=0;
+          }),child:Padding(padding:const EdgeInsets.all(10),
+            child:Column(mainAxisAlignment:MainAxisAlignment.center,
+              crossAxisAlignment:CrossAxisAlignment.center,children:[
+              Text(allBookings.where((b)=>matches(b,name)).length.toString(),
+                textAlign:TextAlign.center,style:const TextStyle(
+                  fontSize:28,fontWeight:FontWeight.w900,color:partnerTeal)),
+              const SizedBox(height:5),
+              Text(name,textAlign:TextAlign.center,style:const TextStyle(
+                fontSize:12,fontWeight:FontWeight.w800,color:partnerInk)),
+            ]),
+          )),
+        )).toList(),
+      ),
+    ]));
   }
   Widget bookings(){
     const filters=['All','New','Accepted','Allocated',"Today's Pickups",
@@ -262,92 +266,45 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
   }
   String blockedDate(DateTime d)=>d.year.toString()+'-'+
     d.month.toString().padLeft(2,'0')+'-'+d.day.toString().padLeft(2,'0');
-  Future<void> availability(Map<String,dynamic> car,{String? selectedDate})async{
+  Future<void> availability(Map<String,dynamic> car)async{
     if(data?['is_live_writes_enabled']!=true){
-      notice('Changes are locked until CWD activates vendor access.');
-      return;
+      notice('Ask CWD to activate car availability changes.');return;
     }
-    final today=DateTime.now();
-    final day=selectedDate==null
-      ?await showDatePicker(context:context,
-        firstDate:DateTime(today.year,today.month,today.day),
-        lastDate:today.add(const Duration(days:365)),initialDate:today)
-      :null;
-    if(selectedDate==null&&day==null)return;
-    if(!mounted)return;
-    final date=selectedDate??blockedDate(day!);
-    final blocked=records('vehicle_blocks').any((v)=>
-      v['vehicle_id']==car['id']&&v['blocked_date']==date);
-    if(blocked){
-      final confirmed=await showDialog<bool>(context:context,
-        builder:(ctx)=>AlertDialog(
-          title:const Text('Unblock Car Date?'),
-          content:Text('Make '+date+' available for this car again?'),
-          actions:[
-            TextButton(onPressed:()=>Navigator.pop(ctx,false),
-              child:const Text('Keep Blocked')),
-            FilledButton(onPressed:()=>Navigator.pop(ctx,true),
-              child:const Text('Unblock Date')),
-          ]));
-      if(confirmed!=true||!mounted)return;
-    }
-    try{
-      await _api.action(blocked?'unblock_vehicle':'block_vehicle',{
-        'vehicle_id':car['id'],'blocked_date':date,
-      });
-      await reload(quiet:true);
-      notice(blocked?'Date unblocked':'Date blocked');
-    }catch(e){notice(e.toString());}
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder:(_)=>VendorAvailabilityCalendar(car:car,
+        blocks:records('vehicle_blocks'),bookings:allBookings,
+        onSave:(start,end,isBlock)async{
+          await _api.action(isBlock?'block_vehicle_range':'unblock_vehicle_range',{
+            'vehicle_id':car['id'],'start_date':blockedDate(start),
+            'end_date':blockedDate(end),
+          });
+          await reload(quiet:true);
+        }),
+    ));
+    if(mounted)await reload(quiet:true);
   }
   Widget cars(){
     final fleet=records('vehicles');
-    return ListView(children:[
-      const Padding(padding:EdgeInsets.all(16),
-        child:Text('My Cars',
-          style:TextStyle(fontWeight:FontWeight.w900,fontSize:22))),
+    return ListView(padding:const EdgeInsets.all(14),children:[
       if(fleet.isEmpty)const Padding(padding:EdgeInsets.all(24),
-        child:Text('Your approved cars will appear here.')),
+        child:Text('No approved cars yet.',textAlign:TextAlign.center)),
       ...fleet.map((v){
-        final blocked=records('vehicle_blocks')
-          .where((d)=>d['vehicle_id']==v['id']).toList()
-          ..sort((a,b)=>(a['blocked_date']?.toString()??'')
-            .compareTo(b['blocked_date']?.toString()??''));
-        return Card(color:Colors.white,
-          margin:const EdgeInsets.symmetric(horizontal:14,vertical:7),
-          child:Padding(padding:const EdgeInsets.all(16),
-            child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-            Text(v['make_model']?.toString()??'Car',
-              style:const TextStyle(fontWeight:FontWeight.w800,fontSize:18)),
-            const SizedBox(height:5),
-            Text(v['vehicle_number']?.toString()??'',
-              style:const TextStyle(color:partnerMuted)),
-            Text(v['is_active']==true?'Approved Vehicle':'Inactive Vehicle',
-              style:const TextStyle(color:partnerMuted,fontSize:12)),
-            const SizedBox(height:12),
-            Text('Blocked Dates ('+blocked.length.toString()+')',
-              style:const TextStyle(fontWeight:FontWeight.w700,
-                color:partnerInk)),
-            const SizedBox(height:6),
-            if(blocked.isEmpty)const Text('No dates blocked',
-              style:TextStyle(color:partnerMuted,fontSize:12)),
-            if(blocked.isNotEmpty)Wrap(spacing:6,runSpacing:4,
-              children:blocked.take(30).map((entry)=>ActionChip(
-                tooltip:'Tap to unblock this date',
-                avatar:const Icon(Icons.event_busy_outlined,size:16),
-                label:Text(entry['blocked_date']?.toString()??''),
-                onPressed:()=>availability(v,
-                  selectedDate:entry['blocked_date']?.toString()),
-              )).toList()),
-            if(blocked.length>30)Text(
-              (blocked.length-30).toString()+' more blocked dates',
-              style:const TextStyle(color:partnerMuted,fontSize:12)),
-            Align(alignment:Alignment.centerRight,
-              child:OutlinedButton.icon(
-                onPressed:()=>availability(v),
-                icon:const Icon(Icons.calendar_month_outlined),
-                label:const Text('Block / Unblock Date'))),
-          ]),
-        ));
+        final count=records('vehicle_blocks')
+          .where((b)=>b['vehicle_id']==v['id']).length;
+        return Card(color:Colors.white,child:Padding(
+          padding:const EdgeInsets.all(14),
+          child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+            Text(v['make_model']?.toString()??'Car',style:const TextStyle(
+              fontWeight:FontWeight.w800,fontSize:18)),
+            const SizedBox(height:4),
+            Text(v['vehicle_number']?.toString()??'',style:const TextStyle(color:partnerMuted)),
+            const SizedBox(height:7),
+            Text(count.toString()+' dates blocked',style:const TextStyle(fontWeight:FontWeight.w700)),
+            const SizedBox(height:9),
+            SizedBox(width:double.infinity,child:FilledButton.icon(
+              onPressed:v['is_active']==true?()=>availability(v):null,
+              icon:const Icon(Icons.calendar_month_outlined),label:const Text('Open Calendar'))),
+          ])));
       }),
     ]);
   }
@@ -457,38 +414,44 @@ class _VendorLiveDashboardState extends State<VendorLiveDashboard>
   @override
   Widget build(BuildContext context){
     const sections=['Home','Bookings','My Cars','Earnings','Profile'];
-    return Scaffold(
-      backgroundColor:partnerSurface,
-      appBar:AppBar(backgroundColor:partnerTeal,foregroundColor:Colors.white,
-        title:Text('CWD Partner · '+sections[page]),
-        actions:[IconButton(icon:const Icon(Icons.refresh),
-          onPressed:reload)]),
-      body:fetching&&data==null
-        ?const Center(child:CircularProgressIndicator())
-        :Column(children:[
-          if(errorMessage!=null)MaterialBanner(content:Text(errorMessage!),
-            actions:[TextButton(onPressed:reload,child:const Text('Retry'))]),
-          if(data?['is_live_writes_enabled']!=true)
-            const Padding(padding:EdgeInsets.all(8),
-              child:Text('Booking changes require CWD activation',
-                style:TextStyle(color:partnerMuted,fontSize:11))),
-          Expanded(child:switch(page){
-            0=>home(),1=>bookings(),2=>cars(),3=>earnings(),_=>profile(),
+    return PopScope(
+      canPop:page==0,
+      onPopInvokedWithResult:(didPop,result){
+        if(!didPop&&page!=0)setState(()=>page=0);
+      },
+      child:Scaffold(
+        backgroundColor:partnerSurface,
+        appBar:page==0?null:AppBar(
+          backgroundColor:partnerTeal,foregroundColor:Colors.white,
+          title:Text(sections[page]),
+          actions:[IconButton(icon:const Icon(Icons.refresh),onPressed:reload)]),
+        body:fetching&&data==null
+          ?const Center(child:CircularProgressIndicator())
+          :Column(children:[
+            if(errorMessage!=null)MaterialBanner(content:Text(errorMessage!),
+              actions:[TextButton(onPressed:reload,child:const Text('Retry'))]),
+            if(data?['is_live_writes_enabled']!=true)
+              const Padding(padding:EdgeInsets.all(8),
+                child:Text('Booking actions not active yet',
+                  style:TextStyle(color:partnerMuted,fontSize:11))),
+            Expanded(child:switch(page){
+              0=>home(),1=>bookings(),2=>cars(),3=>earnings(),_=>profile(),
+            }),
+          ]),
+        bottomNavigationBar:NavigationBar(selectedIndex:page,
+          onDestinationSelected:(i)=>setState((){
+            page=i;
+            if(i==1)unreadAllocations=0;
           }),
-        ]),
-      bottomNavigationBar:NavigationBar(selectedIndex:page,
-        onDestinationSelected:(i)=>setState(()=>page=i),
-        destinations:const [
-          NavigationDestination(icon:Icon(Icons.home_outlined),label:'Home'),
-          NavigationDestination(icon:Icon(Icons.receipt_long_outlined),
-            label:'Bookings'),
-          NavigationDestination(icon:Icon(Icons.directions_car_outlined),
-            label:'My Cars'),
-          NavigationDestination(icon:Icon(Icons.payments_outlined),
-            label:'Earnings'),
-          NavigationDestination(icon:Icon(Icons.person_outline),
-            label:'Profile'),
-        ]),
+          destinations:[
+            const NavigationDestination(icon:Icon(Icons.home_outlined),label:'Home'),
+            NavigationDestination(icon:Badge(isLabelVisible:unreadAllocations>0,
+              child:const Icon(Icons.receipt_long_outlined)),label:'Bookings'),
+            const NavigationDestination(icon:Icon(Icons.directions_car_outlined),label:'My Cars'),
+            const NavigationDestination(icon:Icon(Icons.payments_outlined),label:'Earnings'),
+            const NavigationDestination(icon:Icon(Icons.person_outline),label:'Profile'),
+          ]),
+      ),
     );
   }
 }

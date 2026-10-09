@@ -2,6 +2,7 @@ import {
  vendorAuthOrFail,vendorDb,findVendor,activeVendorForSession,
  cleanMobile,vendorLoginStatus,validOtp,sha256,tokenHex,authError
 } from '../lib/vendor-app-server.mjs';
+import {vendorOtpAdmission} from '../lib/vendor-app-auth-core.mjs';
 
 export const config={runtime:'edge'};
 const json=(body,status=200)=>new Response(JSON.stringify(body),{
@@ -73,7 +74,8 @@ async function throttle(cfg,mobile,ip) {
 async function sendOtp(cfg,request,body){
  const mobile=cleanMobile(body.mobile);
  const vendor=await findVendor(cfg,mobile);
- if(!vendor)fail('This mobile is not registered. Use Register Now.',404);
+ const admission=vendorOtpAdmission(vendor);
+ if(admission)fail(admission.message,admission.status);
  const forwarded=request.headers.get('x-forwarded-for')||'unknown';
  const ip=String(forwarded).split(',')[0].trim().slice(0,100);
  const ipHash=await sha256(cfg.secret+'|'+ip);

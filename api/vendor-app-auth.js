@@ -23,8 +23,24 @@ async function msg91(cfg,path,body) {
    signal:AbortSignal.timeout(15000),
  });
  let response;try{response=await r.json()}catch{response={}};
- if(!r.ok || response.type!=='success')
+ if(!r.ok || response.type!=='success'){
+   // Safe provider diagnostics: never log mobile, OTP, keys, tokens or reqId.
+   const reason=String(response?.message||'').toLowerCase();
+   const category=/captcha|recaptcha/.test(reason)?'captcha_required':
+     /auth|unauthori|token|credential|invalid.widget/.test(reason)?'auth_rejected':
+     /balance|credit|fund/.test(reason)?'balance_rejected':
+     /block|blacklist|ip.security|whitelist/.test(reason)?'access_blocked':
+     /country|restrict/.test(reason)?'country_restricted':
+     /template|channel|inactive/.test(reason)?'widget_channel':
+     /limit|frequency|throttle/.test(reason)?'rate_limited':'unknown';
+   const rawCode=String(response?.code??'');
+   const code=/^[a-zA-Z0-9_-]{1,16}$/.test(rawCode)?rawCode:'unspecified';
+   console.warn('[CWD_PARTNER_MSG91]',JSON.stringify({
+     operation:path,httpStatus:r.status,providerType:String(response?.type||'').slice(0,16),
+     providerCode:code,category,
+   }));
    fail('OTP service temporarily unavailable. Please try again.',503);
+ }
  return response;
 }
 async function verifyAccess(cfg,accessToken){

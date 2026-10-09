@@ -33,6 +33,21 @@ export function bookedOnDate(date,from,to) {
  const start=indiaDate(from),end=indiaDate(to||from);
  return !!(start&&end&&date>=start&&date<=end);
 }
+// Two accepted/allocated offers may not reserve the same vendor car for
+// overlapping trip duties. The fallback uses the agreed duty-days field.
+export function tripsOverlap(first,second) {
+ const window=offer=>{
+   const from=Date.parse(offer?.start_at||'');
+   if(!Number.isFinite(from))return null;
+   const explicit=Date.parse(offer?.final_drop_at||'');
+   const days=Math.max(1,Math.min(30,Number(offer?.duty_days)||1));
+   const until=Number.isFinite(explicit)&&explicit>from
+     ?explicit:from+days*86400000;
+   return {from,until};
+ };
+ const a=window(first),b=window(second);
+ return !a||!b|| (a.from<b.until&&b.from<a.until);
+}
 const brandTokens=['dzire','aura','ertiga','carens','innova','crysta','wagonr','swift','baleno','xuv','brezza','ciaz','honda city','city','creta','nexon'];
 export function matchedCar(required,vehicle){
   const req=String(required||'').toLowerCase();
@@ -116,6 +131,10 @@ export function allocationSafe(row,offer,booking,trip,settlement){
         state_tax:settlement.state_tax,approved_other:settlement.approved_other,
         penalty:settlement.penalty,
         payout_status:settlement.payout_status,
+        payout_due_at:settlement.payout_due_at||null,
+        paid_at:settlement.paid_at||null,
+        utr_reference:settlement.payout_status==='paid'
+          ?settlement.utr_reference||null:null,
         vendor_final_payout:settlement.vendor_final_payout}:null,
   };
 }
@@ -206,6 +225,11 @@ async function respondOffer(cfg,vid,body){
      eq(vehicle.id)+'&blocked_date=gte.'+from+
      '&blocked_date=lte.'+until+'&select=id&limit=1');
    if(blocked?.length)fail('Selected car is blocked for these dates.',409);
+   const reserved=await vendorDb(cfg,'cwd_vendor_offers?vendor_id=eq.'+
+     eq(vid)+'&selected_vendor_vehicle_id=eq.'+eq(vehicle.id)+
+     '&status=in.(accepted,allocated)&select=id,start_at,final_drop_at,duty_days&limit=120');
+   if((reserved||[]).some(other=>other.id!==offer.id&&tripsOverlap(offer,other)))
+     fail('This car already has an overlapping accepted booking. Select another car.',409);
    selected=vehicle.id;
  }
  const changed=await vendorDb(cfg,'cwd_vendor_offers?id=eq.'+eq(offer.id)+

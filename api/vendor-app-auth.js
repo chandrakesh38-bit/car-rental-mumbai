@@ -41,6 +41,8 @@ async function msg91(cfg,path,body) {
      operation:path,httpStatus:r.status,providerType:String(response?.type||'').slice(0,16),
      providerCode:code,category,
    }));
+   if(code==='401')
+     fail('OTP provider authentication is unavailable. Please contact CWD support; no OTP was sent.',503);
    fail('OTP service temporarily unavailable. Please try again.',503);
  }
  return response;

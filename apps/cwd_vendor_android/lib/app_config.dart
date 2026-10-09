@@ -23,8 +23,7 @@ class AppConfig {
     return Uri(scheme: 'https', host: value.host);
   }
 
-  static const bool sharedDatabaseApproved =
-      bool.fromEnvironment('CWD_VENDOR_SHARED_DB_APPROVED',defaultValue:false);
-
-  static bool get ready => origin != null && (isolated || sharedDatabaseApproved);
+  // Always require a verified isolated staging backend for the testing APK.
+  // A shared production database must never be enabled by a compile-time flag.
+  static bool get ready => origin != null && isolated;
 }

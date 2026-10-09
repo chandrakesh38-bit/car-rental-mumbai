@@ -3402,7 +3402,27 @@ async function deleteWithDriverVehicle(id) {
                 return '<label class="block p-3 bg-white border rounded-xl '+(disabled?'opacity-60':'hover:border-indigo-300')+' transition"><div class="flex items-start gap-2"><input type="checkbox" data-vendor-id="'+escapeAdminHtml(v.id)+'" class="mt-1" '+(disabled?'disabled':'')+'><span><b>'+escapeAdminHtml(v.owner_business_name)+'</b> <span class="text-[9px] font-bold text-indigo-700">'+escapeAdminHtml(v.vendor_code)+'</span><br><span class="text-[10px] text-slate-500">'+escapeAdminHtml(v.primary_whatsapp)+' · '+escapeAdminHtml(v.base_location)+' · '+escapeAdminHtml(v.status)+'</span></span></div>'+selector+'</label>';
             }).join('')||'<p class="text-slate-500">No active vendors yet.</p>';
             const acceptedOffers=offers.filter(o=>o.status==='accepted');
-            const offerRows=offers.map(o=>{const v=vendorMap.get(o.vendor_id)||{},accepted=o.status==='accepted';return '<div class="p-3 '+(accepted?'bg-emerald-50 border-emerald-300':'bg-white')+' border rounded-xl flex items-center justify-between gap-2"><div><b>'+escapeAdminHtml(v.owner_business_name||v.vendor_code||'Vendor')+'</b>'+(accepted?' <span class="ml-1 inline-flex px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black">ACCEPTED</span>':'')+'<br><span class="text-[10px] text-slate-500">'+escapeAdminHtml(v.primary_whatsapp||'')+' · '+escapeAdminHtml(o.status.toUpperCase())+' · '+money(o.estimated_vendor_payout)+'</span></div>'+(accepted?'<button class="bg-emerald-600 text-white rounded-lg px-3 py-2 font-bold" onclick="cwdAllocate(\''+o.id+'\',this)">ALLOCATE</button>':'')+'</div>'}).join('');
+            const offerRows=offers.map(o=>{
+                const v=vendorMap.get(o.vendor_id)||{};
+                const accepted=o.status==='accepted';
+                const unlocked=Boolean(o.vendor_cancel_unlocked_at);
+                const safeId=/^[0-9a-f-]{36}$/i.test(String(o.id||''))?String(o.id):'';
+                const unlockBtn=accepted&&safeId
+                  ?'<button type="button" class="bg-amber-50 text-amber-800 border border-amber-300 rounded-lg px-2 py-2 font-bold" onclick="cwdToggleVendorCancelUnlock(&quot;'+safeId+'&quot;,'+(!unlocked)+',this)">'+(unlocked?'Lock Cancel':'Unlock Cancel')+'</button>'
+                  :'';
+                const allocateBtn=accepted&&safeId
+                  ?'<button type="button" class="bg-emerald-600 text-white rounded-lg px-3 py-2 font-bold" onclick="cwdAllocate(&quot;'+safeId+'&quot;,this)">ALLOCATE</button>'
+                  :'';
+                return '<div class="p-3 '+(accepted?'bg-emerald-50 border-emerald-300':'bg-white')+' border rounded-xl flex items-center justify-between gap-2">'+
+                  '<div><b>'+escapeAdminHtml(v.owner_business_name||v.vendor_code||'Vendor')+'</b>'+
+                  (accepted?' <span class="ml-1 inline-flex px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black">ACCEPTED</span>':'')+
+                  '<br><span class="text-[10px] text-slate-500">'+
+                  escapeAdminHtml(v.primary_whatsapp||'')+' · '+
+                  escapeAdminHtml(String(o.status||'').toUpperCase())+' · '+
+                  money(o.estimated_vendor_payout)+
+                  (accepted?(unlocked?' · Cancellation unlocked':' · Cancellation locked'):'')+
+                  '</span></div><div class="flex gap-2 flex-wrap">'+unlockBtn+allocateBtn+'</div></div>';
+            }).join('');
             box.innerHTML=
               (acceptedOffers.length?'<div class="mb-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-3 flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg">✓</div><div><div class="font-black text-emerald-900">Vendor Accepted — Allocation Required</div><div class="text-[10px] text-emerald-700">'+acceptedOffers.length+' vendor'+(acceptedOffers.length>1?'s have':' has')+' accepted this booking. Choose one below and tap ALLOCATE.</div></div></div>':'')+
               '<div class="grid lg:grid-cols-2 gap-3"><div class="bg-white rounded-xl p-3 border"><h5 class="font-black mb-2">1. Select Vendors</h5><div class="space-y-2 max-h-56 overflow-auto">'+vendorRows+'</div></div>'+
@@ -3434,6 +3454,25 @@ async function deleteWithDriverVehicle(id) {
             }
             const done=cwdBusyButton(btn,'Generating…');
             try{const d=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'create_offer',booking_id:currentAdminBooking.booking_id,vendor_ids:ids,vendor_vehicle_ids:vendorVehicleIds,estimated_km:Number(document.getElementById('cwd-est-km').value||0),duty_days:Number(document.getElementById('cwd-duty-days').value||1),night_count:Number(document.getElementById('cwd-night-count').value||0),local_package:document.getElementById('cwd-local-package').value,extra_km:Number(document.getElementById('cwd-extra-km').value||0),extra_hours:Number(document.getElementById('cwd-extra-hours').value||0),vendor_rate_per_km_override:document.getElementById('cwd-vendor-rate-override')?.value||null,vendor_final_payout_override:document.getElementById('cwd-vendor-final-override')?.value||null,vendor_override_reason:document.getElementById('cwd-vendor-override-reason')?.value.trim()||''})});cwdLastGeneratedOffers=d.offers||[];cwdSuccessButton(btn,'Offers Generated',0);await new Promise(r=>setTimeout(r,350));await loadVendorOpsPanel()}catch(e){done();alert(e.message)}
+        }
+        async function cwdToggleVendorCancelUnlock(offerId,allow,btn){
+            if(!currentAdminBooking?.booking_id)return alert('Open a booking first.');
+            const label=allow?'unlock cancellation':'lock cancellation';
+            if(!confirm('Confirm '+label+' for this accepted vendor?'))return;
+            const done=cwdBusyButton(btn,allow?'Unlocking…':'Locking…');
+            try{
+                await adminApi('/api/admin-vendor-ops',{
+                    method:'POST',
+                    body:JSON.stringify({
+                        action:'unlock_vendor_cancellation',
+                        booking_id:currentAdminBooking.booking_id,
+                        offer_id:offerId,
+                        allow:allow===true
+                    })
+                });
+                cwdSuccessButton(btn,allow?'Unlocked':'Locked',0);
+                await loadVendorOpsPanel();
+            }catch(e){done();alert(e.message)}
         }
         async function cwdAllocate(offerId,btn){if(!confirm('Allocate this accepted vendor? Any previous vendor access will be revoked.'))return;const done=cwdBusyButton(btn,'Allocating…');try{const d=await adminApi('/api/admin-vendor-ops',{method:'POST',body:JSON.stringify({action:'allocate',booking_id:currentAdminBooking.booking_id,offer_id:offerId})});cwdLastAllocationUrl=d.allocated_url||'';cwdSuccessButton(btn,'Allocated',0);if(cwdLastAllocationUrl)await cwdCopyText(cwdLastAllocationUrl);await new Promise(r=>setTimeout(r,350));await loadVendorOpsPanel()}catch(e){done();alert(e.message)}}
         function cwdDriverDetailsMessage(){

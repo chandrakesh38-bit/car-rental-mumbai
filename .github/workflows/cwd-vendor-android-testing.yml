@@ -17,6 +17,9 @@ on:
       - 'lib/booking-validation.mjs'
       - 'api/admin-vendor-ops.js'
       - 'scripts/test-cwd-pricing-policy.mjs'
+      - 'scripts/test-vendor-booking-html.mjs'
+      - 'vendor-booking.html'
+      - 'api/vendor-portal.js'
       - 'assets/js/booking.js'
       - '.github/workflows/cwd-vendor-android-testing.yml'
 

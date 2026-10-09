@@ -555,6 +555,21 @@ async function handler(request){
     }
     return json({success:true});
   }
+  if(action==='unlock_vendor_cancellation'){
+    const offerId=String(body.offer_id||'');
+    if(!/^[0-9a-f-]{36}$/i.test(offerId))fail('Offer ID is required.');
+    const offer=(await db('cwd_vendor_offers?id=eq.'+
+      encodeURIComponent(offerId)+'&select=id,status&limit=1'))?.[0];
+    if(!offer||offer.status!=='accepted')
+      fail('Only accepted, unallocated offers can be unlocked.',409);
+    const allowed=body.allow===true;
+    await db('cwd_vendor_offers?id=eq.'+encodeURIComponent(offerId),{
+      method:'PATCH',headers:{Prefer:'return=minimal'},
+      body:JSON.stringify({vendor_cancel_unlocked_at:
+        allowed?new Date().toISOString():null}),
+    });
+    return json({success:true,allowed});
+  }
   if(action==='set_vendor_status'){
     if(!['active','suspended','rejected','pending_review'].includes(body.status))fail('Invalid vendor status.');
     if(!body.vendor_id)fail('Vendor is required.');
@@ -602,8 +617,18 @@ async function handler(request){
     const old=await db('cwd_vendor_allocations?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1');
     if(old?.[0])await db('cwd_vendor_allocations?id=eq.'+old[0].id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status:'reallocated',revoked_at:new Date().toISOString(),updated_at:new Date().toISOString()})});
     await db('cwd_vendor_offers?booking_id=eq.'+encodeURIComponent(id)+'&status=eq.allocated',{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status:'revoked'})});
+    let chosenPlate=null;
+    if(o.selected_vendor_vehicle_id){
+      const selected=(await db('cwd_vendor_vehicles?id=eq.'+
+        encodeURIComponent(o.selected_vendor_vehicle_id)+
+        '&vendor_id=eq.'+encodeURIComponent(o.vendor_id)+
+        '&is_active=eq.true&select=vehicle_number&limit=1'))?.[0];
+      if(!selected)fail('Vendor selected car is no longer active.',409);
+      chosenPlate=selected.vehicle_number;
+    }
     const raw=token(),h=await hashToken(raw);
-    const rows=await db('cwd_vendor_allocations',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify({booking_id:id,offer_id:o.id,vendor_id:o.vendor_id,allocation_token_hash:h,status:'allocated',allocated_at:new Date().toISOString(),revoked_at:null})});
+    const rows=await db('cwd_vendor_allocations',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify({booking_id:id,offer_id:o.id,vendor_id:o.vendor_id,allocation_token_hash:h,status:'allocated',allocated_at:new Date().toISOString(),revoked_at:null,vehicle_number:chosenPlate})});
+
     await db('cwd_vendor_offers?id=eq.'+o.id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status:'allocated'})});
     return json({success:true,allocation:rows?.[0],allocated_url:publicBase(request)+'/vendor-booking?allocation='+raw});
   }

@@ -30,6 +30,11 @@ const env={
 const safe=vendorAuthConfig(env);
 assert.ok(safe);
 assert.equal(safe.writesEnabled,false);
+const separated=vendorAuthConfig({...env,CWD_VENDOR_APP_MSG91_WIDGET_ID:'aabbccddeeff001122334455'});
+assert.ok(separated);
+assert.equal(separated.widgetId,'aabbccddeeff001122334455');
+assert.equal(safe.widgetId,env.NEXT_PUBLIC_MSG91_WIDGET_ID);
+assert.equal(vendorAuthConfig({...env,CWD_VENDOR_APP_MSG91_WIDGET_ID:'not valid $ id'}),null);
 assert.equal(vendorAuthConfig({...env,VERCEL_GIT_COMMIT_REF:'main'}),null);
 assert.equal(vendorAuthConfig({...env,VERCEL_ENV:'production'}),null);
 assert.equal(vendorAuthConfig({...env,CWD_VENDOR_APP_SHARED_DB_MODE:'false'}),null);

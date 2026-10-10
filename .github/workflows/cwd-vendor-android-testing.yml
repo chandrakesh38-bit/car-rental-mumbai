@@ -24,6 +24,18 @@ on:
       - 'api/vendor-portal.js'
       - 'assets/js/booking.js'
       - '.github/workflows/cwd-vendor-android-testing.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/cwd_vendor_android/**'
+      - 'api/**'
+      - 'lib/**'
+      - 'assets/js/booking.js'
+      - 'vendor-booking.html'
+      - 'cwd-admin-5377.html'
+      - 'scripts/test-*.mjs'
+      - '.github/workflows/cwd-vendor-android-testing.yml'
 
 permissions:
   contents: read

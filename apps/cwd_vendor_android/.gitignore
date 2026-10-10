@@ -1,0 +1,12 @@
+.dart_tool/
+.flutter-plugins*
+.packages
+.pub-cache/
+build/
+android/
+assets/images/cwd-logo.png
+*.apk
+*.aab
+.env*
+*.keystore
+*.jks

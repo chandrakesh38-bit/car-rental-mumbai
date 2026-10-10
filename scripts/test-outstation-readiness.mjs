@@ -34,7 +34,7 @@ try {
     if (url.includes('supabase.co/rest/')) {
       assert.equal(req.method(),'GET','Never write to the real database');
       if(url.includes('/with_driver_rates'))return json(failPricing?[]:rates);
-      if(url.includes('/pricing_rules'))return json([{rule_name:'Minimum Outstation KM/Day',rule_value:240}]);
+      if(url.includes('/pricing_rules'))return json([{rule_name:'Minimum Outstation KM/Day',rule_value:200}]);
       return json([]);
     }
     if(url.endsWith('/api/maps-route')) {
@@ -108,7 +108,7 @@ try {
   await page.waitForFunction(()=>wdOutstationRouteQuote!==null);
   await blocked();
   await dates(); await ready();
-  assert.equal(await page.evaluate(()=>getCarCost(wdFleet[0])),240*14+500);
+  assert.equal(await page.evaluate(()=>getCarCost(wdFleet[0])),200*14+500);
   console.log('PASS complete route alone remains blocked; valid dates auto-enable original minimum-km fare');
   await page.locator('#wd-out-rdate').fill(''); await blocked();
   await page.locator('#wd-out-rdate').fill(date); await ready();

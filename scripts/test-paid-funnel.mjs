@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdir } from 'node:fs/promises';
 import vm from 'node:vm';
 import { startServer } from './serve.mjs';
 
 // Contract tests: mocked current admin rates and Maps/OTP providers, no real leads or SMS.
 const require = createRequire(import.meta.url);
-const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const { chromium, devices } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const clarityTest = false;
 const rates = [
   ['Maruti Suzuki Dzire',14,500,400], ['WagonR',11,400,300],
   ['Maruti Suzuki Ertiga',16,500,400], ['Kia Carens',18,500,400],
@@ -18,19 +19,22 @@ const rates = [
   segment:'With Driver',seating_capacity:4,bag_capacity:2
 }));
 const server = await startServer(fileURLToPath(new URL('../',import.meta.url)), 4312);
-const browser = await chromium.launch({headless:true,channel:process.env.BROWSER_CHANNEL || 'msedge'});
+const browser = await chromium.launch({headless:true,channel:process.env.BROWSER_CHANNEL || 'msedge',
+  ...(process.env.LOW_MEMORY_BROWSER === '1' ? {args:['--disable-gpu','--renderer-process-limit=1']} : {})});
 try {
-  const context = await browser.newContext({viewport:{width:393,height:851},ignoreHTTPSErrors:true});
+  const context = await browser.newContext({...devices['Pixel 5'],viewport:{width:393,height:851},ignoreHTTPSErrors:true});
   let failPricing=false, delayRoute=0, routeCalls=0, otpReject=false, bookingSuccess=false;
   const cache=new Map(), errors=[];
   await context.route('**/*',async route=>{
     const req=route.request(),url=req.url();
     const json=(body,status=200)=>route.fulfill({status,json:body});
+    if (url.endsWith('/api/clarity-config')) return json({enabled:false});
+    if (/\.clarity\.ms\//.test(url)) return route.fulfill({contentType:'text/javascript',body:''});
     if (/googletagmanager|google-analytics/.test(url)) return route.fulfill({body:''});
     if (url.includes('supabase.co/rest/')) {
       assert.equal(req.method(),'GET','Never write to the real database');
       if(url.includes('/with_driver_rates'))return json(failPricing?[]:rates);
-      if(url.includes('/pricing_rules'))return json([{rule_name:'Minimum Outstation KM/Day',rule_value:240}]);
+      if(url.includes('/pricing_rules'))return json([{rule_name:'Minimum Outstation KM/Day',rule_value:200}]);
       return json([]);
     }
     if(url.endsWith('/api/maps-route')) {
@@ -67,7 +71,16 @@ try {
     return route.continue();
   });
   const page=await context.newPage(); page.on('pageerror',e=>errors.push(e.message));
-  const go=async()=>{await page.goto('http://127.0.0.1:4312/outstation');await page.waitForFunction(()=>typeof triggerFareSearch==='function');await page.evaluate(()=>{window.testEvents=[];window.cwdTrackEvent=(name,params)=>window.testEvents.push({name,params});});};
+  const go=async()=>{
+    await page.goto('http://127.0.0.1:4312/outstation?utm_source=google&utm_medium=cpc&utm_campaign=clarity_testing');
+    await page.waitForFunction(()=>typeof triggerFareSearch==='function');
+    if (clarityTest) await page.waitForFunction(()=>Boolean(window.clarity?.q));
+    await page.evaluate(()=>{
+      window.testEvents=[];
+      const original=window.cwdTrackEvent;
+      window.cwdTrackEvent=(name,params)=>{original(name,params);window.testEvents.push({name,params});};
+    });
+  };
   await go();
   await page.locator('#explore-cabs-button').click();
   assert.equal(await page.locator('#wd-out-trip-type-fieldset').getAttribute('aria-invalid'),'true');
@@ -95,17 +108,25 @@ try {
     await page.waitForFunction(()=>!document.getElementById('explore-cabs-button').disabled);
     delayRoute=0;
     assert.equal(await page.locator('#fleet-container > div').count(),6);
-    const km={Lonavala:240,Pune:290,Nashik:336}[destination];
-    const regular=km*14+500, discounted=regular-Math.round(regular*.05);
-    assert.match(await page.locator('#fleet-container > div').first().innerText(),new RegExp(discounted.toLocaleString('en-IN')+' with FIRSTTRIP'));
+    const km={Lonavala:200,Pune:290,Nashik:336}[destination];
+    const fare=200*14+Math.max(0,km-200)*15+500;
+    assert.match(await page.locator('#fleet-container > div').first().innerText(),new RegExp(fare.toLocaleString('en-IN')));
+    assert.doesNotMatch(await page.locator('#fleet-container > div').first().innerText(),/FIRSTTRIP/);
     await page.locator('#fleet-container').getByRole('button',{name:'Book This Car',exact:true}).first().click();
     assert.equal(await page.locator('#booking-modal').isVisible(),true);
-    assert.equal(await page.locator('#modal-fare').innerText(),'₹'+discounted.toLocaleString('en-IN'));
+    assert.equal(await page.locator('#modal-fare').innerText(),'₹'+fare.toLocaleString('en-IN'));
     const events=await page.evaluate(()=>testEvents);
     for(const name of ['explore_cabs_click','cab_results_shown','book_car_click','booking_form_opened'])assert.equal(events.filter(e=>e.name===name).length,1,name);
-    assert.equal(events.some(e=>e.name==='booking_request_submitted'),false);
+    if (clarityTest) {
+      const calls=await page.evaluate(()=>window.clarity.q.map(args=>Array.from(args)));
+      for(const name of ['cab_results_shown','book_car_click','booking_form_opened']) assert.equal(calls.filter(c=>c[0]==='event'&&c[1]===name).length,1,'Clarity '+name);
+      assert.equal(await page.locator('html').getAttribute('data-clarity-mask'),null);
+      assert.equal(await page.locator('#modal-summary-pickup').getAttribute('data-clarity-mask'),'true');
+      assert.equal(calls.some(c=>c[0]==='set'&&c[1]==='traffic_type'&&c[2]==='google_ads'),true);
+    }
+  assert.equal(events.some(e=>e.name==='booking_request_submitted'),false);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-    console.log(`PASS mobile ${destination} ${journey}: live-rate fixture, minimum km, discount, delayed feedback, duplicate tap, results and modal events`);
+    console.log(`PASS mobile ${destination} ${journey}: live-rate fixture, minimum km, coupon-free pricing, delayed feedback, duplicate tap, results and modal events`);
   }
   await page.locator('#cust-phone').fill('9999999999');
   await page.evaluate(async()=>{const mod=await import('/assets/js/mobile-otp.js');window.testOtpPromise=mod.requestFormOtp(document.querySelector('#cust-phone').form,'cust-phone','booking').catch(e=>e.message);});
@@ -126,11 +147,53 @@ try {
   bookingSuccess=true; await submitFixture();
   assert.equal(await page.evaluate(()=>testEvents.filter(e=>e.name==='booking_request_submitted').length),1);
   console.log('PASS booking conversion occurs only after a successful mocked booking API response, never on rejection');
+  if (clarityTest) {
+    const calls=await page.evaluate(()=>window.clarity.q.map(args=>Array.from(args)));
+    for(const name of ['otp_requested','otp_verified','booking_request_submitted']) assert.equal(calls.filter(c=>c[0]==='event'&&c[1]===name).length,1,'Clarity '+name);
+    const serialized=JSON.stringify(calls);
+    for(const sensitive of ['9999999999','fixture@example.com','ISOLATED-TEST-ONLY','fixture-proof','012345']) assert.ok(!serialized.includes(sensitive));
+    console.log('PASS Clarity seven-event Android funnel, selective sensitive masking, paid filter, and no PII in custom payloads');
+  }
   failPricing=true; await go(); await page.locator('#wd-out-one-way').click(); await page.locator('#explore-cabs-button').click();
   await page.waitForFunction(()=>!document.getElementById('explore-cabs-button').disabled);
   assert.equal(await page.locator('#fleet-container > div').count(),0);
   assert.match(await page.locator('#explore-cabs-status').innerText(),/Could not load live fares/);
   console.log('PASS unavailable admin rates cannot expose stale fallback fares');
+  if (clarityTest) {
+    // Remove the persisted consent initializer for the preference UI checks.
+    const preferenceContext=await browser.newContext({...devices['Pixel 5'],ignoreHTTPSErrors:true});
+    await preferenceContext.route('**/*',async route=>{
+      const url=route.request().url();
+      if(url.endsWith('/api/clarity-config'))return route.fulfill({json:{enabled:true,environment:'testing',projectId:'fixture123'}});
+      if(/\.clarity\.ms\//.test(url))return route.fulfill({contentType:'text/javascript',body:''});
+      if(/googletagmanager|google-analytics/.test(url))return route.fulfill({body:''});
+      if(!url.startsWith('http://127.0.0.1:')) {
+        if(!cache.has(url))cache.set(url,(async()=>{const r=await route.fetch();return {status:r.status(),headers:r.headers(),body:await r.body()};})());
+        return route.fulfill(await cache.get(url));
+      }
+      return route.continue();
+    });
+    const choicePage=await preferenceContext.newPage();
+    await choicePage.goto('http://127.0.0.1:4312/privacy-policy');
+    await choicePage.getByRole('button',{name:'No thanks',exact:true}).waitFor();
+    assert.equal(await choicePage.locator('#cwd-clarity-sdk').count(),0);
+    await mkdir(new URL('../.test-output/',import.meta.url),{recursive:true});
+    await choicePage.screenshot({path:fileURLToPath(new URL('../.test-output/clarity-mobile-consent.png',import.meta.url))});
+    await choicePage.getByRole('button',{name:'No thanks',exact:true}).click();
+    await choicePage.reload();
+    await choicePage.getByRole('button',{name:'Analytics preferences',exact:true}).waitFor();
+    assert.equal(await choicePage.locator('#cwd-clarity-sdk').count(),0);
+    await choicePage.getByRole('button',{name:'Analytics preferences',exact:true}).click();
+    await choicePage.getByRole('button',{name:'Allow & Continue',exact:true}).click();
+    await choicePage.locator('#cwd-clarity-sdk').waitFor({state:'attached'});
+    assert.equal(await choicePage.locator('html').getAttribute('data-clarity-mask'),'true');
+    await choicePage.getByRole('button',{name:'Analytics preferences',exact:true}).click();
+    await choicePage.getByRole('button',{name:'No thanks',exact:true}).click();
+    await choicePage.getByRole('button',{name:'Analytics preferences',exact:true}).waitFor();
+    assert.equal(await choicePage.locator('#cwd-clarity-sdk').count(),0);
+    await preferenceContext.close();
+    console.log('PASS mobile consent UI: no SDK before consent or after decline; accept loads once; withdrawal persists across reload');
+  }
   assert.deepEqual(errors,[]);
   const source=await readFile(new URL('../assets/js/analytics.js',import.meta.url),'utf8');
   for(const hostname of ['carswithdriverindia.com','preview.vercel.app']){

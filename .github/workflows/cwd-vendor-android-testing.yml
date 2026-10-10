@@ -1,0 +1,124 @@
+name: CWD Partner Android - Owner Test APK
+
+on:
+  push:
+    branches:
+      - testing
+    paths:
+      - 'apps/cwd_vendor_android/**'
+      - 'scripts/test-vendor-app-ops.mjs'
+      - 'scripts/test-vendor-admin-ops-ui.mjs'
+      - 'cwd-admin-5377.html'
+      - 'lib/vendor-offer-privacy.mjs'
+      - 'lib/vendor-app-auth-core.mjs'
+      - 'api/vendor-app-ops.js'
+      - 'api/vendor-app-auth.js'
+      - 'lib/cwd-pricing.mjs'
+      - 'lib/booking-validation.mjs'
+      - 'api/admin-vendor-ops.js'
+      - 'scripts/test-cwd-pricing-policy.mjs'
+      - 'scripts/test-first-trip-offer.mjs'
+      - 'lib/first-trip-offer.mjs'
+      - 'scripts/test-vendor-booking-html.mjs'
+      - 'vendor-booking.html'
+      - 'api/vendor-portal.js'
+      - 'assets/js/booking.js'
+      - '.github/workflows/cwd-vendor-android-testing.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  vendor-apk-owner-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout testing branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Check Android configurator syntax
+        run: python3 -m py_compile apps/cwd_vendor_android/scripts/configure_android.py
+
+      - name: Verify CWD customer/vendor km pricing and night boundaries
+        run: |
+          node scripts/test-cwd-pricing-policy.mjs
+          node scripts/test-first-trip-offer.mjs
+          node --check api/admin-vendor-ops.js
+          node --check api/vendor-app-ops.js
+          node --check lib/booking-validation.mjs
+          node --check assets/js/booking.js
+
+      - name: Validate admin vendor cancellation UI script and safety
+        run: node scripts/test-vendor-admin-ops-ui.mjs
+
+      - name: Verify existing vendor portal JavaScript
+        run: node scripts/test-vendor-booking-html.mjs
+
+      - name: Verify vendor offer privacy
+        run: node scripts/test-vendor-offer-privacy.mjs
+
+      - name: Verify vendor app auth isolation and approval rules
+        run: node scripts/test-vendor-app-auth-core.mjs
+
+      - name: Verify mocked vendor OTP API and session security
+        run: node scripts/test-vendor-app-auth-api.mjs
+
+      - name: Verify vendor auth API syntax
+        run: node --check api/vendor-app-auth.js
+
+      - name: Validate vendor-scoped booking payloads
+        run: node scripts/test-vendor-app-ops.mjs
+
+      - name: Check vendor app operations JavaScript syntax
+        run: node --check api/vendor-app-ops.js
+
+      - name: Set up Java
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          cache: true
+
+      - name: Scaffold internal Android project
+        working-directory: apps/cwd_vendor_android
+        run: bash scripts/bootstrap.sh
+
+      - name: Flutter analyze
+        working-directory: apps/cwd_vendor_android
+        run: flutter analyze --no-fatal-infos
+
+      - name: Flutter unit tests
+        working-directory: apps/cwd_vendor_android
+        run: flutter test
+
+      # Owner-only live testing while permanent APK signing is configured.
+      # Release-optimized APK has temporary debug signing; only for owner testing.
+      - name: Verify release API hostname is pinned
+        working-directory: apps/cwd_vendor_android
+        run: flutter test test/production_release_config_test.dart --dart-define=CWD_PARTNER_PRODUCTION=true
+
+      - name: Build production-connected owner test APK
+        working-directory: apps/cwd_vendor_android
+        run: |
+          # Release-optimized but uses Flutter's temporary DEBUG signing key.
+          # Package remains .vendor.testing; this is never vendor-distributable.
+          flutter build apk --release --dart-define=CWD_PARTNER_PRODUCTION=true
+          cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/CWD-Partner-Owner-Live-Test.apk
+          verifier=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)
+          test -n "$verifier"
+          "$verifier" verify build/app/outputs/flutter-apk/CWD-Partner-Owner-Live-Test.apk
+
+      - name: Upload owner live-test APK (do not distribute)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: CWD-Partner-Owner-Live-Test-APK
+          path: apps/cwd_vendor_android/build/app/outputs/flutter-apk/CWD-Partner-Owner-Live-Test.apk
+          if-no-files-found: error
+          retention-days: 14

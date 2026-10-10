@@ -35,7 +35,7 @@
       </div>
       <div class="rounded-xl border border-slate-200 p-4">
         <div class="text-xs font-black text-indigo-700 uppercase">Night Travel</div>
-        <p class="text-sm text-slate-600 mt-1">Night charges may apply for travel between 11 PM and 4 AM</p>
+        <p class="text-sm text-slate-600 mt-1">Night charges apply only if the trip starts or ends between 10:01 PM and 5:59 AM</p>
       </div>
       <div class="rounded-xl border border-slate-200 p-4">
         <div class="text-xs font-black text-indigo-700 uppercase">Extra Charges</div>

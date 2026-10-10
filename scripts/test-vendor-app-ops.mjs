@@ -1,0 +1,87 @@
+import assert from 'node:assert/strict';
+import {matchedCar,safeOffer,allocationSafe,indiaDate,bookedOnDate,tripsOverlap}
+  from '../api/vendor-app-ops.js';
+
+const fakeCar={
+  id:'vehicle-id-01',vehicle_number:'MH03AB1234',
+  make_model:'Maruti Suzuki Dzire',category:'Sedan',is_active:true,
+};
+assert.equal(indiaDate('2026-10-08T20:00:00Z'),'2026-10-09');
+assert.equal(bookedOnDate('2026-10-09','2026-10-08T20:00:00Z','2026-10-09T15:00:00Z'),true);
+assert.equal(bookedOnDate('2026-10-10','2026-10-08T20:00:00Z','2026-10-09T15:00:00Z'),false);
+const reserved={start_at:'2026-11-01T04:00:00Z',
+ final_drop_at:'2026-11-02T16:00:00Z',duty_days:2};
+assert.equal(tripsOverlap(reserved,{
+ start_at:'2026-11-02T04:00:00Z',
+ final_drop_at:'2026-11-03T04:00:00Z'}),true);
+assert.equal(tripsOverlap(reserved,{
+ start_at:'2026-11-02T16:00:00Z',
+ final_drop_at:'2026-11-03T04:00:00Z'}),false);
+assert.equal(tripsOverlap({start_at:'2026-11-01T04:00:00Z',duty_days:2},{
+ start_at:'2026-11-02T00:00:00Z',duty_days:1}),true);
+assert.equal(tripsOverlap({start_at:null},reserved),true);
+
+assert.equal(matchedCar('Maruti Suzuki Dzire',fakeCar),true);
+assert.equal(matchedCar('Hyundai Aura',fakeCar),false);
+assert.equal(matchedCar('Sedan',fakeCar),true);
+assert.equal(matchedCar('Innova Crysta',fakeCar),false);
+const offer=safeOffer({
+  id:'offer-id',booking_id:'CWD-TEST',status:'offered',
+  vehicle_required:'Maruti Suzuki Dzire',trip_type:'outstation',
+  route_summary:'123 Secret Flat, Powai, Mumbai → Nashik',
+  start_at:'2026-11-01T00:00:00Z',final_drop_at:null,
+  estimated_vendor_payout:5000,estimated_km:300,
+  pricing_snapshot:{vendor_km_rate:11,customer_phone:'SECRET'},
+},[fakeCar]);
+assert.equal(offer.pickup_area,'Mumbai');
+assert.equal(offer.destination_area,'Nashik');
+assert.equal(offer.selectable_vehicles.length,1);
+assert.equal(offer.selectable_vehicles[0].vehicle_number,'MH03AB1234');
+assert.equal(JSON.stringify(offer).includes('123 Secret Flat'),false);
+assert.equal(JSON.stringify(offer).includes('customer_phone'),false);
+assert.equal(JSON.stringify(offer).includes('SECRET'),false);
+const allocated=allocationSafe({
+  id:'alloc-id',booking_id:'CWD-TEST',status:'allocated',
+  vehicle_number:'MH03AB1234',driver_name:'Demo',
+}, {
+  trip_type:'outstation',vehicle_required:'Maruti Suzuki Dzire',
+  start_at:'2026-11-01T00:00:00Z',estimated_vendor_payout:5000,
+  route_summary:'Powai → Nashik',pricing_snapshot:{vendor_km_rate:11},
+}, {
+  customer_name:'Example Customer',customer_phone:'9876543210',
+  pickup_location:'A Secret Address',destination:'Nashik',route:'A Secret Address → Nashik',
+},null,null);
+assert.equal(allocated.customer.customer_mobile,'9876543210');
+assert.equal(allocated.customer.pickup_address,'A Secret Address');
+assert.equal(allocated.customer.destination,'Nashik');
+// Match actual production schema: inquiries has route/full_address,
+// but no pickup_location or destination columns.
+const productionInquiry={customer_name:'Example',customer_phone:'9876543210',
+  route:'Godrej Hillside Colony Vikhroli Base → Hotel in Powai → Lonavala → Hotel in Powai → Godrej Hillside Colony Vikhroli Base',
+  trip_type:'round_trip'};
+const round=allocationSafe({id:'round-alloc',booking_id:'CWD-ROUND',
+  status:'allocated'},null,productionInquiry,null,null);
+assert.equal(round.customer.pickup_address,'Hotel in Powai');
+assert.equal(round.customer.destination,'Lonavala');
+assert.equal(round.customer.drop_address,'Hotel in Powai');
+assert.deepEqual(round.customer.stops,['Lonavala']);
+const multi=allocationSafe(
+ {id:'multi',booking_id:'CWD-MULTI',status:'allocated'},null,
+ {customer_name:'Example',customer_phone:'9876543210',
+  route:'Godrej Hillside Colony Vikhroli Base → Vikhroli → Igatpuri → Nashik → Aurangabad',
+  trip_type:'one_way'},null,null);
+assert.deepEqual(multi.customer.stops,['Igatpuri','Nashik']);
+assert.equal(JSON.stringify(offer).includes('123 Secret Flat'),false);
+assert.equal(allocated.final_earning,null);
+const settled=allocationSafe({
+  id:'alloc-id',booking_id:'CWD-TEST',status:'approved',
+},null,null,null,{vendor_final_payout:6100,payout_status:'pending',payout_due_at:'2026-11-03T10:30:00Z',utr_reference:'private-payment-id'});
+assert.equal(settled.status,'completed');
+assert.equal(settled.final_earning.vendor_final_payout,6100);
+assert.equal(settled.final_earning.payout_due_at,'2026-11-03T10:30:00Z');
+assert.equal(settled.final_earning.utr_reference,null);
+const actuallyPaid=allocationSafe({id:'paid',booking_id:'CWD-PAID',status:'approved'},
+ null,null,null,{vendor_final_payout:6100,payout_status:'paid',
+ paid_at:'2026-11-03T09:30:00Z',utr_reference:'UTR-DEMO'});
+assert.equal(actuallyPaid.final_earning.utr_reference,'UTR-DEMO');
+console.log('Vendor app API ownership presentation & offer PII policy: PASS');

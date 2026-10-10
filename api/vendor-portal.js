@@ -1,3 +1,4 @@
+import {vendorOfferAreaSummary, vendorOfferSafePricing} from '../lib/vendor-offer-privacy.mjs';
 const json=(d,s=200)=>new Response(JSON.stringify(d),{status:s,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
 const base=()=>String(process.env.SUPABASE_URL||'').replace(/\/$/,'');
 const key=()=>process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -73,8 +74,15 @@ async function handler(request){
   const u=new URL(request.url);
   if(request.method==='GET'){
    const offer=u.searchParams.get('offer'),allocation=u.searchParams.get('allocation');
-   if(offer){const o=await byOffer(offer);if(!o||['revoked','expired'].includes(o.status))fail('Offer link is invalid or expired.',410);const loc=customerTripLocations({route:o.route_summary});return json({success:true,mode:'offer',offer:{booking_id:o.booking_id,vehicle:o.vehicle_required,trip_type:o.trip_type,route:loc.customerRoute,start_at:o.start_at,final_drop_at:o.final_drop_at,estimated_km:o.estimated_km,estimated_vendor_payout:o.estimated_vendor_payout,status:o.status,pricing_snapshot:o.pricing_snapshot}})}
-   if(allocation){const a=await byAlloc(allocation);if(!a||a.revoked_at||['cancelled','reallocated'].includes(a.status))fail('Allocation link is invalid or revoked.',410);const [b,t,o]=await Promise.all([booking(a.booking_id),db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(a.booking_id)+'&select=*&limit=1'),db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a.offer_id)+'&select=vehicle_required,pricing_snapshot&limit=1')]);const allocationView={...a,early_start_approved_at:o?.[0]?.pricing_snapshot?.early_start_approved_at||null};return json({success:true,mode:'allocation',allocation:allocationView,booking:piiBooking(b,o?.[0]?.vehicle_required||''),trip:t?.[0]||null})}
+   if(offer){const o=await byOffer(offer);if(!o||['revoked','expired'].includes(o.status))fail('Offer link is invalid or expired.',410);const areas=vendorOfferAreaSummary(o.route_summary);return json({success:true,mode:'offer',offer:{booking_id:o.booking_id,vehicle:o.vehicle_required,trip_type:o.trip_type,pickup_area:areas.pickup_area,destination_area:areas.destination_area,route:areas.route,start_at:o.start_at,final_drop_at:o.final_drop_at,estimated_km:o.estimated_km,estimated_vendor_payout:o.estimated_vendor_payout,status:o.status,pricing_snapshot:vendorOfferSafePricing(o.pricing_snapshot)}})}
+   if(allocation){const a=await byAlloc(allocation);if(!a||a.revoked_at||['cancelled','reallocated'].includes(a.status))fail('Allocation link is invalid or revoked.',410);const [b,t,o]=await Promise.all([booking(a.booking_id),db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(a.booking_id)+'&select=*&limit=1'),db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a.offer_id)+'&select=vehicle_required,pricing_snapshot&limit=1')]);const startAt=bookingSchedule(b).start;
+     const canStartAt=startAt?new Date(startAt.getTime()-3*3600000):null;
+     const earlyApproved=Boolean(o?.[0]?.pricing_snapshot?.early_start_approved_at);
+     const driverReady=Boolean(a.vehicle_number&&a.driver_name&&/^[6-9][0-9]{9}$/.test(String(a.driver_mobile||'')));
+     const allocationView={...a,early_start_approved_at:o?.[0]?.pricing_snapshot?.early_start_approved_at||null,
+       can_start_at:canStartAt?.toISOString()||null,
+       start_allowed:earlyApproved||(canStartAt!=null&&Date.now()>=canStartAt.getTime()),
+       driver_details_ready:driverReady};return json({success:true,mode:'allocation',allocation:allocationView,booking:piiBooking(b,o?.[0]?.vehicle_required||''),trip:t?.[0]||null})}
    fail('Secure token is required.',401);
   }
   const ct=String(request.headers.get('content-type')||'');
@@ -103,7 +111,8 @@ async function handler(request){
       const close=n(f.get('odometer'),-1);if(close<t.starting_odometer)fail('Closing odometer cannot be lower than starting odometer.');
       const path=a.booking_id+'/end-'+crypto.randomUUID();await upload(f.get('photo'),path);
       const other=n(f.get('other_amount')),reason=String(f.get('other_reason')||'').trim();if(other>0&&!reason)fail('Add a short reason for Other charge.');
-      const patch={closing_odometer:close,closing_photo_path:path,ended_at:new Date().toISOString(),toll:n(f.get('toll')),parking:n(f.get('parking')),state_tax:n(f.get('state_tax')),night_charge:String(f.get('night_charge'))==='yes',other_amount:other,other_reason:reason||null,calculated_trip_km:close-n(t.starting_odometer),review_status:'review_required'};
+      const offerAtClose=(await db('cwd_vendor_offers?id=eq.'+encodeURIComponent(a.offer_id)+'&select=pricing_snapshot&limit=1'))?.[0];
+      const patch={closing_odometer:close,closing_photo_path:path,ended_at:new Date().toISOString(),toll:n(f.get('toll')),parking:n(f.get('parking')),state_tax:n(f.get('state_tax')),night_charge:offerAtClose?.pricing_snapshot?.pricing_policy_version==='CWD-KM-200-TIER-V1'?Number(offerAtClose.pricing_snapshot?.night_count||0)>0:String(f.get('night_charge'))==='yes',other_amount:other,other_reason:reason||null,calculated_trip_km:close-n(t.starting_odometer),review_status:'review_required'};
       await db('cwd_vendor_trip_events?booking_id=eq.'+encodeURIComponent(a.booking_id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify(patch)});
       await db('cwd_vendor_allocations?booking_id=eq.'+encodeURIComponent(a.booking_id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status:'trip_completed_review_required',updated_at:new Date().toISOString()})});return json({success:true,trip_km:patch.calculated_trip_km});
     }

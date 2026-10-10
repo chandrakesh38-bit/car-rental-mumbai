@@ -34,7 +34,7 @@ try {
     if (url.includes('supabase.co/rest/')) {
       assert.equal(req.method(),'GET','Never write to the real database');
       if(url.includes('/with_driver_rates'))return json(failPricing?[]:rates);
-      if(url.includes('/pricing_rules'))return json([{rule_name:'Minimum Outstation KM/Day',rule_value:240}]);
+      if(url.includes('/pricing_rules'))return json([{rule_name:'Minimum Outstation KM/Day',rule_value:200}]);
       return json([]);
     }
     if(url.endsWith('/api/maps-route')) {
@@ -108,8 +108,8 @@ try {
   await page.waitForFunction(()=>wdOutstationRouteQuote!==null);
   await blocked();
   await dates(); await ready();
-  assert.equal(await page.evaluate(()=>getCarCost(wdFleet[0])),240*14+500);
-  console.log('PASS complete route alone remains blocked; valid dates auto-enable original minimum-km fare');
+  assert.equal(await page.evaluate(()=>getCarCost(wdFleet[0])),200*14+500);
+  console.log('PASS complete route alone remains blocked; valid dates auto-enable new 200-KM minimum fare');
   await page.locator('#wd-out-rdate').fill(''); await blocked();
   await page.locator('#wd-out-rdate').fill(date); await ready();
   await page.locator('#wd-out-rhour').selectOption('8');
@@ -118,14 +118,14 @@ try {
   delayRoute=1200;
   await selectPlace('wd-out-destination','Pune'); await blocked();
   await ready(); delayRoute=0;
-  assert.equal(await page.evaluate(()=>getCarCost(wdFleet[0])),290*14+500);
+  assert.equal(await page.evaluate(()=>getCarCost(wdFleet[0])),200*14+90*15+500);
   console.log('PASS cleared/invalid dates disable fares; valid date and delayed drop changes recover without Explore');
   failRoute=true;
   await selectPlace('wd-out-destination','Nashik');
   await page.waitForFunction(()=>document.getElementById('wd-out-route-status').textContent.includes('Fixture route failure'));
   await blocked(); failRoute=false;
   await page.evaluate(()=>updateOutstationRouteEstimate()); await ready();
-  assert.equal(await page.evaluate(()=>getCarCost(wdFleet[0])),336*14+500);
+  assert.equal(await page.evaluate(()=>getCarCost(wdFleet[0])),200*14+136*15+500);
   nextKm=0; await page.evaluate(()=>updateOutstationRouteEstimate()); await blocked();
   nextKm=null; await page.evaluate(()=>updateOutstationRouteEstimate()); await ready();
   console.log('PASS failed/zero-distance route stays disabled and retry restores CTA');

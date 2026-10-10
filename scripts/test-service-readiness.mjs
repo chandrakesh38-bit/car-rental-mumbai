@@ -34,7 +34,7 @@ try {
     if (url.includes('supabase.co/rest/')) {
       assert.equal(req.method(),'GET','Never write to the real database');
       if(url.includes('/with_driver_rates'))return json(failPricing?[]:rates);
-      if(url.includes('/pricing_rules'))return json([{rule_name:'Minimum Outstation KM/Day',rule_value:240}]);
+      if(url.includes('/pricing_rules'))return json([{rule_name:'Minimum Outstation KM/Day',rule_value:200}]);
       return json([]);
     }
     if(url.endsWith('/api/maps-route')) {

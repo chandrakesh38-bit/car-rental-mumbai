@@ -94,7 +94,8 @@ function customerTripLocations(b){
   const destination=round
     ? String(locations.slice(1).find(v=>v.toLowerCase()!==pickup.toLowerCase())||last||'').trim()
     : last;
-  // Full intermediate stops are disclosed only after CWD admin allocation.
+  // Detailed intermediate stops are shared only AFTER CWD admin allocation.
+  // safeOffer() must never expose these customer route strings.
   const stops=locations.slice(1,-1);
   return {pickup,drop:round?pickup:last,destination,stops};
 }
@@ -118,6 +119,10 @@ export function allocationSafe(row,offer,booking,trip,settlement){
     trip_type:offer?.trip_type||'',vehicle_required:offer?.vehicle_required||'',
     pickup_at:offer?.start_at||null,final_drop_at:offer?.final_drop_at||null,
     estimated_payout:offer?.estimated_vendor_payout||0,
+    estimated_km:offer?.estimated_km||0,
+    selected_vehicle_id:offer?.selected_vendor_vehicle_id||null,
+    can_start_at:offer?.start_at?new Date(Date.parse(offer.start_at)-3*3600000).toISOString():null,
+    early_start_approved:Boolean(offer?.pricing_snapshot?.early_start_approved_at),
     pricing:vendorOfferSafePricing(offer?.pricing_snapshot),
     route:vendorOfferAreaSummary(offer?.route_summary),
     customer:customerAfterAllocation(booking),
@@ -349,6 +354,7 @@ async function saveTrip(cfg,vid,form){
    return json({success:true,status:'ongoing'});
  }
  if(action==='end_trip'){
+   const offerAtClose=await ownedOffer(cfg,vid,a.offer_id);
    if(a.status!=='trip_started'||!trip?.started_at||trip.ended_at)
      fail('Start Trip first, or trip is already closed.',409);
    if(km<Number(trip.starting_odometer))
@@ -372,7 +378,7 @@ async function saveTrip(cfg,vid,form){
        toll:charges.toll,parking:charges.parking,
        state_tax:charges.state_tax,other_amount:charges.other_amount,
        other_reason:note||null,
-       night_charge:String(form.get('night_charge'))==='yes',
+       night_charge:offerAtClose.pricing_snapshot?.pricing_policy_version==='CWD-KM-200-TIER-V1'?Number(offerAtClose.pricing_snapshot?.night_count||0)>0:String(form.get('night_charge'))==='yes',
        review_status:'review_required',
      }),
    });
@@ -429,6 +435,49 @@ async function blockVehicle(cfg,vid,body) {
  });
  return json({success:true});
 }
+// Vendor-controlled calendar range blocking, batched after validating all dates.
+async function blockVehicleRange(cfg,vid,body){
+ const start=String(body.start_date||''),end=String(body.end_date||'');
+ const valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&
+   !Number.isNaN(Date.parse(d+'T00:00:00Z'))&&
+   new Date(Date.parse(d+'T00:00:00Z')).toISOString().slice(0,10)===d;
+ if(!valid(start)||!valid(end)||end<start)
+   fail('Choose a valid start and end date.');
+ if(start<indiaDate(now()))fail('Past dates cannot be changed.');
+ const count=Math.round((Date.parse(end+'T00:00:00Z')-Date.parse(start+'T00:00:00Z'))/86400000)+1;
+ if(count>90)fail('Select up to 90 days at a time.');
+ const car=(await vendorDb(cfg,'cwd_vendor_vehicles?id=eq.'+
+   eq(body.vehicle_id)+'&vendor_id=eq.'+eq(vid)+
+   '&is_active=eq.true&select=id&limit=1'))?.[0];
+ if(!car)fail('Vehicle not in your active fleet.',404);
+ const prefix='cwd_vendor_app_vehicle_blocks?vehicle_id=eq.'+eq(car.id)+
+   '&vendor_id=eq.'+eq(vid)+'&blocked_date=gte.'+start+
+   '&blocked_date=lte.'+end;
+ if(body.action==='unblock_vehicle_range'){
+   await vendorDb(cfg,prefix,{method:'DELETE',headers:{Prefer:'return=minimal'}});
+   return json({success:true,days:count});
+ }
+ if(body.action!=='block_vehicle_range')fail('Unknown calendar action.');
+ const [existing,bookings]=await Promise.all([
+   vendorDb(cfg,prefix+'&select=blocked_date&limit=100'),
+   vendorDb(cfg,'cwd_vendor_offers?vendor_id=eq.'+eq(vid)+
+     '&selected_vendor_vehicle_id=eq.'+eq(car.id)+
+     '&status=in.(accepted,allocated)&select=start_at,final_drop_at&limit=120'),
+ ]);
+ const blocked=new Set((existing||[]).map(x=>x.blocked_date));
+ const rows=[];
+ for(let i=0;i<count;i++){
+   const date=new Date(Date.parse(start+'T00:00:00Z')+i*86400000)
+     .toISOString().slice(0,10);
+   if((bookings||[]).some(o=>bookedOnDate(date,o.start_at,o.final_drop_at)))
+     fail('Booking exists on '+date+'. Choose available dates only.',409);
+   if(!blocked.has(date))rows.push({vendor_id:vid,vehicle_id:car.id,
+     blocked_date:date,reason:String(body.reason||'').slice(0,200)||null});
+ }
+ if(rows.length)await vendorDb(cfg,'cwd_vendor_app_vehicle_blocks',{
+   method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(rows)});
+ return json({success:true,days:count,changed:rows.length});
+}
 export default async function handler(request){
  try{
    const cfg=vendorAuthOrFail();
@@ -450,6 +499,8 @@ export default async function handler(request){
      case 'cancel_accepted_offer':return await cancelAcceptedOffer(cfg,vendor.id,body);
      case 'block_vehicle':
      case 'unblock_vehicle':return await blockVehicle(cfg,vendor.id,body);
+     case 'block_vehicle_range':
+     case 'unblock_vehicle_range':return await blockVehicleRange(cfg,vendor.id,body);
      default:fail('Unsupported action.');
    }
  }catch(e){

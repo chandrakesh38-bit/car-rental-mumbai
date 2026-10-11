@@ -15,7 +15,7 @@ on:
       - 'api/vendor-app-auth.js'
       - 'lib/cwd-pricing.mjs'
       - 'lib/booking-validation.mjs'
-      - 'api/admin-vendor-ops.js'
+      - 'api/admin-vendor-ops.mjs'
       - 'scripts/test-cwd-pricing-policy.mjs'
       - 'scripts/test-first-trip-offer.mjs'
       - 'lib/first-trip-offer.mjs'
@@ -78,7 +78,7 @@ jobs:
         run: |
           node scripts/test-cwd-pricing-policy.mjs
           node scripts/test-first-trip-offer.mjs
-          node --check api/admin-vendor-ops.js
+          node --check api/admin-vendor-ops.mjs
           node --check api/vendor-app-ops.js
           node --check lib/booking-validation.mjs
           node --check assets/js/booking.js

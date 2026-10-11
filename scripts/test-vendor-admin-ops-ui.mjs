@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {Script} from 'node:vm';
-import {vendorPayoutDueAt} from '../api/admin-vendor-ops.js';
+import {vendorPayoutDueAt} from '../api/admin-vendor-ops.mjs';
 
 const admin=readFileSync(new URL('../cwd-admin-5377.html',import.meta.url),'utf8');
 const inline=[...admin.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)]
@@ -14,7 +14,7 @@ assert.match(admin,/action:'unlock_vendor_cancellation'/);
 assert.match(admin,/Cancellation unlocked/);
 assert.match(admin,/Cancellation locked/);
 assert.match(admin,/cwdAllocate\(&quot;/);
-const api=readFileSync(new URL('../api/admin-vendor-ops.js',import.meta.url),'utf8');
+const api=readFileSync(new URL('../api/admin-vendor-ops.mjs',import.meta.url),'utf8');
 assert.match(api,/action==='unlock_vendor_cancellation'/);
 assert.match(api,/offer.status!=='accepted'/);
 assert.equal(vendorPayoutDueAt('2026-10-09T17:59:59Z').toISOString(),

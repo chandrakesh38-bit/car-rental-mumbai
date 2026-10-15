@@ -83,6 +83,19 @@ function buildStructuredData(page) {
 }
 
 for (const page of pages) {
+  if (process.argv.includes('--modals-only')) {
+    const output = path.join(root, `${page.slug || 'index'}.html`);
+    const existing = await readFile(output, 'utf8');
+    const start = existing.indexOf('<!-- EXPLORE CABS TRANSITION -->');
+    const end = existing.indexOf('<!-- HOME DELIVERY UNAVAILABLE MODAL -->', start);
+    if (start < 0 || end < start) throw new Error(`Missing modal boundaries: ${output}`);
+    const updated = existing.slice(0, start) + (await component('modals')).trimEnd() + '\n' + existing.slice(end);
+    if (process.argv.includes('--check')) {
+      if (updated.replace(/\r\n/g,'\n') !== existing.replace(/\r\n/g,'\n')) throw new Error(`Modal HTML is stale: ${output}`);
+    } else await writeFile(output, updated);
+    console.log(`Modals ${process.argv.includes('--check') ? 'verified' : 'built'}: ${page.slug || '/'}`);
+    continue;
+  }
   // Scoped rebuild preserves page-specific SEO/content previously edited in
   // generated HTML while synchronizing the shared booking source of truth.
   if (process.argv.includes('--booking-only')) {

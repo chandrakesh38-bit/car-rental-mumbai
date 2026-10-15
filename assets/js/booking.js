@@ -516,7 +516,6 @@ let mumbaiMetroLocations = [
         let chosenCarName = '';
         let chosenFareAmount = 0;
         let firstTripFareBeforeDiscount = 0;
-        let firstTripOfferApplied = false;
         let selectedCarObj = null;
         let currentDeliveryMode = 'home';
         let withDriverCurrentLocation = null;
@@ -2039,6 +2038,7 @@ function onPickupDateChange() {
                     journey_type: currentWDSubTab === 'outstation' ? currentOutstationJourneyType : undefined,
                     page_path: location.pathname
                 });
+                window.dispatchEvent(new Event('cwd:fares-ready'));
                 setExploreCabsUi(false, `Live fares ready below · ${visibleCount} cab option${visibleCount === 1 ? '' : 's'}`);
                 document.body.classList.add('cwd-p1-results-open');
             } catch (error) {
@@ -2400,10 +2400,6 @@ function onPickupDateChange() {
             if (locationStatus) locationStatus.textContent = '';
             firstTripFareBeforeDiscount = Number(fare) || 0;
             // No coupon for new bookings. Client fare must match server fare.
-            firstTripOfferApplied = false; // FIRSTTRIP withdrawn for new bookings
-            const couponInput = document.getElementById('first-trip-coupon-code');
-            if (couponInput) couponInput.value = firstTripOfferApplied ? 'FIRSTTRIP' : '';
-            document.getElementById('first-trip-coupon-error')?.classList.add('hidden');
             chosenFareAmount = firstTripFareBeforeDiscount;
             document.getElementById('modal-car-name').innerText = name;
             renderFirstTripOffer();
@@ -2477,134 +2473,14 @@ function onPickupDateChange() {
                 trip_type: currentWDSubTab,
                 page_path: location.pathname
             });
-            ensureFirstTripOfferTerms();
         }
 
-        function ensureFirstTripOfferTerms() {
-            const panel = document.getElementById('first-trip-offer-panel');
-            if (!panel || document.getElementById('first-trip-offer-terms')) return;
-            const terms = document.createElement('p');
-            terms.id = 'first-trip-offer-terms';
-            terms.className = 'mt-2 text-[10px] leading-relaxed text-slate-600';
-            terms.textContent = currentWDSubTab === 'outstation'
-                ? 'First Trip Offer: 5% discount is applied automatically. FIRSTTRIP is valid once per customer on the first booking.'
-                : 'FIRSTTRIP gives 5% off once per customer on the first booking. Available across Car with Driver India services with no minimum fare. Offer may be changed or withdrawn for future bookings; already confirmed bookings are unaffected.';
-            panel.appendChild(terms);
-        }
-
-        function renderFirstTripOffer(animate = false) {
-            // FIRSTTRIP is withdrawn. All displayed fares match server-verified prices.
-            firstTripOfferApplied = false;
+        function renderFirstTripOffer() {
             chosenFareAmount = firstTripFareBeforeDiscount;
-            const previewFare = document.getElementById('modal-fare');
-            if (previewFare) { previewFare.textContent = '₹' + chosenFareAmount.toLocaleString('en-IN'); previewFare.parentElement?.classList.remove('hidden'); }
-            document.getElementById('modal-original-fare')?.classList.add('hidden');
-            document.getElementById('first-trip-offer-panel')?.classList.add('hidden');
-            document.getElementById('outstation-review-fare-summary')?.classList.add('hidden');
-            return;
             const fare = document.getElementById('modal-fare');
-            const original = document.getElementById('modal-original-fare');
-            const button = document.getElementById('first-trip-coupon-apply');
-            const codeInput = document.getElementById('first-trip-coupon-code');
-            const badge = document.getElementById('first-trip-offer-badge');
-            const error = document.getElementById('first-trip-coupon-error');
-            const breakdown = document.getElementById('first-trip-offer-breakdown');
-            const amount = document.getElementById('first-trip-offer-amount');
-            const discount = Math.round(firstTripFareBeforeDiscount * 0.05);
-            chosenFareAmount = firstTripOfferApplied ? firstTripFareBeforeDiscount - discount : firstTripFareBeforeDiscount;
             if (fare) fare.textContent = '₹' + chosenFareAmount.toLocaleString('en-IN');
-            if (original) {
-                original.textContent = '₹' + firstTripFareBeforeDiscount.toLocaleString('en-IN');
-                original.classList.toggle('hidden', !firstTripOfferApplied);
-            }
-            if (button) {
-                button.disabled = firstTripOfferApplied;
-                button.textContent = firstTripOfferApplied ? 'APPLIED ✓' : 'APPLY COUPON';
-                if (animate) {
-                    button.classList.remove('first-trip-offer-applied');
-                    void button.offsetWidth;
-                    button.classList.add('first-trip-offer-applied');
-                    window.setTimeout(() => button.classList.remove('first-trip-offer-applied'), 550);
-                }
-            }
-            if (codeInput) codeInput.disabled = firstTripOfferApplied;
-            const couponControls = codeInput?.parentElement;
-            const couponHeading = document.getElementById('first-trip-offer-title');
-            const isAutoAppliedOutstation = currentWDSubTab === 'outstation' && firstTripOfferApplied;
-            // Presentation only: use the existing fare and discount values without recalculating them.
-            const isOutstationReview = currentWDSubTab === 'outstation';
-            let fareSummary = document.getElementById('outstation-review-fare-summary');
-            if (!fareSummary && fare) {
-                fareSummary = document.createElement('dl');
-                fareSummary.id = 'outstation-review-fare-summary';
-                fareSummary.className = 'space-y-2 py-2 text-sm tabular-nums';
-                fareSummary.innerHTML = '<div class="flex justify-between items-baseline gap-3"><dt>Base Fare:</dt><dd data-review-base class="font-semibold whitespace-nowrap"></dd></div>' +
-                    '<div data-review-discount-row class="flex justify-between items-baseline gap-3 text-emerald-700"><dt>FIRSTTRIP (5% OFF):</dt><dd data-review-discount class="font-semibold whitespace-nowrap"></dd></div>' +
-                    '<div class="flex justify-between items-baseline gap-3 border-t border-slate-200 pt-2 font-extrabold"><dt>Final Fare:</dt><dd data-review-final class="text-base text-emerald-700 whitespace-nowrap"></dd></div>';
-                fare.parentElement.parentElement.after(fareSummary);
-            }
-            if (fareSummary) {
-                fareSummary.classList.toggle('hidden', !isOutstationReview);
-                fareSummary.querySelector('[data-review-base]').textContent = '₹' + firstTripFareBeforeDiscount.toLocaleString('en-IN');
-                fareSummary.querySelector('[data-review-discount]').textContent = '–₹' + discount.toLocaleString('en-IN');
-                fareSummary.querySelector('[data-review-final]').textContent = '₹' + chosenFareAmount.toLocaleString('en-IN');
-                fareSummary.querySelector('[data-review-discount-row]').classList.toggle('hidden', !firstTripOfferApplied);
-            }
-            if (fare) fare.parentElement.classList.toggle('hidden', isOutstationReview);
-            if (couponControls) couponControls.classList.toggle('hidden', isAutoAppliedOutstation);
-            if (couponHeading && isAutoAppliedOutstation) couponHeading.textContent = 'FIRSTTRIP · 5% OFF — Automatically Applied';
-            if (badge) {
-                badge.classList.toggle('first-trip-offer-badge-applied', firstTripOfferApplied);
-                badge.classList.toggle('hidden', isAutoAppliedOutstation);
-            }
-            if (error && firstTripOfferApplied) error.classList.add('hidden');
-            if (breakdown) breakdown.classList.toggle('hidden', !firstTripOfferApplied || isOutstationReview);
-            if (amount) amount.textContent = '−₹' + discount.toLocaleString('en-IN');
-            if (breakdown && isAutoAppliedOutstation) {
-                const label = breakdown.querySelector('span, p, div');
-                if (label) label.textContent = 'You saved';
-            }
         }
 
-        function applyFirstTripCoupon() {
-            return; // Coupon withdrawn; backend also rejects FIRSTTRIP.
-            if (firstTripOfferApplied) return;
-            const codeInput = document.getElementById('first-trip-coupon-code');
-            const error = document.getElementById('first-trip-coupon-error');
-            const code = String(codeInput?.value || '').trim().toUpperCase();
-            if (code !== 'FIRSTTRIP') {
-                if (error) {
-                    error.textContent = code ? 'Coupon code is not valid. Please check and try again.' : 'Enter a coupon code to apply.';
-                    error.classList.remove('hidden');
-                }
-                codeInput?.focus();
-                return;
-            }
-            error?.classList.add('hidden');
-            firstTripOfferApplied = true;
-            renderFirstTripOffer(true);
-            celebrateFirstTripOffer();
-        }
-
-        function celebrateFirstTripOffer() {
-            if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-            const layer = document.createElement('div');
-            layer.className = 'first-trip-confetti-layer';
-            layer.setAttribute('aria-hidden', 'true');
-            const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#ef4444'];
-            for (let i = 0; i < 64; i++) {
-                const piece = document.createElement('span');
-                piece.className = 'first-trip-confetti-piece';
-                piece.style.left = `${Math.random() * 100}%`;
-                piece.style.setProperty('--confetti-drift', `${Math.round(Math.random() * 220 - 110)}px`);
-                piece.style.setProperty('--confetti-spin', `${Math.round(Math.random() * 900 - 450)}deg`);
-                piece.style.setProperty('--confetti-delay', `${Math.random() * 420}ms`);
-                piece.style.backgroundColor = colors[i % colors.length];
-                layer.appendChild(piece);
-            }
-            document.body.appendChild(layer);
-            window.setTimeout(() => layer.remove(), 2400);
-        }
         function closeModal() { document.getElementById('booking-modal').classList.add('hidden'); syncModalState(document.getElementById('booking-modal'), false); }
 
         function openSDModal(car) {
@@ -3127,7 +3003,6 @@ ${flightNumber ? `🛫 Flight: ${flightNumber}\n` : ''}📅 ${formatBookingDateT
 
     bookingData = {
         ...bookingData,
-        ...(firstTripOfferApplied ? { couponCode: 'FIRSTTRIP' } : {}),
         customerAddress: address,
         currentLocation: withDriverCurrentLocation ? {
             latitude: withDriverCurrentLocation.latitude,

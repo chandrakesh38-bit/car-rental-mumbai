@@ -276,7 +276,8 @@ async function buildLedgers(b,a,t,over={}){
    if(newPolicy){
      customerIncludedKm=Math.max(n(b.included_km),n(snap.estimated_km),days*MIN_OUTSTATION_KM_DAY);
      customerBillableKm=Math.max(customerIncludedKm,actualKm);
-     vendorBillableKm=customerBillableKm; // never diverge from customer billable KM
+     // Internal vendor cost must account for the full actual trip distance even if it exceeds booked KM.
+     vendorBillableKm=Math.max(customerIncludedKm,actualKm,days*MIN_OUTSTATION_KM_DAY);
      customerKmRate=n(snap.customer_extra_km_rate,n(snap.customer_km_rate)+1);
      customerExtraKm=Math.max(0,customerBillableKm-customerIncludedKm);
      customerExtraKmCharge=customerExtraKm*customerKmRate;

@@ -292,6 +292,7 @@
                 <div>
                     <h3 class="font-black text-slate-900 text-sm">Vendor Rate Card / CWD Cost</h3>
                     <p class="text-[11px] text-slate-500 mt-1">Vehicle names are linked to Global Pricing. Customer rates stay separate; these values calculate vendor offers and settlements.</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Final fixed vendor rates are enforced server-side for Wagon R, Dzire, Ertiga and Innova Crysta. Customer pricing is separate. Local package base costs still need configuration; toll, parking and night costs are kept separate in settlement.</p>
                 </div>
                 <button type="button" onclick="loadVendorRateCards()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">⟳ Refresh</button>
             </div>
@@ -2727,7 +2728,7 @@ async function deleteWithDriverVehicle(id) {
                   '<td class="py-3 px-3"><div class="font-black text-slate-900">'+escapeAdminHtml(car.full_name||'')+'</div><div class="text-[9px] text-slate-400">'+escapeAdminHtml(car.segment||'')+'</div></td>'+
                   '<td class="py-3 px-3"><b class="text-indigo-950">₹'+customerOut.toLocaleString('en-IN')+'/km</b><div class="text-[10px] text-slate-500">Extra KM ₹'+(customerOut+1)+'/km</div>'+warning+'</td>'+
                   '<td class="py-3 px-3">₹'+vrInput(id,'out',r.outstation_rate_per_km)+'</td>'+
-                  '<td class="py-3 px-3">'+vrInput(id,'min',200)+'</td>'+
+                  '<td class="py-3 px-3">'+vrInput(id,'min',r.minimum_outstation_km_per_day||300)+'</td>'+
                   '<td class="py-3 px-3">₹'+vrInput(id,'da',r.driver_allowance_per_day||500)+'</td>'+
                   '<td class="py-3 px-3">₹'+vrInput(id,'night',r.night_charge||300)+'</td>'+
                   '<td class="py-3 px-3">₹'+vrInput(id,'l8',r.local_pkg_8hr_80km,'w-20')+'</td>'+

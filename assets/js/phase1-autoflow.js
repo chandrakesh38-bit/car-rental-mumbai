@@ -42,71 +42,8 @@
         .observe(airportForm,{childList:true,subtree:true});
     }
 
-    // Robust ONE-click loader, independent of the cab listing renderer.
-    // Listen before the existing inline onclick=triggerFareSearch() handler.
-    function installSearchAnimation() {
-      const button=$("explore-cabs-button");
-      if (!button || button.dataset.cwdLoaderAttached==="true") return;
-      button.dataset.cwdLoaderAttached="true";
-      const overlay=document.createElement("div");
-      overlay.id="cwd-p1-search-loader";
-      overlay.className="cwd-p1-loader";
-      overlay.setAttribute("role","status");
-      overlay.setAttribute("aria-live","polite");
-      overlay.setAttribute("aria-hidden","true");
-      const heading=document.createElement("strong");
-      heading.textContent="Please wait";
-      const bars=document.createElement("div");
-      bars.className="cwd-p1-loader-bars";
-      for(let i=0;i<3;i++)bars.appendChild(document.createElement("span"));
-      const subheading=document.createElement("p");
-      subheading.textContent="Looking for best rates";
-      overlay.append(heading,bars,subheading);
-      document.body.appendChild(overlay);
-      const reduced=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches||false;
-      // Only a brief transition so the bars can paint. Never hold for 5 sec.
-      const visibleMs=reduced?0:550;
-      let startedAt=0,active=false,token=0,dismissTimer=null;
-      const hide=()=>{
-        overlay.classList.remove("visible");
-        overlay.setAttribute("aria-hidden","true");
-        active=false;
-        dismissTimer=null;
-      };
-      const finish=()=>{
-        if(!active || button.disabled)return;
-        if(dismissTimer!==null)clearTimeout(dismissTimer);
-        const current=token;
-        const remaining=Math.max(0,visibleMs-(performance.now()-startedAt));
-        dismissTimer=setTimeout(()=>{
-          if(current!==token)return;
-          if(!button.disabled)hide();
-        },remaining);
-      };
-      button.addEventListener("click",()=>{
-        if(button.disabled)return;
-        if(dismissTimer!==null)clearTimeout(dismissTimer);
-        token++;
-        active=true;
-        startedAt=performance.now();
-        overlay.classList.add("visible");
-        overlay.setAttribute("aria-hidden","false");
-        // The click's inline handler changes disabled state synchronously;
-        // a subsequent microtask checks fast-success and validation failures.
-        queueMicrotask(finish);
-      },true);
-      new MutationObserver(finish).observe(button,{
-        attributes:true,attributeFilter:["disabled"]
-      });
-      const status=$("explore-cabs-status");
-      if(status)new MutationObserver(finish).observe(status,{
-        childList:true,subtree:true,characterData:true
-      });
-      // Keep waiting when an actual request is pending. On an unexpected
-      // exception and a released button, remove the visual blocker safely.
-      window.addEventListener("pagehide",hide);
-    }
-    installSearchAnimation();
+    // Fare loader now lives in booking.js, directly in triggerFareSearch().
+    // Only one overlay is constructed, and one click always launches the search.
     const fromField=()=> {
       if ($("with-driver-block")?.classList.contains("hidden")) return null;
       if (!$("wd-outstation-fields")?.classList.contains("hidden")) return "wd-out-pickup";
@@ -181,7 +118,10 @@
     const nextByChange={
       "wd-out-pdate":["wd-out-phour",true],
       "wd-out-phour":["wd-out-pampm",true],
-      "wd-out-pampm":["wd-out-rdate",true],
+      "wd-out-pampm":[
+        $("wd-out-one-way")?.getAttribute("aria-pressed")==="true"?
+          "explore-cabs-button":"wd-out-rdate",true
+      ],
       "wd-out-rdate":["wd-out-rhour",true],
       "wd-out-rhour":["wd-out-rampm",true],
       "wd-out-rampm":["explore-cabs-button",false],
@@ -203,13 +143,22 @@
       if(next) queueFocus(next[0],next[1]);
     });
     // Keep the single CTA stable during focus changes and after the first click.
-    const updateResultsMode=()=>{
-      document.body.classList.toggle("cwd-p1-results-open",Boolean(fleet && !fleet.hidden));
-    };
-    if(fleet) new MutationObserver(updateResultsMode).observe(fleet,{
-      attributes:true,attributeFilter:["hidden","aria-hidden"]
+    // If a customer returns to edit a journey, the CTA must be visible even
+    // when a previous cab listing has already been opened.
+    widget.addEventListener("focusin",e=>{
+      if(e.target?.id!=="explore-cabs-button")document.body.classList.remove("cwd-p1-results-open");
     });
-    updateResultsMode();
+    widget.addEventListener("click",e=>{
+      if(!e.target.closest("#explore-cabs-button"))document.body.classList.remove("cwd-p1-results-open");
+    });
+    // Once the listing enters the viewport, keep its filters unobstructed.
+    if(fleet && typeof IntersectionObserver!=="undefined") {
+      const view=new IntersectionObserver(entries=>{
+        if(entries.some(item=>item.isIntersecting) && !fleet.hidden)
+          document.body.classList.add("cwd-p1-results-open");
+      },{threshold:0.08});
+      view.observe(fleet);
+    }
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
   else init();

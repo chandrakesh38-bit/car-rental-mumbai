@@ -82,3 +82,83 @@
 @media(prefers-reduced-motion:reduce) {
  .cwd-p1.cwd-p1-conversion * {scroll-behavior:auto!important;}
 }
+
+/* Inline browser-location shortcut; does not add height outside pickup field. */
+.cwd-p1 .cwd-p1-current-location-input {
+  width:100%;
+  min-width:0;
+  position:relative;
+}
+.cwd-p1 .cwd-p1-current-location-input > .cwd-p1-current-location-field {
+  width:100%;
+  min-width:0;
+  padding-right:49px !important;
+}
+.cwd-p1 .cwd-p1-current-location-input > .location-current-action,
+.cwd-p1 .location-entry:focus-within .cwd-p1-current-location-input > .location-current-action {
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:center;
+  position:absolute !important;
+  top:50%;
+  right:4px;
+  transform:translateY(-50%);
+  z-index:4;
+  width:37px;
+  height:34px;
+  min-height:34px;
+  margin:0 !important;
+  padding:0 !important;
+  border-radius:9px;
+  border:1px solid #bfdbea;
+  background:#e9f5fe;
+  color:#166a9b;
+  white-space:nowrap;
+  font-size:0 !important;
+  box-shadow:none;
+  overflow:hidden;
+}
+.cwd-p1 .cwd-p1-current-location-input > .location-current-action i {
+  font-size:16px !important;
+  margin:0 !important;
+  line-height:1;
+}
+.cwd-p1 .cwd-p1-current-location-input > .location-current-action:focus-visible {
+  outline:2px solid #1274b1;
+  outline-offset:2px;
+}
+.cwd-p1 .cwd-p1-current-location-input > .location-current-action:hover {background:#d9edfb;}
+
+/* Standalone three-scaling-bars loader; independent of the listing renderer. */
+#cwd-p1-search-loader {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:10050;
+  padding:20px;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:14px;
+  text-align:center;
+  color:#123956;
+  background:rgba(248,252,255,.98);
+}
+#cwd-p1-search-loader.visible {display:flex;}
+#cwd-p1-search-loader strong {font-size:21px;font-weight:850;}
+#cwd-p1-search-loader p {margin:0;color:#526b83;font-size:14px;font-weight:650;}
+#cwd-p1-search-loader .cwd-p1-loader-bars {display:flex;gap:8px;height:52px;align-items:center;justify-content:center;}
+#cwd-p1-search-loader .cwd-p1-loader-bars span {
+  display:block;
+  width:10px;
+  height:26px;
+  border-radius:6px;
+  background:#187db7;
+  transform-origin:center center;
+  animation:cwd-p1-scale .75s ease-in-out infinite alternate;
+}
+#cwd-p1-search-loader .cwd-p1-loader-bars span:nth-child(2) {animation-delay:.18s;}
+#cwd-p1-search-loader .cwd-p1-loader-bars span:nth-child(3) {animation-delay:.36s;}
+@media(prefers-reduced-motion:reduce) {
+  #cwd-p1-search-loader .cwd-p1-loader-bars span {animation:none;}
+}

@@ -1,5 +1,14 @@
 /* Page composition and navigation only. Business logic remains in booking.js. */
 (() => {
+    // Testing-only Phase 1 enhancement assets. Booking/pricing logic stays in booking.js.
+    const p1Css = document.createElement('link');
+    p1Css.rel = 'stylesheet';
+    p1Css.href = '/assets/css/phase1-redesign.css';
+    document.head.appendChild(p1Css);
+    const p1Script = document.createElement('script');
+    p1Script.src = '/assets/js/phase1-redesign.js';
+    p1Script.defer = true;
+    document.head.appendChild(p1Script);
     const initializeBooking = window.onload;
     window.onload = null;
 

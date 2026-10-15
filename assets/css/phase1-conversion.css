@@ -42,7 +42,9 @@
   .cwd-p1.cwd-p1-conversion #booking-widget #with-driver-block .mt-6 {margin-top:8px;}
   .cwd-p1.cwd-p1-conversion #booking-widget .cwd-p1-mode-heading {margin-bottom:6px;}
   .cwd-p1.cwd-p1-conversion .cwd-p1-trust {margin-top:8px;gap:5px 13px;font-size:10px;}
-  .cwd-p1.cwd-p1-conversion.cwd-p1-floating-cta #with-driver-block > .mt-6 {
+  /* ONE existing CTA is pinned consistently while filling trip details.
+     It never switches modes on focus, keyboard or the first click. */
+  .cwd-p1.cwd-p1-conversion #with-driver-block > .mt-6 {
     position:fixed;
     left:8px;right:8px;
     bottom:calc(7px + env(safe-area-inset-bottom, 0px));
@@ -55,9 +57,15 @@
     box-shadow:0 5px 25px rgba(15,32,56,.2);
     backdrop-filter:blur(10px);
   }
-  .cwd-p1.cwd-p1-conversion.cwd-p1-floating-cta #explore-cabs-button {width:100%;min-height:44px;}
-  .cwd-p1.cwd-p1-conversion.cwd-p1-floating-cta #explore-cabs-status {display:none;}
-  .cwd-p1.cwd-p1-conversion.cwd-p1-floating-cta #booking-widget {padding-bottom:62px;}
+  .cwd-p1.cwd-p1-conversion #explore-cabs-button {width:100%;min-height:44px;}
+  .cwd-p1.cwd-p1-conversion #with-driver-block > .mt-6 #explore-cabs-status {display:none;}
+  .cwd-p1.cwd-p1-conversion #booking-widget {padding-bottom:62px;}
+  /* Once results are ready, do not leave an overlapping sticky action. */
+  .cwd-p1.cwd-p1-conversion.cwd-p1-results-open #with-driver-block > .mt-6 {display:none!important;}
+  /* Modify Booking still uses the same original button in the edit dialog. */
+  .cwd-p1.cwd-p1-conversion.cwd-p1-results-open .cwd-p1-edit-dialog #with-driver-block > .mt-6 {
+    display:flex!important;position:static!important;left:auto;right:auto;bottom:auto;box-shadow:none;
+  }
 }
 @media(min-width:360px) and (max-width:700px) {
   .cwd-p1.cwd-p1-conversion #wd-outstation-fields > .grid.grid-cols-1,

@@ -83,6 +83,28 @@ function buildStructuredData(page) {
 }
 
 for (const page of pages) {
+  // Scoped rebuild preserves page-specific SEO/content previously edited in
+  // generated HTML while synchronizing the shared booking source of truth.
+  if (process.argv.includes('--booking-only')) {
+    const output = path.join(root, `${page.slug || 'index'}.html`);
+    const existing = await readFile(output, 'utf8');
+    const start = existing.indexOf('<!-- BOOKING WIDGET CARD -->');
+    if (start < 0) continue;
+    const tags = /<\/?div\b[^>]*>/g;
+    tags.lastIndex = start;
+    let depth = 0, end = -1, match;
+    while ((match = tags.exec(existing))) {
+      depth += match[0].startsWith('</') ? -1 : 1;
+      if (depth === 0) { end = tags.lastIndex; break; }
+    }
+    if (end < 0) throw new Error(`Unclosed booking widget: ${output}`);
+    const updated = existing.slice(0, start) + (await component('booking-widget')).trimEnd() + existing.slice(end);
+    if (process.argv.includes('--check')) {
+      if (updated.replace(/\r\n/g,'\n') !== existing.replace(/\r\n/g,'\n')) throw new Error(`Booking HTML is stale: ${output}`);
+    } else await writeFile(output, updated);
+    console.log(`Booking widget ${process.argv.includes('--check') ? 'verified' : 'built'}: ${page.slug || '/'}`);
+    continue;
+  }
   const route = '/' + page.slug;
   const link = (target, className, icon = false) => `<a href="/${target.slug}"${target.slug === page.slug ? ' aria-current="page"' : ''} class="${className}">${icon ? `<i class="fa-solid ${target.icon} text-indigo-600 w-5" aria-hidden="true"></i>` : ''}<span>${escape(target.label)}</span></a>`;
   const visiblePages = pages.filter(p => p.nav !== false);

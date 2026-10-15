@@ -1,4 +1,5 @@
 {
+  "buildCommand": "node scripts/build.mjs --booking-only",
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [

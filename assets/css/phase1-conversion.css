@@ -2,7 +2,7 @@
    No markup or business-rule changes. */
 .cwd-p1.cwd-p1-conversion header.cwd-p1-hero {
   padding-top: 14px;
-  padding-bottom: 19px;
+  padding-bottom: 50px;
 }
 .cwd-p1.cwd-p1-conversion header.cwd-p1-hero > div > span:first-child { margin-bottom: 6px; }
 .cwd-p1.cwd-p1-conversion header.cwd-p1-hero > div > h1 { line-height:1.2;margin-bottom:5px; }
@@ -21,16 +21,16 @@
   outline:2px solid #237fb8; outline-offset:1px;
 }
 @media(max-width:700px) {
-  .cwd-p1.cwd-p1-conversion header.cwd-p1-hero { padding:10px 8px 13px; }
+  .cwd-p1.cwd-p1-conversion header.cwd-p1-hero { padding:10px 8px 44px; }
   .cwd-p1.cwd-p1-conversion[data-page="home"] header.cwd-p1-hero > div > span:first-child {display:none;}
   .cwd-p1.cwd-p1-conversion[data-page="home"] header.cwd-p1-hero > div > p {display:none;}
   .cwd-p1.cwd-p1-conversion header.cwd-p1-hero > div > h1 {font-size:17px;line-height:1.25;margin-bottom:9px;}
   .cwd-p1.cwd-p1-conversion #booking-widget #with-driver-block {padding:9px 9px 10px;}
   .cwd-p1.cwd-p1-conversion #booking-widget #with-driver-block .mb-6 {margin-bottom:8px;}
   .cwd-p1.cwd-p1-conversion #booking-widget #with-driver-block .space-y-4 {row-gap:6px;}
-  .cwd-p1.cwd-p1-conversion #booking-widget #with-driver-block label:not(.sr-only) {font-size:10px;line-height:1.25;margin-bottom:4px;}
+  .cwd-p1.cwd-p1-conversion #booking-widget #with-driver-block label:not(.sr-only) {font-size:12px;line-height:1.25;margin-bottom:4px;}
   .cwd-p1.cwd-p1-conversion #booking-widget #with-driver-block input,
-  .cwd-p1.cwd-p1-conversion #booking-widget #with-driver-block select {min-height:36px;}
+  .cwd-p1.cwd-p1-conversion #booking-widget #with-driver-block select {min-height:44px;}
   .cwd-p1.cwd-p1-conversion #booking-widget #with-driver-block .booking-datetime {row-gap:4px;}
   .cwd-p1.cwd-p1-conversion #wd-outstation-fields > .grid,
   .cwd-p1.cwd-p1-conversion #wd-local-fields > .grid,
@@ -42,42 +42,12 @@
   .cwd-p1.cwd-p1-conversion #booking-widget #with-driver-block .mt-6 {margin-top:8px;}
   .cwd-p1.cwd-p1-conversion #booking-widget .cwd-p1-mode-heading {margin-bottom:6px;}
   .cwd-p1.cwd-p1-conversion .cwd-p1-trust {margin-top:8px;gap:5px 13px;font-size:10px;}
-  /* ONE existing CTA is pinned consistently while filling trip details.
-     It never switches modes on focus, keyboard or the first click. */
-  .cwd-p1.cwd-p1-conversion #with-driver-block > .mt-6 {
-    position:fixed;
-    left:8px;right:8px;
-    bottom:calc(7px + env(safe-area-inset-bottom, 0px));
-    z-index:48;
-    margin:0!important;
-    padding:7px;
-    border:1px solid #dce9f4;
-    background:rgba(255,255,255,.98);
-    border-radius:15px;
-    box-shadow:0 5px 25px rgba(15,32,56,.2);
-    backdrop-filter:blur(10px);
-  }
-  .cwd-p1.cwd-p1-conversion #explore-cabs-button {width:100%;min-height:44px;}
-  .cwd-p1.cwd-p1-conversion #with-driver-block > .mt-6 #explore-cabs-status {display:none;}
-  .cwd-p1.cwd-p1-conversion #booking-widget {padding-bottom:62px;}
-  /* Once results are ready, do not leave an overlapping sticky action. */
-  .cwd-p1.cwd-p1-conversion.cwd-p1-results-open #with-driver-block > .mt-6 {display:none!important;}
-  /* Modify Booking still uses the same original button in the edit dialog. */
-  .cwd-p1.cwd-p1-conversion.cwd-p1-results-open .cwd-p1-edit-dialog #with-driver-block > .mt-6 {
-    display:flex!important;position:static!important;left:auto;right:auto;bottom:auto;box-shadow:none;
-  }
-}
-@media(min-width:360px) and (max-width:700px) {
-  .cwd-p1.cwd-p1-conversion #wd-outstation-fields > .grid.grid-cols-1,
-  .cwd-p1.cwd-p1-conversion #wd-local-fields > .grid.grid-cols-1,
-  .cwd-p1.cwd-p1-conversion #airport-dynamic-form .grid.grid-cols-1 {
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-  .cwd-p1.cwd-p1-conversion #wd-outstation-fields .booking-datetime.grid {grid-template-columns:repeat(2,minmax(0,1fr));}
-  .cwd-p1.cwd-p1-conversion #wd-outstation-fields .booking-datetime > div:first-child {grid-column:1/-1;}
-}
-@media(max-width:359px) {
- .cwd-p1.cwd-p1-conversion #booking-widget #wd-outstation-fields > .grid.grid-cols-1 {grid-template-columns:1fr;}
+  .cwd-p1.cwd-p1-conversion #with-driver-block > .mt-6 {position:fixed;left:8px;right:8px;bottom:var(--cwd-keyboard-offset,0px);background:#fff;padding:8px;border-radius:14px;box-shadow:0 -3px 18px #102c5120;z-index:48;}
+  .cwd-p1.cwd-p1-conversion #explore-cabs-button {width:100%;min-height:48px;}
+  .cwd-p1.cwd-p1-conversion #booking-widget {overflow:visible;padding-bottom:90px;}
+  .cwd-p1.cwd-p1-conversion.cwd-p1-results-open #with-driver-block > .mt-6,
+  .cwd-p1.cwd-p1-conversion .cwd-p1-edit-dialog #with-driver-block > .mt-6 {position:static;box-shadow:none;}
+
 }
 @media(prefers-reduced-motion:reduce) {
  .cwd-p1.cwd-p1-conversion * {scroll-behavior:auto!important;}
@@ -129,36 +99,16 @@
 }
 .cwd-p1 .cwd-p1-current-location-input > .location-current-action:hover {background:#d9edfb;}
 
-/* Standalone three-scaling-bars loader; independent of the listing renderer. */
-#cwd-p1-search-loader {
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:10050;
-  padding:20px;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  gap:14px;
-  text-align:center;
-  color:#123956;
-  background:rgba(248,252,255,.98);
-}
-#cwd-p1-search-loader.visible {display:flex;}
-#cwd-p1-search-loader strong {font-size:21px;font-weight:850;}
-#cwd-p1-search-loader p {margin:0;color:#526b83;font-size:14px;font-weight:650;}
-#cwd-p1-search-loader .cwd-p1-loader-bars {display:flex;gap:8px;height:52px;align-items:center;justify-content:center;}
-#cwd-p1-search-loader .cwd-p1-loader-bars span {
-  display:block;
-  width:10px;
-  height:26px;
-  border-radius:6px;
-  background:#187db7;
-  transform-origin:center center;
-  animation:cwd-p1-scale .75s ease-in-out infinite alternate;
-}
-#cwd-p1-search-loader .cwd-p1-loader-bars span:nth-child(2) {animation-delay:.18s;}
-#cwd-p1-search-loader .cwd-p1-loader-bars span:nth-child(3) {animation-delay:.36s;}
-@media(prefers-reduced-motion:reduce) {
-  #cwd-p1-search-loader .cwd-p1-loader-bars span {animation:none;}
+
+/* Hide the removed promotional hero block visually while retaining the SEO heading. */
+.cwd-p1[data-page="home"] header.cwd-p1-hero > div > span:first-child,
+.cwd-p1[data-page="home"] header.cwd-p1-hero > div > p {display:none;}
+.cwd-p1[data-page="home"] header.cwd-p1-hero > div > h1 {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+.cwd-p1.cwd-p1-conversion .cwd-p1-trust {font-size:12px;}
+@media(max-width:700px){
+ .cwd-p1 #wd-outstation-fields > .grid.grid-cols-1 {grid-template-columns:1fr;}
+ .cwd-p1 #booking-widget input[type="text"] {font-size:16px;min-height:44px;}
+ .cwd-p1 #wd-outstation-fields .booking-datetime {grid-template-columns:2fr 1fr 1fr;}
+ .cwd-p1 .cwd-p1-custom-route {font-size:11px;padding:6px 8px;}
+ .cwd-p1 #wd-out-trip-type-fieldset button {min-height:44px;}
 }

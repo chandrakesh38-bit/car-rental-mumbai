@@ -38,7 +38,7 @@
     }
     ['local','airport'].forEach(type => {
       const fields = $('wd-' + type + '-fields');
-      const heading = make('p','cwd-p1-mode-heading', type === 'local' ? 'Hourly rentals within the city' : 'Reliable airport pickups & drops');
+      const heading = make('p','cwd-p1-mode-heading', type === 'local' ? 'HOURLY RENTALS WITHIN THE CITY' : 'RELIABLE AIRPORT PICKUPS & DROPS');
       fields?.prepend(heading);
     });
     $('search-btn-text') && ($('search-btn-text').textContent = 'EXPLORE CABS');
@@ -75,7 +75,7 @@
     if (hero && !$('cwd-p1-hero-trust')) {
       const trust = make('div','cwd-p1-trust');
       trust.id='cwd-p1-hero-trust';
-      ['Mumbai, Thane & Navi Mumbai Pickups','Travel Across India','Book at ₹0 Available'].forEach((t,i)=>{
+      ['Mumbai, Thane & Navi Mumbai Pickups • Travel Across India'].forEach((t,i)=>{
         const span=make('span','');
         span.append(make('i', i===2 ? 'fa-solid fa-shield-halved' : 'fa-solid fa-circle-check'), document.createTextNode(' '+t));
         trust.appendChild(span);

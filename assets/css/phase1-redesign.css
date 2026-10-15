@@ -75,14 +75,6 @@ body.cwd-p1 { background:#f5f7fb; }
 .cwd-p1 .cwd-p1-reset { border:1px solid #bdd4e3;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:800; }
 .cwd-p1 .cwd-p1-edit-dialog { width:min(850px,100%); }
 .cwd-p1 .cwd-p1-edit-dialog #booking-widget { box-shadow:none; }
-.cwd-p1 .cwd-p1-loader { position:fixed;inset:0;background:rgba(249,252,255,.97);z-index:10005;display:none;align-items:center;justify-content:center;text-align:center;flex-direction:column;color:#153958;gap:11px;padding:20px; }
-.cwd-p1 .cwd-p1-loader.visible { display:flex; }
-.cwd-p1 .cwd-p1-loader strong { font-size:20px; }
-.cwd-p1 .cwd-p1-loader-bars { height:42px;display:flex;align-items:center;gap:6px; }
-.cwd-p1 .cwd-p1-loader-bars span { width:9px;height:23px;background:#237eb6;border-radius:4px;animation:cwd-p1-scale 1s ease-in-out infinite alternate; }
-.cwd-p1 .cwd-p1-loader-bars span:nth-child(2) { animation-delay:.15s; }
-.cwd-p1 .cwd-p1-loader-bars span:nth-child(3) { animation-delay:.3s; }
-@keyframes cwd-p1-scale { from { transform:scaleY(.55);opacity:.6; } to { transform:scaleY(1.6);opacity:1; } }
 @media(max-width:680px) {
  .cwd-p1 header.cwd-p1-hero { padding:18px 10px 23px; }
  .cwd-p1 header.cwd-p1-hero h1 { font-size:21px; }

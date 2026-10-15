@@ -709,6 +709,11 @@ function showCustomAlert(message) {
             }
             if(isOneWayTrip) syncOneWayEndTime();
             else if(previousType==='one-way') {
+                if (savedRoundTripEnd) {
+                    const start=createLocalDateTime(document.getElementById('wd-out-pdate').value,Number(document.getElementById('wd-out-phour').value),document.getElementById('wd-out-pampm').value);
+                    const end=createLocalDateTime(savedRoundTripEnd[0],Number(savedRoundTripEnd[1]),savedRoundTripEnd[2]);
+                    if (!Number.isFinite(end.getTime()) || (Number.isFinite(start.getTime()) && end <= start)) savedRoundTripEnd=null;
+                }
                 ['wd-out-rdate','wd-out-rhour','wd-out-rampm'].forEach((id,i)=>{
                     const el=document.getElementById(id);
                     if(el && savedRoundTripEnd)el.value=savedRoundTripEnd[i];
@@ -768,7 +773,7 @@ function showCustomAlert(message) {
 
             const dateTimeHTML = `
                 <div class="mt-4 pt-4 border-t border-slate-200">
-                    <label for="wd-airport-date" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                    <label for="wd-airport-date" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Trip Start Date & Time *</label>
                     <div class="grid grid-cols-3 gap-1.5 booking-datetime">
                         <div class="relative">
     <input type="date" id="wd-airport-date" onclick="this.showPicker()" class="date-input-custom w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer">
@@ -1092,7 +1097,7 @@ function onPickupDateChange() {
                         secondary.textContent = place.secondaryText || '';
                         wrap.append(main, secondary);
                         option.append(icon, wrap);
-                        option.addEventListener('mousedown', async event => {
+                        option.addEventListener('click', async event => {
                             event.preventDefault();
                             if (!isCurrent()) return;
                             input.value = place.text || place.mainText || '';
@@ -1125,6 +1130,8 @@ function onPickupDateChange() {
                                     }
                                 }
                             }
+                            if (input.dataset.pickupAllowed === 'false') return;
+                            input.dispatchEvent(new CustomEvent('cwd:place-selected', {bubbles:true, detail:{inputId}}));
                             calculateDriverFare();
                             if (inputId === 'wd-airport-pickup') {
                                 await updateAirportRouteEstimate();
@@ -1192,7 +1199,7 @@ function onPickupDateChange() {
                         secondary.textContent = place.secondaryText || '';
                         textWrap.append(main, secondary);
                         option.append(icon, textWrap);
-                        option.addEventListener('mousedown', async event => {
+                        option.addEventListener('click', async event => {
                             event.preventDefault();
                             if (outstationSelectionVersions.get(inputId) !== version) return;
                             const selectionVersion = version + 1;
@@ -1228,6 +1235,7 @@ function onPickupDateChange() {
                                 address: place.text || ''
                             });
                             input.classList.remove('border-red-500');
+                            input.dispatchEvent(new CustomEvent('cwd:place-selected', {bubbles:true, detail:{inputId}}));
                             updateOutstationRouteEstimate();
                         });
                         dropdown.appendChild(option);
@@ -1878,7 +1886,7 @@ function onPickupDateChange() {
         }
 
         async function showCabSearchTransition(updateResults, targetId) {
-            const overlay = document.getElementById('explore-cabs-overlay');
+            const overlay = targetId === 'fleet' ? null : document.getElementById('explore-cabs-overlay');
             if (overlay?.classList.contains('visible')) return;
             const target = document.getElementById(targetId);
             if (!target) return;
@@ -1902,7 +1910,7 @@ function onPickupDateChange() {
             const text = document.getElementById('search-btn-text');
             const icon = document.getElementById('search-btn-icon');
             const status = document.getElementById('explore-cabs-status');
-            if (button) button.disabled = Boolean(isLoading);
+            if (button) button.disabled = Boolean(isLoading || fareSearchInFlight);
             if (text) text.textContent = isLoading ? 'Checking Live Fares...' : 'EXPLORE CABS';
             if (icon) icon.className = isLoading
                 ? 'fa-solid fa-circle-notch fa-spin text-indigo-950 text-base'
@@ -1956,12 +1964,14 @@ function onPickupDateChange() {
             document.body.appendChild(overlay);
             return overlay;
         }
+        let fareSearchInFlight = false;
         async function triggerFareSearch() {
-            if (document.getElementById('explore-cabs-button')?.disabled) return;
+            if (fareSearchInFlight) return;
+            fareSearchInFlight = true;
             const searchOverlay=makeFareSearchOverlay();
+            try {
             searchOverlay.classList.add('visible');
             searchOverlay.setAttribute('aria-hidden','false');
-            const searchStartedAt=performance.now();
             // Disable immediately, even before the first animation frame,
             // so a double tap cannot launch two identical fare requests.
             setExploreCabsUi(true, 'Checking route and live fares...');
@@ -1973,7 +1983,6 @@ function onPickupDateChange() {
                 journey_type: currentWDSubTab === 'outstation' ? currentOutstationJourneyType : undefined,
                 page_path: location.pathname
             });
-            try {
                 if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !requireOutstationJourneyType()) {
                     trackFareValidationFailure('trip_type_missing');
                     setExploreCabsUi(false, 'Please choose One-way or Round trip.');
@@ -2018,15 +2027,14 @@ function onPickupDateChange() {
                     page_path: location.pathname
                 });
                 setExploreCabsUi(false, `Live fares ready below · ${visibleCount} cab option${visibleCount === 1 ? '' : 's'}`);
+                document.body.classList.add('cwd-p1-results-open');
             } catch (error) {
                 console.error('Fare search failed', error);
                 trackFareValidationFailure('unexpected_error');
                 showCustomAlert('Unable to load live fares right now. Please try again.');
                 setExploreCabsUi(false, 'Could not load live fares. Please try again.');
             } finally {
-                // Short transition only; no mandatory 5-second waiting.
-                const remaining=Math.max(0,320-(performance.now()-searchStartedAt));
-                if(remaining)await new Promise(resolve=>setTimeout(resolve,remaining));
+                fareSearchInFlight = false;
                 searchOverlay.classList.remove('visible');
                 searchOverlay.setAttribute('aria-hidden','true');
                 const button=document.getElementById('explore-cabs-button');

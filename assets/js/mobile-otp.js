@@ -1,8 +1,9 @@
 const state = {
-  open: false, phone: null, purpose: '', proof: '', expiresAt: 0, mobile: '',
+  open: false, session: 0, phone: null, purpose: '', proof: '', expiresAt: 0, mobile: '',
   reqId: '', retryAt: 0, busy: false, resolve: null, reject: null, settings: null
 };
 let sdkPromise;
+const watchedPhones = new WeakSet();
 
 const normalize = value => {
   const n = String(value || '').replace(/[\s()+-]/g, '');
@@ -190,9 +191,12 @@ function sdkCall(method, ...args) {
 
 async function sendOtp(isRetry = false) {
   if (state.busy) return;
+  const session = state.session;
+  const current = () => state.open && session === state.session;
   state.busy = true; render(); message(isRetry ? 'Resending OTP…' : 'Sending OTP…');
   try {
     state.settings = await loadSdk();
+    if (!current()) return;
     const phone = normalize(state.phone.value);
     if (!phone || phone !== state.mobile) throw Error('Mobile number changed. Please close and submit again.');
 
@@ -201,7 +205,7 @@ async function sendOtp(isRetry = false) {
     // can leave the SDK waiting until our request timeout.
     if (!isRetry) {
       await waitForCaptcha();
-      if (!state.open) throw Error('OTP verification cancelled.');
+      if (!current()) return;
       message('Sending OTP…');
     }
 
@@ -221,10 +225,12 @@ async function sendOtp(isRetry = false) {
         const fail = e => { clearTimeout(timer); reject(Error(e?.message || 'Unable to send OTP.')); };
         try { otpDiagnostic('send_invoked'); window.sendOtp(phone, ok, fail); } catch (e) { fail(e); }
       });
+      if (!current()) return;
       state.reqId = result?.reqId || result?.requestId || result?.request_id || result?.message || (typeof result === 'string' ? result : '');
       otpDiagnostic('send_success', '', Boolean(state.reqId));
       if (!state.reqId) throw Error('Unable to start OTP verification. Please retry.');
     }
+    if (!current()) return;
     const length = Number(state.settings.otpLength);
     if (!Number.isInteger(length) || length < 4 || length > 8) throw Error('OTP service configuration is unavailable.');
     buildDigits(length);
@@ -235,10 +241,11 @@ async function sendOtp(isRetry = false) {
     }
     ensureModal().querySelector('[data-digits] input')?.focus();
   } catch (error) {
+    if (!current()) return;
     otpDiagnostic('send_error', error?.message || 'Unable to send OTP.', Boolean(state.reqId));
     message(error.message || 'Unable to send OTP. Please retry.', true);
   } finally {
-    state.busy = false; render();
+    if (current()) { state.busy = false; render(); }
   }
 }
 
@@ -248,7 +255,10 @@ async function verifyAndFinish() {
   const otp = digits.map(input => input.value).join('');
   if (!digits.length || otp.length !== digits.length || !/^\d+$/.test(otp)) return message('Enter every OTP digit.', true);
   state.busy = true; render(); message('Verifying OTP…');
+  const session = state.session;
+  const current = () => state.open && session === state.session;
   try {
+    if (normalize(state.phone?.value) !== state.mobile) throw Error('Mobile number changed. Please close and verify the new number.');
     const result = await new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(Error('OTP verification timed out. Please retry.')), 30000);
       const ok = r => { clearTimeout(timer); r?.type === 'error' ? reject(Error(r.message || 'Incorrect or expired OTP.')) : resolve(r); };
@@ -256,6 +266,7 @@ async function verifyAndFinish() {
       try { otpDiagnostic('verify_invoked', '', Boolean(state.reqId)); window.verifyOtp(otp, ok, fail, state.reqId); } catch (e) { fail(e); }
     });
     const accessToken = result?.['access-token'] || result?.message;
+    if (!current()) return;
     otpDiagnostic('verify_sdk_success', '', Boolean(state.reqId));
     if (!accessToken) throw Error('OTP verification failed. Please resend OTP.');
     const response = await fetch('/api/mobile-otp', {
@@ -265,7 +276,9 @@ async function verifyAndFinish() {
       body: JSON.stringify({ accessToken, phone: state.mobile, purpose: state.purpose, reqId: state.reqId })
     });
     const verified = await response.json();
+    if (!current()) return;
     if (!response.ok || !verified.success) throw Error(verified.message || 'Incorrect or expired OTP.');
+    if (normalize(state.phone?.value) !== state.mobile) throw Error('Mobile number changed. Please close and verify the new number.');
     otpDiagnostic('verify_server_success', '', Boolean(state.reqId));
     state.proof = verified.proof;
     state.expiresAt = verified.expiresAt;
@@ -276,10 +289,11 @@ async function verifyAndFinish() {
     closeModal(false);
     resolve?.(state.proof);
   } catch (error) {
+    if (!current()) return;
     otpDiagnostic('verify_error', error?.message || 'OTP verification failed.', Boolean(state.reqId));
     message(error.message || 'Incorrect or expired OTP.', true);
   } finally {
-    state.busy = false; render();
+    if (current()) { state.busy = false; render(); }
   }
 }
 
@@ -288,6 +302,8 @@ function closeModal(reject = false) {
   modal.classList.add('hidden');
   document.body.classList.remove('otp-modal-open');
   state.open = false;
+  state.busy = false;
+  state.session++;
   if (reject) {
     const rejectFn = state.reject;
     state.resolve = null; state.reject = null;
@@ -302,6 +318,15 @@ function cancelModal() { closeModal(true); }
 export async function requestFormOtp(form, phoneId, purpose) {
   const phone = form.querySelector('#' + phoneId);
   if (!phone) throw Error('Mobile number field is unavailable.');
+  if (!watchedPhones.has(phone)) {
+    watchedPhones.add(phone);
+    phone.addEventListener('input', () => {
+      if (state.phone === phone && normalize(phone.value) !== state.mobile) {
+        state.proof = ''; state.expiresAt = 0;
+        if (state.open) cancelModal();
+      }
+    });
+  }
   const mobile = normalize(phone.value);
   if (!mobile) { phone.focus(); throw Error('Enter a valid 10-digit mobile number.'); }
   if (state.proof && state.expiresAt > Date.now() && state.mobile === mobile && state.purpose === purpose) return state.proof;

@@ -128,7 +128,7 @@
             <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden text-left text-slate-800" id="booking-widget">
                 
                 <!-- MAIN MODE TABS -->
-                <div class="hidden grid-cols-2 bg-slate-100 p-1.5 border-b border-slate-200 gap-1" aria-hidden="true">
+                <div class="grid grid-cols-2 bg-slate-100 p-1.5 border-b border-slate-200 gap-1">
                     <button type="button" id="btn-mode-withdriver" onclick="setServiceMode('withdriver')" class="py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition tab-active shadow-sm">
                         <i class="fa-solid fa-user-tie"></i> With Driver
                     </button>
@@ -139,13 +139,9 @@
 
                 <!-- 1. WITH DRIVER BLOCK -->
                 <div id="with-driver-block" class="p-5 sm:p-7">
-                    <div class="mb-4 flex items-center justify-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-xs font-extrabold text-indigo-950">
-                        <i class="fa-solid fa-user-tie text-indigo-600" aria-hidden="true"></i>
-                        <span>With Driver · Outstation</span>
-                    </div>
                     
                     <!-- Trip Subtabs -->
-                    <div class="hidden grid-cols-3 bg-slate-100 rounded-xl p-1 mb-6 border border-slate-200 text-xs sm:text-sm font-semibold" aria-hidden="true">
+                    <div class="grid grid-cols-3 bg-slate-100 rounded-xl p-1 mb-6 border border-slate-200 text-xs sm:text-sm font-semibold">
                         <button type="button" id="subtab-local" onclick="setWDSubTab('local')" class="py-2.5 rounded-lg transition subtab-active flex items-center justify-center gap-1.5">
                             <i class="fa-solid fa-city"></i> <span>Local City</span>
                         </button>
@@ -170,7 +166,7 @@
                                 <p id="wd-local-location-status" class="text-[10px] text-slate-500 mt-1"></p>
                             </div>
                             <div>
-                                <label for="wd-local-date" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                                <label for="wd-local-date" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-day text-indigo-600 mr-1"></i> Trip Start Date & Time *</label>
                                 <div class="grid grid-cols-3 gap-1.5 booking-datetime">
                                     <div class="relative">
     <input type="date" id="wd-local-date" onclick="this.showPicker()" class="date-input-custom w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium outline-none cursor-pointer">
@@ -269,7 +265,7 @@
                         <!-- Date & Time Pickers -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                                <label for="wd-out-pdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Pickup Date & Time *</label>
+                                <label for="wd-out-pdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-plus text-indigo-600 mr-1"></i> Trip Start Date & Time *</label>
                                 <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
                                         <input type="date" id="wd-out-pdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-1 py-2 text-xs font-medium outline-none cursor-pointer" onchange="calculateDriverFare()">
@@ -288,7 +284,7 @@
                                 </div>
                             </div>
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                                <label for="wd-out-rdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Final Drop Date & Time *</label>
+                                <label for="wd-out-rdate" class="block text-xs font-bold text-slate-700 uppercase mb-1.5"><i class="fa-solid fa-calendar-check text-indigo-600 mr-1"></i> Trip End Date & Time *</label>
                                 <div class="grid grid-cols-3 gap-2 booking-datetime">
                                     <div class="relative">
                                         <input type="date" id="wd-out-rdate" onclick="this.showPicker()" class="date-input-custom w-full bg-white border border-slate-300 rounded-lg px-1 py-2 text-xs font-medium outline-none cursor-pointer" onchange="calculateDriverFare()">
@@ -304,17 +300,6 @@
                                     <select id="wd-out-rampm" class="bg-white border border-slate-300 rounded-lg px-2 py-2 text-xs font-bold text-indigo-950 outline-none" onchange="calculateDriverFare()">
                                         <option value="AM">AM</option><option value="PM" selected>PM</option>
                                     </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="outstation-fare-promo" class="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-3">
-                            <div class="flex items-start gap-2.5">
-                                <i class="fa-solid fa-tag mt-0.5 text-emerald-700"></i>
-                                <div class="min-w-0">
-                                    <p class="text-xs font-black text-emerald-900">New lower outstation fares</p>
-                                    <p id="outstation-fare-promo-rate" class="mt-0.5 text-[11px] font-bold text-emerald-800">Live fare will be calculated from your route.</p>
-                                    <p class="mt-0.5 text-[11px] font-semibold text-slate-600">No coupon needed · Upfront per-km fares.</p>
                                 </div>
                             </div>
                         </div>

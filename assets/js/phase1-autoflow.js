@@ -8,6 +8,14 @@
     if (!widget || document.body.classList.contains("cwd-p1-conversion")) return;
     document.body.classList.add("cwd-p1-conversion");
     const fleet=$("fleet");
+    const alignKeyboard=()=>{
+      const viewport=window.visualViewport;
+      const offset=viewport?Math.max(0,window.innerHeight-viewport.height-viewport.offsetTop):0;
+      widget.style.setProperty('--cwd-keyboard-offset',offset+'px');
+    };
+    window.visualViewport?.addEventListener('resize',alignKeyboard);
+    window.visualViewport?.addEventListener('scroll',alignKeyboard);
+    alignKeyboard();
 
     // Keep geolocation as a useful shortcut, but put its action INSIDE the
     // location input. This avoids an extra row or overflow on mobile.
@@ -80,37 +88,15 @@
       if (/^pkg-card-(8hr|10hr|12hr|4hr)$/.test(btn.id)) queueFocus("explore-cabs-button");
     });
 
-    // Google suggestion handlers select places on mousedown (not input change).
-    // Bubble after the existing suggestion callback without replacing validation.
-    document.addEventListener("mousedown",e=>{
-      if (!widget.contains(e.target)) return;
-      const option=e.target.closest(".autocomplete-item");
-      const parent=option?.closest(".autocomplete-dropdown");
-      if (!parent) return;
+    widget.addEventListener('cwd:place-selected', e=>{
       const flow={
-        "wd-out-pickup-dropdown":["wd-out-destination",false],
-        "wd-out-dest-dropdown":["wd-out-pdate",true],
-        "wd-local-dropdown":["wd-local-date",true],
-        "wd-airport-dropdown":[
-          $("btn-airport-pickup")?.className.includes("bg-white") ? "wd-airport-date":"wd-airport-terminal",
-          $("btn-airport-pickup")?.className.includes("bg-white")
-        ]
+        'wd-out-pickup':['wd-out-destination',false],
+        'wd-out-destination':['wd-out-pdate',true],
+        'wd-local-pickup':['wd-local-date',true],
+        'wd-airport-pickup':[$('btn-airport-pickup')?.className.includes('bg-white')?'wd-airport-date':'wd-airport-terminal',true]
       };
-      const next=flow[parent.id];
-      if (next) queueFocus(next[0],next[1]);
-    });
-    // Some mobile keyboards dispatch click but not mousedown; avoid duplicate advance.
-    document.addEventListener("click",e=>{
-      if(!widget.contains(e.target) || e.detail===0)return;
-      const opt=e.target.closest(".autocomplete-item");
-      const id=opt?.closest(".autocomplete-dropdown")?.id;
-      if (id==="wd-out-pickup-dropdown") queueFocus("wd-out-destination");
-      else if(id==="wd-out-dest-dropdown") queueFocus("wd-out-pdate",true);
-      else if(id==="wd-local-dropdown") queueFocus("wd-local-date",true);
-      else if(id==="wd-airport-dropdown") {
-        const pickup=$("btn-airport-pickup")?.className.includes("bg-white");
-        queueFocus(pickup?"wd-airport-date":"wd-airport-terminal",Boolean(pickup));
-      }
+      const next=flow[e.detail.inputId];
+      if(next)queueFocus(next[0],next[1]);
     });
 
     // Move through the Date → Hour → AM/PM steps after a real user selection.
@@ -152,14 +138,7 @@
     widget.addEventListener("click",e=>{
       if(!e.target.closest("#explore-cabs-button"))document.body.classList.remove("cwd-p1-results-open");
     });
-    // Once the listing enters the viewport, keep its filters unobstructed.
-    if(fleet && typeof IntersectionObserver!=="undefined") {
-      const view=new IntersectionObserver(entries=>{
-        if(entries.some(item=>item.isIntersecting) && !fleet.hidden)
-          document.body.classList.add("cwd-p1-results-open");
-      },{threshold:0.08});
-      view.observe(fleet);
-    }
+
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
   else init();

@@ -9,7 +9,7 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
             baseDeliveryCharge: 500,
             extraDeliveryChargePerKm: 25,
             freeThresholdKm: 25,
-            minimumOutstationKmPerDay: 200,
+            minimumOutstationKmPerDay: 300,
         };
 
         function pricingRuleKey(name) {
@@ -1500,7 +1500,7 @@ function onPickupDateChange() {
                 return (car.rates.local[pkg] || 3000) + nightCharge;
             } else if (currentWDSubTab === 'outstation') {
                 if (outstationFareReadinessMessage()) return null;
-                const minKm=wdOutstationDays*200;
+                const minKm=wdOutstationDays*livePricingRules.minimumOutstationKmPerDay;
                 const includedKm=Math.max(Math.ceil(wdOutstationKm||0),minKm);
                 const extraKm=Math.max(0,includedKm-minKm);
                 return (minKm*car.rates.outstationPerKm)+(extraKm*(car.rates.outstationPerKm+1))+(wdOutstationDays*Number(car.rates.driverAllowance||0))+nightCharge;

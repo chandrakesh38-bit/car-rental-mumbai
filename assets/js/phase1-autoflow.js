@@ -8,6 +8,105 @@
     if (!widget || document.body.classList.contains("cwd-p1-conversion")) return;
     document.body.classList.add("cwd-p1-conversion");
     const fleet=$("fleet");
+
+    // Keep geolocation as a useful shortcut, but put its action INSIDE the
+    // location input. This avoids an extra row or overflow on mobile.
+    function compactCurrentLocation(root) {
+      if (!root) return;
+      root.querySelectorAll(".location-current-action").forEach(button => {
+        if (button.closest(".cwd-p1-current-location-input")) return;
+        const entry=button.closest(".location-entry");
+        const input=entry?.querySelector('input[type="text"]');
+        if (!input) return;
+        const shell=document.createElement("div");
+        shell.className="cwd-p1-current-location-input";
+        input.parentNode.insertBefore(shell,input);
+        shell.appendChild(input);
+        shell.appendChild(button);
+        button.replaceChildren();
+        const icon=document.createElement("i");
+        icon.className="fa-solid fa-location-crosshairs";
+        icon.setAttribute("aria-hidden","true");
+        button.appendChild(icon);
+        button.setAttribute("aria-label","Use My Current Location");
+        button.title="Use My Current Location";
+        button.classList.remove("mt-2","px-3","py-2");
+        input.classList.add("cwd-p1-current-location-field");
+      });
+    }
+    compactCurrentLocation(widget);
+    const airportForm=$("airport-dynamic-form");
+    if(airportForm) {
+      // Airport pickup/drop rebuilds inputs dynamically when direction changes.
+      new MutationObserver(()=>compactCurrentLocation(airportForm))
+        .observe(airportForm,{childList:true,subtree:true});
+    }
+
+    // Robust ONE-click loader, independent of the cab listing renderer.
+    // Listen before the existing inline onclick=triggerFareSearch() handler.
+    function installSearchAnimation() {
+      const button=$("explore-cabs-button");
+      if (!button || button.dataset.cwdLoaderAttached==="true") return;
+      button.dataset.cwdLoaderAttached="true";
+      const overlay=document.createElement("div");
+      overlay.id="cwd-p1-search-loader";
+      overlay.className="cwd-p1-loader";
+      overlay.setAttribute("role","status");
+      overlay.setAttribute("aria-live","polite");
+      overlay.setAttribute("aria-hidden","true");
+      const heading=document.createElement("strong");
+      heading.textContent="Please wait";
+      const bars=document.createElement("div");
+      bars.className="cwd-p1-loader-bars";
+      for(let i=0;i<3;i++)bars.appendChild(document.createElement("span"));
+      const subheading=document.createElement("p");
+      subheading.textContent="Looking for best rates";
+      overlay.append(heading,bars,subheading);
+      document.body.appendChild(overlay);
+      const reduced=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches||false;
+      // Only a brief transition so the bars can paint. Never hold for 5 sec.
+      const visibleMs=reduced?0:550;
+      let startedAt=0,active=false,token=0,dismissTimer=null;
+      const hide=()=>{
+        overlay.classList.remove("visible");
+        overlay.setAttribute("aria-hidden","true");
+        active=false;
+        dismissTimer=null;
+      };
+      const finish=()=>{
+        if(!active || button.disabled)return;
+        if(dismissTimer!==null)clearTimeout(dismissTimer);
+        const current=token;
+        const remaining=Math.max(0,visibleMs-(performance.now()-startedAt));
+        dismissTimer=setTimeout(()=>{
+          if(current!==token)return;
+          if(!button.disabled)hide();
+        },remaining);
+      };
+      button.addEventListener("click",()=>{
+        if(button.disabled)return;
+        if(dismissTimer!==null)clearTimeout(dismissTimer);
+        token++;
+        active=true;
+        startedAt=performance.now();
+        overlay.classList.add("visible");
+        overlay.setAttribute("aria-hidden","false");
+        // The click's inline handler changes disabled state synchronously;
+        // a subsequent microtask checks fast-success and validation failures.
+        queueMicrotask(finish);
+      },true);
+      new MutationObserver(finish).observe(button,{
+        attributes:true,attributeFilter:["disabled"]
+      });
+      const status=$("explore-cabs-status");
+      if(status)new MutationObserver(finish).observe(status,{
+        childList:true,subtree:true,characterData:true
+      });
+      // Keep waiting when an actual request is pending. On an unexpected
+      // exception and a released button, remove the visual blocker safely.
+      window.addEventListener("pagehide",hide);
+    }
+    installSearchAnimation();
     const fromField=()=> {
       if ($("with-driver-block")?.classList.contains("hidden")) return null;
       if (!$("wd-outstation-fields")?.classList.contains("hidden")) return "wd-out-pickup";

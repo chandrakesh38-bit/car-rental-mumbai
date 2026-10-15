@@ -1,0 +1,102 @@
+/* CWD Savaari-inspired phase 1 presentation. Testing branch only.
+   No price or payment logic is implemented in this stylesheet. */
+body.cwd-p1 { background:#f5f7fb; }
+.cwd-p1 header.cwd-p1-hero {
+  background: radial-gradient(circle at 88% 8%,#284775 0,transparent 35%),linear-gradient(135deg,#0a1932,#102c51 62%,#132038);
+  padding: 25px 14px 29px;
+}
+.cwd-p1 header.cwd-p1-hero > div { max-width:1050px; }
+.cwd-p1 header.cwd-p1-hero h1 { font-size:clamp(1.2rem,2.25vw,1.95rem);margin-bottom:7px; }
+.cwd-p1 header.cwd-p1-hero h1 + p { margin-bottom:14px;line-height:1.45; }
+.cwd-p1 header.cwd-p1-hero > div > span:first-child { margin-bottom:9px; }
+.cwd-p1 #booking-widget { border-radius:18px; border-color:rgba(220,230,243,.8);box-shadow:0 18px 45px rgba(0,0,0,.17); }
+.cwd-p1 #with-driver-block { padding: 14px 18px 16px; }
+.cwd-p1 #with-driver-block .space-y-4 { row-gap:12px; }
+.cwd-p1 #with-driver-block .mb-6 { margin-bottom:13px; }
+.cwd-p1 #booking-widget .tab-active { background:#163c64!important;color:#fff!important; }
+.cwd-p1 #booking-widget .subtab-active { background:#143f6e!important;color:#fff!important;box-shadow:0 2px 9px #1d436d20; border-bottom-color:transparent!important; }
+.cwd-p1 #booking-widget #wd-out-one-way[aria-pressed="true"],
+.cwd-p1 #booking-widget #wd-out-round-trip[aria-pressed="true"] { background:#e1effb!important;border-color:#1872a8!important; }
+.cwd-p1 #booking-widget #btn-airport-drop.bg-white,
+.cwd-p1 #booking-widget #btn-airport-pickup.bg-white { background:#e1effb!important;color:#103a61!important; }
+.cwd-p1 #booking-widget .location-entry input,
+.cwd-p1 #booking-widget select,
+.cwd-p1 #booking-widget input[type="date"] { min-height:40px; }
+.cwd-p1 #booking-widget #explore-cabs-button { text-transform:uppercase;letter-spacing:.08em;min-height:48px; }
+.cwd-p1 #with-driver-block #wd-out-route-status.hidden { display:none; }
+.cwd-p1 #with-driver-block #outstation-fare-promo { display:none; }
+.cwd-p1 #with-driver-block .mt-6 { margin-top:14px; }
+.cwd-p1 #booking-widget .cwd-p1-mode-heading { margin:-2px 0 11px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#345a7c;font-weight:800; }
+.cwd-p1 .cwd-p1-trust { display:flex;justify-content:center;flex-wrap:wrap;align-items:center;gap:8px 19px;color:#e9f5ff;font-size:11px;font-weight:700;line-height:1.4;margin:14px auto 0; }
+.cwd-p1 .cwd-p1-trust span { display:inline-flex;align-items:center;gap:7px; }
+.cwd-p1 .cwd-p1-call { display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid #d4e4f5;border-radius:12px;background:#f4f9ff;color:#103d65;font-weight:800;font-size:12px;text-decoration:none;white-space:nowrap; }
+.cwd-p1 .cwd-p1-call:hover { background:#e7f3ff; }
+.cwd-p1 .cwd-p1-custom-route { display:flex;gap:9px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid #d7e5f2;border-radius:12px;background:#f7fbff;color:#16395e;font-size:12px;flex-wrap:wrap; }
+.cwd-p1 .cwd-p1-custom-route a { color:#0a5c8f;font-weight:800;text-decoration:underline;text-underline-offset:2px; }
+.cwd-p1 .cwd-p1-hidden-action { position:absolute!important;width:1px!important;height:1px!important;padding:0!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important; }
+.cwd-p1 #fleet { padding-top:14px;scroll-margin-top:90px; }
+.cwd-p1 #fleet > .text-center { text-align:left;margin-bottom:15px; }
+.cwd-p1 #fleet > .text-center h2 { font-size:1.5rem; }
+.cwd-p1 #fleet-container { grid-template-columns:1fr;gap:13px; }
+.cwd-p1 .cwd-p1-toolbar { position:sticky;top:70px;z-index:35;background:rgba(255,255,255,.98);border:1px solid #d9e5f1;border-radius:16px;padding:11px 13px;box-shadow:0 7px 23px rgba(15,35,68,.10);margin-bottom:17px;backdrop-filter:blur(12px); }
+.cwd-p1 .cwd-p1-trip-row { display:flex;align-items:center;justify-content:space-between;gap:12px; }
+.cwd-p1 .cwd-p1-trip-text { min-width:0; }
+.cwd-p1 .cwd-p1-trip-text strong { color:#132e4d;display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.cwd-p1 .cwd-p1-trip-text small { color:#536b83;font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.cwd-p1 .cwd-p1-modify { border:1px solid #c8dcec;border-radius:9px;padding:9px 10px;font-size:11px;font-weight:800;color:#123f6a;flex-shrink:0; }
+.cwd-p1 .cwd-p1-filter-row { display:flex;align-items:center;gap:7px;overflow-x:auto;margin-top:9px;padding-top:9px;border-top:1px solid #e9eef5;scrollbar-width:none; }
+.cwd-p1 .cwd-p1-filter-row::-webkit-scrollbar { display:none; }
+.cwd-p1 .cwd-p1-chip { padding:8px 12px;border:1px solid #d6e3ef;border-radius:10px;font-size:11px;font-weight:750;color:#344c64;background:#fff;white-space:nowrap;flex-shrink:0; }
+.cwd-p1 .cwd-p1-chip[aria-pressed="true"] { background:#143b64;color:#fff;border-color:#143b64; }
+.cwd-p1 .cwd-p1-card { display:grid;grid-template-columns:minmax(120px,215px) 1fr;position:relative;gap:16px;align-items:center;border:1px solid #e0e8f1;border-radius:18px;background:#fff;box-shadow:0 5px 18px rgba(20,41,65,.05);padding:14px;transition:box-shadow .2s,border-color .2s; }
+.cwd-p1 .cwd-p1-card[role="button"]:hover { border-color:#a6c6dd;box-shadow:0 10px 25px rgba(20,41,65,.12); }
+.cwd-p1 .cwd-p1-card[role="button"] { cursor:pointer; }
+.cwd-p1 .cwd-p1-card:focus-visible { outline:3px solid #2581c3;outline-offset:2px; }
+.cwd-p1 .cwd-p1-car-photo { min-height:120px;border-radius:12px;background:linear-gradient(125deg,#e5f1f8,#f5f9fd);border:1px solid #dbe8f1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:#4e708b;font-size:11px;font-weight:700;text-align:center;padding:9px; }
+.cwd-p1 .cwd-p1-car-photo i { font-size:34px;color:#7ba3c2; }
+.cwd-p1 .cwd-p1-car-photo img { max-width:100%;max-height:140px;object-fit:contain; }
+.cwd-p1 .cwd-p1-car-photo:not(:disabled) { cursor:zoom-in; }
+.cwd-p1 .cwd-p1-card-label { display:inline-block;font-size:10px;font-weight:850;letter-spacing:.06em;text-transform:uppercase;color:#21618b;background:#edf7fd;padding:4px 8px;border-radius:7px;margin-bottom:5px; }
+.cwd-p1 .cwd-p1-car-name { margin:0;color:#142a43;font-size:17px;font-weight:850;line-height:1.2; }
+.cwd-p1 .cwd-p1-specs { display:flex;flex-wrap:wrap;gap:8px 13px;color:#53657a;font-size:11px;margin-top:9px; }
+.cwd-p1 .cwd-p1-specs span { display:inline-flex;gap:5px;align-items:center; }
+.cwd-p1 .cwd-p1-fare-row { display:flex;align-items:end;gap:14px;justify-content:space-between;margin-top:12px;border-top:1px solid #edf1f5;padding-top:9px; }
+.cwd-p1 .cwd-p1-price { font-size:22px;font-weight:900;color:#123f6c;display:block; }
+.cwd-p1 .cwd-p1-fare-row small { color:#65788c;font-size:10px; }
+.cwd-p1 .cwd-p1-continue { font-weight:850;color:#0d6b9b;font-size:12px;white-space:nowrap; }
+.cwd-p1 #fleet-container > [hidden] { display:none!important; }
+.cwd-p1 .cwd-p1-popover { position:fixed;inset:0;background:rgba(10,25,45,.65);z-index:10010;display:flex;align-items:center;justify-content:center;padding:15px; }
+.cwd-p1 .cwd-p1-dialog { width:min(520px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:18px;box-shadow:0 20px 70px #0005;padding:18px;color:#203b53; }
+.cwd-p1 .cwd-p1-dialog-header { display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:13px; }
+.cwd-p1 .cwd-p1-dialog-header strong { font-size:17px;color:#123551; }
+.cwd-p1 .cwd-p1-dialog-close { padding:6px 10px;border-radius:9px;border:1px solid #d3e0eb;font-weight:800; }
+.cwd-p1 .cwd-p1-field { display:block;margin:12px 0;color:#53677c;font-size:12px;font-weight:700; }
+.cwd-p1 .cwd-p1-field select { display:block;width:100%;margin-top:5px;border:1px solid #cbdce9;border-radius:9px;padding:10px;color:#143455;background:white; }
+.cwd-p1 .cwd-p1-reset { border:1px solid #bdd4e3;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:800; }
+.cwd-p1 .cwd-p1-edit-dialog { width:min(850px,100%); }
+.cwd-p1 .cwd-p1-edit-dialog #booking-widget { box-shadow:none; }
+.cwd-p1 .cwd-p1-loader { position:fixed;inset:0;background:rgba(249,252,255,.97);z-index:10005;display:none;align-items:center;justify-content:center;text-align:center;flex-direction:column;color:#153958;gap:11px;padding:20px; }
+.cwd-p1 .cwd-p1-loader.visible { display:flex; }
+.cwd-p1 .cwd-p1-loader strong { font-size:20px; }
+.cwd-p1 .cwd-p1-loader-bars { height:42px;display:flex;align-items:center;gap:6px; }
+.cwd-p1 .cwd-p1-loader-bars span { width:9px;height:23px;background:#237eb6;border-radius:4px;animation:cwd-p1-scale 1s ease-in-out infinite alternate; }
+.cwd-p1 .cwd-p1-loader-bars span:nth-child(2) { animation-delay:.15s; }
+.cwd-p1 .cwd-p1-loader-bars span:nth-child(3) { animation-delay:.3s; }
+@keyframes cwd-p1-scale { from { transform:scaleY(.55);opacity:.6; } to { transform:scaleY(1.6);opacity:1; } }
+@media(max-width:680px) {
+ .cwd-p1 header.cwd-p1-hero { padding:18px 10px 23px; }
+ .cwd-p1 header.cwd-p1-hero h1 { font-size:21px; }
+ .cwd-p1 header.cwd-p1-hero h1 + p { margin-bottom:10px; }
+ .cwd-p1 #with-driver-block { padding:12px 11px; }
+ .cwd-p1 #booking-widget .grid.grid-cols-3 { gap:4px; }
+ .cwd-p1 .cwd-p1-toolbar { top:65px;padding:9px; }
+ .cwd-p1 .cwd-p1-card { grid-template-columns:105px minmax(0,1fr);gap:10px;padding:10px; }
+ .cwd-p1 .cwd-p1-car-photo { min-height:115px; }
+ .cwd-p1 .cwd-p1-car-name { font-size:14px; }
+ .cwd-p1 .cwd-p1-price { font-size:18px; }
+ .cwd-p1 .cwd-p1-specs { gap:6px; }
+ .cwd-p1 .cwd-p1-continue { font-size:10px; }
+ .cwd-p1 .cwd-p1-call { font-size:0;width:38px;height:38px;justify-content:center;padding:0; }
+ .cwd-p1 .cwd-p1-call i { font-size:16px; }
+}
+@media(prefers-reduced-motion:reduce) { .cwd-p1 .cwd-p1-loader-bars span { animation:none; } .cwd-p1 .cwd-p1-card { transition:none; } }

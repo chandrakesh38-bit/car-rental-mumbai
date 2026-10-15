@@ -11,9 +11,19 @@
   };
   const safeImage = (src) => typeof src === 'string' && (/^https:\/\//i.test(src) || /^\/(?!\/)/.test(src));
   const money = (value) => Number.isFinite(value) ? '₹' + value.toLocaleString('en-IN') : '';
+  // Owner-supplied registration photographs; public copies have identifiers masked.
+  const galleryPaths=model=>['front','interior','left','right'].map(view=>'/assets/images/fleet/'+model+'/'+view+'.webp');
+  const suppliedPhotos={
+    'Maruti Suzuki Ertiga':galleryPaths('ertiga'),
+    'Maruti Ertiga':galleryPaths('ertiga'),
+    'WagonR':galleryPaths('wagonr'),
+    'Wagon R':galleryPaths('wagonr'),
+    'Maruti Suzuki Wagon R':galleryPaths('wagonr')
+  };
+  const suppliedFuel={'Maruti Suzuki Ertiga':'Petrol+CNG','Maruti Ertiga':'Petrol+CNG','WagonR':'Petrol+CNG','Wagon R':'Petrol+CNG','Maruti Suzuki Wagon R':'Petrol+CNG'};
   const photosFor = (name) => {
     // Only user-provided genuine vehicle photographs, configured after verification.
-    const photos = window.CWD_VERIFIED_CAR_PHOTOS?.[name];
+    const photos = (window.CWD_VERIFIED_CAR_PHOTOS || suppliedPhotos)[name];
     return Array.isArray(photos) ? photos.filter(safeImage).slice(0, 4) : [];
   };
   function init() {
@@ -163,8 +173,8 @@
       card.dataset.cwdP1Card='yes';
       card.dataset.cwdP1Category=typeFor(name,label);
       card.dataset.cwdP1Fare= fare===null?'':String(fare);
-      const verifiedFuel=window.CWD_VERIFIED_CAR_FUEL?.[name];
-      card.dataset.cwdP1Fuel=['Petrol','Diesel','CNG','Electric','Hybrid'].includes(verifiedFuel)?verifiedFuel:'';
+      const verifiedFuel=(window.CWD_VERIFIED_CAR_FUEL || suppliedFuel)[name];
+      card.dataset.cwdP1Fuel=['Petrol','Diesel','CNG','Petrol+CNG','Electric','Hybrid'].includes(verifiedFuel)?verifiedFuel:'';
       card.className='cwd-p1-card';
       const photoBox=make('button','cwd-p1-car-photo');
       photoBox.type='button';

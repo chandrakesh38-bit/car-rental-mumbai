@@ -703,12 +703,16 @@ function showCustomAlert(message) {
             const dateGrid=returnSection?.parentElement;
             const oneWay=type==='one-way';
             returnSection?.classList.toggle('hidden',oneWay);
-            dateGrid?.classList.toggle('cwd-p1-single-outstation-date',oneWay);
+            if(dateGrid) {
+                dateGrid.classList.toggle('cwd-p1-single-outstation-date',oneWay);
+                dateGrid.style.gridTemplateColumns=oneWay?'minmax(0, 1fr)':'';
+            }
             if(oneWay) syncOneWayEndTime();
-            else if(previousType==='one-way'&&savedRoundTripEnd){
+            else if(previousType==='one-way') {
                 ['wd-out-rdate','wd-out-rhour','wd-out-rampm'].forEach((id,i)=>{
                     const el=document.getElementById(id);
-                    if(el)el.value=savedRoundTripEnd[i];
+                    if(el && savedRoundTripEnd)el.value=savedRoundTripEnd[i];
+                    else if(el && i===0)el.value='';
                 });
             }
             // A previous result must never hide EXPLORE CABS when editing.

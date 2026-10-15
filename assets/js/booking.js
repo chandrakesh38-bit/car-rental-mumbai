@@ -3782,6 +3782,12 @@ showSuccessModal(result.application_number, result);
                 });
                 const result = await response.json();
                 if (response.status === 409) { delete form.dataset.bookingId; delete form.dataset.submissionKey; }
+                if (response.status === 403 || result.success) {
+                    // Used/invalid proofs must not trap the next attempt in a
+                    // cached-proof retry loop; the next submission opens OTP.
+                    const otp = await import('/assets/js/mobile-otp.js');
+                    otp.clearFormOtp(form);
+                }
                 if (!response.ok || !result.success) throw new Error(result.message || 'Unable to submit enquiry. Please try again.');
                 window.cwdTrackEvent?.('booking_request_submitted', {
                     service_type: serviceMode === 'selfdrive' ? 'self_drive' : 'with_driver',

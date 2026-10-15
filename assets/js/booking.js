@@ -1962,6 +1962,9 @@ function onPickupDateChange() {
             searchOverlay.classList.add('visible');
             searchOverlay.setAttribute('aria-hidden','false');
             const searchStartedAt=performance.now();
+            // Disable immediately, even before the first animation frame,
+            // so a double tap cannot launch two identical fare requests.
+            setExploreCabsUi(true, 'Checking route and live fares...');
             // Allow browser to paint the overlay before heavy fare work begins.
             await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
             window.cwdTrackEvent?.('explore_cabs_click', {
@@ -1970,8 +1973,6 @@ function onPickupDateChange() {
                 journey_type: currentWDSubTab === 'outstation' ? currentOutstationJourneyType : undefined,
                 page_path: location.pathname
             });
-            setExploreCabsUi(true, 'Checking route and live fares...');
-
             try {
                 if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation' && !requireOutstationJourneyType()) {
                     trackFareValidationFailure('trip_type_missing');

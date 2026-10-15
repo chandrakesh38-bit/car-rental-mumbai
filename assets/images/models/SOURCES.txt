@@ -1,0 +1,10 @@
+Representative model thumbnails, separate from owner-supplied fleet photographs.
+Retrieved 2026-10-15 from official manufacturer pages. Original imagery unedited.
+
+ertiga.webp
+Page: https://www.marutisuzuki.com/tour/ertiga
+Image: https://www.marutisuzukicommercial.com/adobe/dynamicmedia/deliver/dm-aid--787be8b8-a4b7-4257-972b-7dd7c7a6a8f8/Ertiga_TourM_v2_specification.jpg?mw=800&preferwebp=true&quality=85
+
+wagonr.webp
+Page: https://www.marutisuzukicommercial.com/wagonr-tour-h3
+Image: https://www.marutisuzukicommercial.com/adobe/dynamicmedia/deliver/dm-aid--51586e29-90c3-4f95-a687-bfc4be1994bf/TourH3.jpg?preferwebp=true&quality=85&mw=800

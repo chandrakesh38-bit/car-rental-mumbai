@@ -13,6 +13,8 @@
   const money = (value) => Number.isFinite(value) ? '₹' + value.toLocaleString('en-IN') : '';
   // Owner-supplied registration photographs; public copies have identifiers masked.
   const galleryPaths=model=>['front','interior','left','right'].map(view=>'/assets/images/fleet/'+model+'/'+view+'.webp');
+  // Representative manufacturer imagery is separate from genuine gallery photos.
+  const modelImageFor=name=>/ertiga/i.test(name)?'/assets/images/models/ertiga.webp':/wagon\s*r/i.test(name)?'/assets/images/models/wagonr.webp':null;
   const suppliedPhotos={
     'Maruti Suzuki Ertiga':galleryPaths('ertiga'),
     'Maruti Ertiga':galleryPaths('ertiga'),
@@ -180,9 +182,16 @@
       photoBox.type='button';
       const photos=photosFor(name);
       if (photos.length) {
-        const image=make('img');
-        image.src=photos[0];image.alt=name+' car photo';
-        photoBox.append(image,make('span','', 'View Photos ('+photos.length+')'));
+        const modelImage=modelImageFor(name);
+        if (modelImage) {
+          const image=make('img');
+          image.src=modelImage;image.alt=name+' — representative model image';
+          photoBox.classList.add('cwd-p1-model-photo');
+          photoBox.append(image,make('small','cwd-p1-model-caption','Model image'));
+        } else {
+          photoBox.append(make('i','fa-solid fa-car-side'));
+        }
+        photoBox.append(make('span','', 'View Photos ('+photos.length+')'));
         photoBox.setAttribute('aria-label','View genuine photos of '+name);
         photoBox.addEventListener('click',e=>{e.stopPropagation();openGallery(name,photos);});
       } else {

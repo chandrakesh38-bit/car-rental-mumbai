@@ -1940,8 +1940,8 @@ function onPickupDateChange() {
             const sheet=document.createElement('style');
             sheet.id='cwd-p1-fare-loader-style';
             sheet.textContent=`
-              #cwd-p1-search-loader {position:fixed!important;inset:0!important;z-index:99999!important;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(249,252,255,.985);text-align:center;color:#123956;padding:18px}
-              #cwd-p1-search-loader.visible {display:flex!important}
+              #cwd-p1-search-loader {position:fixed!important;inset:0!important;z-index:99999!important;display:none;visibility:hidden;opacity:0;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(249,252,255,.985);text-align:center;color:#123956;padding:18px}
+              #cwd-p1-search-loader.visible {display:flex!important;visibility:visible;opacity:1;pointer-events:auto}
               #cwd-p1-search-loader strong {font-size:21px}
               #cwd-p1-search-loader .cwd-p1-loader-bars {height:52px;display:flex;align-items:center;gap:8px}
               #cwd-p1-search-loader .cwd-p1-loader-bars span {display:block;background:#187db7;width:10px;height:27px;border-radius:5px;animation:cwd-search-bars .65s ease-in-out infinite alternate}
@@ -1956,8 +1956,10 @@ function onPickupDateChange() {
             overlay.setAttribute('role','status');
             overlay.setAttribute('aria-live','polite');
             overlay.setAttribute('aria-hidden','true');
+            overlay.tabIndex = -1;
             const title=document.createElement('strong');title.textContent='Please wait';
             const bars=document.createElement('div');bars.className='cwd-p1-loader-bars';
+            bars.setAttribute('aria-hidden','true');
             for(let i=0;i<3;i++)bars.appendChild(document.createElement('span'));
             const subtitle=document.createElement('p');subtitle.textContent='Looking for best rates';
             overlay.append(title,bars,subtitle);
@@ -1969,14 +1971,18 @@ function onPickupDateChange() {
             if (fareSearchInFlight) return;
             fareSearchInFlight = true;
             const searchOverlay=makeFareSearchOverlay();
+            let previousFocus;
             try {
             searchOverlay.classList.add('visible');
             searchOverlay.setAttribute('aria-hidden','false');
+            previousFocus = document.activeElement;
+            searchOverlay.focus({preventScroll:true});
             // Disable immediately, even before the first animation frame,
             // so a double tap cannot launch two identical fare requests.
             setExploreCabsUi(true, 'Checking route and live fares...');
             // Allow browser to paint the overlay before heavy fare work begins.
             await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+            const paintedAt = performance.now();
             window.cwdTrackEvent?.('explore_cabs_click', {
                 service_type: currentMainMode === 'withdriver' ? 'with_driver' : currentMainMode,
                 trip_type: currentWDSubTab,
@@ -2017,7 +2023,14 @@ function onPickupDateChange() {
                     return;
                 }
 
-                await showCabSearchTransition(calculateDriverFare, 'fleet');
+                calculateDriverFare();
+                // Cached routes can finish in a single frame. Give a successful
+                // search one perceptible bar-animation cycle, counting time
+                // already spent on real work. Slow requests incur no extra wait;
+                // validation/API failures skip this success-only presentation.
+                const remaining = 650 - (performance.now() - paintedAt);
+                if (remaining > 0) await new Promise(resolve=>setTimeout(resolve, remaining));
+                await showCabSearchTransition(()=>{}, 'fleet');
                 const visibleCount = Array.isArray(wdFleet) ? wdFleet.length : 0;
                 window.cwdTrackEvent?.('cab_results_shown', {
                     service_type: 'with_driver',
@@ -2039,6 +2052,7 @@ function onPickupDateChange() {
                 searchOverlay.setAttribute('aria-hidden','true');
                 const button=document.getElementById('explore-cabs-button');
                 if (button?.disabled) setExploreCabsUi(false);
+                if (document.activeElement === searchOverlay && previousFocus?.isConnected) previousFocus.focus({preventScroll:true});
             }
         }
 

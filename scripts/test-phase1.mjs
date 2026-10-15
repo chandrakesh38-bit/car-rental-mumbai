@@ -77,6 +77,17 @@ try{
  await page.locator('#wd-out-phour').selectOption('9');await page.locator('#wd-out-pampm').selectOption('AM');
  await page.waitForFunction(()=>document.activeElement.id==='explore-cabs-button');
  const fare=await page.evaluate(()=>getCarCost(wdFleet[0]));assert.equal(fare,4700);
+ // A cached successful quote must still paint moving bars on its first click.
+ const fastStart=Date.now();
+ await page.locator('#explore-cabs-button').click();
+ await page.locator('#cwd-p1-search-loader.visible').waitFor();
+ const first=await page.locator('.cwd-p1-loader-bars span').evaluateAll(bars=>bars.map(b=>getComputedStyle(b).transform));
+ await page.waitForTimeout(180);
+ const second=await page.locator('.cwd-p1-loader-bars span').evaluateAll(bars=>bars.map(b=>getComputedStyle(b).transform));
+ assert.notDeepEqual(first,second,'Cached search bars must actually animate');
+ assert.equal(await page.locator('#explore-cabs-button').isDisabled(),true);
+ await page.waitForFunction(()=>!fareSearchInFlight);
+ assert.ok(Date.now()-fastStart>=650,'Fast result needs a perceptible transition');
  // Force a route refresh to hold a real search promise open while double clicking.
  await page.evaluate(()=>{wdOutstationRouteQuote=null;});delay=400;
  const count=routeCalls;
@@ -101,5 +112,5 @@ try{
  await page.locator('#btn-airport-drop').click();assert.equal(await page.locator('#wd-airport-pickup').isVisible(),true);
  await page.locator('#btn-mode-selfdrive').click();assert.equal(await page.locator('#with-driver-block').isVisible(),false);
  assert.deepEqual(errors,[]);
- console.log('PASS Phase 1: six widths, one CTA, trip switching/restore, keyboard locations, rejection focus, verified focus, unchanged fixture fare, first-click loader, one concurrent route request, error/retry, Local/Airport/Self Drive visibility. No booking/OTP/payment traffic.');
+ console.log('PASS Phase 1: six widths, one CTA, trip switching/restore, keyboard locations, rejection focus, verified focus, unchanged fixture fare, visibly animated cached first-click loader, one concurrent route request, error/retry, Local/Airport/Self Drive visibility. No booking/OTP/payment traffic.');
 }finally{await browser.close();await new Promise(r=>server.close(r));}

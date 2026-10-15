@@ -2025,10 +2025,10 @@ function onPickupDateChange() {
 
                 calculateDriverFare();
                 // Cached routes can finish in a single frame. Give a successful
-                // search one perceptible bar-animation cycle, counting time
+                // search the requested four-second window, counting time
                 // already spent on real work. Slow requests incur no extra wait;
                 // validation/API failures skip this success-only presentation.
-                const remaining = 650 - (performance.now() - paintedAt);
+                const remaining = 4000 - (performance.now() - paintedAt);
                 if (remaining > 0) await new Promise(resolve=>setTimeout(resolve, remaining));
                 await showCabSearchTransition(()=>{}, 'fleet');
                 const visibleCount = Array.isArray(wdFleet) ? wdFleet.length : 0;

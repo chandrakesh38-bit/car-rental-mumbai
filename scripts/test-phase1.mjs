@@ -87,9 +87,17 @@ try{
  assert.notDeepEqual(first,second,'Cached search bars must actually animate');
  assert.equal(await page.locator('#explore-cabs-button').isDisabled(),true);
  await page.waitForFunction(()=>!fareSearchInFlight);
- assert.ok(Date.now()-fastStart>=650,'Fast result needs a perceptible transition');
+ assert.ok(Date.now()-fastStart>=4000,'Fast result must retain the four-second loader');
+ // Modify Booking moves the same widget/button into its dialog.
+ await page.getByRole('button',{name:'Modify Booking',exact:true}).click();
+ const modifyStart=Date.now();
+ await page.locator('#explore-cabs-button').click();
+ await page.locator('#cwd-p1-search-loader.visible').waitFor();
+ await page.waitForFunction(()=>!fareSearchInFlight);
+ assert.ok(Date.now()-modifyStart>=4000,'Modify Booking must use the same four-second minimum');
  // Force a route refresh to hold a real search promise open while double clicking.
- await page.evaluate(()=>{wdOutstationRouteQuote=null;});delay=400;
+ await page.evaluate(()=>{wdOutstationRouteQuote=null;});delay=4500;
+ const slowStart=Date.now();
  const count=routeCalls;
  await page.locator('#explore-cabs-button').click();
  await page.evaluate(()=>triggerFareSearch());
@@ -97,13 +105,17 @@ try{
  assert.equal(await page.locator('#explore-cabs-button').isDisabled(),true);
  assert.equal(await page.locator('#cwd-p1-search-loader .cwd-p1-loader-bars span').count(),3);
  await page.waitForFunction(()=>!fareSearchInFlight);
+ assert.ok(Date.now()-slowStart>=4500,'Loader must await a slow calculation');
+ assert.ok(Date.now()-slowStart<7500,'Do not add four seconds after a slow calculation');
  assert.equal(routeCalls-count,1);assert.equal(await page.locator('#fleet').isVisible(),true);
  assert.equal(await page.locator('#explore-cabs-button').isEnabled(),true);
  // Failure releases the guard and allows a successful retry.
- await page.evaluate(()=>{wdOutstationRouteQuote=null;});failRoute=true;
+ await page.evaluate(()=>{wdOutstationRouteQuote=null;});failRoute=true;delay=0;
+ const errorStart=Date.now();
  await page.evaluate(()=>triggerFareSearch());
  assert.equal(await page.locator('#explore-cabs-button').isEnabled(),true);
  assert.equal(await page.locator('#cwd-p1-search-loader').isVisible(),false);
+ assert.ok(Date.now()-errorStart<2000,'Error must skip the four-second minimum');
  failRoute=false;await page.evaluate(()=>triggerFareSearch());
  assert.equal(await page.locator('#fleet').isVisible(),true);
  await page.locator('#subtab-local').click();assert.equal(await page.locator('#wd-local-fields').isVisible(),true);

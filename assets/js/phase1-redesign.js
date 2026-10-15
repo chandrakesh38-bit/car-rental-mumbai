@@ -328,44 +328,8 @@
       closeIfRemoved.observe(document.body,{childList:true});
     }
     modify.addEventListener('click',openModifyDialog);
-    // Show animation while the original asynchronous search is running.
-    const searchBtn=$('explore-cabs-button');
-    if(searchBtn) {
-      const loader=make('div','cwd-p1-loader');
-      loader.id='cwd-p1-search-loader';
-      loader.setAttribute('role','status');
-      loader.setAttribute('aria-live','polite');
-      loader.append(make('strong','', 'Please wait'));
-      const bars=make('div','cwd-p1-loader-bars');
-      for(let i=0;i<3;i++)bars.append(make('span'));
-      loader.append(bars,make('p','', 'Looking for best rates'));
-      document.body.appendChild(loader);
-      // Show the three-bar animation on the FIRST real click. The original
-      // click handler still does the search once; we do not submit again.
-      // Give CSS enough frames to paint the animation even on a fast search,
-      // without the old forced five-second delay.
-      const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const visibleMs=reducedMotion?0:420;
-      let startedAt=0, dismissTimer=null;
-      searchBtn.addEventListener('click',()=>{
-        if(searchBtn.disabled)return;
-        if(dismissTimer!==null)clearTimeout(dismissTimer);
-        startedAt=performance.now();
-        loader.classList.add('visible');
-        loader.setAttribute('aria-hidden','false');
-      },true);
-      new MutationObserver(()=>{
-        if(searchBtn.disabled || !loader.classList.contains('visible')) return;
-        const elapsed=performance.now()-startedAt;
-        if(dismissTimer!==null)clearTimeout(dismissTimer);
-        dismissTimer=setTimeout(()=>{
-          if(!searchBtn.disabled){
-            loader.classList.remove('visible');
-            loader.setAttribute('aria-hidden','true');
-          }
-        },Math.max(0,visibleMs-elapsed));
-      }).observe(searchBtn,{attributes:true,attributeFilter:['disabled']});
-    }
+    // The single loading overlay is now controlled by phase1-autoflow.js,
+    // independently of cab-card rendering and filter setup.
   }
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true});
   else init();

@@ -103,19 +103,14 @@
       const next=nextByChange[id];
       if(next) queueFocus(next[0],next[1]);
     });
-    const updateFloating=()=>{
-      const withDriver=!$("with-driver-block")?.classList.contains("hidden");
-      const resultsHidden=Boolean(fleet?.hidden);
-      const active=document.activeElement;
-      const editing=active && widget.contains(active) &&
-        active.matches("input, textarea, select");
-      document.body.classList.toggle("cwd-p1-floating-cta",withDriver&&resultsHidden&&!editing);
+    // Keep the single CTA stable during focus changes and after the first click.
+    const updateResultsMode=()=>{
+      document.body.classList.toggle("cwd-p1-results-open",Boolean(fleet && !fleet.hidden));
     };
-    widget.addEventListener("focusin",updateFloating);
-    widget.addEventListener("focusout",()=>requestAnimationFrame(updateFloating));
-    widget.addEventListener("click",()=>requestAnimationFrame(updateFloating));
-    if(fleet) new MutationObserver(updateFloating).observe(fleet,{attributes:true,attributeFilter:["hidden","aria-hidden"]});
-    updateFloating();
+    if(fleet) new MutationObserver(updateResultsMode).observe(fleet,{
+      attributes:true,attributeFilter:["hidden","aria-hidden"]
+    });
+    updateResultsMode();
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
   else init();

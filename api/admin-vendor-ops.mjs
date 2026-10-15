@@ -78,7 +78,8 @@ async function eligibleVendorVehicles(vendorId,bookingVehicle){
      return vm===token||vm.includes(short)||token.includes(vm);
    });
    if(!vendorMatch)continue;
-   const storedRate=(await db('cwd_vendor_rate_cards?vehicle_rate_id=eq.'+encodeURIComponent(String(car.id))+'&is_active=eq.true&select=*&limit=1'))?.[0];
+   const storedRate=(await db('cwd_vendor_rate_cards?vehicle_rate_id=eq.'+encodeURIComponent(String(car.id))+'&select=*&limit=1'))?.[0];
+   if(storedRate?.is_active===false)continue;
    const fixedRate=finalVendorRateForVehicle(car.full_name);
    const rate=storedRate||(fixedRate?{...fixedRate,vehicle_rate_id:String(car.id),local_pkg_8hr_80km:0,local_pkg_10hr_100km:0,local_pkg_12hr_120km:0,is_active:true}:null);
    if(rate)out.push({global_vehicle:car,vendor_vehicle:vendorMatch,rate:applyFinalVendorRate(car.full_name,rate)});

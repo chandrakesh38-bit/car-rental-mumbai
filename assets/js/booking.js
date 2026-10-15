@@ -653,9 +653,66 @@ function showCustomAlert(message) {
             onWDDestinationInput();
         }
 
+        // Save the customer's Round Trip end-time when switching to One Way.
+        // One Way derives an INTERNAL end time; the customer does not fill it.
+        let savedRoundTripEnd = null;
+        function syncOneWayEndTime() {
+            if (currentOutstationJourneyType !== 'one-way') return;
+            const dateEl=document.getElementById('wd-out-pdate');
+            const hourEl=document.getElementById('wd-out-phour');
+            const ampmEl=document.getElementById('wd-out-pampm');
+            const endDate=document.getElementById('wd-out-rdate');
+            const endHour=document.getElementById('wd-out-rhour');
+            const endAmpm=document.getElementById('wd-out-rampm');
+            if(!endDate||!endHour||!endAmpm)return;
+            if(!dateEl?.value) {
+                endDate.value='';
+                return;
+            }
+            const start=createLocalDateTime(dateEl.value,Number(hourEl.value),ampmEl.value);
+            if(!Number.isFinite(start.getTime()))return;
+            // Google route legs: base -> pickup, pickup -> customer drop, drop -> base.
+            // Use the customer's one-way journey, not the empty return leg.
+            const quote=wdOutstationRouteQuote;
+            const legs=quote?.journeyType==='one-way' && Array.isArray(quote.legs)?quote.legs:[];
+            const customerLegs=legs.length>=3?legs.slice(1,-1):[];
+            const routeSeconds=customerLegs.reduce((sum,leg)=>{
+                const m=String(leg.duration||'').match(/^([0-9]+(?:\.[0-9]+)?)s$/);
+                return sum+(m?Number(m[1]):0);
+            },0);
+            // Before Google route is available, keep an internal 1h estimate.
+            // It is refreshed with the route's estimated travel duration.
+            const durationHours=Math.max(1,Math.ceil(routeSeconds/3600));
+            const end=new Date(start.getTime()+durationHours*3600000);
+            const pad=n=>String(n).padStart(2,'0');
+            endDate.value=end.getFullYear()+'-'+pad(end.getMonth()+1)+'-'+pad(end.getDate());
+            const hour24=end.getHours();
+            endHour.value=String(hour24%12||12);
+            endAmpm.value=hour24>=12?'PM':'AM';
+        }
         function setOutstationJourneyType(type) {
             if (!['one-way', 'round-trip'].includes(type)) return;
+            const previousType=currentOutstationJourneyType;
+            if(type==='one-way' && previousType==='round-trip'){
+                savedRoundTripEnd=['wd-out-rdate','wd-out-rhour','wd-out-rampm']
+                  .map(id=>document.getElementById(id)?.value||'');
+            }
             currentOutstationJourneyType = type;
+            const returnInput=document.getElementById('wd-out-rdate');
+            const returnSection=returnInput?.closest('.bg-slate-50');
+            const dateGrid=returnSection?.parentElement;
+            const oneWay=type==='one-way';
+            returnSection?.classList.toggle('hidden',oneWay);
+            dateGrid?.classList.toggle('cwd-p1-single-outstation-date',oneWay);
+            if(oneWay) syncOneWayEndTime();
+            else if(previousType==='one-way'&&savedRoundTripEnd){
+                ['wd-out-rdate','wd-out-rhour','wd-out-rampm'].forEach((id,i)=>{
+                    const el=document.getElementById(id);
+                    if(el)el.value=savedRoundTripEnd[i];
+                });
+            }
+            // A previous result must never hide EXPLORE CABS when editing.
+            document.body.classList.remove('cwd-p1-results-open');
             const tripTypeFieldset = document.getElementById('wd-out-trip-type-fieldset');
             const tripTypeError = document.getElementById('wd-out-trip-type-error');
             tripTypeFieldset?.classList.remove('trip-type-selection-required');
@@ -1416,6 +1473,7 @@ function onPickupDateChange() {
 
         function calculateDriverFare() {
             if (currentMainMode === 'withdriver' && currentWDSubTab === 'outstation') {
+                if(currentOutstationJourneyType==='one-way')syncOneWayEndTime();
                 const pDate = document.getElementById('wd-out-pdate')?.value;
                 const rDate = document.getElementById('wd-out-rdate')?.value;
                 if (pDate && rDate) {
@@ -1841,7 +1899,7 @@ function onPickupDateChange() {
             const icon = document.getElementById('search-btn-icon');
             const status = document.getElementById('explore-cabs-status');
             if (button) button.disabled = Boolean(isLoading);
-            if (text) text.textContent = isLoading ? 'Checking Live Fares...' : 'Explore Cabs';
+            if (text) text.textContent = isLoading ? 'Checking Live Fares...' : 'EXPLORE CABS';
             if (icon) icon.className = isLoading
                 ? 'fa-solid fa-circle-notch fa-spin text-indigo-950 text-base'
                 : 'fa-solid fa-magnifying-glass text-indigo-950 text-base';
@@ -1862,8 +1920,46 @@ function onPickupDateChange() {
             });
         }
 
+        // Search animation is owned by the search action itself, not an
+        // asynchronously loaded Phase-1 script. This prevents missed clicks.
+        function makeFareSearchOverlay() {
+            let overlay=document.getElementById('cwd-p1-search-loader');
+            if(overlay)return overlay;
+            const sheet=document.createElement('style');
+            sheet.id='cwd-p1-fare-loader-style';
+            sheet.textContent=`
+              #cwd-p1-search-loader {position:fixed!important;inset:0!important;z-index:99999!important;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(249,252,255,.985);text-align:center;color:#123956;padding:18px}
+              #cwd-p1-search-loader.visible {display:flex!important}
+              #cwd-p1-search-loader strong {font-size:21px}
+              #cwd-p1-search-loader .cwd-p1-loader-bars {height:52px;display:flex;align-items:center;gap:8px}
+              #cwd-p1-search-loader .cwd-p1-loader-bars span {display:block;background:#187db7;width:10px;height:27px;border-radius:5px;animation:cwd-search-bars .65s ease-in-out infinite alternate}
+              #cwd-p1-search-loader .cwd-p1-loader-bars span:nth-child(2){animation-delay:.15s}
+              #cwd-p1-search-loader .cwd-p1-loader-bars span:nth-child(3){animation-delay:.30s}
+              @keyframes cwd-search-bars {from{transform:scaleY(.48)}to{transform:scaleY(1.65)}}
+              @media(prefers-reduced-motion:reduce){#cwd-p1-search-loader .cwd-p1-loader-bars span{animation:none}}
+            `;
+            document.head.appendChild(sheet);
+            overlay=document.createElement('div');
+            overlay.id='cwd-p1-search-loader';
+            overlay.setAttribute('role','status');
+            overlay.setAttribute('aria-live','polite');
+            overlay.setAttribute('aria-hidden','true');
+            const title=document.createElement('strong');title.textContent='Please wait';
+            const bars=document.createElement('div');bars.className='cwd-p1-loader-bars';
+            for(let i=0;i<3;i++)bars.appendChild(document.createElement('span'));
+            const subtitle=document.createElement('p');subtitle.textContent='Looking for best rates';
+            overlay.append(title,bars,subtitle);
+            document.body.appendChild(overlay);
+            return overlay;
+        }
         async function triggerFareSearch() {
             if (document.getElementById('explore-cabs-button')?.disabled) return;
+            const searchOverlay=makeFareSearchOverlay();
+            searchOverlay.classList.add('visible');
+            searchOverlay.setAttribute('aria-hidden','false');
+            const searchStartedAt=performance.now();
+            // Allow browser to paint the overlay before heavy fare work begins.
+            await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
             window.cwdTrackEvent?.('explore_cabs_click', {
                 service_type: currentMainMode === 'withdriver' ? 'with_driver' : currentMainMode,
                 trip_type: currentWDSubTab,
@@ -1923,7 +2019,12 @@ function onPickupDateChange() {
                 showCustomAlert('Unable to load live fares right now. Please try again.');
                 setExploreCabsUi(false, 'Could not load live fares. Please try again.');
             } finally {
-                const button = document.getElementById('explore-cabs-button');
+                // Short transition only; no mandatory 5-second waiting.
+                const remaining=Math.max(0,320-(performance.now()-searchStartedAt));
+                if(remaining)await new Promise(resolve=>setTimeout(resolve,remaining));
+                searchOverlay.classList.remove('visible');
+                searchOverlay.setAttribute('aria-hidden','true');
+                const button=document.getElementById('explore-cabs-button');
                 if (button?.disabled) setExploreCabsUi(false);
             }
         }

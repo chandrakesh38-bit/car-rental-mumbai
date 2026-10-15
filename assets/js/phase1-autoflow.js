@@ -118,10 +118,7 @@
     const nextByChange={
       "wd-out-pdate":["wd-out-phour",true],
       "wd-out-phour":["wd-out-pampm",true],
-      "wd-out-pampm":[
-        $("wd-out-one-way")?.getAttribute("aria-pressed")==="true"?
-          "explore-cabs-button":"wd-out-rdate",true
-      ],
+      "wd-out-pampm":["wd-out-rdate",true],
       "wd-out-rdate":["wd-out-rhour",true],
       "wd-out-rhour":["wd-out-rampm",true],
       "wd-out-rampm":["explore-cabs-button",false],
@@ -134,6 +131,10 @@
     };
     widget.addEventListener("change",e=>{
       const id=e.target?.id;
+      if(id==="wd-out-pampm" && $("wd-out-one-way")?.getAttribute("aria-pressed")==="true") {
+        queueFocus("explore-cabs-button");
+        return;
+      }
       if (id==="wd-airport-terminal") {
         const pickup=$("btn-airport-pickup")?.className.includes("bg-white");
         queueFocus(pickup?"wd-airport-pickup":"wd-airport-date",!pickup);

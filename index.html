@@ -970,54 +970,39 @@
         </div>
     </div>
 
-    <!-- WITH DRIVER BOOKING SUMMARY / REVIEW MODAL -->
-    <div id="booking-modal" role="dialog" aria-modal="true" aria-labelledby="cwd-review-title" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="cwd-review-panel bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-fade-in">
-            <button aria-label="Close booking review" type="button" onclick="closeModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-700 text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <h3 id="cwd-review-title" class="text-lg font-bold text-slate-900 mb-2">Review Your Booking</h3>
-            
-            <!-- Detailed Travel Summary Card -->
-            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2.5">
-                <div class="flex justify-between items-start border-b border-slate-200 pb-2">
-                    <div>
-                        <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded">Selected Car</span>
-                        <h4 class="text-sm font-extrabold text-indigo-950 mt-1" id="modal-car-name">Car Name</h4>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-slate-400 text-[10px] block">Total Fare</span>
-                        <span id="modal-original-fare" class="hidden text-[11px] text-slate-400 line-through"></span>
-                        <strong class="text-emerald-700 font-black text-base" id="modal-fare">₹0</strong>
-                        <span id="modal-summary-extra-note" class="block max-w-40 text-[10px] text-slate-500 leading-tight mt-1">Extra charges may apply.</span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                    <div><strong>Pickup Location:</strong> <span id="modal-summary-pickup" class="text-slate-900"></span></div>
-                    <div><strong id="modal-summary-dest-label">Destination / Route:</strong> <span id="modal-summary-dest" class="text-slate-900"></span></div>
-                    <div id="modal-summary-trip-type-row" class="hidden"><strong>Trip Type:</strong> <span id="modal-summary-trip-type" class="text-slate-900"></span></div>
-                    <div><strong>Date &amp; Time:</strong> <span id="modal-summary-datetime" class="text-slate-900"></span></div>
-                    <div><strong>Trip Package:</strong> <span id="modal-summary-package" class="text-slate-900"></span></div>
-                </div>
-
-                <div class="pt-2 border-t border-slate-200 space-y-1">
-                    <div id="modal-summary-exclusions" class="text-slate-600 font-semibold"><span class="text-amber-600" aria-hidden="true">ⓘ</span> <strong>Extra charges:</strong> Tolls and parking are charged at actual cost.</div>
-                </div>
-            </div>
-
-            <div class="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3 text-xs text-slate-700">
-                <div class="font-black text-emerald-800">💡 No advance payment required now.</div>
-                <div class="mt-1 leading-relaxed">Submit your booking request. Our team will verify car availability and contact you shortly. Once availability is confirmed, we’ll share a secure Razorpay payment link for the 20% advance.</div>
-            </div>
-
-            <section class="cwd-review-cancel" aria-labelledby="cwd-cancel-title">
-                <h4 id="cwd-cancel-title">Free cancellation up to 3 hours before pickup</h4>
-                <p>Cancel at least 3 hours before pickup for a full refund of the amount paid, with no payment-gateway fee deduction. Less than 3 hours before pickup: no refund.</p>
-                <p>Contact our team to request cancellation. Eligible refunds require admin approval and initiation; bank processing time applies.</p>
-            </section>
-            <form id="wd-booking-form" onsubmit="handleBookingSubmit(event)" class="mt-4 space-y-3">
-                <h4 class="cwd-review-section-title">Contact &amp; Pickup Details</h4>
+    <!-- With-driver review: page layout with one persistent action footer. -->
+    <div id="booking-modal" role="dialog" aria-modal="true" aria-labelledby="cwd-review-title" class="fixed inset-0 z-50 hidden">
+        <div class="cwd-review-panel">
+            <header class="cwd-review-header">
+                <button type="button" onclick="closeModal()" aria-label="Close booking review" class="cwd-review-back">← <span>Back to cabs</span></button>
+                <strong>CAR WITH DRIVER <span>INDIA</span></strong>
+                <a href="tel:+919702988465" aria-label="Call 97029 88465">☎ <span>97029 88465</span></a>
+            </header>
+            <form id="wd-booking-form" onsubmit="handleBookingSubmit(event)">
+                <div class="cwd-review-scroll">
+                    <div class="cwd-review-content">
+                        <h3 id="cwd-review-title" tabindex="-1">Review Your Booking</h3>
+                        <div class="cwd-review-columns">
+                            <div class="cwd-review-main">
+                                <section class="cwd-review-summary cwd-review-card" aria-label="Journey details">
+                                    <h4 id="cwd-review-route"></h4>
+                                    <p id="modal-summary-trip-type-row"><span id="modal-summary-trip-type"></span></p>
+                                    <dl>
+                                        <div><dt>Car Type</dt><dd id="modal-car-name"></dd></div>
+                                        <div id="cwd-review-fuel-row" hidden><dt>Fuel Type</dt><dd id="cwd-review-fuel"></dd></div>
+                                        <div><dt>Pickup Location</dt><dd id="modal-summary-pickup"></dd></div>
+                                        <div><dt id="modal-summary-dest-label">Destination / Route</dt><dd id="modal-summary-dest"></dd></div>
+                                        <div><dt>Date &amp; Time</dt><dd id="modal-summary-datetime"></dd></div>
+                                        <div><dt>Trip Package</dt><dd id="modal-summary-package"></dd></div>
+                                    </dl>
+                                    <span id="modal-summary-extra-note" hidden></span><span id="modal-summary-exclusions" hidden></span>
+                                </section>
+                                <section class="cwd-review-cancel" aria-label="Cancellation policy">
+                                    <span aria-hidden="true">◷</span>
+                                    <button type="button" onclick="document.getElementById('cwd-review-terms').showModal()">Free cancellation up to 3 hours before pickup <span aria-hidden="true">ⓘ</span></button>
+                                </section>
+                                <section class="cwd-review-contact cwd-review-card" aria-labelledby="cwd-contact-title">
+                                    <h4 id="cwd-contact-title">Contact &amp; Pickup Details</h4>
                 <div>
                     <label for="cust-name" class="block text-xs font-semibold text-slate-600 mb-1">Your Full Name *</label>
                     <input type="text" id="cust-name" required placeholder="Enter full name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 outline-none">
@@ -1041,21 +1026,32 @@
                     </div>
                 </div>
 
-                <section class="cwd-review-inclusions" aria-labelledby="cwd-inclusions-title">
-                    <h4 id="cwd-inclusions-title">Inclusions &amp; Exclusions</h4>
-                    <h5>Included</h5><ul id="cwd-review-included"></ul>
-                    <h5>Not included</h5><ul id="cwd-review-excluded"></ul>
-                    <button type="button" class="cwd-review-terms-link" onclick="document.getElementById('cwd-review-terms').showModal()">Terms &amp; Conditions</button>
-                </section>
-                <section class="cwd-review-expert">
-                    <p>SAY HELLO TO</p><h4>Your Travel Expert</h4>
-                    <p>Need help with your route or booking? Speak with our support team.</p>
-                    <a href="tel:+919702988465">☎ Call Expert | 24×7</a>
-                </section>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm">
-                    <i class="fa-solid fa-check-circle text-base"></i>
-                    <span>Submit Booking Request</span>
-                </button>
+                                </section>
+                            </div>
+                            <aside class="cwd-review-aside">
+                                <section class="cwd-review-expert">
+                                    <div><p>SAY HELLO TO</p><h4>YOUR TRAVEL EXPERT</h4><small>Help with your route and booking.</small></div>
+                                    <a href="tel:+919702988465">☎ Call Expert | 24×7</a>
+                                </section>
+                                <section class="cwd-review-inclusions cwd-review-card" aria-labelledby="cwd-inclusions-title">
+                                    <h4 id="cwd-inclusions-title">Inclusions / Exclusions</h4>
+                                    <h5>Inclusions</h5><ul id="cwd-review-included"></ul>
+                                    <h5>Exclusions</h5><ul id="cwd-review-excluded"></ul>
+                                    <button type="button" class="cwd-review-terms-link" onclick="document.getElementById('cwd-review-terms').showModal()">Terms &amp; Conditions <span aria-hidden="true">↗</span></button>
+                                </section>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+                <footer class="cwd-review-footer">
+                    <div class="cwd-review-footer-inner">
+                        <div class="cwd-review-total"><span>Total Fare</span><span id="modal-original-fare" hidden></span><strong id="modal-fare">₹0</strong></div>
+                        <div class="cwd-review-request-action">
+                            <p>No payment collected now. Our team will confirm availability and share a secure payment link.</p>
+                            <button type="submit"><span>Submit Booking Request</span> <span aria-hidden="true">→</span></button>
+                        </div>
+                    </div>
+                </footer>
             </form>
         </div>
     </div>

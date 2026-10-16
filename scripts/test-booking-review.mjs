@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import {startServer} from './serve.mjs';
+import {mkdir} from 'node:fs/promises';
 const {chromium}=createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE||'playwright');
 const root=fileURLToPath(new URL('../',import.meta.url));
 const server=await startServer(root,4393),browser=await chromium.launch({headless:true,channel:'msedge'});
@@ -95,6 +96,28 @@ try {
   for(const width of [320,390,768,1366]){
    await page.setViewportSize({width,height:900});
    assert.equal(await page.locator('.cwd-review-panel').evaluate(el=>el.scrollWidth>el.clientWidth),false);
+   const footerBefore=await page.locator('.cwd-review-footer').boundingBox();
+   await page.locator('.cwd-review-scroll').evaluate(el=>el.scrollTop=el.scrollHeight);
+   const footerAfter=await page.locator('.cwd-review-footer').boundingBox();
+   assert.deepEqual(footerAfter,footerBefore,'Footer stays in place during review scrolling');
+   assert.ok(footerAfter.y>=0 && footerAfter.y+footerAfter.height<=901,'Footer inside viewport');
+   assert.equal(await page.locator('#wd-booking-form button[type="submit"]').count(),1,'One submit action');
+   const termsBox=await page.locator('.cwd-review-terms-link').boundingBox();
+   assert.ok(termsBox.y+termsBox.height<=footerAfter.y,'Final content can scroll fully above footer');
+   assert.equal(await page.locator('.cwd-review-scroll').evaluate(el=>el.scrollWidth>el.clientWidth),false);
+  }
+ }
+ await page.evaluate(()=>{currentWDSubTab='airport';setAirportTransferType('drop');document.getElementById('wd-airport-pickup').value='Fixture Hotel';openModal(chosenCarName,4700);});
+ assert.equal(await page.locator('#modal-summary-pickup').innerText(),'Fixture Hotel');
+ assert.match(await page.locator('#modal-summary-trip-type').innerText(),/Drop to Airport/);
+ if(process.env.TEST_OUTPUT){
+  await mkdir(process.env.TEST_OUTPUT,{recursive:true});
+  for(const width of [390,1366]){
+   await page.setViewportSize({width,height:844});
+   await page.locator('.cwd-review-scroll').evaluate(el=>el.scrollTop=0);
+   await page.screenshot({path:`${process.env.TEST_OUTPUT}/local-review-${width}-top.png`});
+   await page.locator('.cwd-review-scroll').evaluate(el=>el.scrollTop=el.scrollHeight);
+   await page.screenshot({path:`${process.env.TEST_OUTPUT}/local-review-${width}-bottom.png`});
   }
  }
  await page.evaluate(()=>{currentWDSubTab='outstation';currentOutstationJourneyType='one-way';});

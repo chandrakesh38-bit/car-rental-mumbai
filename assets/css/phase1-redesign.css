@@ -102,23 +102,79 @@ body.cwd-p1 { background:#f5f7fb; }
 }
 @media(prefers-reduced-motion:reduce) { .cwd-p1 .cwd-p1-loader-bars span { animation:none; } .cwd-p1 .cwd-p1-card { transition:none; } }
 
-/* With-driver booking review only. The existing form and OTP submit path remain intact. */
-#booking-modal .cwd-review-panel { max-width:680px;padding:24px;background:#f5f8fc; }
-#cwd-review-title { color:#173b60;padding-right:30px;font-size:22px;margin-bottom:20px; }
-#booking-modal h4.cwd-review-section-title { font-size:17px;color:#173b60;margin:18px 0 12px; }
-.cwd-review-cancel,.cwd-review-inclusions,.cwd-review-expert { margin:18px 0;padding:18px;border:1px solid #dbe5ef;border-radius:14px;background:white;font-size:13px;line-height:1.65; }
-.cwd-review-cancel { background:#fff9e8;border-color:#eed58c; }
-.cwd-review-cancel h4,.cwd-review-inclusions h4,.cwd-review-expert h4 { font-weight:800;font-size:16px;margin:0 0 8px; }
-.cwd-review-cancel p+p { margin-top:8px; }
-.cwd-review-inclusions h5 { font-weight:700;margin:12px 0 6px;color:#173b60; }
-.cwd-review-inclusions ul,#cwd-review-terms ul { list-style:disc;padding-left:20px; }
-.cwd-review-inclusions li,#cwd-review-terms li { margin:8px 0; }
-.cwd-review-terms-link { color:#125c96;text-decoration:underline;padding:12px 0;font-weight:700; }
-.cwd-review-expert { background:#eaf3fa; }
-.cwd-review-expert a { display:inline-block;margin-top:12px;background:#173b60;color:white;padding:12px 20px;border-radius:10px;font-weight:700; }
+/* With-driver review page; all scrolling is above the single persistent footer. */
+#booking-modal { padding:0;background:#f7f9fb; }
+#booking-modal .cwd-review-panel { width:100%;height:100dvh;display:flex;flex-direction:column;overflow:hidden;color:#263746;background:#f7f9fb; }
+.cwd-review-header { flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px;padding:12px max(20px,calc((100vw - 1040px)/2));background:white;border-bottom:1px solid #e6ebef; }
+.cwd-review-header strong { color:#123f6c;font-size:15px;letter-spacing:.035em; }
+.cwd-review-header strong span { color:#159dc3; }
+.cwd-review-header a,.cwd-review-back { font-size:13px;font-weight:700;color:#175e82;padding:8px 0; }
+#wd-booking-form { display:flex;flex-direction:column;min-height:0;flex:1; }
+.cwd-review-scroll { flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scroll-padding:20px; }
+.cwd-review-content { max-width:1040px;padding:24px 20px 28px;margin:auto; }
+#cwd-review-title { background:#1da6cc;color:#fff;border-radius:8px;padding:14px 18px;margin:0 0 18px;font-size:17px;font-weight:750; }
+#cwd-review-title:focus { outline:none; }
+.cwd-review-columns { display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:start; }
+.cwd-review-main,.cwd-review-aside { min-width:0; }
+.cwd-review-card { background:#fff;border:1px solid #e4e9ed;border-radius:15px;box-shadow:0 3px 12px #1d3a5210;padding:20px;font-size:14px;line-height:1.6;overflow-wrap:anywhere; }
+.cwd-review-card h4 { font-size:17px;font-weight:800;color:#24313e; }
+.cwd-review-summary h4 { font-size:19px;line-height:1.4;margin:0 0 4px; }
+#modal-summary-trip-type-row { color:#64748b;font-size:13px;margin-bottom:12px; }
+.cwd-review-summary dl>div { margin:4px 0; }
+.cwd-review-summary dt,.cwd-review-summary dd { display:inline; }
+.cwd-review-summary dt { color:#66737f; }
+.cwd-review-summary dt::after { content:': '; }
+.cwd-review-summary dd { font-weight:650; }
+#modal-summary-datetime { white-space:pre-line; }
+.cwd-review-cancel { display:flex;align-items:center;gap:9px;border:1px solid #edd661;border-radius:8px;background:#fffae5;padding:11px 13px;margin:16px 0;color:#785c0b;font-size:13px;font-weight:700; }
+.cwd-review-cancel>span { display:grid;place-items:center;background:#ffe360;border-radius:50%;width:25px;height:25px;flex:none;font-size:20px; }
+.cwd-review-cancel button { text-align:left;line-height:1.5; }
+.cwd-review-contact h4,.cwd-review-inclusions h4 { padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid #edf0f3; }
+.cwd-review-contact>div { margin-top:14px; }
+.cwd-review-contact input,.cwd-review-contact textarea { min-height:48px;background:#fff;border:1px solid #e0e5ea;border-radius:9px;padding:11px 12px;font-size:16px; }
+.cwd-review-contact label { font-size:12px;font-weight:600;color:#64717d; }
+.cwd-review-expert { display:flex;justify-content:space-between;align-items:center;gap:12px;background:linear-gradient(110deg,#eaf8fc,#c7e8f4);border-radius:16px;padding:18px;margin-bottom:16px; }
+.cwd-review-expert p { color:#8b8153;font-size:10px;font-weight:800;letter-spacing:.07em; }
+.cwd-review-expert h4 { color:#24313e;font-size:13px;font-weight:850;margin:2px 0; }
+.cwd-review-expert small { font-size:10px;color:#607886; }
+.cwd-review-expert a { flex:none;white-space:nowrap;font-size:11px;font-weight:800;padding:12px;border-radius:24px;background:white;color:#24313e;box-shadow:0 4px 10px #20486026; }
+.cwd-review-inclusions h5 { color:#19a46b;font-size:14px;font-weight:750;margin:17px 0 8px; }
+.cwd-review-inclusions h5:nth-of-type(2) { color:#d64c50; }
+.cwd-review-inclusions ul { list-style:none;padding:0; }
+.cwd-review-inclusions li { position:relative;padding-left:24px;margin:9px 0;font-size:13px;line-height:1.55; }
+.cwd-review-inclusions li::before { content:'✓';color:#19a46b;position:absolute;left:1px;font-weight:800; }
+#cwd-review-excluded li::before { content:'×';color:#d64c50;font-size:18px;line-height:1.2; }
+.cwd-review-terms-link { display:flex;justify-content:space-between;width:100%;padding-top:15px;margin-top:14px;border-top:1px solid #edf0f3;font-size:13px;font-weight:750;text-align:left; }
+.cwd-review-footer { flex:none;background:#fff;border-top:1px solid #e3e8ed;box-shadow:0 -5px 22px #263b5010;padding:0 20px env(safe-area-inset-bottom); }
+.cwd-review-footer-inner { max-width:1000px;margin:auto; }
+.cwd-review-total { display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #edf0f3;font-size:14px;font-weight:700; }
+#modal-fare { font-size:21px;color:#1b2b3c; }
+.cwd-review-request-action { display:flex;align-items:center;justify-content:space-between;gap:20px;padding:12px 0; }
+.cwd-review-request-action p { color:#657382;font-size:12px;max-width:440px;line-height:1.5; }
+.cwd-review-request-action button { background:#f47721;color:white;min-height:48px;border-radius:9px;padding:12px 22px;font-size:15px;font-weight:800;flex:none; }
+.cwd-review-request-action button:disabled { opacity:.65;cursor:wait; }
 #cwd-review-terms { border:0;border-radius:16px;padding:24px;max-width:600px;width:calc(100% - 24px);max-height:85dvh;overflow:auto;color:#243b53;font-size:14px;line-height:1.65; }
 #cwd-review-terms::backdrop { background:rgba(15,23,42,.7); }
 #cwd-review-terms h3 { font-size:18px;font-weight:800;clear:both; }
+#cwd-review-terms ul { list-style:disc;padding-left:20px; }
+#cwd-review-terms li { margin:8px 0; }
 .cwd-review-terms-close { float:right;border:1px solid #cbd5e1;border-radius:8px;padding:8px 14px;margin-bottom:12px; }
-#modal-summary-datetime { white-space:pre-line; }
-@media(max-width:680px) { #booking-modal { padding:8px; } #booking-modal .cwd-review-panel { padding:18px;max-height:94dvh; } }
+@media(max-width:700px) {
+ .cwd-review-header { min-height:55px;padding:8px 15px;gap:9px; }
+ .cwd-review-header strong { font-size:12px; }
+ .cwd-review-header a span,.cwd-review-back span { display:none; }
+ .cwd-review-header a,.cwd-review-back { font-size:22px;min-width:30px; }
+ .cwd-review-content { padding:16px 15px 24px; }
+ #cwd-review-title { font-size:15px;padding:12px 15px;margin-bottom:14px; }
+ .cwd-review-columns { display:block; }
+ .cwd-review-card { padding:16px;font-size:13px; }
+ .cwd-review-summary h4 { font-size:18px; }
+ .cwd-review-aside { margin-top:18px; }
+ .cwd-review-expert { padding:15px 12px;gap:8px; }
+ .cwd-review-expert a { font-size:10px;padding:11px 9px; }
+ .cwd-review-footer { padding-left:15px;padding-right:15px; }
+ .cwd-review-total { padding:10px 0; }
+ .cwd-review-request-action { display:block;padding:9px 0 12px; }
+ .cwd-review-request-action p { font-size:10px;margin-bottom:7px; }
+ .cwd-review-request-action button { width:100%;font-size:14px;min-height:45px; }
+}

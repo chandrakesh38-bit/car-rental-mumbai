@@ -2462,6 +2462,8 @@ function onPickupDateChange() {
 
             renderBookingReviewDetails();
             document.getElementById('booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('booking-modal'), true);
+            document.querySelector('.cwd-review-scroll').scrollTop = 0;
+            document.getElementById('cwd-review-title').focus({ preventScroll: true });
             window.cwdTrackEvent?.('fare_calculated', {
                 service_type: 'with_driver',
                 trip_type: currentWDSubTab,
@@ -4011,6 +4013,23 @@ function renderBookingReviewDetails() {
     }
     document.getElementById('modal-summary-trip-type-row').classList.remove('hidden');
     document.getElementById('modal-summary-trip-type').textContent = title;
+    const pickup = document.getElementById('modal-summary-pickup').textContent;
+    const destination = document.getElementById('modal-summary-dest').textContent;
+    const shortPlace = place => place.split(',')[0].trim();
+    const routeParts = [shortPlace(pickup), shortPlace(destination)];
+    if (mode === 'outstation' && currentOutstationJourneyType === 'round-trip' && routeParts[0] !== routeParts[1]) routeParts.push(routeParts[0]);
+    document.getElementById('cwd-review-route').textContent = mode === 'local' ? shortPlace(pickup)+' — Local Rental' : routeParts.join(' → ');
+    const selectedCard = [...document.querySelectorAll('.cwd-p1-card')].find(card => card.querySelector('.cwd-p1-car-name')?.textContent === chosenCarName);
+    const fuel = selectedCard?.dataset.cwdP1Fuel || '';
+    document.getElementById('cwd-review-fuel').textContent = fuel;
+    document.getElementById('cwd-review-fuel-row').hidden = !fuel;
+    if (mode === 'outstation') {
+        const km = Math.max(Math.ceil(wdOutstationKm || 0), wdOutstationDays * livePricingRules.minimumOutstationKmPerDay);
+        document.getElementById('modal-summary-package').textContent = `${wdOutstationDays} day${wdOutstationDays === 1 ? '' : 's'} · ${km.toLocaleString('en-IN')} km included`;
+    }
+    const packageSummary = document.getElementById('modal-summary-package');
+    packageSummary.style.display = 'inline';
+    packageSummary.style.lineHeight = '';
     document.getElementById('cwd-review-terms-title').textContent = title+' — Terms & Conditions';
     terms.push('Cancellation at least 3 hours before pickup: full refund of the actual amount paid, without gateway-fee deduction. Less than 3 hours before pickup: no refund. Eligible refunds require admin approval and initiation; bank processing time applies.');
     terms.push('Request modifications at least 3 hours before pickup. Fare adjustments and changes to allocated bookings require admin approval.');

@@ -2425,7 +2425,7 @@ function onPickupDateChange() {
                     const date = createLocalDateTime(document.getElementById(prefix + 'date').value, Number(hour), ampm);
                     return `${date.getDate()} ${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}, ${Number(hour)}:00 ${ampm}`;
                 };
-                dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}\nFinal Drop: ${formatReviewTime('wd-out-r')}`;
+                dateTimeStr = `Pickup: ${formatReviewTime('wd-out-p')}` + (currentOutstationJourneyType === 'round-trip' ? `\nReturn: ${formatReviewTime('wd-out-r')}` : '');
                 pkgStr = `${wdOutstationDays}-Day Dedicated Cab Package\n${Number(livePricingRules.minimumOutstationKmPerDay).toLocaleString('en-IN')} KM/Day included\nCar + Fuel + Driver Allowance included\nDedicated car & driver for your complete trip`;
             } else if (currentWDSubTab === 'airport') {
                 pickupLoc = document.getElementById('wd-airport-pickup').value || 'Mumbai Address';
@@ -2460,6 +2460,7 @@ function onPickupDateChange() {
             packageSummary.style.lineHeight = currentWDSubTab === 'outstation' ? '1.75' : '';
             packageSummary.parentElement.classList.toggle('sm:col-span-2', currentWDSubTab === 'outstation');
 
+            renderBookingReviewDetails();
             document.getElementById('booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('booking-modal'), true);
             window.cwdTrackEvent?.('fare_calculated', {
                 service_type: 'with_driver',
@@ -2481,7 +2482,7 @@ function onPickupDateChange() {
             if (fare) fare.textContent = '₹' + chosenFareAmount.toLocaleString('en-IN');
         }
 
-        function closeModal() { document.getElementById('booking-modal').classList.add('hidden'); syncModalState(document.getElementById('booking-modal'), false); }
+        function closeModal() { document.getElementById('cwd-review-terms')?.close(); document.getElementById('booking-modal').classList.add('hidden'); syncModalState(document.getElementById('booking-modal'), false); }
 
         function openSDModal(car) {
             selectedCarObj = car;
@@ -3956,3 +3957,64 @@ document.addEventListener('keydown', function(event) {
     const modal = modals.pop();
     if (modal) closeExistingModal(modal);
 });
+
+// Presentation only: read the selected live quote; never calculate or submit a new fare.
+function renderBookingReviewDetails() {
+    const car = wdFleet.find(item => item.name === chosenCarName);
+    const mode = currentWDSubTab;
+    const list = (id, items) => {
+        const node = document.getElementById(id);
+        node.replaceChildren(...items.filter(Boolean).map(text => { const li=document.createElement('li');li.textContent=text;return li; }));
+    };
+    const amount = value => Number.isFinite(Number(value)) && Number(value)>0 ? '₹'+Number(value).toLocaleString('en-IN') : null;
+    const included = ['Car, base fare and fuel charges', 'Air conditioning', car ? car.seats+' passenger capacity · '+car.bags : null];
+    const excluded = ['Tolls, parking and applicable state taxes at actuals.'];
+    let terms = [];
+    let title = '';
+    if (mode === 'outstation') {
+        const oneWay = currentOutstationJourneyType === 'one-way';
+        title = oneWay ? 'Outstation — One Way' : 'Outstation — Round Trip';
+        included.push('Driver allowance included in the quoted fare.');
+        const extra = car ? amount(Number(car.rates.outstationPerKm)+1) : null;
+        excluded.push(extra ? 'Extra kilometres: '+extra+'/km, according to the selected car’s configured rate.' : 'Extra kilometres are charged at the selected car’s configured rate.');
+        terms = [
+            'Minimum chargeable distance is 300 km per day. The booked route and applicable package distance determine your fare.',
+            oneWay ? 'One pickup in the pickup city and one drop at the destination are included. Local travel within either city is excluded.' : 'Include all planned cities in your itinerary. Adding cities during the trip is subject to availability and approval.',
+            'Tolls, parking, airport entry and applicable state taxes are extra at actuals.',
+            'CNG vehicles may require refuelling time during the journey.',
+            'Air conditioning may be switched off during hill climbs.',
+            'Applicable night allowance is included when reflected in your quoted fare. Contact support before changing night-driving plans.'
+        ];
+    } else if (mode === 'local') {
+        title = 'Local — Hourly Rental';
+        const raw = document.getElementById('wd-local-package').value;
+        const match = /^(\d+)hr_(\d+)km$/.exec(raw);
+        const pkg = match ? match[1]+' Hours / '+match[2]+' KM' : 'Selected local package';
+        document.getElementById('modal-summary-package').textContent = pkg;
+        included.push('Driver and selected '+pkg+' package.');
+        const extra = car ? amount(car.rates.local.extraKm) : null;
+        // Existing live packages differ by two hours; this reads their configured hourly increment.
+        const hour = car ? amount((car.rates.local['10hr_100km']-car.rates.local['8hr_80km'])/2) : null;
+        excluded.push(extra ? 'Extra kilometres: '+extra+'/km.' : 'Extra kilometres at the configured rate.');
+        excluded.push(hour ? 'Extra hours: '+hour+'/hour.' : 'Extra hours at the configured rate.');
+        terms = [pkg+' limits apply; excess kilometres and hours are chargeable.', 'Usage is measured from the pickup point back to the pickup point.', 'Tolls, parking and applicable state taxes are extra at actuals.', 'Applicable night allowance is included when reflected in your quoted fare.'];
+    } else {
+        title = currentAirportType === 'pickup' ? 'Airport — Pickup from Airport' : 'Airport — Drop to Airport';
+        const terminal = document.getElementById('wd-airport-terminal');
+        const airport = terminal.options[terminal.selectedIndex]?.text || terminal.value.toUpperCase();
+        const address = document.getElementById('wd-airport-pickup').value;
+        document.getElementById('modal-summary-pickup').textContent = currentAirportType === 'pickup' ? airport : address;
+        document.getElementById('modal-summary-dest').textContent = currentAirportType === 'pickup' ? address : airport;
+        included.push('Driver and flat airport transfer fare for the selected route.');
+        excluded.push('Airport entry and parking where applicable.');
+        terms = ['Flat transfer fare for one pickup or drop-off within the service area. Local and Outstation packages do not apply.', 'No extra kilometre or hourly package charges apply to the booked transfer.', 'Airport entry, parking and applicable state taxes are extra where applicable.', 'Contact support for waiting or route-change requests before travel.'];
+    }
+    document.getElementById('modal-summary-trip-type-row').classList.remove('hidden');
+    document.getElementById('modal-summary-trip-type').textContent = title;
+    document.getElementById('cwd-review-terms-title').textContent = title+' — Terms & Conditions';
+    terms.push('Cancellation at least 3 hours before pickup: full refund of the actual amount paid, without gateway-fee deduction. Less than 3 hours before pickup: no refund. Eligible refunds require admin approval and initiation; bank processing time applies.');
+    terms.push('Request modifications at least 3 hours before pickup. Fare adjustments and changes to allocated bookings require admin approval.');
+    list('cwd-review-included', included);
+    list('cwd-review-excluded', excluded);
+    list('cwd-review-terms-list', terms);
+}

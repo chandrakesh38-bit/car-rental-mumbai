@@ -101,3 +101,24 @@ body.cwd-p1 { background:#f5f7fb; }
  .cwd-p1 .cwd-p1-call i { font-size:16px; }
 }
 @media(prefers-reduced-motion:reduce) { .cwd-p1 .cwd-p1-loader-bars span { animation:none; } .cwd-p1 .cwd-p1-card { transition:none; } }
+
+/* With-driver booking review only. The existing form and OTP submit path remain intact. */
+#booking-modal .cwd-review-panel { max-width:680px;padding:24px;background:#f5f8fc; }
+#cwd-review-title { color:#173b60;padding-right:30px;font-size:22px;margin-bottom:20px; }
+#booking-modal h4.cwd-review-section-title { font-size:17px;color:#173b60;margin:18px 0 12px; }
+.cwd-review-cancel,.cwd-review-inclusions,.cwd-review-expert { margin:18px 0;padding:18px;border:1px solid #dbe5ef;border-radius:14px;background:white;font-size:13px;line-height:1.65; }
+.cwd-review-cancel { background:#fff9e8;border-color:#eed58c; }
+.cwd-review-cancel h4,.cwd-review-inclusions h4,.cwd-review-expert h4 { font-weight:800;font-size:16px;margin:0 0 8px; }
+.cwd-review-cancel p+p { margin-top:8px; }
+.cwd-review-inclusions h5 { font-weight:700;margin:12px 0 6px;color:#173b60; }
+.cwd-review-inclusions ul,#cwd-review-terms ul { list-style:disc;padding-left:20px; }
+.cwd-review-inclusions li,#cwd-review-terms li { margin:8px 0; }
+.cwd-review-terms-link { color:#125c96;text-decoration:underline;padding:12px 0;font-weight:700; }
+.cwd-review-expert { background:#eaf3fa; }
+.cwd-review-expert a { display:inline-block;margin-top:12px;background:#173b60;color:white;padding:12px 20px;border-radius:10px;font-weight:700; }
+#cwd-review-terms { border:0;border-radius:16px;padding:24px;max-width:600px;width:calc(100% - 24px);max-height:85dvh;overflow:auto;color:#243b53;font-size:14px;line-height:1.65; }
+#cwd-review-terms::backdrop { background:rgba(15,23,42,.7); }
+#cwd-review-terms h3 { font-size:18px;font-weight:800;clear:both; }
+.cwd-review-terms-close { float:right;border:1px solid #cbd5e1;border-radius:8px;padding:8px 14px;margin-bottom:12px; }
+#modal-summary-datetime { white-space:pre-line; }
+@media(max-width:680px) { #booking-modal { padding:8px; } #booking-modal .cwd-review-panel { padding:18px;max-height:94dvh; } }

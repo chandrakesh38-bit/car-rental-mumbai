@@ -14,13 +14,17 @@
   // Owner-supplied registration photographs; public copies have identifiers masked.
   const galleryPaths=model=>['front','interior','left','right'].map(view=>'/assets/images/fleet/'+model+'/'+view+'.webp');
   // Representative manufacturer imagery is separate from genuine gallery photos.
-  const modelImageFor=name=>/ertiga/i.test(name)?'/assets/images/models/ertiga.webp':/wagon\s*r/i.test(name)?'/assets/images/models/wagonr.webp':null;
+  const modelImageFor=name=>/ertiga/i.test(name)?'/assets/images/models/ertiga.webp':/wagon\s*r/i.test(name)?'/assets/images/models/wagonr.webp':/dzire/i.test(name)?'/assets/images/models/dzire.webp':/crysta/i.test(name)?'/assets/images/models/crysta.webp':null;
   const suppliedPhotos={
     'Maruti Suzuki Ertiga':galleryPaths('ertiga'),
     'Maruti Ertiga':galleryPaths('ertiga'),
     'WagonR':galleryPaths('wagonr'),
     'Wagon R':galleryPaths('wagonr'),
-    'Maruti Suzuki Wagon R':galleryPaths('wagonr')
+    'Maruti Suzuki Wagon R':galleryPaths('wagonr'),
+    'Maruti Suzuki Dzire':galleryPaths('dzire'),
+    'Maruti Dzire':galleryPaths('dzire'),
+    'Sedan (Dzire / Aura)':galleryPaths('dzire'),
+    'Toyota Innova Crysta':['right','interior'].map(view=>'/assets/images/fleet/crysta/'+view+'.webp')
   };
   const suppliedFuel={'Maruti Suzuki Ertiga':'Petrol+CNG','Maruti Ertiga':'Petrol+CNG','WagonR':'Petrol+CNG','Wagon R':'Petrol+CNG','Maruti Suzuki Wagon R':'Petrol+CNG'};
   const photosFor = (name) => {
@@ -191,9 +195,10 @@
         } else {
           photoBox.append(make('i','fa-solid fa-car-side'));
         }
-        photoBox.append(make('span','', 'View Photos ('+photos.length+')'));
+        const galleryName=name==='Sedan (Dzire / Aura)'?'Maruti Suzuki Dzire':name;
+        photoBox.append(make('span','', (name==='Sedan (Dzire / Aura)'?'View Dzire Photos (':'View Photos (')+photos.length+')'));
         photoBox.setAttribute('aria-label','View genuine photos of '+name);
-        photoBox.addEventListener('click',e=>{e.stopPropagation();openGallery(name,photos);});
+        photoBox.addEventListener('click',e=>{e.stopPropagation();openGallery(galleryName,photos);});
       } else {
         photoBox.disabled=true;
         photoBox.append(make('i','fa-solid fa-car-side'),make('span','','Genuine photos coming soon'));

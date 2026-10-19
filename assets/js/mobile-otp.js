@@ -343,6 +343,7 @@ export async function requestFormOtp(form, phoneId, purpose) {
   state.open = true;
   state.phone = phone;
   state.purpose = purpose;
+  modal.querySelector('[data-verify]').textContent = purpose === 'customer' ? 'Verify & Sign In' : 'Verify & Submit';
   state.mobile = mobile;
   state.proof = '';
   state.expiresAt = 0;
@@ -364,7 +365,7 @@ export async function requestFormOtp(form, phoneId, purpose) {
 
 export function clearFormOtp(form) {
   if (!form) return;
-  const phone = form.querySelector('#cust-phone, #sd-cust-phone, #part-phone');
+  const phone = form.querySelector('#cust-phone, #sd-cust-phone, #part-phone, #account-phone');
   if (phone && normalize(phone.value) === state.mobile) {
     state.proof = ''; state.expiresAt = 0;
   }

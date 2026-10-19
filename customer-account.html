@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>My Account | Car with Driver India</title>
+  <link rel="icon" href="/logo.png">
+  <link rel="stylesheet" href="/assets/css/customer-account.css">
+  <script type="module" src="/assets/js/customer-account.js"></script>
+</head>
+<body>
+  <header><a class="brand" href="/"><img src="/logo.png" alt="" width="52" height="52"><span>Car with Driver India<small>Mumbai · Thane · Navi Mumbai</small></span></a><a href="/contact">Contact us</a></header>
+  <main>
+    <section class="intro"><p class="eyebrow">YOUR CWD ACCOUNT</p><h1>A familiar welcome.<br>A smoother journey.</h1><p>Sign in securely with your mobile number and keep your customer profile up to date.</p><a href="/with-driver">Explore cars with a driver →</a></section>
+    <section class="card" aria-label="Customer account">
+      <p id="account-message" role="status" aria-live="polite">Checking account availability…</p>
+      <form id="login-form" hidden>
+        <h2>Welcome to CWD</h2><p>Use your Indian mobile number to sign in or create your account.</p>
+        <label for="account-phone">Mobile number</label>
+        <div class="phone"><span>+91</span><input id="account-phone" type="tel" inputmode="numeric" autocomplete="tel-national" pattern="[6-9][0-9]{9}" minlength="10" maxlength="10" placeholder="10-digit mobile number" required></div>
+        <button type="submit">Continue with OTP</button>
+        <p class="small">We use an OTP to verify your number. Read our <a href="/privacy-policy">Privacy Policy</a> and <a href="/terms-and-conditions">Terms &amp; Conditions</a>.</p>
+      </form>
+      <section id="profile-panel" hidden>
+        <h2>My account</h2><p>Verified mobile: <strong id="verified-mobile"></strong></p>
+        <form id="profile-form"><label for="display-name">Your name</label><input id="display-name" autocomplete="name" minlength="2" maxlength="80" required><button type="submit">Save profile</button></form>
+        <p class="small">For booking updates, cancellations or changes, contact our team with your Booking ID.</p>
+        <div class="actions"><a href="tel:+919702988465">Call support</a><a href="/cancellation-refund-policy">Cancellation policy</a></div>
+        <button id="logout" class="secondary" type="button">Sign out</button>
+      </section>
+      <a class="back" href="/">← Back to booking</a>
+    </section>
+  </main>
+  <footer>Car with Driver Mobility LLP · <a href="tel:+919702988465">+91 9702988465</a></footer>
+</body>
+</html>

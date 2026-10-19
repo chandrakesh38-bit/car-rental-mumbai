@@ -1,4 +1,5 @@
 import { verifyAccessToken } from '../lib/mobile-otp.mjs';
+import { customerConfig } from '../lib/customer-account.mjs';
 export const config = { runtime: 'edge' };
 const json = (data, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
 export default async function handler(request) {
@@ -25,6 +26,7 @@ export default async function handler(request) {
       return json({ success: true });
     }
     const { accessToken, phone, purpose, reqId } = body;
+    if (purpose === 'customer') customerConfig();
     return json({ success: true, ...await verifyAccessToken(accessToken, phone, purpose, origin, reqId) });
   } catch (error) { return json({ success: false, message: error.status ? error.message : 'Unable to verify OTP. Please retry.' }, error.status || 400); }
 }

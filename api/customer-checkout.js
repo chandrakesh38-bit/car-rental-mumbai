@@ -83,11 +83,21 @@ export default async function handler(request) {
       const provider = razorConfig();
       const reserved = await rpc(cfg, 'cwd_checkout_reserve_order', { p_booking: booking.booking_id, p_balance: body.balance === true });
       if (reserved.razorpay_order_id) return json({ success: true, key: provider.id, order: reserved });
-      if (!reserved.new_order) fail('A payment order is being prepared. Please retry shortly or contact support.', 409);
-      // A timeout leaves a durable reservation for reconciliation, never blindly creates a second order.
-      const order = await razor('orders', { method: 'POST', body: JSON.stringify({ amount: reserved.amount_paise,
+      let order;
+      if (!reserved.new_order) {
+        // One retry worker at a time; allow the original request to finish first.
+        if (!await rpc(cfg,'cwd_checkout_claim_order_retry',{p_id:reserved.id})) fail('Payment is connecting. Please try again in a minute.',409);
+        const found=await razor('orders?receipt='+encodeURIComponent(reserved.id)+'&count=100');
+        if (!Array.isArray(found.items)) fail('Unable to check the previous payment attempt. Please retry.',502);
+        const matches=found.items.filter(item=>item.receipt===reserved.id);
+        if(matches.length>1) fail('Payment needs support review. Your booking remains saved.',409);
+        order=matches[0];
+      }
+      // Reuse the same unique receipt, including after a timeout. Never allocate
+      // a different receipt while the previous provider outcome is uncertain.
+      order ||= await razor('orders', { method: 'POST', body: JSON.stringify({ amount: reserved.amount_paise,
         currency: 'INR', receipt: reserved.id, notes: { booking_id: booking.booking_id } }) });
-      if (!/^order_[A-Za-z0-9]+$/.test(order.id || '') || order.amount !== Number(reserved.amount_paise) || order.currency !== 'INR') fail('Invalid provider order.', 502);
+      if (!/^order_[A-Za-z0-9]+$/.test(order.id || '') || order.amount !== Number(reserved.amount_paise) || order.currency !== 'INR' || order.receipt!==reserved.id || order.notes?.booking_id!==booking.booking_id) fail('Invalid provider order.', 502);
       await rpc(cfg, 'cwd_checkout_attach_order', { p_id: reserved.id, p_order: order.id });
       return json({ success: true, key: provider.id, order: { ...reserved, razorpay_order_id: order.id } });
     }

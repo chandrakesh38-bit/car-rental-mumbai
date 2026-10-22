@@ -14,7 +14,8 @@ export function initResultsOffer() {
     try {
       const {getLoginCoupon}=await import('./customer-checkout.js');
       const coupon=await getLoginCoupon();
-      if(copiedCoupon && coupon.eligible)return;
+      if(!coupon.eligible){couponBanner?.remove();couponBanner=null;return;}
+      if(copiedCoupon)return;
       if (!couponBanner) {
         couponBanner=document.createElement('aside');couponBanner.className='cwd-login-coupon-banner';
         couponBanner.setAttribute('aria-label','Your login coupon');

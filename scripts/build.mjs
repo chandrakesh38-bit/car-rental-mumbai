@@ -147,7 +147,7 @@ for (const page of pages) {
     ...['booking','partner-documents','application-id','page'].map(n=>`<script src="/assets/js/${n}.js"></script>`)
   ].join('\n');
   const head = render(await component('head'),data).replace('</head>', (custom?.head || '') + '</head>');
-  const html = `${head}<body class="bg-slate-50 text-slate-800 antialiased min-h-screen" data-page="${page.slug || 'home'}" data-booking-mode="${page.mode || ''}" data-booking-tab="${page.tab || ''}">\n${body}\n</body>\n</html>\n`;
+  const html = `${head}<body class="cwd-p1 cwd-p1-conversion bg-slate-50 text-slate-800 antialiased min-h-screen" data-page="${page.slug || 'home'}" data-booking-mode="${page.mode || ''}" data-booking-tab="${page.tab || ''}">\n${body}\n</body>\n</html>\n`;
   if (/\{\{\w+\}\}/.test(html)) throw new Error(`Unresolved template in ${route}`);
   await writeFile(path.join(root, `${page.slug || 'index'}.html`), html);
   console.log(`Built ${route}`);

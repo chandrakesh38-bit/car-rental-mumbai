@@ -30,7 +30,7 @@
   // Owner-supplied registration photographs; public copies have identifiers masked.
   const galleryPaths=model=>['front','interior','left','right'].map(view=>'/assets/images/fleet/'+model+'/'+view+'.webp');
   // Representative manufacturer imagery is separate from genuine gallery photos.
-  const modelImageFor=name=>/xl\s*6/i.test(name)?'/assets/images/fleet/xl6/side.jpeg':/ertiga/i.test(name)?'/assets/images/models/ertiga.webp':/wagon\s*r/i.test(name)?'/assets/images/models/wagonr.webp':/dzire/i.test(name)?'/assets/images/models/dzire.webp':/crysta/i.test(name)?'/assets/images/models/crysta.webp':null;
+  const modelImageFor=name=>/xl\s*6/i.test(name)?'/assets/images/models/xl6.png':/ertiga/i.test(name)?'/assets/images/models/ertiga.webp':/wagon\s*r/i.test(name)?'/assets/images/models/wagonr.webp':/dzire/i.test(name)?'/assets/images/models/dzire.webp':/crysta/i.test(name)?'/assets/images/models/crysta.webp':null;
   const suppliedPhotos={
     'Maruti Suzuki XL6':['side','front','rear-seats','interior'].map(view=>'/assets/images/fleet/xl6/'+view+'.jpeg'),
     'Maruti Suzuki Ertiga':galleryPaths('ertiga'),
@@ -51,7 +51,8 @@
   };
   function init() {
     const widget = $('booking-widget'), container = $('fleet-container'), fleet = $('fleet');
-    if (!widget || !container || !fleet || document.body.classList.contains('cwd-p1')) return;
+    if (!widget || !container || !fleet || widget.dataset.cwdPresentationReady) return;
+    widget.dataset.cwdPresentationReady='true';
     document.body.classList.add('cwd-p1');
     const hero = widget.closest('header');
     hero?.classList.add('cwd-p1-hero');

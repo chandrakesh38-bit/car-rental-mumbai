@@ -20,7 +20,7 @@ try{for(const [width,height,choice,label] of [[327,464,0,'Best Value'],[390,844,
  if(process.env.TEST_WIDTH && width!==Number(process.env.TEST_WIDTH))continue;
  const context=await browser.newContext({viewport:{width,height},isMobile:width<500,hasTouch:width<500,permissions:['clipboard-read','clipboard-write']});
  const page=await context.newPage(),errors=[],external=[];let quote;
- page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!r.url().startsWith(base)&&!r.url().startsWith('data:'))external.push(r.url());});
+ page.on('requestfailed',r=>console.log('REQUEST FAILED',r.url(),r.failure()?.errorText));page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!r.url().startsWith(base)&&!r.url().startsWith('data:'))external.push(r.url());});
  const shot=async name=>page.screenshot({path:`${out}/${width}-${name}.png`,animations:'disabled'});
  const phone='97'+String(Date.now()).slice(-6)+String(choice).padStart(2,'0').slice(-2);
  try{
@@ -77,7 +77,7 @@ try{for(const [width,height,choice,label] of [[327,464,0,'Best Value'],[390,844,
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  assert.match(new URL(page.url()).searchParams.get('booking_id'),/^[1-9]\d{5}$/);
  assert.match(await page.locator('.booking-card').innerText(),/CWDLOGIN10/);
- await search(page);await page.locator('.cwd-login-coupon-banner').filter({hasText:'already been used'}).waitFor();
+ await search(page);await page.waitForTimeout(500);assert.equal(await page.locator('.cwd-login-coupon-banner').count(),0);
  await page.locator('.cwd-p1-card').filter({has:page.getByText(label,{exact:true})}).click();
  await page.locator('#cwd-coupon-code').fill('CWDLOGIN10');await page.locator('#cwd-coupon-apply').click();
  await page.locator('#cwd-coupon-status').filter({hasText:'already been used'}).waitFor();await shot('used');

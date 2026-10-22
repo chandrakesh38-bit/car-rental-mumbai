@@ -1,24 +1,5 @@
 /* Page composition and navigation only. Business logic remains in booking.js. */
 (() => {
-    // Testing-only Phase 1 enhancement assets. Booking/pricing logic stays in booking.js.
-    const p1Css = document.createElement('link');
-    p1Css.rel = 'stylesheet';
-    p1Css.href = '/assets/css/phase1-redesign.css';
-    document.head.appendChild(p1Css);
-    const p1Script = document.createElement('script');
-    p1Script.src = '/assets/js/phase1-redesign.js';
-    p1Script.defer = true;
-    document.head.appendChild(p1Script);
-    // Conversion polish is separately scoped to testing and loads after phase 1.
-    const conversionCss = document.createElement('link');
-    conversionCss.rel = 'stylesheet';
-    conversionCss.href = '/assets/css/phase1-conversion.css';
-    document.head.appendChild(conversionCss);
-    p1Script.addEventListener('load', () => {
-        const conversionFlow = document.createElement('script');
-        conversionFlow.src = '/assets/js/phase1-autoflow.js';
-        document.head.appendChild(conversionFlow);
-    });
     const initializeBooking = window.onload;
     window.onload = null;
 

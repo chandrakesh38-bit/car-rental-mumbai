@@ -1,5 +1,5 @@
 <!-- HERO SECTION -->
-    <header class="bg-gradient-to-b from-indigo-950 via-indigo-900 to-slate-900 text-white pt-10 pb-16 px-4">
+    <header class="cwd-p1-hero bg-gradient-to-b from-indigo-950 via-indigo-900 to-slate-900 text-white pt-10 pb-16 px-4">
         <div class="max-w-5xl mx-auto text-center">
             <span class="bg-indigo-800/80 border border-indigo-700 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full inline-block mb-3">
                 Car with Driver India

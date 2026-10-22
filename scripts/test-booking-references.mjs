@@ -25,6 +25,18 @@ try {
  const session=await account(new Request(origin+'/api/customer-account',{headers:{cookie:cookie.split(';')[0]}}));assert.equal(session.status,200);assert.equal((await session.json()).customer.mobile,'91'+phone);
  const repeat=await create();assert.equal((await repeat.json()).booking_id,result.booking_id);assert.equal(repeat.headers.get('set-cookie'),cookie);
  const outsider=await checkout(new Request(origin+'/api/customer-checkout?booking_id='+result.booking_id));assert.equal(outsider.status,401,'Six-digit ID is not an authorization token');
+ const orderRequest=()=>checkout(new Request(origin+'/api/customer-checkout',{method:'POST',headers:{origin,'content-type':'application/json',cookie:cookie.split(';')[0]},body:JSON.stringify({action:'order',booking_id:result.booking_id,balance:true})}));
+ state.orderFails=true;assert.equal((await orderRequest()).status,502);state.orderFails=false;
+ assert.equal((await orderRequest()).status,409,'Fresh reservation cannot be retried concurrently');
+ await db.setup.query("update cwd_checkout_orders set provider_attempted_at=now()-interval '2 minutes' where booking_id=$1",[result.booking_id]);
+ const recovered=await orderRequest(),recoveredBody=await recovered.json();assert.equal(recovered.status,200,JSON.stringify(recoveredBody));
+ const orderId=recoveredBody.order.razorpay_order_id,providerCount=Object.keys(state.providerOrders).length;
+ // Simulate provider success followed by a lost database-attach response.
+ await db.setup.query("update cwd_checkout_orders set state='creating',razorpay_order_id=null,provider_attempted_at=now()-interval '2 minutes' where booking_id=$1",[result.booking_id]);
+ const retries=await Promise.all(Array.from({length:6},orderRequest));
+ assert.ok(retries.some(r=>r.status===200));
+ assert.equal(Object.keys(state.providerOrders).length,providerCount,'Recovery reuses provider receipt without duplicate order');
+ assert.equal((await db.pool.query('select razorpay_order_id from cwd_checkout_orders where booking_id=$1',[result.booking_id])).rows[0].razorpay_order_id,orderId);
  const enquiryNonce=randomUUID();
  const enquiryAccess='header.'+Buffer.from(JSON.stringify({requestId:enquiryNonce,mobile:'91'+phone,exp:Math.floor(Date.now()/1000)+600})).toString('base64url')+'.signature';
  const enquiryProof=(await verifyAccessToken(enquiryAccess,phone,'booking',origin,enquiryNonce)).proof;

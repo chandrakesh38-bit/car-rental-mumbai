@@ -19,7 +19,8 @@ export function installFixtures(){
   if(u.hostname==='maps.googleapis.com'){const city=u.searchParams.get('place_id')?.replaceAll('-',' ')||'Mumbai';return json({status:'OK',results:[{formatted_address:city+', Maharashtra, India',geometry:{location:{lat:19.1,lng:72.9}},address_components:[{types:['locality'],long_name:city==='Vikhroli West'?'Mumbai':city},{types:['administrative_area_level_1'],long_name:'Maharashtra'},{types:['country'],long_name:'India'}]}]});}
   if(u.hostname==='routes.googleapis.com'){const id=body.destination?.placeId||body.origin?.placeId;const km=String(body.origin?.address||body.destination?.address).includes('Airport')?20:({Pune:300,Lonavala:170,Nashik:340,Shirdi:480,Mahabaleshwar:520,Trimbakeshwar:360}[id]||300)/2;return json({routes:[{distanceMeters:km*1000,duration:'7200s',legs:[{distanceMeters:km*1000,duration:'7200s'}]}]});}
   if(u.hostname==='api.razorpay.com'){
-   if(u.pathname==='/v1/orders'&&method==='POST'){if(state.orderFails)return problem('Provider unavailable',503);const id='order_'+randomUUID().replaceAll('-','');const order={id,...body};state.providerOrders[id]=order;return json(order);}
+   if(u.pathname==='/v1/orders'&&method==='GET')return json({items:Object.values(state.providerOrders).filter(o=>o.receipt===u.searchParams.get('receipt'))});
+  if(u.pathname==='/v1/orders'&&method==='POST'){if(state.orderFails)return problem('Provider unavailable',503);const id='order_'+randomUUID().replaceAll('-','');const order={id,...body};state.providerOrders[id]=order;return json(order);}
    if(u.pathname.startsWith('/v1/payments/'))return json(state.providerPayments[u.pathname.split('/').pop()]||{});
    throw Error('Unexpected Razorpay operation '+u.pathname);
   }

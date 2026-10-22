@@ -36,4 +36,8 @@
     <link rel="stylesheet" href="/assets/css/site.css">
     <link rel="stylesheet" href="/assets/css/navigation.css">
     <script type="module" src="/assets/js/account-nav.js"></script>
+<link rel="stylesheet" href="/assets/css/phase1-redesign.css">
+<link rel="stylesheet" href="/assets/css/phase1-conversion.css">
+<script defer src="/assets/js/phase1-redesign.js"></script>
+<script defer src="/assets/js/phase1-autoflow.js"></script>
 </head>

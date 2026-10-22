@@ -3,3 +3,6 @@
 @media print{header,.bookings-main>h1,.bookings-main>a,button,.outline-action,#booking-filter,label,#booking-message{display:none!important}.bookings-main{max-width:none;margin:0;padding:0}.confirmation-grid{grid-template-columns:1.7fr 1fr}.confirmation-panel{padding:12px;break-inside:avoid}.confirmation-banner{padding:14px}.booking-card{margin:0}.confirmation-footer p{font-size:10px}.confirmation-panel h3{font-size:16px}.trip-layout{gap:10px}.benefit-grid{grid-template-columns:1fr 1fr}body{background:white}details{display:block}}
 
 .confirmation-banner h2,.confirmation-panel h3,.confirmation-panel h4{font-weight:700}
+
+header [data-account-logout]{width:auto;margin:0 0 0 12px;padding:8px 15px;border:1px solid #d9b967;border-radius:9px;background:transparent;color:#ffe098;min-height:40px}header [data-account-logout][hidden]{display:none}
+header{flex-wrap:wrap}header .brand{margin-right:auto}header [data-account-link]{white-space:nowrap}@media(max-width:480px){header{gap:10px}header [data-account-logout]{margin-left:0;padding:7px 10px;font-size:12px}}

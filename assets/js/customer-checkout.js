@@ -1,5 +1,5 @@
 async function api(body, suffix = '', token = '') {
-  const r = await fetch('/api/customer-checkout' + suffix, { credentials:'same-origin', cache:'no-store', signal:AbortSignal.timeout(20000),
+  const r = await fetch('/api/customer-checkout' + suffix, { credentials:'same-origin', cache:'no-store', signal:AbortSignal.timeout(45000),
     headers: { 'Content-Type':'application/json', ...(token ? {Authorization:'Booking '+token} : {}) },
     ...(body ? { method:'POST', body:JSON.stringify(body) } : {}) });
   const data = await r.json();

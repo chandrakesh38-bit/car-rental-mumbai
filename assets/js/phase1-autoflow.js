@@ -5,7 +5,8 @@
   const $ = id => document.getElementById(id);
   function init() {
     const widget=$("booking-widget");
-    if (!widget || document.body.classList.contains("cwd-p1-conversion")) return;
+    if (!widget || widget.dataset.cwdConversionReady) return;
+    widget.dataset.cwdConversionReady="true";
     document.body.classList.add("cwd-p1-conversion");
     const fleet=$("fleet");
     const alignKeyboard=()=>{

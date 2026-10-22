@@ -4,7 +4,7 @@ const id=new URLSearchParams(location.search).get('booking_id');
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
 const date=v=>v&&Number.isFinite(Date.parse(v))?new Date(v).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+' IST':'—';
-const carImage=name=>/xl6/i.test(name)?'/assets/images/fleet/xl6/side.jpeg':/crysta/i.test(name)?'/assets/images/models/crysta.webp':/ertiga/i.test(name)?'/assets/images/models/ertiga.webp':/dzire|sedan/i.test(name)?'/assets/images/models/dzire.webp':null;
+const carImage=name=>/xl6/i.test(name)?'/assets/images/models/xl6.png':/crysta/i.test(name)?'/assets/images/models/crysta.webp':/ertiga/i.test(name)?'/assets/images/models/ertiga.webp':/dzire|sedan/i.test(name)?'/assets/images/models/dzire.webp':null;
 let bookings=[];
 function render(){
  const filter=document.getElementById('booking-filter')?.value||'all';
@@ -39,4 +39,5 @@ container.addEventListener('click',async event=>{
  if(event.target.closest('[data-cancel]')){const button=event.target.closest('button');button.disabled=true;try{await cancelPendingBooking(b.booking_id);await load();message.textContent='Pending booking cancelled. Any unused coupon reservation was released.';}catch(e){message.textContent=e.message;button.disabled=false;}}
 });
 document.getElementById('booking-filter')?.addEventListener('change',render);
+window.addEventListener('pageshow',event=>{if(event.persisted)load();});
 await load();if(id&&bookings.length&&new URLSearchParams(location.search).get('pay')==='1'){history.replaceState(null,'','?booking_id='+encodeURIComponent(id));await pay(bookings[0]);}

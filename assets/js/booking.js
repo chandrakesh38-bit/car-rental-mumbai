@@ -4093,6 +4093,7 @@ function renderBookingReviewDetails() {
         node.replaceChildren(...lines.map(text => {const li=document.createElement('li');li.textContent=text;return li;}));
         setupLoginCoupon();
         document.getElementById('cwd-coupon-remove').hidden=!activeLoginCoupon;
+        document.getElementById('cwd-coupon-apply').hidden=!!activeLoginCoupon;
     }
     const list = (id, items) => {
         const node = document.getElementById(id);

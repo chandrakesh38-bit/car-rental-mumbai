@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {installFixtures,state} from './testing/checkout-fixtures.mjs';
-import handler from '../api/customer-checkout.js';
+import {GET as handler} from '../api/customer-checkout.js';
 import {customerOutstationBreakdown} from '../lib/cwd-pricing.mjs';
 installFixtures();
 const fixture=globalThis.fetch;

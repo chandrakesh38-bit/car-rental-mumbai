@@ -5,9 +5,9 @@ import { guardMutation, hash, fail, customerDb, sessionCookie } from '../lib/cus
 import { checkoutConfig, rpc, moneyPaise, paymentAmount, ownedBooking, bookingView,
   razorConfig, razor, verifyHmac, capturePayment } from '../lib/customer-checkout.mjs';
 import {couponCode, couponBreakdown, couponIdentity, couponAvailability, eligibleCoupon} from '../lib/login-coupon.mjs';
-export const config = { runtime: 'edge' };
+// Use Node.js for the payment provider connection, matching the admin payment API.
 const json = (data, status = 200, headers = {}) => Response.json(data, { status, headers: { 'Cache-Control': 'private, no-store', ...headers } });
-export default async function handler(request) {
+async function handler(request) {
   try {
     const cfg = checkoutConfig();
     if (request.method === 'GET') {
@@ -118,3 +118,6 @@ export default async function handler(request) {
     return json({ success: false, message: error.status ? error.message : 'Checkout is unavailable. Any saved booking remains accessible in My Bookings.' }, error.status || 503);
   }
 }
+
+export function GET(request) { return handler(request); }
+export function POST(request) { return handler(request); }

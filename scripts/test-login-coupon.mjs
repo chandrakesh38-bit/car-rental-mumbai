@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {mkdir,writeFile} from 'node:fs/promises';
-import checkout from '../api/customer-checkout.js';
+import {POST as checkout} from '../api/customer-checkout.js';
 import account from '../api/customer-account.js';
 import {verifyAccessToken} from '../lib/mobile-otp.mjs';
 import {couponBreakdown} from '../lib/login-coupon.mjs';

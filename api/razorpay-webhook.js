@@ -1,7 +1,6 @@
 import { getSecurityDepositBreakup, syncSecurityDepositReceived } from '../lib/security-deposit-accounting.mjs';
 import { checkoutConfig, capturePayment } from '../lib/customer-checkout.mjs';
 import { customerDb } from '../lib/customer-account.mjs';
-export const config = { runtime: 'edge' };
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json'}});
 const hex=bytes=>Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');
 async function validSignature(raw,signature,secret){

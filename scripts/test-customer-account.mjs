@@ -20,14 +20,15 @@ globalThis.fetch = async (url, options={}) => {
   }
   assert.equal(u.origin,'https://customer.test','No production/external access');
   assert.equal(options.headers.Authorization,'Bearer test-only-service-key');
-  if (u.pathname === '/rest/v1/rpc/cwd_customer_login') {
+  if (u.pathname === '/rest/v1/rpc/cwd_customer_login_with_alert') {
     if (uses.has(body.p_nonce)) return Response.json({}, {status:409});
     uses.add(body.p_nonce);
     let account = [...customers.values()].find(x=>x.mobile===body.p_mobile);
     if (!account) { account={id:crypto.randomUUID(),mobile:body.p_mobile,display_name:'',created_at:new Date().toISOString()}; customers.set(account.id,account); }
     sessions.set(body.p_session_hash,{customer_id:account.id,expires_at:body.p_session_expires,revoked_at:null});
-    return Response.json(account);
+    return Response.json({customer:account,alert_id:crypto.randomUUID()});
   }
+  if(u.pathname==='/rest/v1/cwd_customer_login_alerts')return Response.json([]);
   if (u.pathname === '/rest/v1/cwd_customer_sessions') {
     const row=sessions.get(u.searchParams.get('session_hash')?.slice(3));
     if (options.method==='PATCH') { if(row)Object.assign(row,body); return new Response(null,{status:204}); }

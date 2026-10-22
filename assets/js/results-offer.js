@@ -49,7 +49,7 @@ export function initResultsOffer() {
   }
   async function account(body, suffix = '') {
     const response = await fetch('/api/customer-account' + suffix, {
-      credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(10000),
+      credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(30000),
       ...(body ? {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)} : {})
     });
     const data = await response.json();
@@ -92,7 +92,7 @@ export function initResultsOffer() {
           <label for="account-phone">Mobile number</label>
           <div class="cwd-offer-phone"><span>+91</span><input id="account-phone" type="tel" inputmode="numeric" autocomplete="tel-national" pattern="[6-9][0-9]{9}" minlength="10" maxlength="10" placeholder="10-digit mobile number" required></div>
           <button class="cwd-offer-primary" type="submit">Get My 10% OFF <span aria-hidden="true">→</span></button>
-          <p class="cwd-offer-consent">Your number is used for account verification. Signing in does not subscribe you to marketing. <a href="/privacy-policy" target="_blank" rel="noopener">Privacy policy</a></p>
+          <p class="cwd-offer-consent">Your number is used for account verification and booking assistance from our team. Signing in does not subscribe you to marketing. <a href="/privacy-policy" target="_blank" rel="noopener">Privacy policy</a></p>
         </form>
         <div class="cwd-offer-otp"></div>
         <section class="cwd-offer-success" hidden aria-live="polite">
@@ -152,7 +152,7 @@ export function initResultsOffer() {
         const proof = await otp.requestFormOtp(form, 'account-phone', 'customer', {mount:dialog.querySelector('.cwd-offer-otp')});
         if (currentAttempt !== attempt) return;
         show(); message('Signing you in…');
-        await account({action:'login', phone:phone.value, proof});
+        await account({action:'login', phone:phone.value, proof, source:'coupon'});
         if (currentAttempt !== attempt) return;
         window.dispatchEvent(new Event('cwd:account-changed'));
         const {getLoginCoupon} = await import('./customer-checkout.js');

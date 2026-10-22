@@ -109,6 +109,7 @@
                     <button onclick="switchTab('faqs')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-faqs">
                         <i class="fa-solid fa-circle-question w-4 text-amber-300"></i> FAQs
                     </button>
+                    <button onclick="switchTab('logins')" id="tab-btn-logins" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 text-left"><i class="fa-solid fa-users"></i> Login Users</button>
                     <button onclick="switchTab('inquiries')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-inquiries">
                         <i class="fa-solid fa-calendar-check w-4 text-rose-400"></i> <span class="flex-1">Bookings</span><span id="booking-nav-badge" class="hidden min-w-5 h-5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-black items-center justify-center"></span>
                     </button>
@@ -491,6 +492,12 @@
             </div>
 
             <!-- SECTION 7: BOOKINGS -->
+            <section id="section-logins" class="hidden space-y-4">
+              <div class="flex justify-between items-center"><div><h2 class="text-xl font-black">Login Users</h2><p class="text-sm text-slate-500">Verified customer logins, including CWD Privilege coupon unlocks.</p></div><button onclick="loadCustomerLogins()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Refresh</button></div>
+              <p id="customer-logins-message" role="status"></p>
+              <div class="overflow-x-auto bg-white rounded-xl border"><table class="w-full text-sm"><thead><tr class="text-left bg-slate-50"><th class="p-3">Mobile</th><th class="p-3">Login via</th><th class="p-3">Login time (IST)</th><th class="p-3">Email alert</th></tr></thead><tbody id="customer-logins-body"></tbody></table></div>
+              <div class="flex gap-4"><button id="customer-logins-prev" onclick="loadCustomerLogins(customerLoginsPage-1)">Previous</button><button id="customer-logins-next" onclick="loadCustomerLogins(customerLoginsPage+1)">Next</button></div>
+            </section>
             <div id="section-inquiries" class="hidden space-y-6">
                 <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                     <div>
@@ -948,9 +955,22 @@
             }
         }
 
+        let customerLoginsPage=0;
+        async function loadCustomerLogins(page=customerLoginsPage){
+          const message=document.getElementById('customer-logins-message'),tbody=document.getElementById('customer-logins-body');
+          message.textContent='Loading customer logins…';
+          try{
+            const data=await adminApi('/api/admin-customer-logins?page='+Math.max(0,page));customerLoginsPage=data.page;
+            tbody.innerHTML=data.logins.map(row=>`<tr class="border-t"><td class="p-3 font-bold"><a href="tel:+${escapeAdminHtml(row.mobile)}">+${escapeAdminHtml(row.mobile)}</a></td><td class="p-3">${row.source==='coupon'?'Coupon unlock':'Customer login'}</td><td class="p-3">${escapeAdminHtml(new Date(row.created_at).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}))}</td><td class="p-3">${row.email_status==='accepted'?'Sent to email provider':row.email_status==='failed'?'Email failed — user saved':'Pending'}</td></tr>`).join('');
+            message.textContent=data.logins.length?'':'No customer logins recorded yet.';
+            document.getElementById('customer-logins-prev').disabled=customerLoginsPage===0;
+            document.getElementById('customer-logins-next').disabled=!data.hasMore;
+          }catch(e){message.textContent=e.message;}
+        }
+
         // TABS SWITCHER
         function switchTab(tab) {
-            ['dashboard', 'vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries', 'vendors'].forEach(t => {
+            ['dashboard', 'vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries', 'vendors', 'logins'].forEach(t => {
                 const sec = document.getElementById(`section-${t}`);
                 const btn = document.getElementById(`tab-btn-${t}`);
                 if (t === tab) {
@@ -962,6 +982,7 @@
                 }
             });
 
+            if (tab === 'logins') loadCustomerLogins(0);
             if (tab === 'dashboard') loadDashboard();
             if (tab === 'vehicles') loadVehicles();
             if (tab === 'pricing') { loadPricingRules(); loadWithDriverRates(); loadVendorRateCards(); }

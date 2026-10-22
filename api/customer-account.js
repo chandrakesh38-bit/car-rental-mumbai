@@ -1,4 +1,5 @@
 import { requireMobileOtp } from '../lib/mobile-otp.mjs';
+import {sendLoginAlert} from '../lib/customer-login-alert.mjs';
 import { customerConfig, customerDb, requireCustomer, guardMutation, tokenFrom,
   hash, newToken, sessionCookie, SESSION_SECONDS, fail } from '../lib/customer-account.mjs';
 export const config = { runtime: 'edge' };
@@ -22,11 +23,13 @@ export default async function handler(request) {
       const proof = await requireMobileOtp(body.proof, body.phone, 'customer', new URL(request.url).origin);
       const token = newToken();
       // One transaction consumes proof, creates/reuses the account and creates the session.
-      const customer = await customerDb(cfg, 'rpc/cwd_customer_login', { method: 'POST',
+      const result = await customerDb(cfg, 'rpc/cwd_customer_login_with_alert', { method: 'POST',
         body: JSON.stringify({ p_nonce: proof.nonce, p_mobile: proof.mobile,
           p_proof_expires: new Date(proof.expiresAt).toISOString(), p_session_hash: await hash(token),
-          p_session_expires: new Date(Date.now() + SESSION_SECONDS * 1000).toISOString() }) });
-      return json({ success: true, customer }, 200, { 'Set-Cookie': sessionCookie(token) });
+          p_session_expires: new Date(Date.now() + SESSION_SECONDS * 1000).toISOString(),p_source:body.source==='coupon'?'coupon':'login' }) });
+      // The durable alert survives provider failure. Never undo successful login.
+      try { await sendLoginAlert(cfg,result.alert_id); } catch { console.error('Customer login alert pending'); }
+      return json({ success: true, customer:result.customer }, 200, { 'Set-Cookie': sessionCookie(token) });
     }
     if (body.action === 'logout') {
       const token = tokenFrom(request);

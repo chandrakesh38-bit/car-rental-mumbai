@@ -13,7 +13,7 @@ function display(customer) {
 }
 async function api(body, suffix = '') {
   const response = await fetch('/api/customer-account' + suffix, {
-    credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(20000),
+    credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(30000),
     ...(body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
   });
   const data = await response.json();

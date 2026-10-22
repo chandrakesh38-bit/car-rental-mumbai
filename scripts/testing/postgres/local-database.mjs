@@ -29,7 +29,7 @@ export async function createLocalDatabase(name) {
  create table public.cwd_vendor_allocations(booking_id text,status text,driver_name text,driver_mobile text,vehicle_number text,revoked_at timestamptz);
  grant usage on schema public to service_role;
  grant select,insert,update on public.inquiries,public.booking_payments,public.cwd_vendor_allocations to service_role;`);
- for(const file of ['supabase/migrations/20260921_otp_proof_uses.sql','supabase/migrations/20261019043000_customer_accounts.sql','supabase/drafts/customer_checkout.sql','supabase/drafts/login_coupon.sql','supabase/drafts/six_digit_booking_references.sql','supabase/drafts/payment_order_recovery.sql'])await setup.query(await readFile(path.join(root,file),'utf8'));
+ for(const file of ['supabase/migrations/20260921_otp_proof_uses.sql','supabase/migrations/20261019043000_customer_accounts.sql','supabase/drafts/customer_checkout.sql','supabase/drafts/login_coupon.sql','supabase/drafts/six_digit_booking_references.sql','supabase/drafts/payment_order_recovery.sql','supabase/drafts/customer_login_alerts.sql'])await setup.query(await readFile(path.join(root,file),'utf8'));
  await setup.query('grant select,insert on public.otp_proof_uses to service_role');
  const pool=new Pool({...connection,database:name,max:12,options:'-c role=service_role'});
  const fetchDatabase=async(u,method,body)=>{
@@ -40,12 +40,13 @@ export async function createLocalDatabase(name) {
     const {rows}=await pool.query(sql,keys.map(k=>body[k]));return Response.json(rows[0]?.value??null);
    }
    const values=[],where=[];
-   for(const [key,value] of u.searchParams){if(['select','order','limit'].includes(key))continue;if(!value.startsWith('eq.'))throw Error('Unsupported local filter');values.push(value.slice(3));where.push(ident(key)+'=$'+values.length);}
+   for(const [key,value] of u.searchParams){if(['select','order','limit','offset'].includes(key))continue;if(!value.startsWith('eq.'))throw Error('Unsupported local filter');values.push(value.slice(3));where.push(ident(key)+'=$'+values.length);}
    const filter=where.length?' where '+where.join(' and '):'';
    if(method==='GET'){
     const columns=u.searchParams.get('select')||'*';let sql='select '+(columns==='*'?'*':columns.split(',').map(ident).join(','))+' from public.'+ident(name)+filter;
     if(u.searchParams.has('order')){const [col,dir]=u.searchParams.get('order').split('.');sql+=' order by '+ident(col)+(dir==='desc'?' desc':' asc');}
     if(u.searchParams.has('limit')){values.push(Number(u.searchParams.get('limit')));sql+=' limit $'+values.length;}
+    if(u.searchParams.has('offset')){values.push(Number(u.searchParams.get('offset')));sql+=' offset $'+values.length;}
     return Response.json((await pool.query(sql,values)).rows);
    }
    if(method==='PATCH'){

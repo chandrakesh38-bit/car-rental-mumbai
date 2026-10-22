@@ -37,11 +37,11 @@ export function installFixtures(){
 }
 function event(bookingId,type,key){if(table('cwd_booking_events').some(e=>e.event_key===key))return;const e={id:randomUUID(),booking_id:bookingId,event_type:type,event_key:key,created_at:new Date().toISOString()};table('cwd_booking_events').push(e);for(const channel of ['email','sms','whatsapp'])table('cwd_notification_outbox').push({id:randomUUID(),event_id:e.id,channel,status:'pending',attempts:0});}
 function emulateRpc(name,b){
- if(name==='cwd_customer_login'){
+ if(name==='cwd_customer_login'||name==='cwd_customer_login_with_alert'){
   if(table('cwd_customer_login_uses').some(x=>x.nonce===b.p_nonce))return problem('Proof reused');
   table('cwd_customer_login_uses').push({nonce:b.p_nonce});let account=table('cwd_customers').find(c=>c.mobile===b.p_mobile);
   if(!account){account={id:randomUUID(),mobile:b.p_mobile,display_name:'',created_at:new Date().toISOString()};table('cwd_customers').push(account);}
-  table('cwd_customer_sessions').push({session_hash:b.p_session_hash,customer_id:account.id,expires_at:b.p_session_expires,revoked_at:null});return json(account);
+  table('cwd_customer_sessions').push({session_hash:b.p_session_hash,customer_id:account.id,expires_at:b.p_session_expires,revoked_at:null});if(name==='cwd_customer_login_with_alert'){const alert={id:randomUUID(),customer_id:account.id,mobile:account.mobile,source:b.p_source,created_at:new Date().toISOString(),email_status:'pending'};table('cwd_customer_login_alerts').push(alert);return json({customer:account,alert_id:alert.id});}return json(account);
  }
  if(name==='cwd_checkout_create'){
   const existing=table('cwd_checkout_bookings').find(x=>x.submission_key===b.p_submission);if(existing)return existing.mobile===b.p_mobile&&existing.access_hash===b.p_access_hash?json({booking_id:existing.booking_id}):problem('Collision');

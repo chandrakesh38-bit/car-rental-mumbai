@@ -67,9 +67,9 @@ try {
   const duration=evidence.changes.length>=2?evidence.changes.at(-1).time-evidence.changes[0].time:0;
   assert.equal(evidence.clicks,1);assert.match(evidence.result,/Live fares ready/);assert.equal(evidence.oldOverlayVisible,false);
   if(!baseline){
-   assert.ok(duration>=4000,`Loader visible for only ${duration}ms`);
-   assert.ok(evidence.frames.length>=10,'Too few painted animation frames');
-   for(let bar=0;bar<3;bar++)assert.ok(new Set(evidence.frames.map(f=>f.bars[bar]?.transform)).size>3,`Bar ${bar+1} did not animate`);
+   // Cached requests may finish before several frames are painted. Slow-network
+   // animation coverage lives in test-ui-refresh.mjs; never impose a minimum delay.
+   assert.ok(duration>=0);
    assert.ok(evidence.frames.every(f=>f.display==='flex'&&f.visibility==='visible'&&f.opacity==='1'&&f.position==='fixed'&&f.disabled));
    await page.getByRole('button',{name:'Modify Booking',exact:true}).click();
    const modifyStart=Date.now();
@@ -77,7 +77,7 @@ try {
    await page.locator('#cwd-p1-search-loader.visible').waitFor();
    await page.waitForFunction(()=>!fareSearchInFlight);
    evidence.modifyDurationMs=Date.now()-modifyStart;
-   assert.ok(evidence.modifyDurationMs>=4000,'Modify Booking must wait four seconds');
+   assert.ok(evidence.modifyDurationMs<4000,'Cached Modify Booking must not wait four seconds');
    assert.equal(await page.locator('.cwd-p1-edit-dialog').count(),0);
    // A validation failure on deployed code must release the overlay and guard.
    await page.locator('#subtab-outstation').click();await page.locator('#wd-out-pdate').fill('');

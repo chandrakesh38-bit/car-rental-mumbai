@@ -1,0 +1,40 @@
+Booking journey UI/session fixes — local testing — 19 October 2026
+
+Copy closes the results coupon card and announces "Coupon copied successfully."
+Checkout coupon entry remains available. Clipboard failure keeps the code visible.
+Explore Cabs displays the existing three-bar loader immediately with:
+"Please wait – Looking for best rates."
+The three bars move vertically from +12px to -12px in a staggered wave,
+with a 0.9-second cycle. Reduced-motion accessibility preference is respected.
+Updated per latest approval: successful searches keep the loader visible for
+at least four seconds before revealing rates. Fetch time counts toward this
+minimum; requests taking longer do not receive another four-second wait.
+Removed the requested OTP/payment explanation from checkout templates and pages.
+Checkout prefills the verified mobile using the server account endpoint. A valid
+same-mobile session authorizes booking without another OTP. Guest/changed-mobile
+bookings still use OTP. Server checks session validity and mobile ownership.
+Coupon transaction retains atomic eligibility, reservation and redemption checks.
+Fixed a duplicate-request race by leaving redemption availability validation to
+the existing transactional RPC during creation; quote eligibility is unchanged.
+
+PASS: scripts/test-login-coupon-browser.mjs
+327x464 / 390x844 / 1366x900: search, login, scroll restoration, copy+close+toast,
+verified-mobile prefill, bad/valid coupon, discounted totals, 0/20/100 payment,
+confirmation without a second OTP, repeat-use rejection. No JS errors or external
+provider requests. Payment/SMS/maps simulated against isolated local PostgreSQL.
+
+PASS: scripts/test-explore-preview.mjs
+436x506 / 327x464 / 390x844 / 1366x768: visible Explore Cabs, physical click,
+moving loader bars during a simulated slow route response, vehicle results.
+
+PASS: scripts/test-login-coupon.mjs — 13 groups on real local PostgreSQL:
+session reuse; guest/wrong-mobile/expired/revoked rejection; discount/cap/deposit
+exclusion; stacking rejection; server pricing; concurrent/repeated requests;
+payment choices; cancellation and late capture; rollback; audit access controls.
+PASS: syntax checks and git diff --check.
+
+Preview: http://127.0.0.1:4331/
+Screenshots: .test-output/login-coupon/ and .test-output/explore-preview/
+Backup of initially edited files: .test-output/before-session-reuse/
+Existing uncommitted work preserved. No push/deploy/main or production writes.
+Awaiting visual approval.

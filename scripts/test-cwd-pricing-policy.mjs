@@ -46,6 +46,6 @@ assert.equal(customerOutstationBreakdown({
  km:294,dutyDays:1,kmRate:12,driverAllowance:500,nightCount:1
 }).fare,4600);
 assert.equal(vendorOutstationBreakdown({
- billableKm:294,dutyDays:1,vendorKmRate:11,driverAllowance:500,nightCount:1
+ billableKm:customer.billableKm,dutyDays:1,vendorKmRate:11,driverAllowance:500,nightCount:1
 }).payout,4100);
 console.log('PASS CWD test policy: customer, vendor, 300-km tiers, coupon-free and night boundaries');

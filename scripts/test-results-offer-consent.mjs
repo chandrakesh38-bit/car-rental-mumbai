@@ -1,0 +1,54 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir,writeFile} from 'node:fs/promises';
+const {chromium}=createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE||'C:/Users/lenovo/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const base=process.env.PREVIEW_URL||'http://127.0.0.1:4312';
+assert.equal(new URL(base).hostname,'127.0.0.1');
+const out='.test-output/premium-ux';await mkdir(out,{recursive:true});
+const browser=await chromium.launch({channel:'chrome',headless:true});const report=[];
+try {for(const [width,height] of [[327,464],[390,844]]) {
+ const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true});
+ const page=await context.newPage(),errors=[],posts=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ page.on('request',r=>{if(r.method()==='POST')posts.push({path:new URL(r.url()).pathname,body:r.postDataJSON()});});
+ await page.goto(base);await page.waitForFunction(()=>withDriverRatesLoadedFromDb&&publicOutstationMinimumLoaded);
+ await page.locator('#wd-out-round-trip').click();
+ for(const [id,value,dd] of [['wd-out-pickup','Mumbai','wd-out-pickup-dropdown'],['wd-out-destination','Pune','wd-out-dest-dropdown']]){await page.locator('#'+id).fill(value);await page.locator('#'+dd+' button').first().click();}
+ const day=new Date(Date.now()+4*86400000).toISOString().slice(0,10);
+ for(const id of ['wd-out-pdate','wd-out-rdate'])await page.locator('#'+id).fill(day);
+ for(const [id,value] of [['wd-out-phour','9'],['wd-out-pampm','AM'],['wd-out-rhour','6'],['wd-out-rampm','PM']])await page.locator('#'+id).selectOption(value);
+ await page.waitForFunction(()=>wdOutstationRouteQuote!==null);
+ await page.locator('#explore-cabs-button').click();
+ await page.locator('#cwd-p1-search-loader.visible').waitFor();
+ await page.screenshot({path:`${out}/${width}-loader.png`});
+ await page.waitForFunction(()=>!fareSearchInFlight);
+ await page.locator('#fleet-container').scrollIntoViewIfNeeded();
+ const fares=await page.locator('.cwd-p1-price').allTextContents();
+ await page.screenshot({path:`${out}/${width}-results.png`});
+ for(const [slug,label] of [['dzire','Best Value'],['ertiga','Family Choice'],['crysta','Premium Comfort']])await page.locator('.cwd-p1-card').filter({has:page.getByText(label,{exact:true})}).screenshot({path:`${out}/${width}-${slug}.png`,style:'nav,.cwd-p1-toolbar {visibility:hidden !important}'});
+ await page.locator('#fleet-container').scrollIntoViewIfNeeded();
+ const dialog=page.locator('#cwd-results-offer');await dialog.waitFor({state:'visible',timeout:20000});
+ await page.screenshot({path:`${out}/${width}-popup.png`,animations:'disabled'});
+ assert.match(await dialog.locator('.cwd-offer-expert').getAttribute('href'),/^https:\/\/wa.me\/919702988465\?/);
+ assert.equal(await dialog.locator('.cwd-offer-expert').getAttribute('rel'),'noopener');
+ assert.match(await dialog.innerText(),/maximum ₹500/);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+ await dialog.locator('input').fill('9999999327');await dialog.locator('[type=submit]').click();
+ await page.locator('.otp-digits input').first().waitFor();
+ await page.getByRole('button',{name:'Cancel',exact:true}).click();
+ await dialog.waitFor({state:'visible'});assert.match(await dialog.innerText(),/cancelled/);
+ await dialog.locator('[type=submit]').click();await page.locator('.otp-digits input').first().waitFor();
+ await page.screenshot({path:`${out}/${width}-otp.png`});
+ for(let i=0;i<6;i++)await page.locator('.otp-digits input').nth(i).fill('012345'[i]);
+ await page.getByRole('button',{name:'Verify & Sign In',exact:true}).click();
+ await dialog.waitFor({state:'hidden'});await page.getByRole('button',{name:'Copy',exact:true}).waitFor();await page.screenshot({path:`${out}/${width}-signed-in.png`});
+ assert.deepEqual(await page.locator('.cwd-p1-price').allTextContents(),fares);
+ const login=posts.filter(r=>r.path==='/api/customer-account');assert.equal(login.length,1);
+ assert.deepEqual(Object.keys(login[0].body).sort(),['action','phone','proof']);
+ assert.ok(posts.every(r=>['/api/maps-route','/api/mobile-otp','/api/customer-account'].includes(r.path)),'No marketing/booking writes');
+ // Successful login closes the popup automatically; cancellation is covered above.
+ assert.equal(await dialog.isVisible(),false);
+ await page.evaluate(()=>window.dispatchEvent(new Event('cwd:fares-ready')));await page.waitForTimeout(11000);assert.equal(await dialog.isVisible(),false);
+ assert.deepEqual(errors,[]);report.push({width,height,passed:true,faresUnchanged:true,marketingWrites:0,errors});await context.close();
+ }}finally{await browser.close();await writeFile(out+'/consent-report.json',JSON.stringify(report,null,2));}
+console.log('PASS mobile offer, cancellation/retry, OTP login, dismissal, unchanged fares and no marketing writes');

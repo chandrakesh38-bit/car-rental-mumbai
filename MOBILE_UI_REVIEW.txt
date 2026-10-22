@@ -1,0 +1,74 @@
+CWD mobile UI review — testing branch — 2026-10-19
+
+Ready for visual approval. No commit, push, deployment, or main-branch change.
+Existing uncommitted checkout, OTP, payment, booking and pricing work preserved.
+
+Implemented:
+1. Destination cards contain only image, FROM MUMBAI, destination name,
+   vehicle/starting fare, and Explore Cabs. Removed description paragraphs,
+   indicative one-day-trip text and visible kilometre estimates from the
+   generator, component and homepage. Internal route data remains unchanged.
+   Grid rows keep equal card heights; one column at 327px, two at 390px.
+2. Vehicle image buttons use a 1:1 ratio and object-fit:contain. Captions and
+   gallery links sit below the square, outside the image container. Each mobile
+   image container measured 105 x 105px. Details, price and selection remain
+   alongside the image column. Gallery clicks do not trigger car selection.
+3. Top-left image badges: Dzire -> Best Value; Ertiga -> Family Choice;
+   Toyota Innova Crysta -> Premium Comfort. Exact aliases are case/whitespace
+   normalized, including CWD's displayed Sedan (Dzire / Aura) category and
+   short Innova Crysta name. No badges appear on WagonR or Kia Carens.
+
+Actual result verification:
+Public active fleet rows were read from with_driver_rates on 2026-10-19 using
+the public read-only API. Saved at scripts/testing/public-fleet-snapshot.json.
+The local server serves these records through its catalogue endpoint to the
+normal booking.js -> phase1-redesign.js renderer. The UI test no longer injects
+a fabricated Crysta row or any mock card HTML/CSS. CWD groups Dzire and Aura
+into one sedan result; pricing/grouping logic was not changed.
+Snapshot rates are data for this local review, not a new production fallback.
+Maps, database operations, OTP and payment providers remain isolated emulators.
+No live payment, SMS, email, database write, or migration was performed.
+
+Passed verification:
+- UI refresh: 327x464, 390x844, 1366x900; all badges, square dimensions,
+  object-fit, loaded images, equal destination heights, no unrelated badges,
+  no overflow, no badge/image overlap, four destination selections,
+  loader animation, cached searches, duplicate submit, 503/timeout recovery,
+  reduced motion and no uncaught page errors.
+- Phase 1: six widths, trip switching, focus, unchanged fare, Local/Airport/
+  Self Drive navigation, loader and retry.
+- Booking review and listing: gallery, filters, sorting, keyboard selection,
+  Modify Booking, Back navigation, terms and responsive checkout layout.
+- Checkout browser: real local UI/API journeys at 327, 390 and desktop,
+  OTP, 0/20/100 payment options, failed/abandoned payment retry,
+  confirmation, account, My Bookings and payment history.
+- Checkout API, pricing policy, vendor costing, pickup eligibility,
+  OTP security, mobile OTP and customer account tests.
+- Destination build parity, booking-component parity and git diff --check.
+
+Preview:
+http://127.0.0.1:4316/?width=327
+http://127.0.0.1:4316/?width=390
+Full responsive app: http://127.0.0.1:4315/
+Screenshot gallery: http://127.0.0.1:4315/ui-review
+Demo OTP: 012345. Both frame widths were measured in the running preview.
+
+Screenshot files:
+.test-output/ui-refresh/after-{327,390}-destinations.png
+.test-output/ui-refresh/after-{327,390}-vehicles.png
+.test-output/ui-refresh/after-{327,390}-{dzire,ertiga,crysta}.png
+Individual card captures are from actual generated results. Fixed navigation
+and the unrelated sticky search CTA are hidden only during element captures.
+Measurement evidence: .test-output/ui-refresh/after-report.json
+Checkout evidence: .test-output/real-checkout/report.json
+
+Restart in separate PowerShell terminals if necessary:
+$env:CWD_PREVIEW_PORT='4315'; node scripts/testing/serve-checkout.mjs
+$env:CWD_PREVIEW_PORT='4315'; $env:CWD_MOBILE_PREVIEW_PORT='4316'; node scripts/testing/serve-mobile-preview.mjs
+
+Rerun visual and checkout checks:
+$env:PREVIEW_URL='http://127.0.0.1:4315'; node scripts/test-ui-refresh.mjs
+$env:PREVIEW_URL='http://127.0.0.1:4315'; node scripts/test-customer-checkout-browser.mjs
+
+Wait for visual approval before any GitHub push. If approved, testing only;
+never main. Earlier unrelated legacy-suite limitations are in UI_RECOVERY.txt.

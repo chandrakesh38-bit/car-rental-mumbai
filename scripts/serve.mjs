@@ -2,6 +2,7 @@ import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import bookingConfig from '../api/booking-config.js';
 
 const defaultRoot = fileURLToPath(new URL('../', import.meta.url));
 export function startServer(root = defaultRoot, port = 4173) {
@@ -11,6 +12,11 @@ export function startServer(root = defaultRoot, port = 4173) {
     try {
       const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
       if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); return res.end('Use a Vercel preview for API requests.'); }
+      if (pathname === '/api/booking-config') {
+        const response = await bookingConfig(new Request('http://localhost/api/booking-config'));
+        res.writeHead(response.status, {'Content-Type':'application/json','Cache-Control':'no-store'});
+        return res.end(await response.text());
+      }
       let file = path.resolve(root, '.' + pathname);
       if (file !== root && !file.startsWith(root + path.sep)) { res.writeHead(403); return res.end(); }
       if (pathname === '/') file = path.join(root, 'index.html');

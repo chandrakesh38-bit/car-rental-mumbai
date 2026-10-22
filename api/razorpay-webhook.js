@@ -1,4 +1,6 @@
 import { getSecurityDepositBreakup, syncSecurityDepositReceived } from '../lib/security-deposit-accounting.mjs';
+import { checkoutConfig, capturePayment } from '../lib/customer-checkout.mjs';
+import { customerDb } from '../lib/customer-account.mjs';
 export const config = { runtime: 'edge' };
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json'}});
 const hex=bytes=>Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');
@@ -35,6 +37,15 @@ async function handle(request){
     const raw=await request.text();
     if(!await validSignature(raw,request.headers.get('x-razorpay-signature')||'',secret))return json({ok:false},401);
     const event=JSON.parse(raw),link=event?.payload?.payment_link?.entity,payment=event?.payload?.payment?.entity;
+    if (payment?.order_id && process.env.CWD_CHECKOUT_ENABLED === 'true') {
+      const cfg = checkoutConfig();
+      const orders = await customerDb(cfg, 'cwd_checkout_orders?razorpay_order_id=eq.'+encodeURIComponent(payment.order_id)+'&select=*&limit=1');
+      if (orders?.[0]) {
+        if (event.event === 'payment.captured' && payment.status === 'captured') await capturePayment(cfg, orders[0], payment.id);
+        // Failure/authorization events cannot downgrade an already captured payment.
+        return json({ok:true});
+      }
+    }
     if(!link?.id)return json({ok:true});
     const rows=await db('booking_payments?razorpay_payment_link_id=eq.'+encodeURIComponent(link.id)+'&select=*&limit=1');
     const record=rows?.[0];if(!record)return json({ok:true});

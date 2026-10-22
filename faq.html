@@ -438,6 +438,7 @@
                                     <a href="tel:+919702988465">☎ Call Expert | 24×7</a>
                                 </section>
                                 <section class="cwd-review-inclusions cwd-review-card" aria-labelledby="cwd-inclusions-title">
+                                    <h4>Fare breakup</h4><ul id="cwd-checkout-fare-lines"></ul>
                                     <h4 id="cwd-inclusions-title">Inclusions / Exclusions</h4>
                                     <h5>Inclusions</h5><ul id="cwd-review-included"></ul>
                                     <h5>Exclusions</h5><ul id="cwd-review-excluded"></ul>
@@ -450,10 +451,12 @@
                 <footer class="cwd-review-footer">
                     <div class="cwd-review-footer-inner">
                         <div class="cwd-review-total"><span>Total Fare</span><span id="modal-original-fare" hidden></span><strong id="modal-fare">₹0</strong></div>
-                        <div class="cwd-review-request-action">
-                            <p>No payment collected now. Our team will confirm availability and share a secure payment link.</p>
-                            <button type="submit"><span>Submit Booking Request</span> <span aria-hidden="true">→</span></button>
+                        <div class="cwd-checkout-actions" role="group" aria-label="Choose how to book">
+                            <button type="submit" data-payment-choice="0">Book at ₹0</button>
+                            <button type="submit" data-payment-choice="20">Pay 20% advance <small id="cwd-checkout-advance"></small></button>
+                            <button type="submit" data-payment-choice="100">Pay 100% <small id="cwd-checkout-full"></small></button>
                         </div>
+                        <p id="cwd-checkout-error" role="alert"></p>
                     </div>
                 </footer>
             </form>

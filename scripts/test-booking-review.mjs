@@ -1,3 +1,4 @@
+import {installOfflineUiAssets} from './testing/offline-ui-assets.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
@@ -29,6 +30,7 @@ try {
   if(/google-analytics|googletagmanager|clarity.ms/.test(url))return route.fulfill({body:''});
   assert.equal(req.method(),'GET','No unmocked write traffic allowed');return route.continue();
  });
+ await installOfflineUiAssets(page);
  await page.goto('http://127.0.0.1:4393/');
  await page.waitForFunction(()=>document.body.classList.contains('cwd-p1-conversion'));
  await page.locator('#wd-out-one-way').click();
@@ -101,7 +103,7 @@ try {
    const footerAfter=await page.locator('.cwd-review-footer').boundingBox();
    assert.deepEqual(footerAfter,footerBefore,'Footer stays in place during review scrolling');
    assert.ok(footerAfter.y>=0 && footerAfter.y+footerAfter.height<=901,'Footer inside viewport');
-   assert.equal(await page.locator('#wd-booking-form button[type="submit"]').count(),1,'One submit action');
+   assert.equal(await page.locator('#wd-booking-form button[type="submit"]').count(),3,'Three payment CTAs');
    const termsBox=await page.locator('.cwd-review-terms-link').boundingBox();
    assert.ok(termsBox.y+termsBox.height<=footerAfter.y,'Final content can scroll fully above footer');
    assert.equal(await page.locator('.cwd-review-scroll').evaluate(el=>el.scrollWidth>el.clientWidth),false);
@@ -122,9 +124,12 @@ try {
  }
  await page.evaluate(()=>{currentWDSubTab='outstation';currentOutstationJourneyType='one-way';});
 
- await page.goBack();await page.locator('#cwd-p1-search-loader.visible').waitFor();
+ await page.evaluate(()=>{window.__backHandled=new Promise(resolve=>window.addEventListener('popstate',()=>setTimeout(resolve,0),{once:true}));});
+ await page.goBack();
+ await page.evaluate(()=>window.__backHandled);
  await page.waitForFunction(()=>!fareSearchInFlight);
  assert.equal(await page.locator('#booking-modal').isVisible(),false);
+ await page.locator('.cwd-p1-card:visible').first().waitFor();
  assert.equal(await page.locator('.cwd-p1-card:visible').count(),3);
  for(const width of [320,390,768,1366]){await page.setViewportSize({width,height:900});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
  assert.deepEqual(errors,[]);

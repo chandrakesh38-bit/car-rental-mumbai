@@ -1,4 +1,4 @@
-import { maharashtraPickup } from '../lib/pickup-eligibility.mjs';
+import { metroPickup } from '../lib/pickup-eligibility.mjs';
 
 export const config = { runtime: 'edge' };
 
@@ -189,7 +189,7 @@ function pickupServiceArea(components, formattedAddress = '') {
 
 async function validatePickupPlace(placeId, pickupScope) {
   const details = await placeDetails(placeId);
-  if (['local', 'outstation'].includes(pickupScope)) return { ...details, ...maharashtraPickup(details.geocodeResult) };
+  if (['local', 'outstation','airport'].includes(pickupScope)) return { ...details, ...metroPickup(details.geocodeResult) };
   const area = pickupServiceArea(details.components || {}, details.address);
   return { ...details, allowed: Boolean(area), serviceArea: area || '' };
 }

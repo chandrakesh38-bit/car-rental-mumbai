@@ -1,0 +1,48 @@
+CWD premium results review — testing branch, 19 October 2026
+
+Local responsive app: http://127.0.0.1:4320/
+Mobile frame: http://127.0.0.1:4321/
+Screenshots and journey videos: http://127.0.0.1:4320/premium-review
+Demo OTP: 012345
+
+Preserved the CLI working tree. A byte-for-byte snapshot of 65 uncommitted
+files is in .test-output/before-premium-changes/. Sixty remain unchanged;
+five were refined in place, retaining their previous functionality. Added
+a separate consent regression test. No commit, push, deployment or main edit.
+
+Completed:
+- Existing search-owned three-bar animation retained and verified, with clear
+  loading copy and accessible busy state cleared on every exit.
+- Navy/gold dismissible results invitation, existing mobile OTP account login,
+  expert link, no marketing subscription or lead writes. Fixed Escape from
+  OTP accidentally closing the reopened offer; explicitly wrapped Tab focus.
+- Glossy gold Dzire, blue Ertiga and plum Crysta badges without image overlap.
+
+Pricing: lib/first-trip-offer.mjs currently rejects coupons on new bookings.
+The invitation explicitly states that extra 10% is conditional on configured
+rules, login does not apply it, and coupons are currently disabled. No fare
+or discount-policy changes were made. Login creates/reuses an account only.
+
+Verification:
+- test-ui-refresh.mjs: 327x464, 390x844, 1366x900; animation, all badges,
+  no overflow, duplicate submission, 503/timeout recovery and reduced motion.
+- test-results-offer.mjs: mobile animation frames, delayed invitation,
+  keyboard focus, invalid mobile, OTP Escape/retry/login, session cookie,
+  unchanged fares, checkout handoff, dismissal across searches/reload.
+- test-results-offer-consent.mjs: only maps, OTP and account POSTs;
+  no marketing writes, unchanged fares, expert link and dismissal.
+- test-booking-review.mjs, test-cwd-pricing-policy.mjs,
+  test-customer-account.mjs, test-mobile-otp.mjs and git diff --check.
+
+Screenshots are at .test-output/premium-ux/{327,390}-*.png.
+Tests use Chrome mobile emulation, not a physical phone. The local runner
+uses real app/API handlers with an isolated database and simulated maps,
+SMS and payment providers. No live SMS/payment/database write occurred.
+
+Restart in separate PowerShell terminals:
+$env:CWD_PREVIEW_PORT='4320'; node scripts/testing/serve-checkout.mjs
+$env:CWD_PREVIEW_PORT='4320'; $env:CWD_MOBILE_PREVIEW_PORT='4321'; node scripts/testing/serve-mobile-preview.mjs
+
+Run mobile tests:
+$env:PREVIEW_URL='http://127.0.0.1:4320'; node scripts/test-results-offer.mjs
+$env:PREVIEW_URL='http://127.0.0.1:4320'; node scripts/test-results-offer-consent.mjs

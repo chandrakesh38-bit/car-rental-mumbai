@@ -1,0 +1,20 @@
+Explore Cabs visibility fix — local testing — 19 October 2026
+
+Cause: the mobile preview iframe was fixed at 844px tall, extending below the
+available panel height. The fixed bottom search button was therefore clipped
+by the outer viewport.
+
+Fix: preview shell now uses the available dynamic viewport height with a compact
+header and a shrinking iframe. Existing search animation is preserved.
+
+Validation: node scripts/test-explore-preview.mjs — PASS
+Outer viewports: 436x506 (reported panel), 327x464, 390x844, 1366x768.
+For each: button fully visible without scrolling; route entry; physical button
+click without auto-scroll; changing loader animation transforms; vehicle results.
+Screenshots and measured button bounds: .test-output/explore-preview/.
+In-app browser visual inspection also confirmed the visible orange button.
+
+Preview: http://127.0.0.1:4331/
+App: http://127.0.0.1:4330/
+No push, deploy, main changes, or production data operations.
+Awaiting visual approval.

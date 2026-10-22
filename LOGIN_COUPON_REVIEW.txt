@@ -1,0 +1,116 @@
+CWD LOGIN COUPON — LOCAL VISUAL REVIEW
+19 October 2026 | branch: testing | awaiting the owner's visual approval
+
+PREVIEW
+Mobile: http://127.0.0.1:4331/
+Responsive website: http://127.0.0.1:4330/
+Screenshots: http://127.0.0.1:4330/coupon-review
+Report: http://127.0.0.1:4330/coupon-review/report
+
+Try a round trip from Mumbai to Pune on a future date (9 AM to 6 PM).
+Scroll to the vehicle cards; the guest invitation appears after 10 seconds
+of viewing results. Use an unused valid test mobile number and OTP 012345.
+All SMS, maps and payment-provider operations are simulated locally.
+The booking, session, coupon reservation and redemption transactions run
+against real local PostgreSQL 18.4. No remote project is accessed.
+
+APPROVED RULES IMPLEMENTED
+Code: CWDLOGIN10. 10% of server-priced eligible fare, capped at INR 500.
+Requires the existing OTP-verified customer session and matching booking
+mobile identity. A booking OTP alone is not sufficient for coupon use.
+Lifetime use is enforced by verified mobile, independent of browser/session.
+No stacking rule exists, so stacking is rejected.
+The existing with-driver checkout supports local/outstation/airport trips.
+Its server fare excludes refundable deposits and unpriced toll/parking
+actuals. Self-drive deposits and legacy self-drive pricing are unchanged.
+
+WORKFLOW
+- Login invitation remains premium and dismissible, without marketing opt-in.
+- Successful OTP login closes it automatically and restores the same results
+  and scroll position. An eligible customer gets the code and Copy button.
+- Checkout has Coupon Code, Apply and Remove controls. Apply reads a server
+  quote and does not consume or reserve the coupon.
+- Fare breakdown shows gross fare, coupon deduction and discounted total.
+- INR 0 / 20% / 100% options are calculated from the discounted amount.
+- Server recomputes pricing at submission. A changed quote is rejected for
+  review rather than silently charging a different amount.
+
+CONFIRMATION / CANCELLATION SEMANTICS
+The existing checkout confirms INR 0 bookings immediately. The coupon is
+redeemed in the same database transaction as that confirmation.
+20% and 100% bookings remain received/payment-pending until capture. A coupon
+reservation prevents another booking from claiming it meanwhile; there is
+no redemption audit entry until the booking is confirmed.
+Payment failure or abandonment does not redeem it. The pending booking can
+be retried or cancelled using Cancel pending booking, releasing its coupon.
+Late capture is recorded but never revives a cancelled booking or redeems its
+released coupon. A cancelled discounted booking cannot be re-confirmed after
+release. Cancellation after confirmation does not restore lifetime coupon use.
+Refund/reconciliation of a late captured payment remains the existing support
+workflow; the coupon feature does not initiate refunds.
+
+ATOMICITY / AUDIT
+The service-only SQL wrapper checks the session again inside the transaction,
+uses the existing checkout lock, computes the capped discount, and creates
+the booking and reservation/redemption together. Unique indexes enforce one
+active use per mobile and one redemption per mobile and booking.
+cwd_login_coupon_uses records reservation/release/confirmation timestamps.
+cwd_login_coupon_redemptions records confirmed use, customer, verified mobile,
+booking, coupon code, eligible fare and discount. No deletion/update permission
+is granted to the API role for the redemption audit. Anonymous/client roles
+cannot read these tables or call the coupon RPC. RLS is enabled.
+
+PASSED TESTS
+1. scripts/test-login-coupon.mjs — actual SQL on a fresh local database:
+   - 10%, INR 500 cap, integer-paise rounding, deposit exclusion, no stacking.
+   - Guest rejection, mismatched mobile, invalid code, stale fare, revoked
+     session rejection at API and SQL transaction boundaries.
+   - Client fare tampering ignored; server pricing remains authoritative.
+   - Eight concurrent duplicate requests produce one booking/redemption.
+   - Eight distinct concurrent submissions produce exactly one redemption.
+   - INR 0 confirmation, 20%/100% discounted orders and payment replay.
+   - Pending cancellation/reuse, late capture, released-booking protection.
+   - Concurrent cancellation/capture keeps audit and confirmation consistent.
+   - Failed booking rolls back coupon writes; anonymous SQL access denied.
+2. scripts/test-login-coupon-browser.mjs — Chrome mobile emulation:
+   - 327x464: INR 4,100 - 410 = 3,690; INR 0 booking confirmed.
+   - 390x844: INR 5,000 - 500 = 4,500; 20% payment INR 900.
+   - 1366x900: INR 7,100 - 500 = 6,600; full payment INR 6,600.
+   - OTP auto-close, exact result/scroll preservation, clipboard Copy, invalid
+     code, server Apply, updated options, payment-failure retry, confirmation,
+     repeat rejection, no horizontal overflow and no uncaught browser errors.
+3. Existing offer regressions and consent test: Escape/retry, keyboard focus,
+   dismissal persistence, no marketing writes and no result-fare mutation.
+4. Existing checkout API, customer-account security, pricing policy and
+   JavaScript syntax checks; git diff --check.
+
+EVIDENCE
+.test-output/login-coupon/api-sql-report.json
+.test-output/login-coupon/browser-report.json
+.test-output/login-coupon/{327,390,1366}-*.png
+.test-output/premium-ux/consent-report.json
+
+The tests use real API handlers and PostgreSQL with a local schema scaffold
+for the pre-existing inquiries/payment tables. They do not certify a remote
+Supabase installation or real MSG91/Razorpay delivery. Mobile tests are browser
+emulation, not physical-device tests.
+
+FILES / PRESERVATION
+Pre-change uncommitted files are copied under .test-output/before-login-coupon.
+No reset, commit, GitHub push, deployment, main edit or production write.
+New SQL remains local source at supabase/drafts/login_coupon.sql. It was applied
+only to fresh local test databases. The existing customer_checkout.sql had
+one ambiguous payment-status column qualified after real SQL testing caught it.
+Pinned local test dependencies and lockfile are under scripts/testing/postgres.
+
+RESTART (separate PowerShell terminals)
+$env:CWD_PREVIEW_PORT='4330'; $env:CWD_LOCAL_POSTGRES='true'; node scripts/testing/serve-checkout.mjs
+$env:CWD_PREVIEW_PORT='4330'; $env:CWD_MOBILE_PREVIEW_PORT='4331'; node scripts/testing/serve-mobile-preview.mjs
+
+RERUN
+node scripts/test-login-coupon.mjs
+$env:PREVIEW_URL='http://127.0.0.1:4330'; node scripts/test-login-coupon-browser.mjs
+
+Each PostgreSQL test/preview run creates a fresh database with a unique name
+on 127.0.0.1:55439; prior local test data is preserved. No remote migration is
+generated or applied. Visual approval is required before any next release step.

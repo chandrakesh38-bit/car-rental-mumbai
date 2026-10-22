@@ -1,0 +1,156 @@
+﻿CWD CHECKOUT MILESTONE 1 - 19 October 2026
+Status: actual application implementation with passing isolated UI/API tests.
+NOT production-ready; PostgreSQL execution and live sandbox-provider verification remain blocked.
+Branch: testing, based on local commit 3d7b060. No push, deployment or production write.
+
+PUBLIC COMPETITOR OBSERVATION
+Source: https://www.savaari.com/ (normal Chrome observation, no REA)
+Observed: One Way, Round Trip, Local and Airport selectors; location/date/time search;
+vehicle cards with capacity, included kilometres, allowance, fuel choice and extras;
+review page with route, dates, contact/pickup form, inclusions/exclusions;
+optional extras; Book at zero, Part Pay and Full Pay; support contact.
+The observed one-way checkout offered 25% part payment. CWD uses the explicitly
+requested 20%, not the competitor percentage. No competitor code/assets copied.
+Not verified: account internals, payment capture/confirmation after submission,
+My Bookings, changes, refunds, driver assignment, invoices, post-trip messages.
+The public session expired before the fare-breakup dialog could be inspected.
+
+EXISTING VS NEW
+Existing: actual vehicle search, frontend and backend pricing, OTP provider proof
+verification, isolated customer login/profile/logout, admin payment links/history,
+Razorpay webhook, vendor allocation/trip infrastructure, self-drive verification.
+New application code: three-CTA checkout in the existing modal, transparent fare
+lines, server-generated booking reference through a transactional RPC, confirmed
+unpaid zero-payment booking, pending paid-option booking, Razorpay test Orders
+integration, server-side HMAC AND fetched captured-payment validation, repeat-safe
+capture, confirmation page, account-linked My Bookings, payment history and balance
+payment, printable confirmation, safe driver details from existing allocations.
+New notification groundwork: transactional event/outbox records, leased worker,
+Resend reuse, failure retry history, distinction between provider acceptance and
+actual delivery. SMS/WhatsApp jobs are recorded but SKIPPED as unconfigured. No
+WhatsApp account/number/app migration. No false claims of delivered messages.
+
+REAL UI/API VS TEST BOUNDARIES
+Local URL: http://127.0.0.1:4312/
+Actual repository pages and API handlers run here. Unlike the old 4311 preview,
+there is no mock booking dashboard or endpoint replacing the checkout handlers.
+scripts/testing/checkout-fixtures.mjs replaces only outgoing provider/DB requests.
+The database RPC contract emulator is not PostgreSQL. Tests cannot establish SQL
+syntax, transaction isolation, RLS, real schema compatibility or production readiness.
+Vehicle rates and routes are labelled fixtures; live rates were not read or changed.
+No production configuration file or real secret is loaded by the local runner.
+
+APPLICATION FILES
+src/components/modals.template; src/components/booking-widget.template
+assets/js/booking.js; assets/css/phase1-redesign.css
+assets/js/customer-checkout.js; assets/js/customer-bookings.js
+assets/css/customer-bookings.css; booking-confirmation.html; my-bookings.html
+customer-account.html; api/customer-checkout.js; api/customer-bookings.js
+lib/customer-checkout.mjs; api/razorpay-webhook.js
+api/booking-notifications.js
+lib/pickup-eligibility.mjs; api/maps-route.js; lib/booking-validation.mjs;
+lib/cwd-pricing.mjs
+Generated booking/modals HTML synchronized across existing public pages.
+
+DATABASE
+Unapplied source: supabase/drafts/customer_checkout.sql
+Requires existing inquiries, booking_payments, otp_proof_uses, vendor allocations
+and the existing customer-account migration in ONE isolated testing database.
+Adds booking metadata, orders, event history and notification outbox; service-only
+RPCs for transactional creation, reservation, capture, outbox claiming.
+Unique inquiry reference index fails on pre-existing duplicates; never deletes or
+rewrites historical data to resolve them. Schema must be verified against the
+isolated project's existing column types, constraints and grants before applying.
+The Supabase skill requires the CLI to generate a migration filename. CLI/Postgres
+are unavailable and npm registry access returned EACCES; this is explicitly a
+migration SOURCE DRAFT, not a falsely claimed generated/applied migration.
+
+POLICIES / SAFETY
+Zero payment: booking_status confirmed, paid_amount 0; database payment_status
+pending retained for compatibility, presented as Unpaid to the customer.
+20%/100%: integer paise computed on server; pending until provider confirms capture.
+20% rounds once to nearest paise only if total contains fractional paise after division.
+Capture verifies order, payment ID, exact amount, INR and captured=true/status.
+Webhook HMAC checked before processing; repeated capture cannot double credit.
+Late capture records money without resurrecting cancelled/completed bookings.
+Database transaction is designed to insert booking + OTP use + outbox atomically.
+Customer ownership uses the existing secure server session and normalized mobile.
+Guest booking capability is hashed in DB, stored only in sessionStorage, never in
+URLs, and expires for access after seven days. Customer login remains available.
+Checkout is gated to testing, an isolated database and matching pricing/storage
+configuration. Razorpay live keys are refused by this milestone.
+300 km/day, extra-km increment and vehicle allowances remain. Current hardcoded
+customer night charge was corrected to read the vehicle's configured night rate,
+with the existing Rs500 fallback only if absent. Vendor costing is untouched.
+Pickup restriction now matches the explicit Mumbai/Thane/Navi Mumbai instruction;
+Maharashtra-wide pickup behavior and its tests were updated. Drops remain nationwide.
+Self-drive validation, deposits and document flows were not rewritten.
+
+VERIFICATION
+PASS scripts/test-customer-checkout.mjs: actual API handlers with external-boundary
+fixtures; 0/20/100, client fare not authoritative, balance, duplicate create/order,
+invalid signature, amount mismatch, uncaptured authorization, webhook replay,
+payment outage booking preservation, OTP expiry/replay, ownership, CSRF,
+notification rejection/retry, live payment-key refusal, configured night charge.
+PASS scripts/test-customer-checkout-browser.mjs: actual pages/handlers at
+327x464 (zero), 390x844 (20%), 1366x900 (100%); search, Explore Cabs, car selection,
+all CTAs in viewport, OTP, captured/failed/abandoned provider simulation,
+confirmation, account login, My Bookings and payment history. No external traffic.
+PASS scripts/test-customer-account.mjs: 43 existing security assertions.
+PASS scripts/test-mobile-otp.mjs: existing OTP and pre-side-effect checks.
+PASS scripts/test-pickup-eligibility.mjs: new metro-only pickup, nationwide drops,
+unchanged airport distance and self-drive delivery limits.
+PASS scripts/test-cwd-vendor-costing.mjs: existing vendor rate/cost calculations.
+PASS generated modal synchronization check.
+FAIL scripts/test-cwd-pricing-policy.mjs line 48: existing baseline 4034 vs 4100
+vendor expectation mismatch, also observed before this milestone. Not changed
+silently because vendor costing must be preserved.
+UNVERIFIED: PostgreSQL SQL/RLS/transaction/concurrency tests; real Razorpay test
+merchant capture/webhook configuration; real isolated MSG91/Resend delivery.
+Screenshots: .test-output/real-checkout/<width>-<choice>/
+Machine-readable browser report: .test-output/real-checkout/report.json
+
+RUN LOCALLY
+node scripts/testing/serve-checkout.mjs
+node scripts/test-customer-checkout.mjs
+node scripts/test-customer-checkout-browser.mjs
+Demo mobile 9999999999, OTP 012345. Select Mumbai -> Pune and future dates.
+Provider window offers captured, failed and abandoned TEST outcomes.
+Bookings reset when the runner restarts; no production records are loaded.
+The offline Tailwind stylesheet is the previously captured local stylesheet in
+.test-output/customer-account-mobile-preview/rendered-homepage.css.
+
+NEXT MILESTONES / OPEN WORK
+1. Apply and verify SQL in an explicitly identified isolated database. Verify
+schema compatibility, RLS, transactional rollback, concurrency and signed sandbox
+webhooks before calling the checkout backend end-to-end proven.
+2. Customer modification/cancellation requests, reason/eligibility breakdown,
+admin approval/audit UI and idempotent approved full Razorpay refunds. Current
+My Bookings links to support; these workflows are NOT implemented by this milestone.
+3. Full notification delivery receipts/retries/operational UI; approved WhatsApp
+coexistence integration and configured SMS; driver-assigned/pickup reminder events.
+4. End-to-end vendor offer/acceptance/trip reconciliation integration tests,
+customer trip tracking, final invoice, settlement and review request.
+5. Extend account history to legacy bookings safely; current list covers only new
+checkout-linked bookings (up to 50), not a claimed backfill of historical data.
+No live refund, notification, production migration, deployment or push is authorized.
+An existing isolated Supabase project reference/configuration is needed to unblock
+real database verification. Sandbox provider credentials belong in local env, not chat.
+ADDITIONAL INTEGRATION CHECKS
+api/booking-config.js now supplies the catalogue URL and publishable/anon key at
+runtime, instead of the booking frontend hardcoding the production catalogue.
+It rejects secret/service-role keys. The static development server exposes this
+same read-only configuration handler. vercel.json adds narrowly scoped Razorpay
+script/frame/connect origins and Supabase project origins for the isolated target.
+CSP with the real Razorpay test provider still needs sandbox verification.
+
+Required isolated configuration (no actual values committed):
+CWD_CHECKOUT_ENABLED=true; CWD_CUSTOMER_ACCOUNTS_ENABLED=true
+CWD_CUSTOMER_SUPABASE_URL and SUPABASE_URL: same isolated testing project
+CWD_CUSTOMER_SUPABASE_SERVICE_ROLE_KEY and SUPABASE_SERVICE_ROLE_KEY: matching
+CWD_CUSTOMER_SUPABASE_ANON_KEY: that project's publishable or anon key
+RAZORPAY_KEY_ID: rzp_test_...; RAZORPAY_KEY_SECRET; RAZORPAY_WEBHOOK_SECRET
+Existing MSG91 widget/server configuration and Google Maps server key
+Optional Resend + CWD_TRANSACTIONAL_EMAIL_ENABLED=true + worker secret.
+No cron schedule is deployed; notification worker invocation needs isolated
+operational setup. SMS/WhatsApp delivery and their approval remain future work.

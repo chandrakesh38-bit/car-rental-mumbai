@@ -1,8 +1,13 @@
 const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
 
-        const SUPABASE_URL = "https://pwciaihqkfnlenxxiown.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_ZhQ7lv3YVC96tsNg_NoDuA_bxXHrbGz";
-        const supabasePublic = (window.supabase && typeof window.supabase.createClient === 'function') ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+        let SUPABASE_URL = '', SUPABASE_ANON_KEY = '', supabasePublic = null;
+        const bookingCatalogueReady = fetch('/api/booking-config', {cache:'no-store'})
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error('Catalogue configuration unavailable.');
+                SUPABASE_URL = data.url; SUPABASE_ANON_KEY = data.key;
+                supabasePublic = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) || null;
+            }).catch(() => { supabasePublic = null; });
 
         // Public pricing is database-backed so CWD Admin changes are reflected without code deploys.
         const livePricingRules = {
@@ -25,6 +30,7 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
         let publicOutstationMinimumLoaded = false;
 
         async function loadPublicPricingRules() {
+            await bookingCatalogueReady;
             if (!supabasePublic) return;
             const { data, error } = await supabasePublic.from('pricing_rules').select('rule_name,rule_value').abortSignal(AbortSignal.timeout(12000));
             if (error || !data) return;
@@ -43,6 +49,7 @@ const mobileOtpReady = import('/assets/js/mobile-otp.js').catch(() => null);
         }
 
         async function loadPublicFaqs() {
+            await bookingCatalogueReady;
             const accordion = document.getElementById('faq-accordion');
             if (!accordion || !supabasePublic) return;
             const { data, error } = await supabasePublic.from('faqs').select('id,question,answer,display_order,is_active').eq('is_active', true).order('display_order', { ascending: true });
@@ -340,15 +347,11 @@ let mumbaiMetroLocations = [
         }
 
         function updateQuickRouteLiveFares() {
-            if (!withDriverRatesLoadedFromDb) return;
+            if (!withDriverRatesLoadedFromDb || !publicOutstationMinimumLoaded) return;
             const validCars = wdFleet.filter(car => Number(car?.rates?.outstationPerKm) > 0);
             if (!validCars.length) return;
-            const minKm = Number(livePricingRules.minimumOutstationKmPerDay || 200);
-            const lowest = [...validCars].sort((a, b) => {
-                const aCost = (minKm * Number(a.rates.outstationPerKm)) + Number(a.rates.driverAllowance || 0);
-                const bCost = (minKm * Number(b.rates.outstationPerKm)) + Number(b.rates.driverAllowance || 0);
-                return aCost - bCost;
-            })[0];
+            const minKm = Number(livePricingRules.minimumOutstationKmPerDay);
+            if (!(minKm > 0)) return;
             document.querySelectorAll('[data-route-km]').forEach(card => {
                 const km = Number(card.dataset.routeKm || 0);
                 const fareLabel = card.querySelector('[data-live-route-fare]');
@@ -356,6 +359,9 @@ let mumbaiMetroLocations = [
                 const billableKm = Math.max(km, minKm);
                 const baseKm=Math.min(billableKm,minKm);
                 const extraKm=Math.max(0,billableKm-baseKm);
+                // Compare the complete indicative journey, not just the daily minimum.
+                const cost = car => baseKm * Number(car.rates.outstationPerKm) + extraKm * (Number(car.rates.outstationPerKm) + 1) + Number(car.rates.driverAllowance || 0);
+                const lowest = [...validCars].sort((a,b)=>cost(a)-cost(b))[0];
                 const rate=Number(lowest.rates.outstationPerKm);
                 const estimatedFare = Math.round(baseKm*rate+extraKm*(rate+1)+Number(lowest.rates.driverAllowance||0));
                 fareLabel.textContent = `${lowest.name} · from ₹${estimatedFare.toLocaleString('en-IN')}`;
@@ -363,6 +369,7 @@ let mumbaiMetroLocations = [
         }
 
         async function loadWithDriverRatesPublic() {
+            await bookingCatalogueReady;
             if (!supabasePublic) return;
             const { data, error } = await supabasePublic.from('with_driver_rates').select('*').eq('is_active', true).order('display_order', { ascending: true }).order('full_name', { ascending: true }).abortSignal(AbortSignal.timeout(12000));
             if (error || !data?.length) return;
@@ -389,7 +396,7 @@ let mumbaiMetroLocations = [
                         },
                         outstationPerKm: Number(row.outstation_rate_per_km) || 0,
                         driverAllowance: Number(row.driver_allowance_per_day) || 0,
-                        nightCharge: 500, // testing: night charge for customer, endpoint times only
+                        nightCharge: row.customer_night_charge != null && row.customer_night_charge !== '' && Number.isFinite(Number(row.customer_night_charge)) && Number(row.customer_night_charge) >= 0 ? Number(row.customer_night_charge) : 500,
                         airport: {
                             t1: Number(row.airport_t1_rate) || 0,
                             t2: Number(row.airport_t2_rate) || 0,
@@ -427,6 +434,7 @@ let mumbaiMetroLocations = [
         }
 
         async function fetchWebsiteFleet() {
+            await bookingCatalogueReady;
             const grid = document.getElementById('selfdrive-cars-grid');
             const landing = document.getElementById('mumbai-selfdrive-fleet');
             const status = message => {
@@ -867,15 +875,14 @@ function onPickupDateChange() {
 }
 
         async function selectQuickRoute(destName) {
-            const card = [...document.querySelectorAll('#quick-plan-routes button')].find(button =>
-                button.firstElementChild?.textContent.split('➔').pop().trim() === destName);
-            const route = card?.firstElementChild?.textContent.split('➔').map(value => value.trim());
+            const card = [...document.querySelectorAll('#quick-plan-routes button')].find(button => button.dataset.destination === destName);
             if (currentMainMode !== 'withdriver') setServiceMode('withdriver');
             setWDSubTab('outstation');
             const pickupInput = document.getElementById('wd-out-pickup');
             const destInput = document.getElementById('wd-out-destination');
-            const pickupText = route?.[0] || 'Mumbai';
-            const destinationText = route?.[1] || destName;
+            setOutstationJourneyType('round-trip');
+            const pickupText = card?.dataset.origin || 'Mumbai';
+            const destinationText = destName;
             if (pickupInput) pickupInput.value = pickupText;
             if (destInput) destInput.value = destinationText;
             invalidateOutstationRoute('Finding the selected quick route on Google…');
@@ -945,7 +952,7 @@ function onPickupDateChange() {
         async function validatePickupPlaceId(placeId, pickupScope = currentWDSubTab) {
             if (!placeId) throw new Error('Please select the pickup location from Google suggestions.');
             const result = await publicMapsRequest('validate-pickup', { placeId, pickupScope });
-            if (!result.allowed) throw new Error(result.message || (pickupScope === 'airport' ? 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.' : 'Please select a verified pickup in Maharashtra from Google suggestions.'));
+            if (!result.allowed) throw new Error(result.message || (pickupScope === 'airport' ? 'Pickup is available only in Mumbai, Thane, and Navi Mumbai.' : 'Please select a pickup in Mumbai, Thane or Navi Mumbai from Google suggestions.'));
             return result;
         }
 
@@ -962,6 +969,9 @@ function onPickupDateChange() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action, ...extra }),
                 signal: AbortSignal.timeout(15000)
+            }).catch(error => {
+                if (error.name === 'TimeoutError' || error.name === 'AbortError') throw new Error('The route request timed out. Please try again.');
+                throw error;
             });
             const payload = await response.json().catch(() => ({}));
             if (!response.ok || !payload?.success) throw new Error(payload?.message || 'Unable to calculate this route.');
@@ -1942,11 +1952,12 @@ function onPickupDateChange() {
               #cwd-p1-search-loader {position:fixed!important;inset:0!important;z-index:99999!important;display:none;visibility:hidden;opacity:0;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(249,252,255,.985);text-align:center;color:#123956;padding:18px}
               #cwd-p1-search-loader.visible {display:flex!important;visibility:visible;opacity:1;pointer-events:auto}
               #cwd-p1-search-loader strong {font-size:21px}
-              #cwd-p1-search-loader .cwd-p1-loader-bars {height:52px;display:flex;align-items:center;gap:8px}
-              #cwd-p1-search-loader .cwd-p1-loader-bars span {display:block;background:#187db7;width:10px;height:27px;border-radius:5px;animation:cwd-search-bars .65s ease-in-out infinite alternate}
-              #cwd-p1-search-loader .cwd-p1-loader-bars span:nth-child(2){animation-delay:.15s}
-              #cwd-p1-search-loader .cwd-p1-loader-bars span:nth-child(3){animation-delay:.30s}
-              @keyframes cwd-search-bars {from{transform:scaleY(.48)}to{transform:scaleY(1.65)}}
+              #cwd-p1-search-loader .cwd-p1-loader-bars {height:76px;display:flex;align-items:center;gap:9px}
+              #cwd-p1-search-loader .cwd-p1-loader-bars span {display:block;background:linear-gradient(180deg,#48c3e1,#176baf);width:11px;height:32px;border-radius:8px;transform-origin:center;will-change:transform;animation:cwd-search-bars .9s ease-in-out infinite;animation-delay:-.6s;animation-play-state:paused}
+              #cwd-p1-search-loader.visible .cwd-p1-loader-bars span {animation-play-state:running}
+              #cwd-p1-search-loader .cwd-p1-loader-bars span:nth-child(2){animation-delay:-.3s}
+              #cwd-p1-search-loader .cwd-p1-loader-bars span:nth-child(3){animation-delay:0s}
+              @keyframes cwd-search-bars {0%,100%{transform:translateY(12px) scaleY(.65);opacity:.65}50%{transform:translateY(-12px) scaleY(1.2);opacity:1}}
               @media(prefers-reduced-motion:reduce){#cwd-p1-search-loader .cwd-p1-loader-bars span{animation:none}}
             `;
             document.head.appendChild(sheet);
@@ -1956,11 +1967,11 @@ function onPickupDateChange() {
             overlay.setAttribute('aria-live','polite');
             overlay.setAttribute('aria-hidden','true');
             overlay.tabIndex = -1;
-            const title=document.createElement('strong');title.textContent='Please wait';
+            const title=document.createElement('strong');title.textContent='Please wait – Looking for best rates.';
             const bars=document.createElement('div');bars.className='cwd-p1-loader-bars';
             bars.setAttribute('aria-hidden','true');
             for(let i=0;i<3;i++)bars.appendChild(document.createElement('span'));
-            const subtitle=document.createElement('p');subtitle.textContent='Looking for best rates';
+            const subtitle=document.createElement('p');subtitle.textContent='Checking your route and available cab fares…';
             overlay.append(title,bars,subtitle);
             document.body.appendChild(overlay);
             return overlay;
@@ -1969,19 +1980,21 @@ function onPickupDateChange() {
         async function triggerFareSearch() {
             if (fareSearchInFlight) return;
             fareSearchInFlight = true;
+
             const searchOverlay=makeFareSearchOverlay();
             let previousFocus;
             try {
             searchOverlay.classList.add('visible');
+            const loaderStartedAt = performance.now();
             searchOverlay.setAttribute('aria-hidden','false');
             previousFocus = document.activeElement;
             searchOverlay.focus({preventScroll:true});
             // Disable immediately, even before the first animation frame,
             // so a double tap cannot launch two identical fare requests.
             setExploreCabsUi(true, 'Checking route and live fares...');
+            document.getElementById('booking-widget')?.setAttribute('aria-busy','true');
             // Allow browser to paint the overlay before heavy fare work begins.
             await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-            const paintedAt = performance.now();
             window.cwdTrackEvent?.('explore_cabs_click', {
                 service_type: currentMainMode === 'withdriver' ? 'with_driver' : currentMainMode,
                 trip_type: currentWDSubTab,
@@ -2022,13 +2035,11 @@ function onPickupDateChange() {
                     return;
                 }
 
+                // Keep the loader visible for the requested four-second minimum.
+                // Time already spent fetching prices counts toward this interval.
+                const remainingLoaderMs = 4000 - (performance.now() - loaderStartedAt);
+                if (remainingLoaderMs > 0) await new Promise(resolve => setTimeout(resolve, remainingLoaderMs));
                 calculateDriverFare();
-                // Cached routes can finish in a single frame. Give a successful
-                // search the requested four-second window, counting time
-                // already spent on real work. Slow requests incur no extra wait;
-                // validation/API failures skip this success-only presentation.
-                const remaining = 4000 - (performance.now() - paintedAt);
-                if (remaining > 0) await new Promise(resolve=>setTimeout(resolve, remaining));
                 await showCabSearchTransition(()=>{}, 'fleet');
                 const visibleCount = Array.isArray(wdFleet) ? wdFleet.length : 0;
                 window.cwdTrackEvent?.('cab_results_shown', {
@@ -2050,6 +2061,7 @@ function onPickupDateChange() {
                 fareSearchInFlight = false;
                 searchOverlay.classList.remove('visible');
                 searchOverlay.setAttribute('aria-hidden','true');
+                document.getElementById('booking-widget')?.removeAttribute('aria-busy');
                 const button=document.getElementById('explore-cabs-button');
                 if (button?.disabled) setExploreCabsUi(false);
                 if (document.activeElement === searchOverlay && previousFocus?.isConnected) previousFocus.focus({preventScroll:true});
@@ -2389,6 +2401,12 @@ function onPickupDateChange() {
         }
 
         function openModal(name, fare) {
+            activeLoginCoupon = null;
+            ++loginCouponRequest;
+            const couponInput = document.getElementById('cwd-coupon-code');
+            if (couponInput) couponInput.value = '';
+            const couponStatus = document.getElementById('cwd-coupon-status');
+            if (couponStatus) couponStatus.textContent = '';
             chosenCarName = name;
             withDriverCurrentLocation = null;
             const locationButtonWrap = document.getElementById('wd-current-location-wrap');
@@ -2399,7 +2417,7 @@ function onPickupDateChange() {
             const locationStatus = document.getElementById('wd-current-location-status');
             if (locationStatus) locationStatus.textContent = '';
             firstTripFareBeforeDiscount = Number(fare) || 0;
-            // No coupon for new bookings. Client fare must match server fare.
+            // Coupon totals are supplied only by the server quote endpoint.
             chosenFareAmount = firstTripFareBeforeDiscount;
             document.getElementById('modal-car-name').innerText = name;
             renderFirstTripOffer();
@@ -2461,6 +2479,7 @@ function onPickupDateChange() {
             packageSummary.parentElement.classList.toggle('sm:col-span-2', currentWDSubTab === 'outstation');
 
             renderBookingReviewDetails();
+            void prefillCheckoutCustomer();
             document.getElementById('booking-modal').classList.remove('hidden'); syncModalState(document.getElementById('booking-modal'), true);
             document.querySelector('.cwd-review-scroll').scrollTop = 0;
             document.getElementById('cwd-review-title').focus({ preventScroll: true });
@@ -2479,7 +2498,7 @@ function onPickupDateChange() {
         }
 
         function renderFirstTripOffer() {
-            chosenFareAmount = firstTripFareBeforeDiscount;
+            chosenFareAmount = activeLoginCoupon ? activeLoginCoupon.totalPaise/100 : firstTripFareBeforeDiscount;
             const fare = document.getElementById('modal-fare');
             if (fare) fare.textContent = '₹' + chosenFareAmount.toLocaleString('en-IN');
         }
@@ -2781,13 +2800,39 @@ function generateBookingId() {
 
 async function handleBookingSubmit(e) {
     e.preventDefault();
-    if (!validateJourneyAndOpenBooking()) return;
-    if (!e.target.reportValidity()) return;
-    let otpProof;
+    const form = e.target;
+    if (form.dataset.checkoutBusy === 'true') return;
+    const choice = Number(e.submitter?.dataset.paymentChoice);
+    if (![0,20,100].includes(choice) || !e.submitter) return;
+    if (!validateJourneyAndOpenBooking() || !form.reportValidity()) return;
+    form.dataset.checkoutBusy = 'true';
+    const errorBox = document.getElementById('cwd-checkout-error');
+    errorBox.textContent = '';
+    form.querySelectorAll('[data-payment-choice]').forEach(button => button.disabled = true);
     try {
+        if (document.getElementById('cwd-coupon-code')?.value.trim() && !activeLoginCoupon) throw new Error('Apply or remove the coupon before choosing a payment option.');
+        const checkout = await import('/assets/js/customer-checkout.js');
+        await checkout.checkoutReady();
+        await handleBookingSubmitDetails(e, choice, checkout);
+    } catch (error) { errorBox.textContent = error.message || 'Unable to complete checkout. Please retry.'; }
+    finally {
+        form.dataset.checkoutBusy = 'false';
+        form.querySelectorAll('[data-payment-choice]').forEach(button => button.disabled = false);
+    }
+}
+
+async function handleBookingSubmitDetails(e, paymentChoice, checkout, quoteOnly = false) {
+    e.preventDefault();
+    if (!validateJourneyAndOpenBooking()) return;
+    if (!quoteOnly && !e.target.reportValidity()) return;
+    let otpProof;
+    if (!quoteOnly) try {
         const otp = await mobileOtpReady;
         if (!otp) throw new Error('Mobile verification could not load. Please refresh and retry.');
+        const customer = await checkout.getCheckoutCustomer();
+        if (!customer || customer.mobile.slice(-10) !== document.getElementById('cust-phone').value.replace(/\D/g,'').slice(-10)) {
         otpProof = await otp.requestFormOtp(e.target, 'cust-phone', 'booking');
+        }
     } catch (error) { if (!error.cancelled) showCustomAlert(error.message); return; }
 
     const name = document.getElementById('cust-name').value.trim();
@@ -3014,8 +3059,9 @@ ${flightNumber ? `🛫 Flight: ${flightNumber}\n` : ''}📅 ${formatBookingDateT
             mapUrl: withDriverCurrentLocation.mapUrl
         } : null
     };
-    await sendWithDriverBookingEmail(e.target, bookingId, name, phone, email,
-        message + '\nCustomer address: ' + address + currentLocationText, closeModal, 'withdriver', otpProof, bookingData);
+    if (quoteOnly) return bookingData;
+    await checkout.submitCheckout({name, phone, email, bookingData, otpProof, paymentChoice,
+        ...(activeLoginCoupon ? {couponCode:activeLoginCoupon.code,expectedTotalPaise:activeLoginCoupon.totalPaise} : {})}, e.target);
 }
         async function handleSDBookingSubmit(e) {
             e.preventDefault();
@@ -3961,9 +4007,67 @@ document.addEventListener('keydown', function(event) {
 });
 
 // Presentation only: read the selected live quote; never calculate or submit a new fare.
+let activeLoginCoupon = null, loginCouponRequest = 0;
+function setupLoginCoupon() {
+    if (document.getElementById('cwd-coupon-code')) return;
+    const host = document.createElement('section');
+    host.className = 'cwd-coupon-checkout';
+    host.innerHTML = `<label for="cwd-coupon-code">Login coupon</label><p>10% off eligible fare, up to ₹500. Once per verified mobile. No stacking.</p>
+      <div><input id="cwd-coupon-code" placeholder="Enter coupon code" autocomplete="off" maxlength="30"><button type="button" id="cwd-coupon-apply">Apply</button><button type="button" id="cwd-coupon-remove" hidden>Remove</button></div>
+      <p id="cwd-coupon-status" role="status" aria-live="polite"></p><small>Refundable deposits and toll/parking charges at actuals are excluded.</small>`;
+    document.getElementById('cwd-checkout-fare-lines').parentElement.append(host);
+    const input=host.querySelector('input'), apply=host.querySelector('#cwd-coupon-apply'), remove=host.querySelector('#cwd-coupon-remove'), status=host.querySelector('[role="status"]');
+    const clear=()=>{++loginCouponRequest;activeLoginCoupon=null;remove.hidden=true;status.textContent='';renderFirstTripOffer();renderBookingReviewDetails();};
+    input.addEventListener('input',clear);
+    document.getElementById('cust-phone').addEventListener('input',clear);
+    remove.addEventListener('click',()=>{input.value='';clear();});
+    apply.addEventListener('click',async()=>{
+        const form=host.closest('form');
+        if (form.dataset.checkoutBusy==='true' || apply.disabled) return;
+        clear(); const attempt=loginCouponRequest;
+        apply.disabled=true;form.dataset.checkoutBusy='true';
+        form.querySelectorAll('[data-payment-choice]').forEach(b=>b.disabled=true);
+        status.textContent='Checking your coupon and fare…';
+        try {
+            const bookingData=await handleBookingSubmitDetails({target:form,preventDefault(){}},0,null,true);
+            if(!bookingData)throw Error('Complete your trip details first.');
+            const checkout=await import('/assets/js/customer-checkout.js');
+            const quote=await checkout.quoteLoginCoupon({couponCode:input.value,phone:document.getElementById('cust-phone').value,bookingData});
+            if(attempt!==loginCouponRequest)return;
+            activeLoginCoupon=quote;input.value=quote.code;remove.hidden=false;
+            status.textContent=`Coupon applied. You save ₹${(quote.discountPaise/100).toLocaleString('en-IN')}. Redeemed only when your booking is confirmed.`;
+            renderFirstTripOffer();renderBookingReviewDetails();
+        } catch(error) {if(attempt===loginCouponRequest)status.textContent=error.message;}
+        finally {apply.disabled=false;form.dataset.checkoutBusy='false';form.querySelectorAll('[data-payment-choice]').forEach(b=>b.disabled=false);}
+    });
+}
 function renderBookingReviewDetails() {
     const car = wdFleet.find(item => item.name === chosenCarName);
     const mode = currentWDSubTab;
+    if (car) {
+        const format = n => '₹' + Number(n).toLocaleString('en-IN', {maximumFractionDigits:2});
+        const total = activeLoginCoupon ? activeLoginCoupon.totalPaise/100 : getCarCost(car);
+        document.getElementById('cwd-checkout-advance').textContent = format(Math.round(total * 100 * .2) / 100);
+        document.getElementById('cwd-checkout-full').textContent = format(total);
+        const lines = [];
+        if (mode === 'outstation') {
+            const baseKm = wdOutstationDays * 300;
+            const extraKm = Math.max(0, Math.ceil(wdOutstationKm) - baseKm);
+            lines.push(`${baseKm} base km × ${format(car.rates.outstationPerKm)} = ${format(baseKm * car.rates.outstationPerKm)}`);
+            lines.push(`${extraKm} extra km × ${format(Number(car.rates.outstationPerKm)+1)} = ${format(extraKm * (Number(car.rates.outstationPerKm)+1))}`);
+            lines.push(`Driver allowance: ${wdOutstationDays} day(s) × ${format(car.rates.driverAllowance)}`);
+        } else lines.push('Package / transfer: ' + format(total - currentDriverNightCharge(car)));
+        lines.push('Night charges: ' + format(currentDriverNightCharge(car)));
+        const node = document.getElementById('cwd-checkout-fare-lines');
+        if (activeLoginCoupon) {
+            lines.push('Fare before coupon: ' + format(activeLoginCoupon.grossPaise/100));
+            lines.push('CWDLOGIN10 (10%, max ₹500): −' + format(activeLoginCoupon.discountPaise/100));
+            lines.push('Total after coupon: ' + format(total));
+        }
+        node.replaceChildren(...lines.map(text => {const li=document.createElement('li');li.textContent=text;return li;}));
+        setupLoginCoupon();
+        document.getElementById('cwd-coupon-remove').hidden=!activeLoginCoupon;
+    }
     const list = (id, items) => {
         const node = document.getElementById(id);
         node.replaceChildren(...items.filter(Boolean).map(text => { const li=document.createElement('li');li.textContent=text;return li; }));
@@ -4036,4 +4140,12 @@ function renderBookingReviewDetails() {
     list('cwd-review-included', included);
     list('cwd-review-excluded', excluded);
     list('cwd-review-terms-list', terms);
+}
+
+async function prefillCheckoutCustomer() {
+ const field=document.getElementById('cust-phone'), previous=field.value;
+ try {const checkout=await import('/assets/js/customer-checkout.js');
+ const customer=await checkout.getCheckoutCustomer();
+ if(customer && field.value===previous) {field.value=customer.mobile.slice(-10);field.dispatchEvent(new Event('input'));}
+ } catch {}
 }

@@ -1,0 +1,65 @@
+CWD UI recovery — testing branch — 2026-10-19
+
+Recovered all existing uncommitted work without checkout/reset/stash, commits,
+pushes, deployment, or changes to main. The three requested UI features were
+already implemented in the recovered working tree and are verified here.
+
+Exact previous UI failure (recovered from the prior session log):
+scripts/test-ui-refresh.mjs:33:10
+assert.ok(await page.getByText('Best Value',{exact:true}).count())
+actual: 0, expected: true.
+The public Dzire name is "Sedan (Dzire / Aura)". The existing recovered label
+map includes that alias. Later prior runs failed with ERR_INSUFFICIENT_RESOURCES
+at page.goto and an unsettled top-level await at context.newPage. Neither occurs
+in the successful current UI run.
+
+Recovery changes:
+- Explicit test-only Crysta catalogue coverage and Premium Comfort assertion.
+- Legacy UI tests use isolated catalogue config and offline presentation assets.
+- Cached searches must finish promptly; delayed requests must animate three bars.
+- Browser Back checks wait for popstate, fare completion and rebuilt cards.
+- Pricing test passes the customer's 300 billable km into the vendor function,
+  rather than raw 294 route km. No pricing implementation was changed here.
+- Added a local 390 x 844 preview shell on port 4314.
+
+Passed:
+node scripts/test-ui-refresh.mjs (327x464, 390x844, 1366x900)
+node scripts/test-phase1.mjs (six viewport widths)
+node scripts/test-booking-review.mjs
+node scripts/test-listing-review.mjs
+node scripts/test-customer-checkout.mjs
+node scripts/test-customer-checkout-browser.mjs (0%, 20%, 100% payment journeys)
+node scripts/test-cwd-pricing-policy.mjs
+node scripts/test-cwd-vendor-costing.mjs
+node scripts/test-pickup-eligibility.mjs
+node scripts/test-otp-security.mjs
+node scripts/test-mobile-otp.mjs
+node scripts/test-customer-account.mjs
+node scripts/build-destinations.mjs --check
+node scripts/build.mjs --booking-only --check
+git diff --check
+
+Additional legacy checks did not pass:
+- test-notifications.mjs: obsolete OTP fixture, then obsolete booking payload
+  when diagnosed with a temporary updated OTP fixture. Temporary fixture edits
+  were removed. New checkout API tests cover notification failure/retry.
+- test-self-drive-documents.mjs: obsolete OTP fixture and missing
+  @electric-sql/pglite dependency. No database migrations were executed.
+
+Local preview:
+http://127.0.0.1:4314/ (390 x 844 interactive frame)
+http://127.0.0.1:4312/ (responsive full page)
+http://127.0.0.1:4312/ui-review (screenshots)
+Demo OTP: 012345. Real UI/API handlers with emulated database/providers;
+no real messages, payments, database/RLS verification or production writes.
+Crysta is added only in the UI test, not the interactive preview catalogue.
+
+Restart preview if needed in separate terminals:
+node scripts/testing/serve-checkout.mjs
+node scripts/testing/serve-mobile-preview.mjs
+The existing preview and offline UI tests reuse the captured Tailwind CSS at
+.test-output/customer-account-mobile-preview/rendered-homepage.css.
+Browser tests accept PLAYWRIGHT_MODULE for the local Playwright installation.
+
+Fresh screenshots: .test-output/ui-refresh/after-*.png and mobile-preview.png.
+Fresh UI evidence: .test-output/ui-refresh/after-report.json.

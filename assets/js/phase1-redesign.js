@@ -11,6 +11,22 @@
   };
   const safeImage = (src) => typeof src === 'string' && (/^https:\/\//i.test(src) || /^\/(?!\/)/.test(src));
   const money = (value) => Number.isFinite(value) ? '₹' + value.toLocaleString('en-IN') : '';
+  // Editorial labels only: never influence availability, fares or sorting.
+  // Set window.CWD_VEHICLE_LABELS before this script to override individual names.
+  const vehicleLabels = {
+    'Maruti Suzuki Dzire':'Best Value',
+    'Sedan (Dzire / Aura)':'Best Value',
+    'Maruti Dzire':'Best Value',
+    'Dzire':'Best Value',
+    'Maruti Suzuki Ertiga':'Family Choice',
+    'Maruti Ertiga':'Family Choice',
+    'Ertiga':'Family Choice',
+    'Toyota Innova Crysta':'Premium Comfort',
+    'Innova Crysta':'Premium Comfort',
+    ...(window.CWD_VEHICLE_LABELS || {})
+  };
+  const normalizedVehicleLabels = new Map(Object.entries(vehicleLabels).map(([name,label])=>[name.trim().replace(/\s+/g,' ').toLowerCase(),label]));
+  const vehicleLabelFor = name => normalizedVehicleLabels.get(String(name).trim().replace(/\s+/g,' ').toLowerCase());
   // Owner-supplied registration photographs; public copies have identifiers masked.
   const galleryPaths=model=>['front','interior','left','right'].map(view=>'/assets/images/fleet/'+model+'/'+view+'.webp');
   // Representative manufacturer imagery is separate from genuine gallery photos.
@@ -182,7 +198,9 @@
       const verifiedFuel=(window.CWD_VERIFIED_CAR_FUEL || suppliedFuel)[name];
       card.dataset.cwdP1Fuel=['Petrol','Diesel','CNG','Petrol+CNG','Electric','Hybrid'].includes(verifiedFuel)?verifiedFuel:'';
       card.className='cwd-p1-card';
+      const photoColumn=make('div','cwd-p1-photo-column');
       const photoBox=make('button','cwd-p1-car-photo');
+      photoColumn.append(photoBox);
       photoBox.type='button';
       const photos=photosFor(name);
       if (photos.length) {
@@ -191,17 +209,29 @@
           const image=make('img');
           image.src=modelImage;image.alt=name+' — representative model image';
           photoBox.classList.add('cwd-p1-model-photo');
-          photoBox.append(image,make('small','cwd-p1-model-caption','Model image'));
+          photoBox.append(image);
+          photoColumn.append(make('small','cwd-p1-model-caption','Model image'));
         } else {
           photoBox.append(make('i','fa-solid fa-car-side'));
         }
         const galleryName=name==='Sedan (Dzire / Aura)'?'Maruti Suzuki Dzire':name;
-        photoBox.append(make('span','', (name==='Sedan (Dzire / Aura)'?'View Dzire Photos (':'View Photos (')+photos.length+')'));
+        const galleryLink=make('button','cwd-p1-gallery-link', (name==='Sedan (Dzire / Aura)'?'View Dzire Photos (':'View Photos (')+photos.length+')');
+        galleryLink.type='button';
+        galleryLink.addEventListener('click',e=>{e.stopPropagation();openGallery(galleryName,photos);});
+        photoColumn.append(galleryLink);
         photoBox.setAttribute('aria-label','View genuine photos of '+name);
         photoBox.addEventListener('click',e=>{e.stopPropagation();openGallery(galleryName,photos);});
       } else {
         photoBox.disabled=true;
-        photoBox.append(make('i','fa-solid fa-car-side'),make('span','','Genuine photos coming soon'));
+        photoBox.append(make('i','fa-solid fa-car-side'));
+        photoColumn.append(make('small','cwd-p1-model-caption','Genuine photos coming soon'));
+      }
+      const vehicleLabel=vehicleLabelFor(name);
+      if (vehicleLabel) {
+        photoBox.classList.add('cwd-p1-labelled-photo');
+        const badge=make('span','cwd-p1-vehicle-badge',vehicleLabel);
+        badge.dataset.tone=vehicleLabel==='Best Value'?'gold':vehicleLabel==='Family Choice'?'blue':'plum';
+        photoBox.append(badge);
       }
       const detail=make('div','');
       detail.append(make('span','cwd-p1-card-label',label),make('h3','cwd-p1-car-name',name));
@@ -220,12 +250,12 @@
       fareRow.append(cost,cta);detail.appendChild(fareRow);
       origBook.classList.add('cwd-p1-hidden-action');
       origBook.tabIndex=-1;origBook.setAttribute('aria-hidden','true');
-      card.replaceChildren(photoBox,detail,origBook);
+      card.replaceChildren(photoColumn,detail,origBook);
       if (fare!==null && !origBook.disabled) {
         card.setAttribute('role','button');card.tabIndex=0;
         card.setAttribute('aria-label','Select '+name+' for '+money(fare));
         card.addEventListener('click',ev=>{
-          if (ev.target.closest('.cwd-p1-car-photo')) return;
+          if (ev.target.closest('.cwd-p1-photo-column')) return;
           if (ev.target===origBook) return;
           origBook.click();
         });
@@ -392,8 +422,8 @@
         window.triggerFareSearch?.();
       });
     }
-    // The single loading overlay is now controlled by phase1-autoflow.js,
-    // independently of cab-card rendering and filter setup.
+    // Optional sign-in invitation must never stop search or booking initialization.
+    import('/assets/js/results-offer.js').then(module=>module.initResultsOffer()).catch(()=>{});
   }
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true});
   else init();

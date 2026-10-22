@@ -1,3 +1,4 @@
+import {installOfflineUiAssets} from './testing/offline-ui-assets.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
@@ -32,6 +33,7 @@ try{
   return route.continue();
  });
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+ await installOfflineUiAssets(context);
  await page.goto('http://127.0.0.1:4391/');
  await page.waitForFunction(()=>document.body.classList.contains('cwd-p1-conversion'));
  assert.equal(await page.locator('#explore-cabs-button').count(),1);
@@ -77,24 +79,16 @@ try{
  await page.locator('#wd-out-phour').selectOption('9');await page.locator('#wd-out-pampm').selectOption('AM');
  await page.waitForFunction(()=>document.activeElement.id==='explore-cabs-button');
  const fare=await page.evaluate(()=>getCarCost(wdFleet[0]));assert.equal(fare,4700);
- // A cached successful quote must still paint moving bars on its first click.
+ // Cached quotes finish immediately; slow requests below verify animation.
  const fastStart=Date.now();
  await page.locator('#explore-cabs-button').click();
- await page.locator('#cwd-p1-search-loader.visible').waitFor();
- const first=await page.locator('.cwd-p1-loader-bars span').evaluateAll(bars=>bars.map(b=>getComputedStyle(b).transform));
- await page.waitForTimeout(180);
- const second=await page.locator('.cwd-p1-loader-bars span').evaluateAll(bars=>bars.map(b=>getComputedStyle(b).transform));
- assert.notDeepEqual(first,second,'Cached search bars must actually animate');
- assert.equal(await page.locator('#explore-cabs-button').isDisabled(),true);
  await page.waitForFunction(()=>!fareSearchInFlight);
- assert.ok(Date.now()-fastStart>=4000,'Fast result must retain the four-second loader');
- // Modify Booking moves the same widget/button into its dialog.
+ assert.ok(Date.now()-fastStart<2000,'Cached results have no artificial delay');
  await page.getByRole('button',{name:'Modify Booking',exact:true}).click();
  const modifyStart=Date.now();
  await page.locator('#explore-cabs-button').click();
- await page.locator('#cwd-p1-search-loader.visible').waitFor();
  await page.waitForFunction(()=>!fareSearchInFlight);
- assert.ok(Date.now()-modifyStart>=4000,'Modify Booking must use the same four-second minimum');
+ assert.ok(Date.now()-modifyStart<2000,'Cached Modify Booking has no artificial delay');
  // Force a route refresh to hold a real search promise open while double clicking.
  await page.evaluate(()=>{wdOutstationRouteQuote=null;});delay=4500;
  const slowStart=Date.now();
@@ -104,6 +98,10 @@ try{
  await page.locator('#cwd-p1-search-loader.visible').waitFor();
  assert.equal(await page.locator('#explore-cabs-button').isDisabled(),true);
  assert.equal(await page.locator('#cwd-p1-search-loader .cwd-p1-loader-bars span').count(),3);
+ const first=await page.locator('.cwd-p1-loader-bars span').evaluateAll(bars=>bars.map(b=>getComputedStyle(b).transform));
+ await page.waitForTimeout(180);
+ const second=await page.locator('.cwd-p1-loader-bars span').evaluateAll(bars=>bars.map(b=>getComputedStyle(b).transform));
+ assert.notDeepEqual(first,second,'Bars animate while a route request is pending');
  await page.waitForFunction(()=>!fareSearchInFlight);
  assert.ok(Date.now()-slowStart>=4500,'Loader must await a slow calculation');
  assert.ok(Date.now()-slowStart<7500,'Do not add four seconds after a slow calculation');
@@ -124,5 +122,5 @@ try{
  await page.locator('#btn-airport-drop').click();assert.equal(await page.locator('#wd-airport-pickup').isVisible(),true);
  await page.locator('#btn-mode-selfdrive').click();assert.equal(await page.locator('#with-driver-block').isVisible(),false);
  assert.deepEqual(errors,[]);
- console.log('PASS Phase 1: six widths, one CTA, trip switching/restore, keyboard locations, rejection focus, verified focus, unchanged fixture fare, visibly animated cached first-click loader, one concurrent route request, error/retry, Local/Airport/Self Drive visibility. No booking/OTP/payment traffic.');
+ console.log('PASS Phase 1: six widths, one CTA, trip switching/restore, keyboard locations, rejection focus, verified focus, unchanged fixture fare, animated pending-request loader and immediate cached results, one concurrent route request, error/retry, Local/Airport/Self Drive visibility. No booking/OTP/payment traffic.');
 }finally{await browser.close();await new Promise(r=>server.close(r));}

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {createLocalDatabase} from './testing/postgres/local-database.mjs';
 import {installFixtures,state} from './testing/checkout-fixtures.mjs';
-import {POST as checkout} from '../api/customer-checkout.js';
+import {POST as checkout} from '../api/customer-checkout.mjs';
 import account from '../api/customer-account.js';
 import enquiry from '../api/booking-enquiry.js';
 import {verifyAccessToken} from '../lib/mobile-otp.mjs';

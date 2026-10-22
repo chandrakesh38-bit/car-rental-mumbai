@@ -1,6 +1,6 @@
 ﻿import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';
 import bookingConfig from '../api/booking-config.js';
-import {POST as checkout} from '../api/customer-checkout.js';import account from '../api/customer-account.js';import bookings from '../api/customer-bookings.js';import notify from '../api/booking-notifications.js';import {POST as webhook} from '../api/razorpay-webhook.js';import {verifyAccessToken,requireMobileOtp} from '../lib/mobile-otp.mjs';import {validateBookingData} from '../lib/booking-validation.mjs';
+import {POST as checkout} from '../api/customer-checkout.mjs';import account from '../api/customer-account.js';import bookings from '../api/customer-bookings.js';import notify from '../api/booking-notifications.js';import {POST as webhook} from '../api/razorpay-webhook.mjs';import {verifyAccessToken,requireMobileOtp} from '../lib/mobile-otp.mjs';import {validateBookingData} from '../lib/booking-validation.mjs';
 import {paymentAmount} from '../lib/customer-checkout.mjs';import {installFixtures,state,simulateCapture,sign} from './testing/checkout-fixtures.mjs';
 installFixtures();const origin='https://cwd.testing.invalid';
 async function proof(purpose='booking',phone='9999999999',offset=0){const reqId=randomUUID();const token='header.'+Buffer.from(JSON.stringify({requestId:reqId,mobile:'91'+phone,exp:Math.floor(Date.now()/1000)+600+offset})).toString('base64url')+'.signature';return (await verifyAccessToken(token,phone,purpose,origin,reqId)).proof;}

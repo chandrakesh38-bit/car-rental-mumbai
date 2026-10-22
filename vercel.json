@@ -1,5 +1,4 @@
 {
-  "regions": ["bom1"],
   "buildCommand": "node scripts/build.mjs --booking-only",
   "outputDirectory": ".",
   "cleanUrls": true,

@@ -30,8 +30,9 @@
   // Owner-supplied registration photographs; public copies have identifiers masked.
   const galleryPaths=model=>['front','interior','left','right'].map(view=>'/assets/images/fleet/'+model+'/'+view+'.webp');
   // Representative manufacturer imagery is separate from genuine gallery photos.
-  const modelImageFor=name=>/ertiga/i.test(name)?'/assets/images/models/ertiga.webp':/wagon\s*r/i.test(name)?'/assets/images/models/wagonr.webp':/dzire/i.test(name)?'/assets/images/models/dzire.webp':/crysta/i.test(name)?'/assets/images/models/crysta.webp':null;
+  const modelImageFor=name=>/xl\s*6/i.test(name)?'/assets/images/fleet/xl6/side.jpeg':/ertiga/i.test(name)?'/assets/images/models/ertiga.webp':/wagon\s*r/i.test(name)?'/assets/images/models/wagonr.webp':/dzire/i.test(name)?'/assets/images/models/dzire.webp':/crysta/i.test(name)?'/assets/images/models/crysta.webp':null;
   const suppliedPhotos={
+    'Maruti Suzuki XL6':['side','front','rear-seats','interior'].map(view=>'/assets/images/fleet/xl6/'+view+'.jpeg'),
     'Maruti Suzuki Ertiga':galleryPaths('ertiga'),
     'Maruti Ertiga':galleryPaths('ertiga'),
     'WagonR':galleryPaths('wagonr'),
@@ -210,12 +211,12 @@
           image.src=modelImage;image.alt=name+' — representative model image';
           photoBox.classList.add('cwd-p1-model-photo');
           photoBox.append(image);
-          photoColumn.append(make('small','cwd-p1-model-caption','Model image'));
+          if (/crysta/i.test(name)) photoBox.classList.add('cwd-p1-crysta-photo');
         } else {
           photoBox.append(make('i','fa-solid fa-car-side'));
         }
         const galleryName=name==='Sedan (Dzire / Aura)'?'Maruti Suzuki Dzire':name;
-        const galleryLink=make('button','cwd-p1-gallery-link', (name==='Sedan (Dzire / Aura)'?'View Dzire Photos (':'View Photos (')+photos.length+')');
+        const galleryLink=make('button','cwd-p1-gallery-link', 'View Photos');
         galleryLink.type='button';
         galleryLink.addEventListener('click',e=>{e.stopPropagation();openGallery(galleryName,photos);});
         photoColumn.append(galleryLink);

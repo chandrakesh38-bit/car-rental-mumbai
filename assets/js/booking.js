@@ -315,14 +315,15 @@ let mumbaiMetroLocations = [
         let wdFleet = [
             { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, nightCharge: 400, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
             { name: 'Maruti Ertiga', category: 'Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 }, outstationPerKm: 19, driverAllowance: 500, nightCharge: 400, airport: { t1: 2200, t2: 2400, nmia: 2800 } } },
-            { name: 'Kia Carens', category: 'Premium Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 4000, '10hr_100km': 4700, '12hr_120km': 5400, extraKm: 20 }, outstationPerKm: 20, driverAllowance: 500, nightCharge: 400, airport: { t1: 2400, t2: 2600, nmia: 3000 } } },
+            { name: 'Maruti Suzuki XL6', category: 'Premium Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 4000, '10hr_100km': 4700, '12hr_120km': 5400, extraKm: 20 }, outstationPerKm: 20, driverAllowance: 500, nightCharge: 400, airport: { t1: 2400, t2: 2600, nmia: 3000 } } },
             { name: 'Toyota Innova', category: 'Executive MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 4400, '10hr_100km': 5200, '12hr_120km': 6000, extraKm: 22 }, outstationPerKm: 22, driverAllowance: 500, nightCharge: 400, airport: { t1: 2700, t2: 2900, nmia: 3400 } } },
             { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, nightCharge: 400, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
         ];
 
 
         function withDriverPublicName(row) {
-            const name = String(row.full_name || '').trim();
+            const rawName = String(row.full_name || '').trim();
+            const name = /^Kia Carens$/i.test(rawName) ? 'Maruti Suzuki XL6' : rawName;
             if (String(row.segment || '').toLowerCase() === 'sedan' && /dzire|aura/i.test(name)) return 'Sedan (Dzire / Aura)';
             return name;
         }
@@ -1987,6 +1988,12 @@ function onPickupDateChange() {
             searchOverlay.classList.add('visible');
             const loaderStartedAt = performance.now();
             searchOverlay.setAttribute('aria-hidden','false');
+            // Start explicitly on every search, independent of page CSS animation overrides.
+            const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+            searchOverlay.querySelectorAll('.cwd-p1-loader-bars span').forEach((bar,index)=>{
+                bar.getAnimations().forEach(animation=>animation.cancel());
+                bar.animate([{transform:`translateY(${reduced?3:12}px) scaleY(.65)`,opacity:.55},{transform:`translateY(${reduced?-3:-12}px) scaleY(1.2)`,opacity:1},{transform:`translateY(${reduced?3:12}px) scaleY(.65)`,opacity:.55}],{duration:900,iterations:Infinity,delay:-index*300});
+            });
             previousFocus = document.activeElement;
             searchOverlay.focus({preventScroll:true});
             // Disable immediately, even before the first animation frame,
@@ -2059,6 +2066,7 @@ function onPickupDateChange() {
                 setExploreCabsUi(false, 'Could not load live fares. Please try again.');
             } finally {
                 fareSearchInFlight = false;
+                searchOverlay.querySelectorAll('.cwd-p1-loader-bars span').forEach(bar=>bar.getAnimations().forEach(animation=>animation.cancel()));
                 searchOverlay.classList.remove('visible');
                 searchOverlay.setAttribute('aria-hidden','true');
                 document.getElementById('booking-widget')?.removeAttribute('aria-busy');
@@ -4053,11 +4061,12 @@ function renderBookingReviewDetails() {
         if (mode === 'outstation') {
             const baseKm = wdOutstationDays * 300;
             const extraKm = Math.max(0, Math.ceil(wdOutstationKm) - baseKm);
-            lines.push(`${baseKm} base km × ${format(car.rates.outstationPerKm)} = ${format(baseKm * car.rates.outstationPerKm)}`);
-            lines.push(`${extraKm} extra km × ${format(Number(car.rates.outstationPerKm)+1)} = ${format(extraKm * (Number(car.rates.outstationPerKm)+1))}`);
-            lines.push(`Driver allowance: ${wdOutstationDays} day(s) × ${format(car.rates.driverAllowance)}`);
-        } else lines.push('Package / transfer: ' + format(total - currentDriverNightCharge(car)));
-        lines.push('Night charges: ' + format(currentDriverNightCharge(car)));
+            lines.push(`Included distance: ${baseKm.toLocaleString('en-IN')} km × ${format(car.rates.outstationPerKm)} = ${format(baseKm * car.rates.outstationPerKm)}`);
+            if (extraKm > 0) lines.push(`${extraKm} extra km × ${format(Number(car.rates.outstationPerKm)+1)} = ${format(extraKm * (Number(car.rates.outstationPerKm)+1))}`);
+            lines.push(`Driver allowance: ${wdOutstationDays} day(s) × ${format(car.rates.driverAllowance)} = ${format(wdOutstationDays * car.rates.driverAllowance)}`);
+        } else lines.push('Package / transfer: ' + format(getCarCost(car) - currentDriverNightCharge(car)));
+        if(currentDriverNightCharge(car)>0)lines.push('Night charges: ' + format(currentDriverNightCharge(car)));
+        if(!activeLoginCoupon)lines.push('Total booking fare: ' + format(total));
         const node = document.getElementById('cwd-checkout-fare-lines');
         if (activeLoginCoupon) {
             lines.push('Fare before coupon: ' + format(activeLoginCoupon.grossPaise/100));

@@ -27,7 +27,7 @@ export function initResultsOffer() {
       couponBanner.append(text);
       if(coupon.eligible){
         const copy=document.createElement('button');copy.type='button';copy.textContent='Copy';
-        copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(coupon.code);copiedCoupon=true;couponBanner.remove();couponBanner=null;const toast=document.createElement('div');toast.setAttribute('role','status');toast.textContent='Coupon copied successfully.';toast.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#153e68;color:white;padding:12px 18px;border-radius:12px;z-index:100000;max-width:90%;text-align:center';document.body.append(toast);setTimeout(()=>toast.remove(),3000);}catch{copy.textContent='Select code';const selection=getSelection(),range=document.createRange();range.selectNodeContents(text);selection.removeAllRanges();selection.addRange(range);}});
+        copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(coupon.code);copiedCoupon=true;couponBanner.remove();couponBanner=null;const toast=document.createElement('div');toast.setAttribute('role','status');toast.textContent='Coupon copied successfully.';toast.style.cssText='position:fixed;top:85px;left:50%;transform:translateX(-50%);background:#153e68;color:white;padding:12px 18px;border-radius:12px;z-index:100000;max-width:90%;text-align:center';document.body.append(toast);setTimeout(()=>toast.remove(),3000);}catch{copy.textContent='Select code';const selection=getSelection(),range=document.createRange();range.selectNodeContents(text);selection.removeAllRanges();selection.addRange(range);}});
         couponBanner.append(copy);
       }
     } catch {couponBanner?.remove();couponBanner=null;}
@@ -81,7 +81,7 @@ export function initResultsOffer() {
       <div class="cwd-offer-hero">
         <span class="cwd-offer-eyebrow">✦ CWD PRIVILEGE</span>
         <div class="cwd-offer-saving" aria-hidden="true">10<span>%</span><small>EXTRA SAVINGS</small></div>
-        <h2 id="cwd-offer-title">Your next ride, 10% less</h2>
+        <h2 id="cwd-offer-title">Login to unlock your deal</h2>
         <p id="cwd-offer-description">A little more comfort. A little less to pay.</p>
       </div>
       <div class="cwd-offer-content">
@@ -93,7 +93,7 @@ export function initResultsOffer() {
           <p class="cwd-offer-consent">Your number is used for account verification. Signing in does not subscribe you to marketing. <a href="/privacy-policy" target="_blank" rel="noopener">Privacy policy</a></p>
         </form>
         <p class="cwd-offer-status" role="status" aria-live="polite"></p>
-        <a class="cwd-offer-expert" href="https://wa.me/919702988465?text=Hi%20CWD%2C%20I%20would%20like%20help%20with%20my%20trip%20and%20the%20extra%2010%25%20offer." target="_blank" rel="noopener">Speak to Expert <span aria-hidden="true">↗</span></a>
+        <a class="cwd-offer-expert" href="https://wa.me/919702988465?text=Hi%20CWD%2C%20I%20would%20like%20help%20with%20my%20trip%20and%20the%20extra%2010%25%20offer." target="_blank" rel="noopener">Speak to Expert on WhatsApp <span aria-hidden="true">↗</span></a>
         <p class="cwd-offer-terms">10% off eligible booking fare, maximum ₹500. Once per verified mobile. Apply your code at checkout. No stacking; refundable deposits and unpriced toll/parking charges excluded.</p>
         <button class="cwd-offer-continue" type="button">Continue browsing cabs</button>
       </div>`;
@@ -175,9 +175,9 @@ export function initResultsOffer() {
     timer = setInterval(() => {
       const now = performance.now(), delta = Math.min(now - lastTick, 500);
       lastTick = now;
+      if (!document.hidden) elapsed += delta;
       if (!viewingResults()) return;
-      elapsed += delta;
-      if (elapsed >= 10000) void invite();
+      if (elapsed >= 40000) void invite();
     }, 250);
   }
   window.addEventListener('cwd:fares-ready', ()=>{start();void refreshCoupon();});
@@ -186,5 +186,5 @@ export function initResultsOffer() {
     if (seen) { clearInterval(timer); timer = null; }
     else if (document.body.classList.contains('cwd-p1-results-open')) start();
   });
-  if (document.body.classList.contains('cwd-p1-results-open')) start();
+  start();
 }

@@ -17,6 +17,7 @@ async function search(page){
 }
 async function otp(page,label){await page.locator('.otp-digits input').first().waitFor();for(let i=0;i<6;i++)await page.locator('.otp-digits input').nth(i).fill('012345'[i]);await page.getByRole('button',{name:label,exact:true}).click();}
 try{for(const [width,height,choice,label] of [[327,464,0,'Best Value'],[390,844,20,'Family Choice'],[1366,900,100,'Premium Comfort']]){
+ if(process.env.TEST_WIDTH && width!==Number(process.env.TEST_WIDTH))continue;
  const context=await browser.newContext({viewport:{width,height},isMobile:width<500,hasTouch:width<500,permissions:['clipboard-read','clipboard-write']});
  const page=await context.newPage(),errors=[],external=[];let quote;
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!r.url().startsWith(base)&&!r.url().startsWith('data:'))external.push(r.url());});
@@ -25,7 +26,7 @@ try{for(const [width,height,choice,label] of [[327,464,0,'Best Value'],[390,844,
  try{
  await search(page);await page.locator('.cwd-p1-card').first().scrollIntoViewIfNeeded();const resultNames=await page.locator('.cwd-p1-car-name').allTextContents();
  const scroll=await page.evaluate(()=>scrollY);
- const offer=page.locator('#cwd-results-offer');await offer.waitFor({state:'visible',timeout:20000});await shot('offer');
+ const offer=page.locator('#cwd-results-offer');await offer.waitFor({state:'visible',timeout:50000});await shot('offer');
  await offer.locator('input').fill(phone);await offer.locator('[type=submit]').click();await otp(page,'Verify & Sign In');
  await offer.waitFor({state:'hidden'});await page.getByRole('button',{name:'Copy',exact:true}).waitFor();
  assert.ok(Math.abs((await page.evaluate(()=>scrollY))-scroll)<=2,'Results scroll restored');

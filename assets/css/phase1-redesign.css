@@ -86,6 +86,11 @@ body.cwd-p1 { background:#f5f7fb; }
 .cwd-p1 .cwd-p1-car-photo i { font-size:34px;color:#7ba3c2; }
 .cwd-p1 .cwd-p1-car-photo img { width:100%;height:100%;min-height:0;max-width:100%;object-fit:contain; }
 .cwd-p1 .cwd-p1-model-photo { background:#fff; }
+.cwd-p1 .cwd-p1-car-photo { position:relative; }
+.cwd-p1 .cwd-p1-car-photo::after { content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;border:1px solid transparent;background:linear-gradient(110deg,transparent 35%,#47bddccc 48%,#f6cd75 52%,transparent 65%) 160% 0 / 250% 100%;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;padding:2px;animation:cwd-photo-highlight 4s ease-in-out infinite; }
+.cwd-p1 .cwd-p1-crysta-photo img { transform:scale(1.6); }
+@keyframes cwd-photo-highlight { 0%,25% {background-position:160% 0;opacity:0} 40%,70% {opacity:1} 85%,100% {background-position:-60% 0;opacity:0} }
+@media(prefers-reduced-motion:reduce) { .cwd-p1 .cwd-p1-car-photo::after {animation:none;border-color:#8fbace;} }
 .cwd-p1 .cwd-p1-model-caption { font-size:10px;font-weight:400;color:#64748b; }
 .cwd-p1 .cwd-p1-gallery-link { font-size:11px;font-weight:700;line-height:1.5;color:#175e82;cursor:zoom-in; }
 .cwd-p1 .cwd-p1-gallery-link:focus-visible { outline:2px solid #2581c3;outline-offset:2px;border-radius:4px; }

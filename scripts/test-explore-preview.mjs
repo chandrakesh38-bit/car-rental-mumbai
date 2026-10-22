@@ -9,7 +9,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true});
 const report=[];
 try {
  for(const [width,height] of [[436,506],[327,464],[390,844],[1366,768]]){
-  const context=await browser.newContext({viewport:{width,height}});
+  const context=await browser.newContext({viewport:{width,height},reducedMotion:width===327?'reduce':'no-preference'});
   await context.addInitScript(()=>sessionStorage.setItem('cwd-results-offer-seen-v1','1'));
   const page=await context.newPage();
   await page.goto('http://127.0.0.1:4331/');

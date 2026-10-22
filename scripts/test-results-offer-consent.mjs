@@ -27,7 +27,7 @@ try {for(const [width,height] of [[327,464],[390,844]]) {
  await page.screenshot({path:`${out}/${width}-results.png`});
  for(const [slug,label] of [['dzire','Best Value'],['ertiga','Family Choice'],['crysta','Premium Comfort']])await page.locator('.cwd-p1-card').filter({has:page.getByText(label,{exact:true})}).screenshot({path:`${out}/${width}-${slug}.png`,style:'nav,.cwd-p1-toolbar {visibility:hidden !important}'});
  await page.locator('#fleet-container').scrollIntoViewIfNeeded();
- const dialog=page.locator('#cwd-results-offer');await dialog.waitFor({state:'visible',timeout:20000});
+ const dialog=page.locator('#cwd-results-offer');await dialog.waitFor({state:'visible',timeout:50000});
  await page.screenshot({path:`${out}/${width}-popup.png`,animations:'disabled'});
  assert.match(await dialog.locator('.cwd-offer-expert').getAttribute('href'),/^https:\/\/wa.me\/919702988465\?/);
  assert.equal(await dialog.locator('.cwd-offer-expert').getAttribute('rel'),'noopener');

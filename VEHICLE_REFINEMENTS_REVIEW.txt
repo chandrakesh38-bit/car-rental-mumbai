@@ -1,0 +1,65 @@
+Vehicle presentation and account diagnosis — 23 October 2026
+
+LOCAL TESTING CHANGES
+Kia Carens public listing is now Maruti Suzuki XL6 in both customer presentation
+and server validation. Existing configured rates are retained; no database row
+was changed. Four owner-supplied JPEGs are copied from the named XL 6 folder.
+Thin animated highlight around photo frames; reduced-motion users see a static
+highlight. Crysta thumbnail enlarged to 1.6x. Model image caption removed and all
+gallery links say View Photos.
+Login to unlock your deal invitation appears after 40 seconds of visible page
+time, when the customer is viewing results. Includes close and WhatsApp expert
+options. OTP account verification does not subscribe users to marketing.
+Search explicitly starts browser animations on all three bars on each click.
+Reduced-motion mode uses smaller vertical movement. Four-second minimum remains.
+Fare breakup includes the driver allowance total and booking total; hides zero
+extra-distance/night lines. Local/airport base amount uses the gross fare so an
+applied coupon is not subtracted twice in the displayed breakdown.
+
+VALIDATION
+test-vehicle-refinements.mjs: PASS, 390px and 1366px. Popup observed at 40.52s and
+40.73s; XL6 photos/gallery; labels; eight-day sedan fare 28,800 + 4,000 = 32,800.
+test-explore-preview.mjs: PASS across four viewports, including reduced motion;
+each bar moves vertically; loader persists 4.02–4.04 seconds before results.
+test-login-coupon-browser.mjs (TEST_WIDTH=390): PASS; OTP login, copy dismissal,
+coupon application, 20% payment, confirmation and repeat-use rejection.
+test-login-coupon.mjs: PASS 13 local PostgreSQL groups.
+test-cwd-pricing-policy.mjs, JavaScript syntax, git diff --check: PASS.
+Local maps/SMS/payment providers are simulated. No real customer messages sent.
+
+INITIAL ONLINE ACCOUNT DIAGNOSIS (before approved recovery)
+Read-only connected Vercel inspection found that the preview environment lacks:
+CWD_CUSTOMER_ACCOUNTS_ENABLED, CWD_CHECKOUT_ENABLED,
+CWD_CUSTOMER_SUPABASE_URL, CWD_CUSTOMER_SUPABASE_SERVICE_ROLE_KEY,
+CWD_CUSTOMER_SUPABASE_ANON_KEY.
+Shared SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY have no testing branch override.
+Separate Supabase project discovered:
+Name: Car With Driver India - Testing
+Reference: musjsnzcuqrxvkvyshfi
+Status: INACTIVE
+Production project pwciaihqkfnlenxxiown remains untouched.
+
+Next online work: resume the existing testing project; inspect its schema and
+configuration; reconcile the checked-in account/checkout/coupon SQL with that
+schema; set matching testing-only configuration; verify MSG91 and test payment
+configuration; redeploy testing only after approval. Do not bypass production
+guards or reuse production data to make the error disappear.
+
+Preview: http://127.0.0.1:4331/
+Screenshots: .test-output/vehicle-refinements/
+These were the original local review results; see the recovery update below.
+
+APPROVED TESTING RECOVERY — 23 October 2026
+Testing database musjsnzcuqrxvkvyshfi is ACTIVE_HEALTHY. Account, session,
+checkout and coupon tables are present. Vercel customer settings and database
+overrides are scoped to preview + gitBranch=testing.
+Added missing pricing_rules using existing application delivery defaults and
+the 200 km/day testing policy. Anonymous clients have read-only access; RLS on.
+Confirmation tolerates only the explicitly missing optional driver-allocation
+table; permissions, unavailable services and other schema failures still fail.
+No production database or main branch changes.
+
+Fresh validation: 13 PostgreSQL coupon groups PASS; 390px login/copy/checkout/
+20% simulated payment/confirmation/repeat-use PASS; loader on four viewports
+PASS, 4.01–4.03 seconds; optional-allocation regression PASS; pricing policy and
+booking build PASS. External SMS/maps/payments simulated in local journey.

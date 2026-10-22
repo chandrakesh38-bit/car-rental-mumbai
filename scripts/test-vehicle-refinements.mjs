@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir,writeFile} from 'node:fs/promises';
+const {chromium}=createRequire(import.meta.url)('C:/Users/lenovo/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const out='.test-output/vehicle-refinements';await mkdir(out,{recursive:true});
+const browser=await chromium.launch({channel:'chrome',headless:true});const report=[];
+try {for(const width of [390,1366]) {
+ const context=await browser.newContext({viewport:{width,height:900}});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const started=Date.now();await page.goto('http://127.0.0.1:4330/');await page.waitForFunction(()=>withDriverRatesLoadedFromDb&&publicOutstationMinimumLoaded);
+ await page.locator('#wd-out-round-trip').click();
+ for(const [id,value,dd] of [['wd-out-pickup','Mumbai','wd-out-pickup-dropdown'],['wd-out-destination','Pune','wd-out-dest-dropdown']]){await page.locator('#'+id).fill(value);await page.locator('#'+dd+' button').first().click();}
+ const day=n=>new Date(Date.now()+n*86400000).toISOString().slice(0,10);
+ await page.locator('#wd-out-pdate').fill(day(4));await page.locator('#wd-out-rdate').fill(day(11));
+ for(const [id,v] of [['wd-out-phour','6'],['wd-out-pampm','AM'],['wd-out-rhour','10'],['wd-out-rampm','PM']])await page.locator('#'+id).selectOption(v);
+ await page.waitForFunction(()=>wdOutstationRouteQuote!==null);await page.locator('#explore-cabs-button').click();await page.waitForFunction(()=>!fareSearchInFlight);
+ const xl=page.locator('.cwd-p1-card').filter({has:page.getByRole('heading',{name:'Maruti Suzuki XL6',exact:true})});
+ assert.equal(await xl.count(),1);assert.equal(await page.getByRole('heading',{name:'Kia Carens',exact:true}).count(),0);
+ assert.ok(await xl.locator('img').evaluate(i=>i.complete&&i.naturalWidth>0));
+ assert.equal(await page.getByText('Model image',{exact:true}).count(),0);
+ assert.ok((await page.locator('.cwd-p1-gallery-link').allTextContents()).every(x=>x==='View Photos'));
+ await xl.screenshot({path:`${out}/${width}-xl6.png`});
+ const crysta=page.locator('.cwd-p1-card').filter({has:page.getByRole('heading',{name:'Toyota Innova Crysta',exact:true})});
+ await crysta.screenshot({path:`${out}/${width}-crysta.png`});
+ await page.locator('.cwd-p1-card').first().scrollIntoViewIfNeeded();
+ assert.equal(await page.locator('#cwd-results-offer[open]').count(),0,'No early popup');
+ await page.locator('#cwd-results-offer[open]').waitFor({timeout:50000});
+ const offerMs=Date.now()-started;assert.ok(offerMs>=40000,`Offer waits 40 seconds: ${offerMs}`);
+ await page.screenshot({path:`${out}/${width}-offer.png`});
+ await page.getByRole('button',{name:'Close offer',exact:true}).click();
+ await xl.getByRole('button',{name:'View Photos',exact:true}).click();
+ await page.getByRole('dialog').waitFor();await page.screenshot({path:`${out}/${width}-gallery.png`});await page.keyboard.press('Escape');
+ await page.locator('.cwd-p1-card').filter({has:page.getByRole('heading',{name:'Sedan (Dzire / Aura)',exact:true})}).click();
+ const lines=await page.locator('#cwd-checkout-fare-lines').innerText();assert.match(lines,/₹28,800/);assert.match(lines,/₹4,000/);assert.match(lines,/₹32,800/);assert.doesNotMatch(lines,/0 extra km|Night charges: ₹0/);
+ await page.locator('#cwd-checkout-fare-lines').scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/${width}-fare.png`});
+ assert.deepEqual(errors,[]);report.push({width,offerMs,xl6:true,photos:true,fare:lines,errors});await context.close();
+}}finally{await browser.close();await writeFile(out+'/report.json',JSON.stringify(report,null,2));}console.log(JSON.stringify(report));

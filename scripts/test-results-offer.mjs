@@ -60,7 +60,7 @@ try {
    await card.screenshot({path:`${output}/${width}-${slug}.png`,style:captureStyle});
   }
   const offer=page.locator('#cwd-results-offer');
-  await page.locator('#cwd-results-offer[open]').waitFor({timeout:20000});
+  await page.locator('#cwd-results-offer[open]').waitFor({timeout:50000});
   assert.ok(Date.now()-resultAt>=9000,'Offer waits for real engagement, without a mocked clock');
   assert.equal(await page.locator('#cwd-offer-title').innerText(),'Your next ride, 10% less');
   const expert=offer.getByRole('link',{name:'Speak to Expert'});
@@ -102,7 +102,7 @@ try {
  // A dismissed invitation stays dismissed across searches and reloads in this tab.
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
  const page=await context.newPage();await prepare(page);await search(page);
- await page.locator('#cwd-results-offer[open]').waitFor({timeout:20000});
+ await page.locator('#cwd-results-offer[open]').waitFor({timeout:50000});
  await page.getByRole('button',{name:'Close offer',exact:true}).click();
  await page.evaluate(()=>triggerFareSearch());await page.waitForTimeout(11000);
  assert.equal(await page.locator('#cwd-results-offer[open]').count(),0,'No repeat after dismissal');

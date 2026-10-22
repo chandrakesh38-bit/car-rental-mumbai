@@ -34,9 +34,9 @@ export default async function handler(request) {
       return json({success:true,quote:{...quote,payments:{0:0,20:paymentAmount(quote.totalPaise,20),100:quote.totalPaise}}});
     }
     if (body.action === 'create') {
-      const { name, phone, email, bookingData, otpProof, submissionKey, paymentChoice } = body;
+      const { name, phone, email = '', bookingData, otpProof, submissionKey, paymentChoice } = body;
       if (typeof phone !== 'string' || !/^(?:\+?91)?[6-9][0-9]{9}$/.test(phone)) fail('Enter a valid mobile number.');
-      if (typeof name !== 'string' || name.trim().length < 2 || name.length > 200 || !validEmail(email) ||
+      if (typeof name !== 'string' || name.trim().length < 2 || name.length > 200 || (email !== '' && !validEmail(email)) ||
           !/^[a-f0-9-]{36}$/.test(submissionKey || '') || !bookingData ||
           typeof bookingData.customerAddress !== 'string' || !bookingData.customerAddress.trim() || bookingData.customerAddress.length > 1000) fail('Check your contact and pickup details.');
       // Reuse only a current server-validated session matching this booking mobile.

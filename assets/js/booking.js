@@ -2566,7 +2566,7 @@ function onPickupDateChange() {
 
             message.textContent = notifications.customer_email_sent
                 ? 'Thank you! An acknowledgement has been sent to your email. Our team will connect with you shortly.'
-                : 'Thank you! Your details have been submitted. An email acknowledgement could not be sent. Please keep your reference number.';
+                : 'Thank you! Your details have been submitted. Please keep your reference number for future enquiries.';
 
             if (isBooking && !notifications.upload_url) {
                 modal.querySelector('h3').textContent = 'Booking Request Received!';
@@ -2583,7 +2583,7 @@ function onPickupDateChange() {
             modal.querySelector('[data-document-upload]')?.remove();
 
             if (notifications.upload_url) {
-                message.textContent = 'Your Self Drive booking request has been received. Please upload your documents for manual verification. Uploading documents does not confirm your booking. Our team will verify them and contact you.' + (notifications.customer_email_sent ? ' A secure upload link has been sent to your email.' : ' Please save the upload link below; the email acknowledgement could not be sent.');
+                message.textContent = 'Your Self Drive booking request has been received. Please upload your documents for manual verification. Uploading documents does not confirm your booking. Our team will verify them and contact you.' + (notifications.customer_email_sent ? ' A secure upload link has been sent to your email.' : ' Please save the secure upload link below.');
                 const link = document.createElement('a');
                 link.dataset.documentUpload = 'true';
                 link.href = notifications.upload_url;

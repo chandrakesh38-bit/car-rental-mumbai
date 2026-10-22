@@ -18,8 +18,9 @@ try {
  const access='header.'+Buffer.from(JSON.stringify({requestId:nonce,mobile:'91'+phone,exp:Math.floor(Date.now()/1000)+600})).toString('base64url')+'.signature';
  const otpProof=(await verifyAccessToken(access,phone,'booking',origin,nonce)).proof;
  const day=new Date(Date.now()+4*86400000).toISOString().slice(0,10);
- const body={action:'create',phone,name:'Guest Test',email:'guest@example.invalid',otpProof,submissionKey:randomUUID(),paymentChoice:0,bookingData:{tripType:'outstation',carName:'Sedan (Dzire / Aura)',pickupAt:day+'T03:30:00Z',returnAt:day+'T12:30:00Z',pickupLocation:'Mumbai',pickupPlaceId:'Mumbai',destination:'Pune',destinationPlaceId:'Pune',journeyType:'round-trip',stops:[],customerAddress:'Fixture pickup'}};
+ const body={action:'create',phone,name:'Guest Test',email:'',otpProof,submissionKey:randomUUID(),paymentChoice:0,bookingData:{tripType:'outstation',carName:'Sedan (Dzire / Aura)',pickupAt:day+'T03:30:00Z',returnAt:day+'T12:30:00Z',pickupLocation:'Mumbai',pickupPlaceId:'Mumbai',destination:'Pune',destinationPlaceId:'Pune',journeyType:'round-trip',stops:[],customerAddress:'Fixture pickup'}};
  const create=()=>checkout(new Request(origin+'/api/customer-checkout',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify(body)}));
+ const invalidEmail=await checkout(new Request(origin+'/api/customer-checkout',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({...body,email:'invalid'})}));assert.equal(invalidEmail.status,400);
  const response=await create(),result=await response.json();assert.equal(response.status,200,JSON.stringify(result));assert.match(result.booking_id,/^[1-9]\d{5}$/);
  const cookie=response.headers.get('set-cookie');assert.match(cookie,/HttpOnly; Secure; SameSite=Strict$/);assert.doesNotMatch(cookie,/Max-Age|Expires=/);
  const session=await account(new Request(origin+'/api/customer-account',{headers:{cookie:cookie.split(';')[0]}}));assert.equal(session.status,200);assert.equal((await session.json()).customer.mobile,'91'+phone);

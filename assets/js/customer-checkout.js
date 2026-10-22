@@ -6,7 +6,7 @@ async function api(body, suffix = '', token = '') {
   if (!r.ok || !data.success) throw new Error(data.message || 'Checkout is unavailable.');
   return data;
 }
-export const checkoutReady = () => api(null, '?config=1');
+export const checkoutReady = (paymentChoice=0) => api(null, '?config=1'+(paymentChoice?'&payment=1':''));
 export const getLoginCoupon = async () => (await api(null,'?coupon=1')).coupon;
 export const quoteLoginCoupon = async body => (await api({action:'quote',...body})).quote;
 export const cancelPendingBooking = id => api({action:'cancel-pending',booking_id:id},'',sessionStorage.getItem('cwd-booking:'+id)||'');

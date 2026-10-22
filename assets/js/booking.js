@@ -313,12 +313,14 @@ let mumbaiMetroLocations = [
 
         // 6 WITH DRIVER CARS
         let wdFleet = [
-            { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 17 }, outstationPerKm: 17, driverAllowance: 500, nightCharge: 400, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
-            { name: 'Maruti Ertiga', category: 'Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 19 }, outstationPerKm: 19, driverAllowance: 500, nightCharge: 400, airport: { t1: 2200, t2: 2400, nmia: 2800 } } },
-            { name: 'Maruti Suzuki XL6', category: 'Premium Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 4000, '10hr_100km': 4700, '12hr_120km': 5400, extraKm: 20 }, outstationPerKm: 20, driverAllowance: 500, nightCharge: 400, airport: { t1: 2400, t2: 2600, nmia: 3000 } } },
-            { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 25 }, outstationPerKm: 25, driverAllowance: 500, nightCharge: 400, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
+            { name: 'Sedan (Dzire / Aura)', category: 'Comfort Sedan', seats: '4+1', bags: '2 Bags', rates: { local: { '8hr_80km': 3000, '10hr_100km': 3500, '12hr_120km': 4000, extraKm: 18 }, outstationPerKm: 18, outstationExtraKm: 19, driverAllowance: 500, nightCharge: 400, airport: { t1: 1500, t2: 1600, nmia: 2000 } } },
+            { name: 'Maruti Ertiga', category: 'Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 3750, '10hr_100km': 4400, '12hr_120km': 5000, extraKm: 20 }, outstationPerKm: 20, outstationExtraKm: 21, driverAllowance: 500, nightCharge: 400, airport: { t1: 2200, t2: 2400, nmia: 2800 } } },
+            { name: 'Maruti Suzuki XL6', category: 'Premium Family MUV', seats: '6+1', bags: '3 Bags', rates: { local: { '8hr_80km': 4000, '10hr_100km': 4700, '12hr_120km': 5400, extraKm: 22 }, outstationPerKm: 22, outstationExtraKm: 24, driverAllowance: 500, nightCharge: 400, airport: { t1: 2400, t2: 2600, nmia: 3000 } } },
+            { name: 'Innova Crysta', category: 'Luxury MUV', seats: '6+1', bags: '4 Bags', rates: { local: { '8hr_80km': 5000, '10hr_100km': 6000, '12hr_120km': 7000, extraKm: 27 }, outstationPerKm: 27, outstationExtraKm: 28, driverAllowance: 500, nightCharge: 400, airport: { t1: 3000, t2: 3200, nmia: 3800 } } }
         ];
 
+
+        function outstationExtraRate(car) { return Number(car?.rates?.outstationExtraKm ?? (Number(car?.rates?.outstationPerKm || 0) + 1)); }
 
         function withDriverPublicName(row) {
             const rawName = String(row.full_name || '').trim();
@@ -343,7 +345,7 @@ let mumbaiMetroLocations = [
             const rate = Number(sedan.rates.outstationPerKm);
             const allowance = Number(sedan.rates.driverAllowance || 0);
             const minimumKm = Number(livePricingRules.minimumOutstationKmPerDay || 0);
-            label.textContent = `${sedan.name}: first ${minimumKm} km/day ₹${rate}/km, extra ₹${rate+1}/km + ₹${allowance}/day`;
+            label.textContent = `${sedan.name}: first ${minimumKm} km/day ₹${rate}/km, extra ₹${outstationExtraRate(sedan)}/km + ₹${allowance}/day`;
         }
 
         function updateQuickRouteLiveFares() {
@@ -360,10 +362,10 @@ let mumbaiMetroLocations = [
                 const baseKm=Math.min(billableKm,minKm);
                 const extraKm=Math.max(0,billableKm-baseKm);
                 // Compare the complete indicative journey, not just the daily minimum.
-                const cost = car => baseKm * Number(car.rates.outstationPerKm) + extraKm * (Number(car.rates.outstationPerKm) + 1) + Number(car.rates.driverAllowance || 0);
+                const cost = car => baseKm * Number(car.rates.outstationPerKm) + extraKm * outstationExtraRate(car) + Number(car.rates.driverAllowance || 0);
                 const lowest = [...validCars].sort((a,b)=>cost(a)-cost(b))[0];
                 const rate=Number(lowest.rates.outstationPerKm);
-                const estimatedFare = Math.round(baseKm*rate+extraKm*(rate+1)+Number(lowest.rates.driverAllowance||0));
+                const estimatedFare = Math.round(baseKm*rate+extraKm*outstationExtraRate(lowest)+Number(lowest.rates.driverAllowance||0));
                 fareLabel.textContent = `${lowest.name} · from ₹${estimatedFare.toLocaleString('en-IN')}`;
             });
         }
@@ -395,6 +397,7 @@ let mumbaiMetroLocations = [
                             extraKm: Number(row.local_extra_km_rate) || 0
                         },
                         outstationPerKm: Number(row.outstation_rate_per_km) || 0,
+                        outstationExtraKm: row.outstation_extra_km_rate == null ? Number(row.outstation_rate_per_km)+1 : Number(row.outstation_extra_km_rate),
                         driverAllowance: Number(row.driver_allowance_per_day) || 0,
                         nightCharge: row.customer_night_charge != null && row.customer_night_charge !== '' && Number.isFinite(Number(row.customer_night_charge)) && Number(row.customer_night_charge) >= 0 ? Number(row.customer_night_charge) : 500,
                         airport: {
@@ -1520,7 +1523,7 @@ function onPickupDateChange() {
                 const minKm=wdOutstationDays*livePricingRules.minimumOutstationKmPerDay;
                 const includedKm=Math.max(Math.ceil(wdOutstationKm||0),minKm);
                 const extraKm=Math.max(0,includedKm-minKm);
-                return (minKm*car.rates.outstationPerKm)+(extraKm*(car.rates.outstationPerKm+1))+(wdOutstationDays*Number(car.rates.driverAllowance||0))+nightCharge;
+                return (minKm*car.rates.outstationPerKm)+(extraKm*outstationExtraRate(car))+(wdOutstationDays*Number(car.rates.driverAllowance||0))+nightCharge;
             } else if (currentWDSubTab === 'airport') {
                 const termInput = document.getElementById('wd-airport-terminal');
                 const term = termInput ? termInput.value : 't2';
@@ -2820,7 +2823,7 @@ async function handleBookingSubmit(e) {
     try {
         if (document.getElementById('cwd-coupon-code')?.value.trim() && !activeLoginCoupon) throw new Error('Apply or remove the coupon before choosing a payment option.');
         const checkout = await import('/assets/js/customer-checkout.js');
-        await checkout.checkoutReady();
+        await checkout.checkoutReady(choice);
         await handleBookingSubmitDetails(e, choice, checkout);
     } catch (error) { errorBox.textContent = error.message || 'Unable to complete checkout. Please retry.'; }
     finally {
@@ -2929,7 +2932,7 @@ async function handleBookingSubmitDetails(e, paymentChoice, checkout, quoteOnly 
         const returnHour = parseInt(document.getElementById('wd-out-rhour').value);
         const returnAmPm = document.getElementById('wd-out-rampm').value;
 
-        const extraKmRate = Number(car?.rates?.outstationPerKm || 0) + 1;
+        const extraKmRate = outstationExtraRate(car);
         const driverAllowance = Number(car?.rates?.driverAllowance || 0);
 
         const startDateTime = createLocalDateTime(
@@ -4063,7 +4066,7 @@ function renderBookingReviewDetails() {
             const baseKm = wdOutstationDays * 300;
             const extraKm = Math.max(0, Math.ceil(wdOutstationKm) - baseKm);
             lines.push(`Included distance: ${baseKm.toLocaleString('en-IN')} km × ${format(car.rates.outstationPerKm)} = ${format(baseKm * car.rates.outstationPerKm)}`);
-            if (extraKm > 0) lines.push(`${extraKm} extra km × ${format(Number(car.rates.outstationPerKm)+1)} = ${format(extraKm * (Number(car.rates.outstationPerKm)+1))}`);
+            if (extraKm > 0) lines.push(`${extraKm} extra km × ${format(outstationExtraRate(car))} = ${format(extraKm * (outstationExtraRate(car)))}`);
             lines.push(`Driver allowance: ${wdOutstationDays} day(s) × ${format(car.rates.driverAllowance)} = ${format(wdOutstationDays * car.rates.driverAllowance)}`);
         } else lines.push('Package / transfer: ' + format(getCarCost(car) - currentDriverNightCharge(car)));
         if(currentDriverNightCharge(car)>0)lines.push('Night charges: ' + format(currentDriverNightCharge(car)));
@@ -4091,7 +4094,7 @@ function renderBookingReviewDetails() {
         const oneWay = currentOutstationJourneyType === 'one-way';
         title = oneWay ? 'Outstation — One Way' : 'Outstation — Round Trip';
         included.push('Driver allowance included in the quoted fare.');
-        const extra = car ? amount(Number(car.rates.outstationPerKm)+1) : null;
+        const extra = car ? amount(outstationExtraRate(car)) : null;
         excluded.push(extra ? 'Extra kilometres: '+extra+'/km, according to the selected car’s configured rate.' : 'Extra kilometres are charged at the selected car’s configured rate.');
         terms = [
             'Minimum chargeable distance is 300 km per day. The booked route and applicable package distance determine your fare.',

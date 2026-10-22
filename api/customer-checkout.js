@@ -12,7 +12,11 @@ export default async function handler(request) {
     const cfg = checkoutConfig();
     if (request.method === 'GET') {
       const url = new URL(request.url);
-      if (url.searchParams.has('config')) return json({ success: true, enabled: true, paymentMode: 'test' });
+      if (url.searchParams.has('config')) {
+        // Read-only provider preflight before creating a paid booking.
+        if (url.searchParams.get('payment') === '1') await razor('orders?count=1');
+        return json({ success: true, enabled: true, paymentMode: 'test' });
+      }
       if (url.searchParams.has('coupon')) {
         const {customer} = await couponIdentity(cfg,request);
         return json({success:true,coupon:await couponAvailability(cfg,customer)});

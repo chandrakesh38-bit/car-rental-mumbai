@@ -4023,8 +4023,8 @@ function setupLoginCoupon() {
     if (document.getElementById('cwd-coupon-code')) return;
     const host = document.createElement('section');
     host.className = 'cwd-coupon-checkout';
-    host.innerHTML = `<label for="cwd-coupon-code">Login coupon</label><p>10% off eligible fare, up to ₹500. Once per verified mobile. No stacking.</p>
-      <div><input id="cwd-coupon-code" placeholder="Enter coupon code" autocomplete="off" maxlength="30"><button type="button" id="cwd-coupon-apply">Apply</button><button type="button" id="cwd-coupon-remove" hidden>Remove</button></div>
+    host.innerHTML = `<label for="cwd-coupon-code">Available coupons</label><p>First-time offer: 10% OFF, up to ₹500. After that, use CWD5 for 5% OFF on every booking. One coupon per booking.</p>
+      <div><input id="cwd-coupon-code" placeholder="Enter coupon code" autocomplete="off" maxlength="30"><button type="button" id="cwd-coupon-apply">Apply available coupon</button><button type="button" id="cwd-coupon-remove" hidden>Remove</button></div>
       <p id="cwd-coupon-status" role="status" aria-live="polite"></p><small>Refundable deposits and toll/parking charges at actuals are excluded.</small>`;
     document.getElementById('cwd-checkout-fare-lines').parentElement.append(host);
     const input=host.querySelector('input'), apply=host.querySelector('#cwd-coupon-apply'), remove=host.querySelector('#cwd-coupon-remove'), status=host.querySelector('[role="status"]');
@@ -4036,6 +4036,7 @@ function setupLoginCoupon() {
         const form=host.closest('form');
         if (form.dataset.checkoutBusy==='true' || apply.disabled) return;
         clear(); const attempt=loginCouponRequest;
+        const requestedCode=input.value.trim() || 'CWD5';
         apply.disabled=true;form.dataset.checkoutBusy='true';
         form.querySelectorAll('[data-payment-choice]').forEach(b=>b.disabled=true);
         status.textContent='Checking your coupon and fare…';
@@ -4043,7 +4044,19 @@ function setupLoginCoupon() {
             const bookingData=await handleBookingSubmitDetails({target:form,preventDefault(){}},0,null,true);
             if(!bookingData)throw Error('Complete your trip details first.');
             const checkout=await import('/assets/js/customer-checkout.js');
-            const quote=await checkout.quoteLoginCoupon({couponCode:input.value,phone:document.getElementById('cust-phone').value,bookingData});
+            const customer=await checkout.getCheckoutCustomer();
+            if(!customer) {
+                const otp=await import('/assets/js/mobile-otp.js');
+                try {
+                    const proof=await otp.requestFormOtp(form,'cust-phone','customer');
+                    if(attempt!==loginCouponRequest)return;
+                    const response=await fetch('/api/customer-account',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',phone:document.getElementById('cust-phone').value,proof,source:'coupon'})});
+                    const result=await response.json();
+                    if(!response.ok||!result.success)throw Error(result.message||'Unable to sign in. Please retry.');
+                    window.dispatchEvent(new Event('cwd:account-changed'));
+                } finally {otp.clearFormOtp(form);}
+            }
+            const quote=await checkout.quoteLoginCoupon({couponCode:requestedCode,phone:document.getElementById('cust-phone').value,bookingData});
             if(attempt!==loginCouponRequest)return;
             activeLoginCoupon=quote;input.value=quote.code;remove.hidden=false;
             status.textContent=`Coupon applied. You save ₹${(quote.discountPaise/100).toLocaleString('en-IN')}. Redeemed only when your booking is confirmed.`;
@@ -4074,7 +4087,7 @@ function renderBookingReviewDetails() {
         const node = document.getElementById('cwd-checkout-fare-lines');
         if (activeLoginCoupon) {
             lines.push('Fare before coupon: ' + format(activeLoginCoupon.grossPaise/100));
-            lines.push(activeLoginCoupon.code + ' (10%, max ₹500): −' + format(activeLoginCoupon.discountPaise/100));
+            lines.push(activeLoginCoupon.code + (activeLoginCoupon.code==='CWD5' ? ' (5%): −' : ' (10%, max ₹500): −') + format(activeLoginCoupon.discountPaise/100));
             lines.push('Total after coupon: ' + format(total));
         }
         node.replaceChildren(...lines.map(text => {const li=document.createElement('li');li.textContent=text;return li;}));

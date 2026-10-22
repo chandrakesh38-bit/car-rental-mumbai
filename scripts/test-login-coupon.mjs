@@ -35,6 +35,37 @@ try {
  assert.equal(couponBreakdown(800000,400000).discountPaise,40000);assert.equal(couponBreakdown(800000,400000).totalPaise,760000);
  assert.throws(()=>couponBreakdown(100000,0,1));record('10%, ₹500 cap, paise rounding, deposit exclusion and no stacking');
 
+
+ assert.equal(couponBreakdown(2000000,0,0,'CWD5').discountPaise,100000,'5% has no 500 rupee cap');
+ assert.equal(couponBreakdown(800000,400000,0,'CWD5').discountPaise,20000);
+ const firstFive=await login();
+ const firstQuote=await quote(firstFive,{couponCode:'CWD5'});
+ assert.equal(firstQuote.body.quote.code,'CWDLOGIN10');assert.equal(firstQuote.body.quote.discountPaise,47000);
+ assert.equal((await create(firstFive,0,{couponCode:'CWD5',expectedTotalPaise:446500})).status,409);
+ const firstHash=(await db.setup.query('select session_hash from cwd_customer_sessions s join cwd_customers c on c.id=s.customer_id where c.mobile=$1',['91'+firstFive.phone])).rows[0].session_hash;
+ await assert.rejects(db.pool.query('select cwd_checkout_create_coupon($1,$2,now()+interval \'5 minutes\',$3,$4,0,470000,$5,$6,$7,$8)',[randomUUID(),'91'+firstFive.phone,randomUUID(),'a'.repeat(64),data(),{name:'Fixture'},firstHash,'CWD5']),/CWD_COUPON_FIRST/);
+ assert.equal((await create(firstFive)).status,200);
+ const repeatQuote=await quote(firstFive,{couponCode:'CWD5'});
+ assert.equal(repeatQuote.body.quote.code,'CWD5');assert.equal(repeatQuote.body.quote.discountPaise,23500);
+ assert.deepEqual(repeatQuote.body.quote.payments,{'0':0,'20':89300,'100':446500});
+ assert.equal((await quote(firstFive,{couponCode:'CWD5',otherDiscountPaise:47000})).status,400);
+ assert.equal((await quote(firstFive,{couponCode:['CWD5','CWDLOGIN10']})).status,400);
+ for(const choice of [0,20,100]) {
+  const b=await create(firstFive,choice,{couponCode:'CWD5',expectedTotalPaise:446500});assert.equal(b.status,200,JSON.stringify(b));
+  if(choice){const o=await order(b.body,firstFive);assert.equal(Number(o.amount_paise),choice===20?89300:446500);assert.equal((await capture(b.body,firstFive,o)).status,200);}
+  const saved=(await db.setup.query('select booking_data from cwd_checkout_bookings where booking_id=$1',[b.body.booking_id])).rows[0].booking_data;
+  assert.equal(saved.loginCoupon.code,'CWD5');assert.equal(saved.loginCoupon.discountPaise,23500);
+ }
+ assert.equal(await count('cwd_login_coupon_redemptions',firstFive.phone),4);
+ const duplicateFive=await payload(firstFive,0,{couponCode:'CWD5',expectedTotalPaise:446500});
+ const fiveResults=await Promise.all(Array.from({length:6},()=>call(checkout,duplicateFive,firstFive.cookie)));
+ assert.ok(fiveResults.every(r=>r.status===200));assert.equal(new Set(fiveResults.map(r=>r.body.booking_id)).size,1);
+ assert.equal(await count('cwd_login_coupon_redemptions',firstFive.phone),5);
+ assert.equal((await quote(firstFive,{couponCode:'CWDLOGIN10'})).status,409);
+ const cancelFive=await create(firstFive,20,{couponCode:'CWD5',expectedTotalPaise:446500});
+ assert.equal((await call(checkout,{action:'cancel-pending',booking_id:cancelFive.body.booking_id},firstFive.cookie,cancelFive.body.access_token)).status,200);
+ assert.equal((await quote(firstFive,{couponCode:'CWD5'})).status,200);
+ record('CWD5: first-time precedence in API and SQL, repeat uses, 0/20/full payment amounts, idempotency, cancellation, no stacking and no cap');
  const sessionUser=await login();
  const sessionBody=await payload(sessionUser,0,{otpProof:undefined});
  assert.equal((await call(checkout,sessionBody)).status,401);

@@ -29,12 +29,12 @@ async function handler(request) {
     if (raw.length > 24000) fail('Request too large.', 413);
     const body = JSON.parse(raw);
     if (body.action === 'quote') {
-      await eligibleCoupon(cfg,request,body);
+      const identity = await eligibleCoupon(cfg,request,body);
       const validated = await validateBookingData('withdriver',body.bookingData);
       if (Date.parse(validated.normalized.pickupAt) <= Date.now()) fail('Pickup must be in the future.');
       // With-driver pricing contains no refundable deposit or unpriced actuals.
       // Never derive eligibility from client-supplied charge/discount fields.
-      const quote = couponBreakdown(moneyPaise(validated.fare));
+      const quote = couponBreakdown(moneyPaise(validated.fare),0,0,identity.code);
       return json({success:true,quote:{...quote,payments:{0:0,20:paymentAmount(quote.totalPaise,20),100:quote.totalPaise}}});
     }
     if (body.action === 'create') {
@@ -65,7 +65,7 @@ async function handler(request) {
       const validated = await validateBookingData('withdriver', bookingData);
       if (new Date(validated.normalized.pickupAt).getTime() <= Date.now()) fail('Pickup must be in the future.');
       const total = moneyPaise(validated.fare);
-      const quote = identity ? couponBreakdown(total) : null;
+      const quote = identity ? couponBreakdown(total,0,0,identity.code) : null;
       if (identity && body.expectedTotalPaise !== quote.totalPaise) fail('Fare changed. Apply the coupon again to review the updated amount.',409);
       // Discard user-supplied coupon audit metadata; only the DB writes it.
       delete validated.normalized.loginCoupon;

@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {createLocalDatabase} from './testing/postgres/local-database.mjs';
+import {installFixtures,state} from './testing/checkout-fixtures.mjs';
+import checkout from '../api/customer-checkout.js';
+import account from '../api/customer-account.js';
+import enquiry from '../api/booking-enquiry.js';
+import {verifyAccessToken} from '../lib/mobile-otp.mjs';
+const db=await createLocalDatabase('cwd_coupon_references_'+Date.now());installFixtures();state.databaseFetch=db.fetchDatabase;
+try {
+ const keys=Array.from({length:60},()=>randomUUID());
+ const ids=await Promise.all(keys.map(async k=>(await db.pool.query('select cwd_reserve_booking_reference($1) id',[k])).rows[0].id));
+ assert.equal(new Set(ids).size,60);ids.forEach(id=>assert.match(id,/^[1-9]\d{5}$/));
+ const duplicates=await Promise.all(Array.from({length:12},()=>db.pool.query('select cwd_reserve_booking_reference($1) id',[keys[0]])));
+ assert.ok(duplicates.every(r=>r.rows[0].id===ids[0]));
+ assert.equal((await db.setup.query("select has_function_privilege('anon','cwd_reserve_booking_reference(text)','execute') ok")).rows[0].ok,false);
+ const origin='https://checkout.testing.invalid',phone='9876543210',nonce=randomUUID();
+ const access='header.'+Buffer.from(JSON.stringify({requestId:nonce,mobile:'91'+phone,exp:Math.floor(Date.now()/1000)+600})).toString('base64url')+'.signature';
+ const otpProof=(await verifyAccessToken(access,phone,'booking',origin,nonce)).proof;
+ const day=new Date(Date.now()+4*86400000).toISOString().slice(0,10);
+ const body={action:'create',phone,name:'Guest Test',email:'guest@example.invalid',otpProof,submissionKey:randomUUID(),paymentChoice:0,bookingData:{tripType:'outstation',carName:'Sedan (Dzire / Aura)',pickupAt:day+'T03:30:00Z',returnAt:day+'T12:30:00Z',pickupLocation:'Mumbai',pickupPlaceId:'Mumbai',destination:'Pune',destinationPlaceId:'Pune',journeyType:'round-trip',stops:[],customerAddress:'Fixture pickup'}};
+ const create=()=>checkout(new Request(origin+'/api/customer-checkout',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify(body)}));
+ const response=await create(),result=await response.json();assert.equal(response.status,200,JSON.stringify(result));assert.match(result.booking_id,/^[1-9]\d{5}$/);
+ const cookie=response.headers.get('set-cookie');assert.match(cookie,/HttpOnly; Secure; SameSite=Strict$/);assert.doesNotMatch(cookie,/Max-Age|Expires=/);
+ const session=await account(new Request(origin+'/api/customer-account',{headers:{cookie:cookie.split(';')[0]}}));assert.equal(session.status,200);assert.equal((await session.json()).customer.mobile,'91'+phone);
+ const repeat=await create();assert.equal((await repeat.json()).booking_id,result.booking_id);assert.equal(repeat.headers.get('set-cookie'),cookie);
+ const outsider=await checkout(new Request(origin+'/api/customer-checkout?booking_id='+result.booking_id));assert.equal(outsider.status,401,'Six-digit ID is not an authorization token');
+ const enquiryNonce=randomUUID();
+ const enquiryAccess='header.'+Buffer.from(JSON.stringify({requestId:enquiryNonce,mobile:'91'+phone,exp:Math.floor(Date.now()/1000)+600})).toString('base64url')+'.signature';
+ const enquiryProof=(await verifyAccessToken(enquiryAccess,phone,'booking',origin,enquiryNonce)).proof;
+ const legacy=await enquiry(new Request(origin+'/api/booking-enquiry',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({...body,action:undefined,bookingId:'CWD-WD-261023-1234',details:'OUTSTATION CWD-WD-261023-1234',serviceMode:'withdriver',submissionKey:'a'.repeat(64),otpProof:enquiryProof})}));
+ const legacyResult=await legacy.json();assert.equal(legacy.status,200,JSON.stringify(legacyResult));assert.match(legacyResult.booking_id,/^[1-9]\d{5}$/);
+ const saved=(await db.pool.query('select booking_details from inquiries where booking_id=$1',[legacyResult.booking_id])).rows[0];assert.ok(saved.booking_details.includes(legacyResult.booking_id));
+ console.log('PASS 60 concurrent unique six-digit IDs; 12 idempotent reservations; anonymous RPC denied; guest booking creates authenticated session atomically; retry and unauthorized access');
+} finally {await db.close();}

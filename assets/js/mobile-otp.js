@@ -190,7 +190,8 @@ function sdkCall(method, ...args) {
 }
 
 async function sendOtp(isRetry = false) {
-  if (state.busy) return;
+  if (state.busy || (isRetry && Date.now() < state.retryAt)) return;
+  if (isRetry && !state.reqId) isRetry = false;
   const session = state.session;
   const current = () => state.open && session === state.session;
   state.busy = true; render(); message(isRetry ? 'Resending OTP…' : 'Sending OTP…');
@@ -300,6 +301,10 @@ async function verifyAndFinish() {
 function closeModal(reject = false) {
   const modal = ensureModal();
   modal.classList.add('hidden');
+  if (modal.classList.contains('cwd-otp-embedded')) {
+    modal.classList.remove('cwd-otp-embedded');
+    document.body.append(modal);
+  }
   document.body.classList.remove('otp-modal-open');
   state.open = false;
   state.busy = false;
@@ -315,7 +320,7 @@ function closeModal(reject = false) {
 
 function cancelModal() { closeModal(true); }
 
-export async function requestFormOtp(form, phoneId, purpose) {
+export async function requestFormOtp(form, phoneId, purpose, options = {}) {
   const phone = form.querySelector('#' + phoneId);
   if (!phone) throw Error('Mobile number field is unavailable.');
   if (!watchedPhones.has(phone)) {
@@ -340,6 +345,11 @@ export async function requestFormOtp(form, phoneId, purpose) {
 
   ensureCss();
   const modal = ensureModal();
+  if (options.mount) {
+    options.mount.append(modal);
+    modal.classList.add('cwd-otp-embedded');
+  }
+  modal.querySelector('[data-cancel]').textContent = options.mount ? 'Edit mobile number' : 'Cancel';
   state.open = true;
   state.phone = phone;
   state.purpose = purpose;
@@ -367,6 +377,7 @@ export function clearFormOtp(form) {
   if (!form) return;
   const phone = form.querySelector('#cust-phone, #sd-cust-phone, #part-phone, #account-phone');
   if (phone && normalize(phone.value) === state.mobile) {
+    if (state.open) cancelModal();
     state.proof = ''; state.expiresAt = 0;
   }
 }

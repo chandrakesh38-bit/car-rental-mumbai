@@ -47,7 +47,7 @@ async function getBooking(id) {
 
 const getPayments = id => db(payPath(id) + '&select=*&order=created_at.desc');
 const sumPaid = rows => moneyRound((rows || []).filter(p => p.status === 'paid').reduce((s, p) => s + Number(p.amount || 0), 0));
-const validId = id => /^CWD-WD-\d{6}-\d{4}$/.test(id);
+const validId = id => /^(?:[1-9]\d{5}|CWD-WD-\d{6}-\d{4})$/.test(id);
 
 async function getPickupPolicy(id,current) {
   if (!current.eligible || !current.dates_supported || current.is_self_drive)

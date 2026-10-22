@@ -66,7 +66,7 @@ const loginBody={action:'login',phone:'9999999999',proof:loginProof};
 const concurrent=await Promise.all([handler(request(loginBody)),handler(request(loginBody))]);
 assert.deepEqual(concurrent.map(x=>x.status).sort(),[200,409]);count++;
 const response=concurrent.find(x=>x.status===200), cookie=response.headers.get('set-cookie').split(';')[0];
-assert.match(response.headers.get('set-cookie'),/HttpOnly; Secure; SameSite=Strict; Max-Age=604800/);count++;
+assert.match(response.headers.get('set-cookie'),/HttpOnly; Secure; SameSite=Strict/);assert.doesNotMatch(response.headers.get('set-cookie'),/Max-Age|Expires=/);count++;
 assert.match(cookie,new RegExp('^'+COOKIE+'=[a-f0-9]{64}$'));count++;
 const account=(await response.json()).customer;
 check(customers.size,1);check(sessions.size,1);

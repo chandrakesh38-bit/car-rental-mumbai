@@ -1,12 +1,12 @@
 import { requireMobileOtp } from '../lib/mobile-otp.mjs';
 import { validateBookingData } from '../lib/booking-validation.mjs';
 import { validEmail } from '../lib/notifications.mjs';
-import { guardMutation, hash, fail, customerDb } from '../lib/customer-account.mjs';
+import { guardMutation, hash, fail, customerDb, sessionCookie } from '../lib/customer-account.mjs';
 import { checkoutConfig, rpc, moneyPaise, paymentAmount, ownedBooking, bookingView,
   razorConfig, razor, verifyHmac, capturePayment } from '../lib/customer-checkout.mjs';
 import {couponCode, couponBreakdown, couponIdentity, couponAvailability, eligibleCoupon} from '../lib/login-coupon.mjs';
 export const config = { runtime: 'edge' };
-const json = (data, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'private, no-store' } });
+const json = (data, status = 200, headers = {}) => Response.json(data, { status, headers: { 'Cache-Control': 'private, no-store', ...headers } });
 export default async function handler(request) {
   try {
     const cfg = checkoutConfig();
@@ -47,11 +47,13 @@ export default async function handler(request) {
       paymentAmount(100, paymentChoice);
       // Deterministic capability supports retry after a lost HTTP response. Never placed in a URL.
       const token = await hash('checkout:' + (session ? session.sessionHash : otpProof) + ':' + submissionKey);
+      const loginToken = session ? null : await hash('booking-customer-session:'+otpProof+':'+submissionKey);
+      const loginHeaders = loginToken ? {'Set-Cookie':sessionCookie(loginToken)} : {};
       const existing = await customerDb(cfg, 'cwd_checkout_bookings?submission_key=eq.' + encodeURIComponent(submissionKey) + '&select=*&limit=1');
       if (existing?.[0]) {
         if (existing[0].access_hash !== await hash(token) || existing[0].mobile !== proof.mobile) fail('Submission key already used.', 409);
         if (existing[0].booking_data?.loginCoupon) await couponIdentity(cfg,request,phone);
-        return json({ success: true, booking_id: existing[0].booking_id, access_token: token });
+        return json({ success: true, booking_id: existing[0].booking_id, access_token: token },200,loginHeaders);
       }
       const code = couponCode(body.couponCode || bookingData.couponCode);
       // The transactional RPC checks availability after resolving duplicate submissions.
@@ -67,9 +69,10 @@ export default async function handler(request) {
       const booking = await rpc(cfg, identity ? 'cwd_checkout_create_coupon' : 'cwd_checkout_create', { p_nonce: proof.nonce, p_mobile: proof.mobile,
         p_proof_expires: new Date(proof.expiresAt).toISOString(), p_submission: submissionKey, p_access_hash: await hash(token),
         p_choice: paymentChoice, p_total: total, p_data: validated.normalized,
-        p_contact: { name: name.trim(), email: email.trim(), route: validated.route, car: validated.carName, trip: validated.tripType },
+        p_contact: { name: name.trim(), email: email.trim(), route: validated.route, car: validated.carName, trip: validated.tripType,
+          ...(loginToken ? {sessionHash:await hash(loginToken)} : {}) },
         ...(identity ? {p_session_hash:identity.sessionHash,p_code:code} : {}) });
-      return json({ success: true, booking_id: booking.booking_id, access_token: token });
+      return json({ success: true, booking_id: booking.booking_id, access_token: token },200,loginHeaders);
     }
     const booking = await ownedBooking(cfg, request, body.booking_id);
     if (body.action === 'cancel-pending') {

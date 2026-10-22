@@ -35,4 +35,5 @@
     
     <link rel="stylesheet" href="/assets/css/site.css">
     <link rel="stylesheet" href="/assets/css/navigation.css">
+    <script type="module" src="/assets/js/account-nav.js"></script>
 </head>

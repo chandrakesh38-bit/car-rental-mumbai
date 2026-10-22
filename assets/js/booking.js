@@ -2508,7 +2508,15 @@ function onPickupDateChange() {
         function renderFirstTripOffer() {
             chosenFareAmount = activeLoginCoupon ? activeLoginCoupon.totalPaise/100 : firstTripFareBeforeDiscount;
             const fare = document.getElementById('modal-fare');
-            if (fare) fare.textContent = '₹' + chosenFareAmount.toLocaleString('en-IN');
+            if (fare) {
+                fare.textContent = '₹' + chosenFareAmount.toLocaleString('en-IN');
+                document.getElementById('cwd-original-fare')?.remove();
+                if (activeLoginCoupon) {
+                    const original = document.createElement('del'); original.id='cwd-original-fare';
+                    original.textContent='₹'+(activeLoginCoupon.grossPaise/100).toLocaleString('en-IN');
+                    original.setAttribute('aria-label','Fare before coupon'); fare.before(original);
+                }
+            }
         }
 
         function closeModal() { document.getElementById('cwd-review-terms')?.close(); document.getElementById('booking-modal').classList.add('hidden'); syncModalState(document.getElementById('booking-modal'), false); }
@@ -2795,15 +2803,8 @@ function formatDuration(hours) {
 }
 
 function generateBookingId() {
-    const now = new Date();
-
-    const yy = String(now.getFullYear()).slice(-2);
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-
-    const random = Math.floor(1000 + Math.random() * 9000);
-
-    return `CWD-WD-${yy}${mm}${dd}-${random}`;
+    // A provisional form reference only; the server reserves the final ID.
+    return String(100000 + crypto.getRandomValues(new Uint32Array(1))[0] % 900000);
 }
 
 async function handleBookingSubmit(e) {
@@ -3723,7 +3724,7 @@ showSuccessModal(result.application_number, result);
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ bookingId, name, phone, email, details, serviceMode, otpProof, bookingData,
-                        ...(serviceMode === 'selfdrive' ? { submissionKey: form.dataset.submissionKey || (form.dataset.submissionKey = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('')) } : {}),
+                        submissionKey: form.dataset.submissionKey || (form.dataset.submissionKey = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('')),
                     }),
                 });
                 const result = await response.json();
@@ -4045,6 +4046,7 @@ function setupLoginCoupon() {
             activeLoginCoupon=quote;input.value=quote.code;remove.hidden=false;
             status.textContent=`Coupon applied. You save ₹${(quote.discountPaise/100).toLocaleString('en-IN')}. Redeemed only when your booking is confirmed.`;
             renderFirstTripOffer();renderBookingReviewDetails();
+            celebrateLoginCoupon();
         } catch(error) {if(attempt===loginCouponRequest)status.textContent=error.message;}
         finally {apply.disabled=false;form.dataset.checkoutBusy='false';form.querySelectorAll('[data-payment-choice]').forEach(b=>b.disabled=false);}
     });
@@ -4070,7 +4072,7 @@ function renderBookingReviewDetails() {
         const node = document.getElementById('cwd-checkout-fare-lines');
         if (activeLoginCoupon) {
             lines.push('Fare before coupon: ' + format(activeLoginCoupon.grossPaise/100));
-            lines.push('CWDLOGIN10 (10%, max ₹500): −' + format(activeLoginCoupon.discountPaise/100));
+            lines.push(activeLoginCoupon.code + ' (10%, max ₹500): −' + format(activeLoginCoupon.discountPaise/100));
             lines.push('Total after coupon: ' + format(total));
         }
         node.replaceChildren(...lines.map(text => {const li=document.createElement('li');li.textContent=text;return li;}));
@@ -4157,4 +4159,12 @@ async function prefillCheckoutCustomer() {
  const customer=await checkout.getCheckoutCustomer();
  if(customer && field.value===previous) {field.value=customer.mobile.slice(-10);field.dispatchEvent(new Event('input'));}
  } catch {}
+}
+
+function celebrateLoginCoupon() {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    document.querySelector('.cwd-glitter')?.remove();
+    const layer=document.createElement('div');layer.className='cwd-glitter';layer.setAttribute('aria-hidden','true');
+    for(let i=0;i<40;i++){const star=document.createElement('i');star.style.setProperty('--x',Math.random()*100+'%');star.style.setProperty('--delay',Math.random()*.25+'s');star.style.setProperty('--drift',(Math.random()-.5)*150+'px');layer.append(star);}
+    document.body.append(layer);setTimeout(()=>layer.remove(),2000);
 }

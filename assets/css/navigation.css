@@ -2,3 +2,5 @@
 #nav-drawer { overflow-y: auto; }
 #nav-drawer[aria-hidden="true"] { visibility: hidden; }
 #nav-drawer a[aria-current="page"] { background-color: #eef2ff; color: #1e1b4b; }
+.cwd-account-link{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 12px;border:1px solid #cba455;border-radius:9px;background:#fff6d8;color:#113354!important;font-size:12px;font-weight:800;white-space:nowrap}
+@media(max-width:400px){nav .cwd-account-link{padding:7px;font-size:11px}nav .space-x-3{gap:5px}nav .space-x-3>:not([hidden])~:not([hidden]){margin-left:0}nav .text-xl{font-size:15px}}

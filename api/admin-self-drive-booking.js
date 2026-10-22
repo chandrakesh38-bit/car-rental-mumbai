@@ -1,5 +1,6 @@
 import { createVerification } from '../lib/self-drive-documents.mjs';
 import { validEmail } from '../lib/notifications.mjs';
+import { reserveBookingReference } from '../lib/booking-reference.mjs';
 
 export const config = { runtime: 'edge' };
 
@@ -68,23 +69,8 @@ function randomHex(bytes = 32) {
   crypto.getRandomValues(data);
   return Array.from(data, b => b.toString(16).padStart(2, '0')).join('');
 }
-function bookingDatePart() {
-  const now = new Date();
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Asia/Kolkata', year: '2-digit', month: '2-digit', day: '2-digit'
-  }).formatToParts(now);
-  const p = Object.fromEntries(parts.filter(x => x.type !== 'literal').map(x => [x.type, x.value]));
-  return p.year + p.month + p.day;
-}
 async function generateBookingId() {
-  const prefix = 'CWD-WD-' + bookingDatePart() + '-';
-  for (let attempt = 0; attempt < 12; attempt++) {
-    const suffix = String(1000 + Math.floor(Math.random() * 9000));
-    const bookingId = prefix + suffix;
-    const existing = await db('inquiries?booking_id=eq.' + encodeURIComponent(bookingId) + '&select=booking_id&limit=1');
-    if (!existing?.length) return bookingId;
-  }
-  throw Object.assign(new Error('Could not generate a unique Booking ID. Please retry.'), { status: 503 });
+  return reserveBookingReference('admin:'+crypto.randomUUID());
 }
 
 export default async function handler(request) {

@@ -89,7 +89,7 @@ async function handle(request) {
         const payments = await db('booking_payments?status=eq.paid&select=booking_id,amount,payment_type,payment_method,paid_at,created_at&order=created_at.desc&limit=100');
         return json({success:true,bookings:bookings || [],payments:payments || []});
       }
-      if (!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId || '')) return json({success:false,message:'Invalid booking ID.'},400);
+      if (!/^(?:[1-9]\d{5}|CWD-WD-\d{6}-\d{4})$/.test(bookingId || '')) return json({success:false,message:'Invalid booking ID.'},400);
       let rows = await db('booking_payments?booking_id=eq.'+encodeURIComponent(bookingId)+'&select=*&order=created_at.desc');
       // Webhooks remain primary. If one is delayed/missed, reconcile pending
       // requests against Razorpay whenever the admin opens/refreshed a booking.
@@ -125,7 +125,7 @@ async function handle(request) {
     }
     const body = await request.json();
     const bookingId = String(body.booking_id || ''), action = String(body.action || '');
-    if (!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId)) return json({success:false,message:'Invalid booking ID.'},400);
+    if (!/^(?:[1-9]\d{5}|CWD-WD-\d{6}-\d{4})$/.test(bookingId)) return json({success:false,message:'Invalid booking ID.'},400);
     if (action === 'delete_booking') {
       const confirmation = String(body.confirmation || '');
       if (confirmation !== bookingId) return json({success:false,message:'Type the exact Booking ID to confirm deletion.'},400);

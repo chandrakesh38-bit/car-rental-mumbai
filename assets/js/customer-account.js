@@ -6,6 +6,7 @@ const status = document.getElementById('account-message');
 let busy = false;
 function message(text, error = false) { status.textContent = text; status.dataset.error = String(error); }
 function display(customer) {
+  window.dispatchEvent(new Event('cwd:account-changed'));
   login.hidden = Boolean(customer); panel.hidden = !customer;
   document.getElementById('verified-mobile').textContent = customer ? '+' + customer.mobile : '';
   document.getElementById('display-name').value = customer?.display_name || '';
@@ -40,7 +41,7 @@ login.addEventListener('submit', event => {
     try {
       proof = await requestFormOtp(login, 'account-phone', 'customer');
       const data = await api({ action: 'login', phone: phone.value, proof });
-      display(data.customer); message('You are signed in. Welcome to CWD.');
+      display(data.customer); message('You are signed in. View My Bookings to see trip details or request changes.');
       document.getElementById('display-name').focus();
     } finally { clearFormOtp(login); }
   });

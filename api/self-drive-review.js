@@ -19,7 +19,7 @@ export default async function handler(request) {
     const admin=await requireAdmin(request);
     const raw=await request.text();if(raw.length>16000)fail('Request too large.',413);
     const {bookingId,action,kind,decisions}=JSON.parse(raw);
-    if(!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId||''))fail('Enter a valid Booking ID.');
+    if(!/^(?:[1-9]\d{5}|CWD-WD-\d{6}-\d{4})$/.test(bookingId||''))fail('Enter a valid Booking ID.');
     const [row]=await db('self_drive_verifications',`?booking_id=eq.${bookingId}`);
     if(!row)fail('Booking not found.',404);
     const origin=new URL(request.url).origin;

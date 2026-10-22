@@ -3,6 +3,7 @@ import { validateBookingData } from '../lib/booking-validation.mjs';
 import { applyFirstTripOffer } from '../lib/first-trip-offer.mjs';
 import { createVerification } from '../lib/self-drive-documents.mjs';
 import { sendNotifications, validEmail } from '../lib/notifications.mjs';
+import { reserveBookingReference } from '../lib/booking-reference.mjs';
 
 export const config = { runtime: 'edge' };
 
@@ -89,16 +90,20 @@ export default async function handler(request) {
   try {
     const raw = await request.text();
     if (raw.length > 20000) return json({ success: false, message: 'Enquiry is too large.' }, 413);
-    const { bookingId, name, phone, email, details, serviceMode, submissionKey, otpProof, bookingData } = JSON.parse(raw);
-    if (!/^CWD-WD-\d{6}-\d{4}$/.test(bookingId || '') ||
+    let { bookingId, name, phone, email, details, serviceMode, submissionKey, otpProof, bookingData } = JSON.parse(raw);
+    if (!/^(?:[1-9]\d{5}|CWD-WD-\d{6}-\d{4})$/.test(bookingId || '') ||
         typeof name !== 'string' || !name.trim() || name.length > 200 ||
         typeof phone !== 'string' || !/^[+\d\s()-]{7,30}$/.test(phone) ||
         !validEmail(email) || typeof details !== 'string' || !details.trim() || details.length > 15000) {
       return json({ success: false, message: 'Please check your enquiry details and email address.' }, 400);
     }
     await requireMobileOtp(otpProof, phone, 'booking', new URL(request.url).origin);
+    if (!/^[a-f0-9]{64}$/.test(submissionKey || '')) return json({success:false,message:'Please reopen the booking form.'},400);
     const baseValidated = await validateBookingData(serviceMode, bookingData);
     const validated = await applyFirstTripOffer({ serviceMode, phone, bookingData, validated: baseValidated });
+    const provisionalId = bookingId;
+    bookingId = await reserveBookingReference('enquiry:'+phone.replace(/\D/g,'')+':'+submissionKey);
+    details = details.replaceAll(provisionalId, bookingId);
     const finalDetails = verifiedBookingDetails(details, validated);
     await consumeMobileOtp(otpProof, phone, 'booking', new URL(request.url).origin);
     const uploadUrl = serviceMode === 'selfdrive'

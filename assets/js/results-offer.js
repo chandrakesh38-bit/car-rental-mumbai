@@ -69,6 +69,7 @@ export function initResultsOffer() {
     ++attempt; busy = false; remember();
     otp?.clearFormOtp(form); phone.value = '';
     hide();
+    if(previousScroll)window.scrollTo({left:previousScroll.x,top:previousScroll.y,behavior:'instant'});
     if (previousFocus?.isConnected) previousFocus.focus({preventScroll:true});
   }
   function createDialog() {
@@ -89,9 +90,16 @@ export function initResultsOffer() {
           <p class="cwd-offer-intro">Sign in with mobile OTP to unlock your coupon.</p>
           <label for="account-phone">Mobile number</label>
           <div class="cwd-offer-phone"><span>+91</span><input id="account-phone" type="tel" inputmode="numeric" autocomplete="tel-national" pattern="[6-9][0-9]{9}" minlength="10" maxlength="10" placeholder="10-digit mobile number" required></div>
-          <button class="cwd-offer-primary" type="submit">Continue with mobile OTP <span aria-hidden="true">→</span></button>
+          <button class="cwd-offer-primary" type="submit">Get My 10% OFF <span aria-hidden="true">→</span></button>
           <p class="cwd-offer-consent">Your number is used for account verification. Signing in does not subscribe you to marketing. <a href="/privacy-policy" target="_blank" rel="noopener">Privacy policy</a></p>
         </form>
+        <div class="cwd-offer-otp"></div>
+        <section class="cwd-offer-success" hidden aria-live="polite">
+          <div class="cwd-unlocked-icon" aria-hidden="true">✓</div>
+          <h3>10% OFF unlocked!</h3><p data-success-message></p>
+          <div class="cwd-unlocked-code"><strong data-success-code></strong><button type="button" data-copy-code>Copy Code</button></div>
+          <button type="button" class="cwd-offer-primary" data-continue-booking>Continue to Book Your Cab →</button>
+        </section>
         <p class="cwd-offer-status" role="status" aria-live="polite"></p>
         <a class="cwd-offer-expert" href="https://wa.me/919702988465?text=Hi%20CWD%2C%20I%20would%20like%20help%20with%20my%20trip%20and%20the%20extra%2010%25%20offer." target="_blank" rel="noopener">Speak to Expert on WhatsApp <span aria-hidden="true">↗</span></a>
         <p class="cwd-offer-terms">10% off eligible booking fare, maximum ₹500. Once per verified mobile. Apply your code at checkout. No stacking; refundable deposits and unpriced toll/parking charges excluded.</p>
@@ -120,6 +128,15 @@ export function initResultsOffer() {
       if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) dismiss();
     });
     dialog.querySelector('.cwd-offer-expert').addEventListener('click', dismiss);
+    dialog.querySelector('[data-continue-booking]').addEventListener('click', dismiss);
+    dialog.querySelector('[data-copy-code]').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(dialog.querySelector('[data-success-code]').textContent);
+        dismiss(); copiedCoupon = true; couponBanner?.remove(); couponBanner = null;
+        const toast = document.createElement('div'); toast.className = 'cwd-coupon-toast'; toast.setAttribute('role','status');
+        toast.textContent = 'Coupon copied successfully.'; document.body.append(toast); setTimeout(()=>toast.remove(),3000);
+      } catch { message('Copy unavailable. Your coupon remains available at checkout.'); }
+    });
     form.addEventListener('submit', async event => {
       event.preventDefault();
       if (busy || !form.reportValidity()) return;
@@ -130,15 +147,22 @@ export function initResultsOffer() {
         await account(null, '?config=1');
         otp = await import('./mobile-otp.js');
         if (currentAttempt !== attempt) return;
-        // The existing OTP overlay must not sit underneath a native dialog.
-        hide();
-        const proof = await otp.requestFormOtp(form, 'account-phone', 'customer');
+        form.hidden = true;
+        const proof = await otp.requestFormOtp(form, 'account-phone', 'customer', {mount:dialog.querySelector('.cwd-offer-otp')});
         if (currentAttempt !== attempt) return;
         show(); message('Signing you in…');
         await account({action:'login', phone:phone.value, proof});
         if (currentAttempt !== attempt) return;
-        dismiss();
-        if(previousScroll)window.scrollTo({left:previousScroll.x,top:previousScroll.y,behavior:'instant'});
+        window.dispatchEvent(new Event('cwd:account-changed'));
+        const {getLoginCoupon} = await import('./customer-checkout.js');
+        const coupon = await getLoginCoupon();
+        const success = dialog.querySelector('.cwd-offer-success'); success.hidden = false;
+        dialog.querySelector('#cwd-offer-title').textContent = 'Welcome to CWD Privilege';
+        success.querySelector('h3').textContent = coupon.eligible ? '10% OFF unlocked!' : 'You’re signed in';
+        success.querySelector('[data-success-message]').textContent = coupon.eligible ? 'Save 10% on your eligible fare, up to ₹500. Apply your coupon at checkout.' : coupon.reason;
+        success.querySelector('.cwd-unlocked-code').hidden = !coupon.eligible;
+        success.querySelector('[data-success-code]').textContent = coupon.code || '';
+        message(''); dialog.querySelector('[data-continue-booking]').focus();
         await refreshCoupon();
       } catch (error) {
         // Let Escape finish closing the OTP overlay before reopening a native
@@ -146,6 +170,7 @@ export function initResultsOffer() {
         if (error.cancelled) await new Promise(resolve => setTimeout(resolve, 0));
         if (currentAttempt !== attempt) return;
         show();
+        form.hidden = false;
         message(error.cancelled ? 'Verification cancelled. You can retry or keep browsing.' : error.message, !error.cancelled);
       } finally {
         otp?.clearFormOtp(form);

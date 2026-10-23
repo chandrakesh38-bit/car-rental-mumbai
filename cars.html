@@ -505,42 +505,39 @@
     </header>
 
 <!-- QUICK PLAN POPULAR MAHARASHTRA ROUTES -->
-    <div id="quick-plan-routes" class="max-w-5xl mx-auto px-4 -mt-6 mb-10 relative z-20">
-        <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-lg border border-slate-200">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <i class="fa-solid fa-compass text-indigo-600"></i> Quick Plan: Popular Maharashtra Routes
-                </span>                
-            </div>
-            <div class="mb-3 flex flex-wrap items-center gap-2 text-[11px]">
-                <span class="rounded-full bg-emerald-50 px-2.5 py-1 font-extrabold text-emerald-800">New lower outstation fares</span>
-                <span class="font-semibold text-slate-600">No coupon required · Clear per-km fares</span>
-            </div>
-            <p class="mb-3 text-[11px] text-slate-500">Indicative 1-day round-trip fares for the vehicle shown, with minimum km applied; tolls, parking and state tax extra. Select your exact route for a live quote.</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
-                <button type="button" data-route-km="480" onclick="selectQuickRoute('Shirdi')" class="text-left p-3 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group">
-                    <div class="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-indigo-950">Mumbai ➔ Shirdi</div>
-                    <div class="text-[11px] text-slate-500 mt-0.5">~480 KM • Ertiga Best Fit</div>
-                    <div data-live-route-fare class="text-xs font-bold text-emerald-700 mt-1">Check live fare</div>
-                </button>
-                <button type="button" data-route-km="170" onclick="selectQuickRoute('Lonavala')" class="text-left p-3 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group">
-                    <div class="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-indigo-950">Mumbai ➔ Lonavala</div>
-                    <div class="text-[11px] text-slate-500 mt-0.5">~170 KM • Sedan / Ertiga</div>
-                    <div data-live-route-fare class="text-xs font-bold text-emerald-700 mt-1">Check live fare</div>
-                </button>
-                <button type="button" data-route-km="520" onclick="selectQuickRoute('Mahabaleshwar')" class="text-left p-3 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group">
-                    <div class="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-indigo-950">Mumbai ➔ Mahabaleshwar</div>
-                    <div class="text-[11px] text-slate-500 mt-0.5">~520 KM • Innova / Ertiga</div>
-                    <div data-live-route-fare class="text-xs font-bold text-emerald-700 mt-1">Check live fare</div>
-                </button>
-                <button type="button" data-route-km="360" onclick="selectQuickRoute('Trimbakeshwar')" class="text-left p-3 rounded-xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group">
-                    <div class="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-indigo-950">Mumbai ➔ Trimbakeshwar</div>
-                    <div class="text-[11px] text-slate-500 mt-0.5">~360 KM • Dzire / Ertiga</div>
-                    <div data-live-route-fare class="text-xs font-bold text-emerald-700 mt-1">Check live fare</div>
-                </button>
-            </div>
-        </div>
-    </div>
+    <section id="quick-plan-routes" class="cwd-destinations" aria-label="Plan your ride">
+ <div data-road-plans="outstation">
+ <div class="cwd-destinations-heading"><span class="cwd-destinations-eyebrow">YOUR NEXT GETAWAY</span><h2 id="cwd-destinations-title">Your next road trip</h2><p>Temple towns, green hills and memorable journeys. Start from Mumbai, travel your way.</p></div>
+ <div class="cwd-destinations-grid"><button type="button" class="cwd-destination-card" data-origin="Mumbai" data-destination="Shirdi" data-route-km="480" onclick="selectQuickRoute('Shirdi')">
+ <span class="cwd-destination-image"><img src="/assets/images/destinations/shirdi-400.webp" srcset="/assets/images/destinations/shirdi-400.webp 400w, /assets/images/destinations/shirdi-800.webp 800w" sizes="(max-width:359px) 100vw, (max-width:899px) 50vw, 260px" width="800" height="533" loading="lazy" decoding="async" alt="AI illustration inspired by Sai Baba Temple exterior, Shirdi"><span class="cwd-destination-origin">FROM MUMBAI</span><strong>Shirdi</strong></span>
+ <span class="cwd-destination-content"><span data-live-route-fare>Check live fare</span><span class="cwd-destination-action">Search Car <span aria-hidden="true">↗</span></span></span>
+</button>
+<button type="button" class="cwd-destination-card" data-origin="Mumbai" data-destination="Lonavala" data-route-km="170" onclick="selectQuickRoute('Lonavala')">
+ <span class="cwd-destination-image"><img src="/assets/images/destinations/lonavala-400.webp" srcset="/assets/images/destinations/lonavala-400.webp 400w, /assets/images/destinations/lonavala-800.webp 800w" sizes="(max-width:359px) 100vw, (max-width:899px) 50vw, 260px" width="800" height="533" loading="lazy" decoding="async" alt="AI illustration inspired by green hills at Tiger’s Point, Lonavala"><span class="cwd-destination-origin">FROM MUMBAI</span><strong>Lonavala</strong></span>
+ <span class="cwd-destination-content"><span data-live-route-fare>Check live fare</span><span class="cwd-destination-action">Search Car <span aria-hidden="true">↗</span></span></span>
+</button>
+<button type="button" class="cwd-destination-card" data-origin="Mumbai" data-destination="Mahabaleshwar" data-route-km="520" onclick="selectQuickRoute('Mahabaleshwar')">
+ <span class="cwd-destination-image"><img src="/assets/images/destinations/mahabaleshwar-400.webp" srcset="/assets/images/destinations/mahabaleshwar-400.webp 400w, /assets/images/destinations/mahabaleshwar-800.webp 800w" sizes="(max-width:359px) 100vw, (max-width:899px) 50vw, 260px" width="800" height="533" loading="lazy" decoding="async" alt="AI illustration inspired by valley views at Arthur’s Seat, Mahabaleshwar"><span class="cwd-destination-origin">FROM MUMBAI</span><strong>Mahabaleshwar</strong></span>
+ <span class="cwd-destination-content"><span data-live-route-fare>Check live fare</span><span class="cwd-destination-action">Search Car <span aria-hidden="true">↗</span></span></span>
+</button>
+<button type="button" class="cwd-destination-card" data-origin="Mumbai" data-destination="Trimbakeshwar" data-route-km="360" onclick="selectQuickRoute('Trimbakeshwar')">
+ <span class="cwd-destination-image"><img src="/assets/images/destinations/trimbakeshwar-400.webp" srcset="/assets/images/destinations/trimbakeshwar-400.webp 400w, /assets/images/destinations/trimbakeshwar-800.webp 800w" sizes="(max-width:359px) 100vw, (max-width:899px) 50vw, 260px" width="800" height="533" loading="lazy" decoding="async" alt="AI illustration inspired by Trimbakeshwar Temple exterior, Trimbakeshwar"><span class="cwd-destination-origin">FROM MUMBAI</span><strong>Trimbakeshwar</strong></span>
+ <span class="cwd-destination-content"><span data-live-route-fare>Check live fare</span><span class="cwd-destination-action">Search Car <span aria-hidden="true">↗</span></span></span>
+</button><button type="button" hidden class="cwd-destination-card road-extra-route" data-origin="Mumbai" data-destination="Bhimashankar" onclick="selectQuickRoute('Bhimashankar')"><span class="cwd-destination-image"><img src="/assets/images/road/bhimashankar.jpg" width="800" height="480" loading="lazy" alt="Landmark photograph of Bhimashankar"><span class="cwd-destination-origin">FROM MUMBAI</span><strong>Bhimashankar</strong></span><span class="cwd-destination-content"><span>Choose dates for live fare</span><span class="cwd-destination-action">Search Car ↗</span></span></button><button type="button" hidden class="cwd-destination-card road-extra-route" data-origin="Mumbai" data-destination="Ellora Caves" onclick="selectQuickRoute('Ellora Caves')"><span class="cwd-destination-image"><img src="/assets/images/road/ellora.jpg" width="800" height="480" loading="lazy" alt="Landmark photograph of Ellora Caves"><span class="cwd-destination-origin">FROM MUMBAI</span><strong>Ellora Caves</strong></span><span class="cwd-destination-content"><span>Choose dates for live fare</span><span class="cwd-destination-action">Search Car ↗</span></span></button><button type="button" hidden class="cwd-destination-card road-extra-route" data-origin="Mumbai" data-destination="Pune" onclick="selectQuickRoute('Pune')"><span class="cwd-destination-image"><img src="/assets/images/road/pune.jpg" width="800" height="480" loading="lazy" alt="Landmark photograph of Pune"><span class="cwd-destination-origin">FROM MUMBAI</span><strong>Pune</strong></span><span class="cwd-destination-content"><span>Choose dates for live fare</span><span class="cwd-destination-action">Search Car ↗</span></span></button><button type="button" hidden class="cwd-destination-card road-extra-route" data-origin="Mumbai" data-destination="Nashik" onclick="selectQuickRoute('Nashik')"><span class="cwd-destination-image"><img src="/assets/images/road/nashik.jpg" width="800" height="480" loading="lazy" alt="Landmark photograph of Nashik"><span class="cwd-destination-origin">FROM MUMBAI</span><strong>Nashik</strong></span><span class="cwd-destination-content"><span>Choose dates for live fare</span><span class="cwd-destination-action">Search Car ↗</span></span></button><button type="button" hidden class="cwd-destination-card road-extra-route" data-origin="Mumbai" data-destination="Alibaug" onclick="selectQuickRoute('Alibaug')"><span class="cwd-destination-image"><img src="/assets/images/road/alibaug.jpg" width="800" height="480" loading="lazy" alt="Landmark photograph of Alibaug"><span class="cwd-destination-origin">FROM MUMBAI</span><strong>Alibaug</strong></span><span class="cwd-destination-content"><span>Choose dates for live fare</span><span class="cwd-destination-action">Search Car ↗</span></span></button><button type="button" hidden class="cwd-destination-card road-extra-route" data-origin="Mumbai" data-destination="Goa" onclick="selectQuickRoute('Goa')"><span class="cwd-destination-image"><img src="/assets/images/road/goa.jpg" width="960" height="640" loading="lazy" decoding="async" alt="Goa"><strong>Goa</strong></span><span class="cwd-destination-content"><span >Choose dates for live fare</span><span class="cwd-destination-action">Search Car ↗</span></span></button></div><button type="button" class="road-more-routes" aria-expanded="false">View more destinations</button>
+ <p class="cwd-destinations-note">Starting estimates use the available CWD rate card, daily minimum kilometres and driver allowance for a daytime trip. Tolls, parking, state tax and applicable night charges are extra. Choose dates and exact addresses for a live quote. Original four destination cards use AI illustrations; additional cards show landmark photographs.</p>
+</div>
+ <div data-road-plans="local" hidden>
+  <div class="cwd-destinations-heading"><span class="cwd-destinations-eyebrow">YOUR CITY, YOUR DAY</span><h2>Mumbai, at your own pace</h2><p>Temple visits, iconic landmarks and a day by the sea. Explore with your own car and driver.</p></div>
+  <div class="cwd-destinations-grid road-local-grid"><button type="button"  class="cwd-destination-card" data-local-plan="8hr_80km"><span class="cwd-destination-image"><img src="/assets/images/road/siddhivinayak.jpg" width="960" height="640" loading="lazy" decoding="async" alt="Siddhivinayak Temple"><strong>Siddhivinayak Temple</strong></span><span class="cwd-destination-content"><span data-local-plan-fare>Check live package fare</span><span class="cwd-destination-action">Plan city ride ↗</span></span></button><button type="button"  class="cwd-destination-card" data-local-plan="8hr_80km"><span class="cwd-destination-image"><img src="/assets/images/road/marine-drive.jpg" width="960" height="640" loading="lazy" decoding="async" alt="Mumbai Darshan"><strong>Mumbai Darshan</strong></span><span class="cwd-destination-content"><span data-local-plan-fare>Check live package fare</span><span class="cwd-destination-action">Plan city ride ↗</span></span></button><button type="button"  class="cwd-destination-card" data-local-plan="8hr_80km"><span class="cwd-destination-image"><img src="/assets/images/road/gateway.jpg" width="960" height="640" loading="lazy" decoding="async" alt="Gateway of India"><strong>Gateway of India</strong></span><span class="cwd-destination-content"><span data-local-plan-fare>Check live package fare</span><span class="cwd-destination-action">Plan city ride ↗</span></span></button></div>
+  <p class="cwd-destinations-note">8 hours / 80 km local car package. These are sightseeing ideas, not fixed tour itineraries. Starting fare is for the lowest-priced available car. Extra kilometres/hours, tolls, parking, entry tickets and applicable night charges are additional. Choose your pickup, date and car for the final fare.</p>
+ </div>
+ <div data-road-plans="airport" hidden>
+  <div class="cwd-destinations-heading"><span class="cwd-destinations-eyebrow">FROM RUNWAY TO ROAD</span><h2>A smooth start. A comfortable arrival.</h2><p>Airport pickups and drops across Mumbai, Thane and Navi Mumbai.</p></div>
+  <div class="road-airport-feature"><img src="/assets/images/road/airport.webp" width="1536" height="1024" loading="lazy" alt="AI illustration of a premium car outside a modern airport terminal"><div><span class="cwd-destinations-eyebrow">YOUR AIRPORT TRANSFER</span><h3>Land. Settle in. Let us drive.</h3><ul><li><strong>20 km included</strong><span>Beyond 20 km, your selected car’s per-km rate applies.</span></li><li><strong>45 minutes free waiting</strong><span>Then your selected car’s hourly rate applies.</span></li><li><strong>Clear final settlement</strong><span>Airport entry, parking and other airport charges are payable at actuals.</span></li></ul><a href="#booking-widget" class="road-plan-cta">Plan airport transfer ↗</a></div></div>
+ </div>
+ <p class="road-photo-credit"><a href="/image-credits.html">Image credits</a> · Service banners are AI-generated travel artwork.</p>
+</section>
+
 
     <!-- WITH DRIVER FLEET SECTION -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-4" id="fleet" hidden aria-hidden="true">

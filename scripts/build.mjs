@@ -6,6 +6,11 @@ import renderMumbaiPage from '../src/pages/mumbai-car-rental.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pages = JSON.parse(await readFile(path.join(root, 'src/pages.json'), 'utf8'));
 const component = name => readFile(path.join(root, `src/components/${name}.template`), 'utf8');
+function servicePlans(html, page) {
+  const mode = page.mode === 'selfdrive' ? 'selfdrive' : page.tab || 'outstation';
+  return html.replace(/(<div data-road-plans="([^"]+)")(?: hidden)?>/g, (_,start,kind) => start + (kind === mode ? '>' : ' hidden>'))
+    .replace('<section id="quick-plan-routes"', '<section' + (mode === 'selfdrive' ? ' hidden' : '') + ' id="quick-plan-routes"');
+}
 async function bookingWidget(page) {
   let html = await component('booking-widget');
   if (page.tab === 'airport') {
@@ -146,8 +151,8 @@ for (const page of pages) {
     render(await component('navigation'), {navigationLinks}),
     '<main>',
     ...(custom ? [custom.main] : [
-      render(hero, {...data, roadBanner: page.mode ? "<section class=\"road-banner\" aria-label=\"Travel with CWD\"><div><small>RIDE \u00b7 EXPLORE \u00b7 MORE</small><h2>India Looks Better<br><em>by Road</em></h2><p>Comfortable rides. Memorable journeys.</p></div></section>" : '', bookingWidget: page.mode ? await bookingWidget(page) : ''}),
-      ...(await Promise.all(page.sections.map(component)))
+      render(hero, {...data, roadBanner: page.mode ? `<section data-scene="${page.mode === 'selfdrive' ? 'selfdrive' : page.tab || 'outstation'}" class="road-banner" aria-label="Travel with CWD"><div><small>RIDE · EXPLORE · MORE</small><h2>India Looks Better<br><em>by Road</em></h2><p>Comfortable rides. Memorable journeys.</p></div></section>` : '', bookingWidget: page.mode ? await bookingWidget(page) : ''}),
+      ...(await Promise.all(page.sections.map(async name => name === 'quick-routes' ? servicePlans(await component(name),page) : component(name))))
     ]),
     '</main>',
     await component('route-links'),

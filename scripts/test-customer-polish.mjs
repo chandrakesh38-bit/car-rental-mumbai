@@ -14,7 +14,7 @@ try{
  await installOfflineUiAssets(page);
  await page.goto('http://127.0.0.1:4194/',{waitUntil:'networkidle'});
  assert.equal(await page.locator('.road-extra-route:visible').count(),0);
- await page.locator('.road-more-routes').click();assert.equal(await page.locator('.road-extra-route:visible').count(),5);
+ await page.locator('.road-more-routes').click();assert.equal(await page.locator('.road-extra-route:visible').count(),6);
  await page.locator('.road-more-routes').click();assert.equal(await page.locator('.road-extra-route:visible').count(),0);
  for(const mode of ['outstation','local','airport']){await page.locator('#subtab-'+mode).click();await page.waitForFunction(mode=>document.querySelector('.road-banner').dataset.scene===mode,mode);}
  await page.locator('#btn-mode-selfdrive').click();await page.waitForFunction(()=>document.querySelector('.road-banner').dataset.scene==='selfdrive');
@@ -43,5 +43,5 @@ try{
  paid=0;await page.reload();await page.locator('.payment-document-link').waitFor();assert.match(await page.locator('.payment-document-link').innerText(),/Pay for this booking/);
  paid=5000;await page.reload();await page.locator('.trip-charge-list').waitFor();assert.equal(await page.locator('.payment-document-link').count(),0);
  assert.deepEqual(errors,[]);
- console.log('PASS: four service banners, View more five routes, dark-surface text, mobile offer, local charges/cancellation, unpaid/partial/paid PDF payment link states. No real SMS/payment.');
+ console.log('PASS: four service banners, View more six routes, dark-surface text, mobile offer, local charges/cancellation, unpaid/partial/paid PDF payment link states. No real SMS/payment.');
 }finally{await browser.close();server.close();}

@@ -2,12 +2,21 @@
 (() => {
   'use strict';
   if (!document.body.classList.contains('cwd-road')) return;
-  const updateBanner=()=>{
-   const mode=document.getElementById('btn-mode-selfdrive')?.classList.contains('tab-active')?'selfdrive':['airport','local'].find(t=>document.getElementById('subtab-'+t)?.classList.contains('subtab-active'))||'outstation';
+  const updateBanner=(initial=false)=>{
+   const mode=initial===true?(document.body.dataset.bookingMode==='selfdrive'?'selfdrive':document.body.dataset.bookingTab||'outstation'):document.getElementById('btn-mode-selfdrive')?.classList.contains('tab-active')?'selfdrive':['airport','local'].find(t=>document.getElementById('subtab-'+t)?.classList.contains('subtab-active'))||'outstation';
    const banner=document.querySelector('.road-banner');if(banner)banner.dataset.scene=mode;
+   document.querySelectorAll('[data-road-plans]').forEach(section=>section.hidden=section.dataset.roadPlans!==mode);
+   const plans=document.getElementById('quick-plan-routes');if(plans)plans.hidden=mode==='selfdrive';
   };
   document.getElementById('booking-widget')?.addEventListener('click',()=>requestAnimationFrame(updateBanner));
-  window.addEventListener('cwd:service-change',updateBanner);updateBanner();
+  window.addEventListener('cwd:service-change',updateBanner);updateBanner(true);
+  document.querySelectorAll('[data-local-plan]').forEach(button=>button.addEventListener('click',()=>{
+   // Selecting a sightseeing idea keeps the local package flow and existing trip details.
+   if(typeof window.selectLocalPackage!=='function')return;
+   window.selectLocalPackage(button.dataset.localPlan);
+   document.getElementById('booking-widget')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
+   document.getElementById('wd-local-pickup')?.focus({preventScroll:true});
+  }));
   document.querySelector('.road-more-routes')?.addEventListener('click',event=>{
    const button=event.currentTarget,open=button.getAttribute('aria-expanded')!=='true';
    document.querySelectorAll('.road-extra-route').forEach(card=>card.hidden=!open);

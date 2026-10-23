@@ -83,15 +83,26 @@ body.cwd-road{--road-ink:#0b3038;--road-coral:#cb3c27;--road-paper:#fffaf3;--roa
 .cwd-road .cwd-p1-labelled-photo img{padding-top:12px}
 .cwd-road .road-more-routes{border:1px solid #b94730;border-radius:24px;color:#a83220;background:#fffaf3;padding:12px 24px;display:block;margin:20px auto;font-weight:700}
 .cwd-road .cwd-destination-card[hidden]{display:none!important}
+.cwd-road [data-road-plans][hidden],.cwd-road #quick-plan-routes[hidden]{display:none!important}
+.cwd-road .road-local-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cwd-road [data-local-plan-fare]{font-size:14px;font-weight:700;line-height:1.6}
+.cwd-road .road-banner[data-scene="local"],.cwd-road .road-banner[data-scene="airport"],.cwd-road .road-banner[data-scene="selfdrive"]{background-position:right center}
+.cwd-road .road-photo-credit{font-size:11px;color:#536762;text-align:center;margin:18px 0 0}.cwd-road .road-photo-credit a{text-decoration:underline}
+.cwd-road .road-airport-feature{display:grid;grid-template-columns:1.1fr 1fr;gap:32px;align-items:center;background:#f5eee2;border-radius:24px;overflow:hidden}
+.cwd-road .road-airport-feature>img{width:100%;height:100%;min-height:340px;object-fit:cover;object-position:70% center}
+.cwd-road .road-airport-feature>div{padding:28px 28px 28px 0}.cwd-road .road-airport-feature h3{font-size:28px;line-height:1.2;margin:10px 0 22px}
+.cwd-road .road-airport-feature ul{padding:0;list-style:none;margin:0 0 24px;display:grid;gap:18px}.cwd-road .road-airport-feature li strong,.cwd-road .road-airport-feature li span{display:block}.cwd-road .road-airport-feature li span{font-size:14px;color:#536762;margin-top:4px}
+.cwd-road .road-plan-cta{display:inline-block;background:#cb3c27;color:white;border-radius:28px;padding:12px 20px;font-weight:700;text-decoration:none}
+@media(max-width:700px){.cwd-road .road-local-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cwd-road .road-airport-feature{grid-template-columns:1fr;gap:0}.cwd-road .road-airport-feature>img{height:220px;min-height:0}.cwd-road .road-airport-feature>div{padding:24px}.cwd-road .road-airport-feature h3{font-size:25px}}
 .cwd-road .trip-charge-list{padding-left:20px;line-height:1.75;font-size:14px}
 .cwd-road .payment-document-link{display:block;padding:14px;border:2px solid #a93625;border-radius:12px;color:#8d2d20;background:#fff5ed;text-align:center;font-weight:700;text-decoration:underline;margin-top:16px}
 @media print{.payment-document-link{display:block!important;color:#000!important;background:#fff!important;border:1px solid #333!important} .confirmation-grid{display:block}.confirmation-panel{break-inside:avoid}.confirmation-footer{break-inside:avoid}}
 
-.cwd-road .road-banner[data-scene="local"]{background-image:linear-gradient(90deg,#0b3038 8%,#0b3038c9 43%,#0b303800 77%),url("/assets/images/road/local.svg")}
+.cwd-road .road-banner[data-scene="local"]{background-image:linear-gradient(90deg,#0b3038 8%,#0b3038c9 43%,#0b303800 77%),url("/assets/images/road/local.webp")}
 
-.cwd-road .road-banner[data-scene="airport"]{background-image:linear-gradient(90deg,#0b3038 8%,#0b3038c9 43%,#0b303800 77%),url("/assets/images/road/airport.svg")}
+.cwd-road .road-banner[data-scene="airport"]{background-image:linear-gradient(90deg,#0b3038 8%,#0b3038c9 43%,#0b303800 77%),url("/assets/images/road/airport.webp")}
 
-.cwd-road .road-banner[data-scene="selfdrive"]{background-image:linear-gradient(90deg,#0b3038 8%,#0b3038c9 43%,#0b303800 77%),url("/assets/images/road/selfdrive.svg")}
+.cwd-road .road-banner[data-scene="selfdrive"]{background-image:linear-gradient(90deg,#0b3038 8%,#0b3038c9 43%,#0b303800 77%),url("/assets/images/road/selfdrive.webp")}
 @media print{
  .cwd-road{font-size:10px!important}.cwd-road .confirmation-grid{display:grid!important;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr)!important;gap:10px}
  .cwd-road .confirmation-panel{padding:10px!important;margin-bottom:10px!important;border:1px solid #ddd!important;border-radius:8px!important}

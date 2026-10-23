@@ -1,0 +1,9 @@
+{
+  "tool": "Built-in image_gen",
+  "date": "2026-10-23",
+  "prompts": {
+    "local": "Create a premium photorealistic travel website banner, landscape 1536x1024. Mumbai local sightseeing: majestic Gateway of India beside the Taj Mahal Palace, beautiful warm morning light, Arabian Sea foreground, authentic architectural details, inviting clean cinematic travel photograph. Main landmarks toward right half, dark teal shaded negative space on left for website text overlay. Rich natural colours, elegant cream and coral highlights. No text, no logos, no watermark, no collage.",
+    "airport": "Create a premium photorealistic airport transfer website banner, landscape 1536x1024. A pristine white premium MPV at a modern Mumbai airport terminal curbside, dramatic beautiful sculptural terminal canopy, warm sunrise lighting, glass facade, subtle airplane in distant sky. Aspirational reliable airport chauffeur travel photograph, car on right half, dark teal shaded negative space on left for website text overlay. Realistic wheels and proportions. No text, logos or watermark.",
+    "selfdrive": "Create a highly attractive premium photorealistic self-drive car rental website banner, landscape 1536x1024. Beautiful pearl white modern SUV three-quarter front view parked on a scenic Konkan coastal road overlooking turquoise Arabian Sea, lush palms and green hills, golden hour sunshine, sense of freedom and road-trip adventure. Car on right half, dark teal shaded negative space on left for website text overlay. Luxury automotive advertising photography, realistic proportions and wheels. No text, no logos, no watermark."
+  }
+}

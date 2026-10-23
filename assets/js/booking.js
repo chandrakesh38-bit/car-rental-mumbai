@@ -349,6 +349,7 @@ let mumbaiMetroLocations = [
         }
 
         function updateQuickRouteLiveFares() {
+            updateLocalPlanFares();
             if (!withDriverRatesLoadedFromDb || !publicOutstationMinimumLoaded) return;
             const validCars = wdFleet.filter(car => Number(car?.rates?.outstationPerKm) > 0);
             if (!validCars.length) return;
@@ -367,6 +368,17 @@ let mumbaiMetroLocations = [
                 const rate=Number(lowest.rates.outstationPerKm);
                 const estimatedFare = Math.round(baseKm*rate+extraKm*outstationExtraRate(lowest)+Number(lowest.rates.driverAllowance||0));
                 fareLabel.textContent = `${lowest.name} · from ₹${estimatedFare.toLocaleString('en-IN')}`;
+            });
+        }
+
+        function updateLocalPlanFares() {
+            if (!withDriverRatesLoadedFromDb) return;
+            const cars = wdFleet.filter(car => Number(car?.rates?.local?.['8hr_80km']) > 0)
+                .sort((a,b) => a.rates.local['8hr_80km'] - b.rates.local['8hr_80km']);
+            if (!cars.length) return;
+            const lowest = cars[0];
+            document.querySelectorAll('[data-local-plan-fare]').forEach(label => {
+                label.textContent = `${lowest.name} · from ₹${Number(lowest.rates.local['8hr_80km']).toLocaleString('en-IN')} · 8 hr / 80 km`;
             });
         }
 

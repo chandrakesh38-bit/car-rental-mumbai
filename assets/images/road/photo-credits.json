@@ -1,0 +1,74 @@
+[
+  {
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "license": "CC0",
+    "source": "https://commons.wikimedia.org/wiki/File:Shaniwar_Wada_Main_Gate_01.jpg",
+    "title": "Shaniwar Wada Main Gate 01.jpg",
+    "author": "Pravega",
+    "id": "pune"
+  },
+  {
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Bhimashankar_temple_front.jpg",
+    "title": "Bhimashankar temple front.jpg",
+    "author": "Mechatron00",
+    "id": "bhimashankar"
+  },
+  {
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Temple_at_Ellora_Caves.jpg",
+    "title": "Temple at Ellora Caves.jpg",
+    "author": "CamboyM",
+    "id": "ellora"
+  },
+  {
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "license": "CC0",
+    "source": "https://commons.wikimedia.org/wiki/File:Ramkund,nashik_(2).jpg",
+    "title": "Ramkund,nashik (2).jpg",
+    "author": "K.Venkataramana",
+    "id": "nashik"
+  },
+  {
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "license": "CC BY-SA 4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:The_Gateway_of_India_,_Mumbai.jpg",
+    "title": "The Gateway of India , Mumbai.jpg",
+    "author": "Bikashrd",
+    "id": "gateway"
+  },
+  {
+    "licenseUrl": null,
+    "license": "Public domain",
+    "source": "https://commons.wikimedia.org/wiki/File:Shree_Siddhivinayak_Mandir.jpg",
+    "title": "Shree Siddhivinayak Mandir.jpg",
+    "author": "User:L1CENSET0K1LL",
+    "id": "siddhivinayak"
+  },
+  {
+    "source": "https://commons.wikimedia.org/wiki/File:Beach_sunset_at_Alibag,_INDIA.jpg",
+    "id": "alibaug",
+    "license": "CC BY-SA 4.0",
+    "author": "VIJAY KAPOOR",
+    "title": "Beach sunset at Alibag, INDIA.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  {
+    "source": "https://commons.wikimedia.org/wiki/File:Palolem_Beach,_South_Goa.jpg",
+    "id": "goa",
+    "license": "CC BY-SA 4.0",
+    "author": "iMahesh",
+    "title": "Palolem Beach, South Goa.jpg",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  {
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "id": "marine-drive",
+    "author": "Livelikerw",
+    "source": "https://commons.wikimedia.org/wiki/File:Mumbai_Skyline_from_Marine_Drive.JPG",
+    "title": "Mumbai Skyline from Marine Drive.JPG",
+    "license": "CC BY-SA 3.0"
+  }
+]

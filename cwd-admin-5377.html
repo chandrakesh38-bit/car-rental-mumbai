@@ -2424,8 +2424,8 @@
                 if(!ok)return;
             }
 
-            const {error}=await supabaseClient.from('inquiries').update({booking_status:value,updated_at:new Date().toISOString()}).eq('booking_id',currentAdminBooking.booking_id);
-            if(error)return alert(error.message);
+            try { await adminApi('/api/admin-payment',{method:'POST',body:JSON.stringify({action:'set_booking_status',booking_id:currentAdminBooking.booking_id,status:value})}); }
+            catch(error) { return alert(error.message); }
             currentAdminBooking.booking_status=value;
             await loadInquiries();
             await renderBookingDetail();

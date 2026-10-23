@@ -125,6 +125,17 @@ async function handle(request) {
     }
     const body = await request.json();
     const bookingId = String(body.booking_id || ''), action = String(body.action || '');
+    if (action === 'set_booking_status') {
+      if (!/^(?:[1-9]\d{5}|CWD-WD-\d{6}-\d{4})$/.test(bookingId) ||
+          !['received','availability_confirmed','confirmed','ongoing','completed','cancelled'].includes(body.status))
+        return json({success:false,message:'Invalid booking status.'},400);
+      const rows = await db('inquiries?booking_id=eq.'+encodeURIComponent(bookingId), {
+        method:'PATCH',headers:{Prefer:'return=representation'},
+        body:JSON.stringify({booking_status:body.status,updated_at:new Date().toISOString()})
+      });
+      if (!rows?.length) return json({success:false,message:'Booking not found.'},404);
+      return json({success:true});
+    }
     if (!/^(?:[1-9]\d{5}|CWD-WD-\d{6}-\d{4})$/.test(bookingId)) return json({success:false,message:'Invalid booking ID.'},400);
     if (action === 'delete_booking') {
       const confirmation = String(body.confirmation || '');

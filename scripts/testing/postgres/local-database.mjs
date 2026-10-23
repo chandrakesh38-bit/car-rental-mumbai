@@ -11,7 +11,8 @@ const cluster=path.join(root,'.test-output/coupon-postgres');
 const connection={host:'127.0.0.1',port:55439,user:'postgres',connectionTimeoutMillis:3000};
 const ident=s=>{if(!/^[a-z_][a-z0-9_]*$/.test(s))throw Error('Invalid test identifier');return '"'+s+'"';};
 export async function createLocalDatabase(name) {
- if(execFileSync('git',['branch','--show-current'],{cwd:root,encoding:'utf8'}).trim()!=='testing'||!/^cwd_coupon_[a-z0-9_]+$/.test(name))throw Error('Local testing database required');
+ const branch=execFileSync('git',['branch','--show-current'],{cwd:root,encoding:'utf8'}).trim();
+ if(!['testing','codex/main-release-20261023'].includes(branch)||!/^cwd_coupon_[a-z0-9_]+$/.test(name))throw Error('Local testing database required');
  await mkdir(path.dirname(cluster),{recursive:true});
  try{await access(path.join(cluster,'PG_VERSION'));}catch{execFileSync(initdb,['-D',cluster,'-U','postgres','-A','trust','--encoding=UTF8','--locale=C'],{windowsHide:true,stdio:'pipe'});}
  let admin=new Pool({...connection,database:'postgres'});
@@ -29,7 +30,10 @@ export async function createLocalDatabase(name) {
  create table public.cwd_vendor_allocations(booking_id text,status text,driver_name text,driver_mobile text,vehicle_number text,revoked_at timestamptz);
  grant usage on schema public to service_role;
  grant select,insert,update on public.inquiries,public.booking_payments,public.cwd_vendor_allocations to service_role;`);
- for(const file of ['supabase/migrations/20260921_otp_proof_uses.sql','supabase/migrations/20261019043000_customer_accounts.sql','supabase/drafts/customer_checkout.sql','supabase/drafts/login_coupon.sql','supabase/drafts/six_digit_booking_references.sql','supabase/drafts/payment_order_recovery.sql','supabase/drafts/customer_login_alerts.sql','supabase/drafts/repeat_booking_coupon.sql'])await setup.query(await readFile(path.join(root,file),'utf8'));
+ const migrations=process.env.CWD_TEST_PRODUCTION_MIGRATION==='true'
+  ? ['supabase/migrations/20260921_otp_proof_uses.sql','supabase/drafts/production_customer_rollout.sql']
+  : ['supabase/migrations/20260921_otp_proof_uses.sql','supabase/migrations/20261019043000_customer_accounts.sql','supabase/drafts/customer_checkout.sql','supabase/drafts/login_coupon.sql','supabase/drafts/six_digit_booking_references.sql','supabase/drafts/payment_order_recovery.sql','supabase/drafts/customer_login_alerts.sql','supabase/drafts/repeat_booking_coupon.sql'];
+ for(const file of migrations)await setup.query(await readFile(path.join(root,file),'utf8'));
  await setup.query('grant select,insert on public.otp_proof_uses to service_role');
  const pool=new Pool({...connection,database:name,max:12,options:'-c role=service_role'});
  const fetchDatabase=async(u,method,body)=>{

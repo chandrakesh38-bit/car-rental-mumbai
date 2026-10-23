@@ -1,0 +1,29 @@
+Production release — 23 October 2026
+
+Approved scope: testing customer UI/rates, customer accounts/checkout production setup, existing bookings/payments preserved, main vendor costing retained.
+Base production commit: c617a52684b7584d7860de44f690d7397d0cb66b.
+Testing customer fixes included through f7568cb.
+
+Applied production migrations (Supabase pwciaihqkfnlenxxiown):
+20261023061626 production_customer_rollout — source supabase/drafts/production_customer_rollout.sql
+20261023061907 production_customer_rates — source supabase/drafts/production_customer_rates.sql
+All new customer tables use RLS with no anon/authenticated grants; server service role only.
+The coupon trigger applies only to new six-digit references; legacy status updates retain compatibility.
+Admin status writes now use the existing authenticated/allowlisted server API.
+
+Record integrity immediately after schema migration:
+inquiries: 14, MD5 2e5c3c9ad143c6364697c23724f24a17
+booking_payments: 29, MD5 fd4073798f366e255acd3a6660d65922
+cwd_vendor_rate_cards: 7, MD5 5b036e8355cbaf63ae35b16d5bac4783
+All three fingerprints identical before/after migration.
+Existing bookings are retained in inquiries; My Bookings lists new checkout records.
+
+Production-only flags: CWD_CUSTOMER_ACCOUNTS_ENABLED, CWD_CUSTOMER_PRODUCTION_ENABLED, CWD_CHECKOUT_ENABLED.
+Production uses existing SUPABASE_URL/service-role/anon credentials and requires main branch plus known production hostname.
+Production payments require rzp_live_ keys; previews still require rzp_test_. No secrets copied between environments.
+
+Validation: exact migration on local PostgreSQL (coupon concurrency, replay, payment/cancellation races, OTP session creation, unique references, permissions); account and checkout API fixtures; environment isolation; admin authorization; mobile service/PDF/coupon/badge browser checks; build and diff checks.
+No real charge or customer OTP was generated during automated verification.
+Notification worker scheduling is pending separate user approval.
+
+Rollback: revert/redeploy the prior main code if necessary; leave additive customer tables and transaction history intact. Do not drop tables or copy testing database over production. Customer catalogue prices require an explicit reviewed rollback if desired.

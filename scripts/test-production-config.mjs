@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {customerConfig} from '../lib/customer-account.mjs';
+import {checkoutConfig,razorConfig} from '../lib/customer-checkout.mjs';
+import bookingConfig from '../api/booking-config.js';
+const prod={VERCEL_ENV:'production',VERCEL_GIT_COMMIT_REF:'main',CWD_CUSTOMER_ACCOUNTS_ENABLED:'true',CWD_CUSTOMER_PRODUCTION_ENABLED:'true',CWD_CHECKOUT_ENABLED:'true',SUPABASE_URL:'https://pwciaihqkfnlenxxiown.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'production-fixture-secret',SUPABASE_ANON_KEY:'sb_publishable_fixture',CWD_CUSTOMER_SUPABASE_URL:'https://testing.invalid',CWD_CUSTOMER_SUPABASE_SERVICE_ROLE_KEY:'testing-fixture-secret',RAZORPAY_KEY_ID:'rzp_live_fixture',RAZORPAY_KEY_SECRET:'fixture-secret'};
+assert.deepEqual(customerConfig(prod),{url:prod.SUPABASE_URL,key:prod.SUPABASE_SERVICE_ROLE_KEY});
+for(const patch of [{CWD_CUSTOMER_PRODUCTION_ENABLED:'false'},{VERCEL_GIT_COMMIT_REF:'testing'},{SUPABASE_URL:'https://testing.invalid'},{SUPABASE_SERVICE_ROLE_KEY:''},{CWD_CUSTOMER_ACCOUNTS_ENABLED:'false'}])assert.throws(()=>customerConfig({...prod,...patch}));
+assert.throws(()=>customerConfig({...prod,VERCEL_ENV:'preview',VERCEL_GIT_COMMIT_REF:'testing',CWD_CUSTOMER_SUPABASE_URL:prod.SUPABASE_URL}));
+Object.assign(process.env,prod);
+assert.equal(checkoutConfig().key,prod.SUPABASE_SERVICE_ROLE_KEY);
+assert.equal(razorConfig().id,'rzp_live_fixture');
+process.env.RAZORPAY_KEY_ID='rzp_test_fixture';assert.throws(()=>razorConfig());
+process.env.RAZORPAY_KEY_ID='rzp_live_fixture';
+const response=await bookingConfig(new Request('https://site.invalid/api/booking-config'));
+assert.equal(response.status,200);assert.deepEqual(await response.json(),{success:true,url:prod.SUPABASE_URL,key:prod.SUPABASE_ANON_KEY,checkoutEnabled:true});
+process.env.VERCEL_ENV='preview';process.env.VERCEL_GIT_COMMIT_REF='testing';assert.throws(()=>razorConfig());
+console.log('PASS production opt-in, branch/database isolation, live/test key separation and public-key-only catalogue. No network calls.');

@@ -138,6 +138,7 @@ export function initResultsOffer() {
         toast.textContent = 'Coupon copied successfully.'; document.body.append(toast); setTimeout(()=>toast.remove(),3000);
       } catch { message('Copy unavailable. Your coupon remains available at checkout.'); }
     });
+    import('./mobile-otp.js').then(module=>module.bindAutomaticOtp(phone,()=>form.requestSubmit(),()=>!busy&&dialog.open&&!form.hidden));
     form.addEventListener('submit', async event => {
       event.preventDefault();
       if (busy || !form.reportValidity()) return;

@@ -75,9 +75,9 @@
       const heading = make('p','cwd-p1-mode-heading', type === 'local' ? 'HOURLY RENTALS WITHIN THE CITY' : 'RELIABLE AIRPORT PICKUPS & DROPS');
       fields?.prepend(heading);
     });
-    $('search-btn-text') && ($('search-btn-text').textContent = 'EXPLORE CABS');
+    $('search-btn-text') && ($('search-btn-text').textContent = 'Search Car');
     widget.querySelectorAll('button').forEach(btn => {
-      if (btn.textContent.trim() === 'Explore Cabs') btn.textContent = 'EXPLORE CABS';
+      if (btn.textContent.trim() === 'Search Car') btn.textContent = 'Search Car';
     });
     const stops = $('wd-out-stops');
     if (stops) {

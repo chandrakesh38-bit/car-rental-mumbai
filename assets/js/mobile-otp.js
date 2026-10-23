@@ -65,6 +65,31 @@ function render() {
   if (state.open && seconds > 0) requestAnimationFrame(() => setTimeout(render, 250));
 }
 
+let smsController, smsTimer;
+function stopSmsAutofill(){clearTimeout(smsTimer);smsController?.abort();smsController=null;}
+function startSmsAutofill(){
+ stopSmsAutofill();
+ if(!('OTPCredential' in window)||!navigator.credentials?.get||!window.isSecureContext)return;
+ const session=state.session;const controller=new AbortController();smsController=controller;
+ smsTimer=setTimeout(()=>controller.abort(),120000);
+ navigator.credentials.get({otp:{transport:['sms']},signal:controller.signal}).then(credential=>{
+  if(!state.open||state.session!==session||controller.signal.aborted)return;
+  const inputs=[...ensureModal().querySelectorAll('[data-digits] input')];
+  const code=String(credential?.code||'');
+  if(!/^\d{4,8}$/.test(code)||code.length!==inputs.length)return;
+  inputs.forEach((input,i)=>input.value=code[i]);
+  message('OTP filled from SMS. Tap Verify to continue.');
+ }).catch(()=>{}).finally(()=>{if(smsController===controller)stopSmsAutofill();});
+}
+// Sends once after a complete number is entered; edits/cancellation never loop SMS.
+export function bindAutomaticOtp(phone, trigger, eligible=()=>true){
+ let timer,last='';
+ phone.addEventListener('input',event=>{
+  clearTimeout(timer);if(!event.isTrusted)return;
+  const mobile=normalize(phone.value);if(!mobile||mobile===last)return;
+  timer=setTimeout(()=>{if(normalize(phone.value)!==mobile||!eligible()||state.open)return;last=mobile;trigger();},600);
+ });
+}
 function buildDigits(length) {
   const digits = ensureModal().querySelector('[data-digits]');
   digits.replaceChildren();
@@ -72,7 +97,7 @@ function buildDigits(length) {
     const input = document.createElement('input');
     input.type = 'text';
     input.inputMode = 'numeric';
-    input.maxLength = 1;
+    input.maxLength = i === 0 ? length : 1;
     input.autocomplete = i === 0 ? 'one-time-code' : 'off';
     input.setAttribute('aria-label', `OTP digit ${i + 1} of ${length}`);
     input.oninput = () => {
@@ -153,10 +178,16 @@ async function loadSdk() {
 }
 
 async function waitForCaptcha() {
+  const disabledByProvider=()=>{
+    const data=typeof window.getWidgetData==='function'?window.getWidgetData():null;
+    return data?.captchaValidations===false || data?.captchaValidations===0;
+  };
+  if(disabledByProvider())return;
   // MSG91 exposes isCaptchaVerified for custom UI, but on a fresh SDK mount
   // it can appear slightly after sendOtp/verifyOtp. Do not race ahead and
   // consume the OTP request before CAPTCHA is actually ready.
   for (let i = 0; i < 40 && state.open; i++) {
+    if(disabledByProvider())return;
     if (typeof window.isCaptchaVerified === 'function') break;
     await pause(250);
   }
@@ -171,6 +202,7 @@ async function waitForCaptcha() {
 
   message('Complete the captcha to receive OTP.');
   while (state.open) {
+    if(disabledByProvider())return;
     await pause(250);
     if (typeof window.isCaptchaVerified === 'function' && window.isCaptchaVerified()) {
       await pause(500);
@@ -210,6 +242,8 @@ async function sendOtp(isRetry = false) {
       message('Sending OTP…');
     }
 
+    buildDigits(Number(state.settings.otpLength)||6);
+    startSmsAutofill();
     let result;
     if (isRetry) {
       const channel = state.settings.processes?.find(p => p.processVia?.value === '5' && ['11','12','4'].includes(p.channel?.value))?.channel?.value || '11';
@@ -234,7 +268,7 @@ async function sendOtp(isRetry = false) {
     if (!current()) return;
     const length = Number(state.settings.otpLength);
     if (!Number.isInteger(length) || length < 4 || length > 8) throw Error('OTP service configuration is unavailable.');
-    buildDigits(length);
+    if (ensureModal().querySelectorAll('[data-digits] input').length!==length) buildDigits(length);
     state.retryAt = Date.now() + Math.max(30, Number(state.settings.retryTime) || 30) * 1000;
     message('OTP sent. Please enter it below.');
     if (state.purpose === 'booking') {
@@ -243,6 +277,7 @@ async function sendOtp(isRetry = false) {
     ensureModal().querySelector('[data-digits] input')?.focus();
   } catch (error) {
     if (!current()) return;
+    stopSmsAutofill();
     otpDiagnostic('send_error', error?.message || 'Unable to send OTP.', Boolean(state.reqId));
     message(error.message || 'Unable to send OTP. Please retry.', true);
   } finally {
@@ -255,6 +290,7 @@ async function verifyAndFinish() {
   const digits = [...ensureModal().querySelectorAll('[data-digits] input')];
   const otp = digits.map(input => input.value).join('');
   if (!digits.length || otp.length !== digits.length || !/^\d+$/.test(otp)) return message('Enter every OTP digit.', true);
+  stopSmsAutofill();
   state.busy = true; render(); message('Verifying OTP…');
   const session = state.session;
   const current = () => state.open && session === state.session;
@@ -299,6 +335,7 @@ async function verifyAndFinish() {
 }
 
 function closeModal(reject = false) {
+  stopSmsAutofill();
   const modal = ensureModal();
   modal.classList.add('hidden');
   if (modal.classList.contains('cwd-otp-embedded')) {

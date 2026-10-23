@@ -1,4 +1,4 @@
-<!-- EXPLORE CABS TRANSITION -->
+<!-- Search Car TRANSITION -->
 <div id="explore-cabs-overlay" class="explore-cabs-overlay" role="status" aria-live="polite" aria-hidden="true">
     <div class="explore-cabs-content">
         <div class="explore-cabs-icon" aria-hidden="true"><i class="fa-solid fa-car-side"></i></div>

@@ -96,7 +96,7 @@ for (const page of pages) {
   if (process.argv.includes('--modals-only')) {
     const output = path.join(root, `${page.slug || 'index'}.html`);
     const existing = await readFile(output, 'utf8');
-    const start = existing.indexOf('<!-- EXPLORE CABS TRANSITION -->');
+    const start = existing.indexOf('<!-- Search Car TRANSITION -->');
     const end = existing.indexOf('<!-- HOME DELIVERY UNAVAILABLE MODAL -->', start);
     if (start < 0 || end < start) throw new Error(`Missing modal boundaries: ${output}`);
     const updated = existing.slice(0, start) + (await component('modals')).trimEnd() + '\n' + existing.slice(end);
@@ -146,7 +146,7 @@ for (const page of pages) {
     render(await component('navigation'), {navigationLinks}),
     '<main>',
     ...(custom ? [custom.main] : [
-      render(hero, {...data, roadBanner: page.mode ? "<section class=\"road-banner\" aria-label=\"Travel with CWD\"><div><small>RIDE \u00b7 EXPLORE \u00b7 MORE</small><h2>India looks better<br><em>by road.</em></h2><p>Comfortable rides. Memorable journeys.</p></div></section>" : '', bookingWidget: page.mode ? await bookingWidget(page) : ''}),
+      render(hero, {...data, roadBanner: page.mode ? "<section class=\"road-banner\" aria-label=\"Travel with CWD\"><div><small>RIDE \u00b7 EXPLORE \u00b7 MORE</small><h2>India Looks Better<br><em>by Road</em></h2><p>Comfortable rides. Memorable journeys.</p></div></section>" : '', bookingWidget: page.mode ? await bookingWidget(page) : ''}),
       ...(await Promise.all(page.sections.map(component)))
     ]),
     '</main>',

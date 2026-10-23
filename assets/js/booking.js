@@ -520,7 +520,7 @@ let mumbaiMetroLocations = [
         let airportRouteSequence = 0;
         let airportQuotedSignature = '';
         const googleSelectionVersions = new Map();
-        const AIRPORT_MAX_METERS = 30000;
+        const AIRPORT_INCLUDED_KM = 20;
         const outstationPlaceSelections = new Map();
         const outstationSearchTimers = new Map();
         const outstationSelectionVersions = new Map();
@@ -574,6 +574,7 @@ function showCustomAlert(message) {
 
         function setServiceMode(mode) {
             currentMainMode = mode;
+            requestAnimationFrame(()=>window.dispatchEvent(new Event('cwd:service-change')));
             const btnWD = document.getElementById('btn-mode-withdriver');
             const btnSD = document.getElementById('btn-mode-selfdrive');
             const blockWD = document.getElementById('with-driver-block');
@@ -608,6 +609,7 @@ function showCustomAlert(message) {
         function setWDSubTab(tab) {
             if (currentWDSubTab === 'airport' && tab !== 'airport') invalidateAirportRoute();
             currentWDSubTab = tab;
+            requestAnimationFrame(()=>window.dispatchEvent(new Event('cwd:service-change')));
             ['local', 'outstation', 'airport'].forEach(t => {
                 const btn = document.getElementById(`subtab-${t}`);
                 const fields = document.getElementById(`wd-${t}-fields`);
@@ -730,7 +732,7 @@ function showCustomAlert(message) {
                     else if(el && i===0)el.value='';
                 });
             }
-            // A previous result must never hide EXPLORE CABS when editing.
+            // A previous result must never hide Search Car when editing.
             document.body.classList.remove('cwd-p1-results-open');
             const tripTypeFieldset = document.getElementById('wd-out-trip-type-fieldset');
             const tripTypeError = document.getElementById('wd-out-trip-type-error');
@@ -1023,14 +1025,6 @@ function onPickupDateChange() {
                 if (!Number.isFinite(meters) || meters <= 0) throw new Error('Unable to check Airport Transfer availability.');
                 airportRouteQuote = result;
                 airportQuotedSignature = signature;
-                if (Number(result.distanceMeters) > AIRPORT_MAX_METERS) {
-                    if (status) {
-                        status.textContent = 'This location is outside our Airport Transfer service area. Please use Outstation booking for this trip.';
-                        status.className = 'text-[10px] text-rose-600 font-semibold mt-1';
-                    }
-                    input.classList.add('border-red-500');
-                    return result;
-                }
                 input.classList.remove('border-red-500');
                 if (status) {
                     status.textContent = '✓ Airport Transfer available for this location.';
@@ -1527,7 +1521,8 @@ function onPickupDateChange() {
             } else if (currentWDSubTab === 'airport') {
                 const termInput = document.getElementById('wd-airport-terminal');
                 const term = termInput ? termInput.value : 't2';
-                return (car.rates.airport[term] || car.rates.airport.t2) + nightCharge;
+                const extraKm=Math.max(0,Math.ceil(Number(airportRouteQuote?.distanceMeters||0)/1000)-AIRPORT_INCLUDED_KM);
+                return (car.rates.airport[term] || car.rates.airport.t2) + extraKm*car.rates.outstationPerKm + nightCharge;
             }
             return 3000;
         }
@@ -1538,7 +1533,7 @@ function onPickupDateChange() {
             container.innerHTML = '';
             // Never expose old fallback prices while the current admin rates load.
             if (!withDriverRatesLoadedFromDb || (currentWDSubTab === 'outstation' && !publicOutstationMinimumLoaded)) {
-                container.innerHTML = '<p class="col-span-full text-center py-8 text-slate-600" role="status">Live fares will appear after pricing loads. Please try Explore Cabs again if needed.</p>';
+                container.innerHTML = '<p class="col-span-full text-center py-8 text-slate-600" role="status">Live fares will appear after pricing loads. Please try Search Car again if needed.</p>';
                 return;
             }
 
@@ -1659,7 +1654,6 @@ function onPickupDateChange() {
             if (local) return ['8hr_80km','10hr_100km','12hr_120km'].includes(field('wd-local-package')?.value) ? null : field('pkg-card-8hr');
             if (!['pickup','drop'].includes(currentAirportType)) return field('btn-airport-drop');
             if (!['t1','t2','nmia'].includes(field('wd-airport-terminal')?.value)) return field('wd-airport-terminal');
-            if (Number(airportRouteQuote?.distanceMeters) > AIRPORT_MAX_METERS) return input;
             return null; // Pending/failed route or pricing is not a missing form field.
         }
 
@@ -1697,7 +1691,6 @@ function onPickupDateChange() {
             if (!local) {
                 if (!['pickup','drop'].includes(currentAirportType) || !['t1','t2','nmia'].includes(document.getElementById('wd-airport-terminal')?.value)) return 'Choose airport transfer';
                 if (!airportRouteQuote || airportQuotedSignature !== airportRouteSignature() || !Number.isFinite(Number(airportRouteQuote.distanceMeters)) || Number(airportRouteQuote.distanceMeters) <= 0) return 'Waiting for airport route';
-                if (Number(airportRouteQuote.distanceMeters) > AIRPORT_MAX_METERS) return 'Outside Airport service area';
             }
             return '';
         }
@@ -1841,10 +1834,7 @@ function onPickupDateChange() {
                 } else if (!airportRouteQuote) {
                     showCustomAlert('Please wait while we check Airport Transfer availability.');
                     return false;
-                } else if (Number(airportRouteQuote.distanceMeters) > AIRPORT_MAX_METERS) {
-                    airportPickupInput.classList.add('border-red-500');
-                    showCustomAlert('This location is outside our Airport Transfer service area. Please use Outstation booking for this trip.');
-                    return false;
+
                 } else {
                     airportPickupInput.classList.remove('border-red-500');
                 }
@@ -1923,7 +1913,7 @@ function onPickupDateChange() {
             const icon = document.getElementById('search-btn-icon');
             const status = document.getElementById('explore-cabs-status');
             if (button) button.disabled = Boolean(isLoading || fareSearchInFlight);
-            if (text) text.textContent = isLoading ? 'Checking Live Fares...' : 'EXPLORE CABS';
+            if (text) text.textContent = isLoading ? 'Checking Live Fares...' : 'Search Car';
             if (icon) icon.className = isLoading
                 ? 'fa-solid fa-circle-notch fa-spin text-indigo-950 text-base'
                 : 'fa-solid fa-magnifying-glass text-indigo-950 text-base';
@@ -4120,6 +4110,12 @@ function renderBookingReviewDetails() {
             if (extraKm > 0) lines.push(`${extraKm} extra km × ${format(outstationExtraRate(car))} = ${format(extraKm * (outstationExtraRate(car)))}`);
             lines.push(`Driver allowance: ${wdOutstationDays} day(s) × ${format(car.rates.driverAllowance)} = ${format(wdOutstationDays * car.rates.driverAllowance)}`);
         } else lines.push('Package / transfer: ' + format(getCarCost(car) - currentDriverNightCharge(car)));
+        if(mode==='local')lines.push('Beyond package: '+format(car.rates.local.extraKm)+'/km · '+format((car.rates.local['10hr_100km']-car.rates.local['8hr_80km'])/2)+'/hour.');
+        if(mode==='airport'){
+            const extraKm=Math.max(0,Math.ceil(Number(airportRouteQuote?.distanceMeters||0)/1000)-20);
+            lines.push('First 20 km included; '+extraKm+' additional route km × '+format(car.rates.outstationPerKm)+'/km already included in this fare.');
+            lines.push('45 minutes free waiting, then '+format((car.rates.local['10hr_100km']-car.rates.local['8hr_80km'])/2)+'/hour. Airport charges at actuals on final settlement.');
+        }
         if(currentDriverNightCharge(car)>0)lines.push('Night charges: ' + format(currentDriverNightCharge(car)));
         if(!activeLoginCoupon)lines.push('Total booking fare: ' + format(total));
         const node = document.getElementById('cwd-checkout-fare-lines');
@@ -4176,9 +4172,14 @@ function renderBookingReviewDetails() {
         const address = document.getElementById('wd-airport-pickup').value;
         document.getElementById('modal-summary-pickup').textContent = currentAirportType === 'pickup' ? airport : address;
         document.getElementById('modal-summary-dest').textContent = currentAirportType === 'pickup' ? address : airport;
-        included.push('Driver and flat airport transfer fare for the selected route.');
+        included.push('Driver, first 20 km and 45 minutes free waiting for one airport transfer.');
+        document.getElementById('modal-summary-package').textContent = '20 km included · 45 min free waiting';
+        excluded.push('Beyond 20 km: '+amount(car?.rates.outstationPerKm||0)+'/km. Route distance is rounded up to the next kilometre.');
+        excluded.push('After 45 minutes free waiting: '+amount(((car?.rates.local['10hr_100km']||0)-(car?.rates.local['8hr_80km']||0))/2)+'/hour.');
+        const extraKm=Math.max(0,Math.ceil(Number(airportRouteQuote?.distanceMeters||0)/1000)-20);
+        if(extraKm)included.push(extraKm+' additional route km already included in the displayed fare.');
         excluded.push('Airport entry and parking where applicable.');
-        terms = ['Flat transfer fare for one pickup or drop-off within the service area. Local and Outstation packages do not apply.', 'No extra kilometre or hourly package charges apply to the booked transfer.', 'Airport entry, parking and applicable state taxes are extra where applicable.', 'Contact support for waiting or route-change requests before travel.'];
+        terms = ['Flat transfer fare for one pickup or drop-off within the service area. Local and Outstation packages do not apply.', 'First 20 km are included. Additional route kilometres are charged at the selected car’s per-km rate and included in the quoted fare. Changes to the route require a revised quote.', 'Airport entry, parking and applicable state taxes are extra where applicable.', '45 minutes of waiting are free. Additional waiting is charged at the selected car’s hourly rate. Airport entry and parking at pickup/drop are paid at actuals in final settlement.'];
     }
     document.getElementById('modal-summary-trip-type-row').classList.remove('hidden');
     document.getElementById('modal-summary-trip-type').textContent = title;
@@ -4249,3 +4250,19 @@ function celebrateLoginCoupon() {
     for(let i=0;i<180;i++){const star=document.createElement('i');star.style.setProperty('--x',Math.random()*100+'%');star.style.setProperty('--delay',Math.random()*1.1+'s');star.style.setProperty('--drift',(Math.random()-.5)*240+'px');layer.append(star);}
     document.body.append(layer);setTimeout(()=>layer.remove(),4400);
 }
+
+// Verify the mobile as soon as it is complete, without submitting a booking/payment.
+mobileOtpReady.then(otp=>{
+ if(!otp?.bindAutomaticOtp)return;
+ for(const id of ['cust-phone','sd-cust-phone']){
+  const phone=document.getElementById(id);if(!phone)continue;
+  otp.bindAutomaticOtp(phone,async()=>{
+   try{
+    const checkout=await import('/assets/js/customer-checkout.js');
+    const customer=await checkout.getCheckoutCustomer();
+    if(customer?.mobile.slice(-10)===phone.value.replace(/\D/g,'').slice(-10))return;
+    await otp.requestFormOtp(phone.form,id,'booking');
+   }catch(error){if(!error.cancelled)showCustomAlert(error.message);}
+  },()=>phone.offsetParent!==null&&phone.form?.dataset.checkoutBusy!=='true');
+ }
+});

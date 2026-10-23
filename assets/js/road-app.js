@@ -2,6 +2,17 @@
 (() => {
   'use strict';
   if (!document.body.classList.contains('cwd-road')) return;
+  const updateBanner=()=>{
+   const mode=document.getElementById('btn-mode-selfdrive')?.classList.contains('tab-active')?'selfdrive':['airport','local'].find(t=>document.getElementById('subtab-'+t)?.classList.contains('subtab-active'))||'outstation';
+   const banner=document.querySelector('.road-banner');if(banner)banner.dataset.scene=mode;
+  };
+  document.getElementById('booking-widget')?.addEventListener('click',()=>requestAnimationFrame(updateBanner));
+  window.addEventListener('cwd:service-change',updateBanner);updateBanner();
+  document.querySelector('.road-more-routes')?.addEventListener('click',event=>{
+   const button=event.currentTarget,open=button.getAttribute('aria-expanded')!=='true';
+   document.querySelectorAll('.road-extra-route').forEach(card=>card.hidden=!open);
+   button.setAttribute('aria-expanded',String(open));button.textContent=open?'Show fewer destinations':'View more destinations';
+  });
   const icon = (name) => ({home:'⌂',bookings:'▤',search:'⌕',support:'♧',menu:'☰'})[name];
   const path = location.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
   const nav = document.createElement('nav');

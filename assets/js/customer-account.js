@@ -1,4 +1,4 @@
-import { requestFormOtp, clearFormOtp } from './mobile-otp.js';
+import { requestFormOtp, clearFormOtp, bindAutomaticOtp } from './mobile-otp.js';
 const login = document.getElementById('login-form');
 const panel = document.getElementById('profile-panel');
 const profile = document.getElementById('profile-form');
@@ -41,6 +41,8 @@ login.addEventListener('submit', event => {
     try {
       proof = await requestFormOtp(login, 'account-phone', 'customer');
       const data = await api({ action: 'login', phone: phone.value, proof });
+      const back=new URLSearchParams(location.search).get('return_to');
+      if(back && /^\/booking-confirmation\?booking_id=/.test(back)){location.assign(back);return;}
       display(data.customer); message('You are signed in. View My Bookings to see trip details or request changes.');
       document.getElementById('display-name').focus();
     } finally { clearFormOtp(login); }
@@ -69,3 +71,5 @@ async function load() {
 }
 window.addEventListener('pageshow', event => { if (event.persisted) load(); });
 load();
+
+bindAutomaticOtp(document.getElementById('account-phone'),()=>login.requestSubmit(),()=>!busy&&!login.hidden);

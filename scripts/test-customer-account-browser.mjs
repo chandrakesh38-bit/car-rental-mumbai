@@ -34,16 +34,22 @@ try {
     return route.fulfill({contentType:type,body:await readFile(new URL('..'+u.pathname,import.meta.url))});
   });
   await page.addInitScript(()=>{
-    window.initSendOTP=()=>{};window.getWidgetData=()=>({otpLength:6,retryTime:30});window.isCaptchaVerified=()=>true;
-    window.sendOtp=(_phone,ok)=>{window.fixtureSends=(window.fixtureSends||0)+1;ok({reqId:'fixture-req-1234'});};
+    window.OTPCredential=class {};
+    Object.defineProperty(navigator,'credentials',{value:{get:({signal})=>new Promise((resolve,reject)=>{window.smsConsentRequested=true;window.deliverSms=resolve;signal.addEventListener('abort',()=>reject(new DOMException('Aborted','AbortError')));})},configurable:true});
+    window.initSendOTP=()=>{};window.getWidgetData=()=>({otpLength:6,retryTime:30,captchaValidations:false});window.isCaptchaVerified=()=>false;
+    window.sendOtp=(_phone,ok)=>{window.fixtureSends=(window.fixtureSends||0)+1;ok({reqId:'fixture-req-1234'});setTimeout(()=>window.deliverSms?.({code:'012345'}),30);};
     window.verifyOtp=(otp,ok,fail)=>otp==='012345'?ok({message:'fixture-provider-token'}):fail({message:'Incorrect OTP. Please retry.'});
     window.retryOtp=(_channel,ok)=>ok({reqId:'fixture-req-1234'});
   });
   await page.goto('https://preview.test/customer-account.html');
   await page.locator('#login-form').waitFor({state:'visible'});
   await page.locator('#account-phone').fill('9999999999');
-  await page.getByRole('button',{name:'Continue with OTP'}).click();
+  // A complete phone number triggers one OTP without clicking Send.
+  await page.waitForFunction(()=>window.fixtureSends===1);
+  await page.waitForFunction(()=>document.querySelector('.otp-digits input')?.value==='0');
+  assert.equal(await page.evaluate(()=>smsConsentRequested),true);
   await page.locator('.otp-digits input').first().waitFor({state:'visible'});
+  assert.equal(await page.locator('.otp-digits input').evaluateAll(inputs=>inputs.map(i=>i.value).join('')),'012345');
   for (let i=0;i<6;i++) await page.locator('.otp-digits input').nth(i).fill('1');
   await page.getByRole('button',{name:'Verify & Sign In'}).click();
   await page.getByText('Incorrect OTP. Please retry.').waitFor();assert.equal(logins,0);

@@ -2,8 +2,25 @@
 
 Scope: new customer-checkout `booking_confirmed` and `payment_captured` events.
 Payment-pending bookings do not generate a confirmation. Legacy/admin payment
-paths that do not emit these events are not covered. Driver allocation, trip end,
-settlement and invoices are not enabled by this worker.
+paths that do not emit these events are not covered.
+
+Operational extension: apply `supabase/drafts/mobile_whatsapp_events.sql` after
+the base migration. Selected active vendors receive offers; allocation supplies
+customer contact/address and the private trip link. Complete driver details saved
+on an active allocation notify the customer, including subsequent corrections.
+Trip start and closure submission notify customers. Admin review alone does not
+send a final bill: generating an invoice after approval sends its snapshot and
+private download link. Invoice regenerations replace unsent outdated links.
+Vendor payout/margin is never included in customer messages; customer contact
+details are withheld from offers. Booking confirmation does not broadcast to
+vendors: the admin must select vendors and generate offers first.
+
+No automatic trip reminder, refund, cancellation-to-customer, vendor payout
+receipt, or final PDF attachment is configured. Invoice is a view/download link.
+The approved invoice snapshot supplies the financial breakdown, not fresh
+calculations in this worker. Balance is explicitly labelled at invoice issue.
+All notifications are for future events only. Test SQL fixtures are rolled back.
+Manual phone startup after reboot is the owner's chosen operating procedure.
 
 Apply `supabase/drafts/mobile_whatsapp.sql` once. The system starts disabled.
 Install worker.mjs and install.sh into the already-paired private Termux directory

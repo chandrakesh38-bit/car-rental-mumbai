@@ -10,17 +10,18 @@
   <script type="module" src="/assets/js/customer-account.js"></script>
 <script type="module" src="/assets/js/account-nav.js"></script></head>
 <body>
-  <header><a class="brand" href="/"><img src="/logo.png" alt="" width="52" height="52"><span>Car with Driver India<small>Mumbai · Thane · Navi Mumbai</small></span></a><a href="/my-bookings">My Bookings</a></header>
+  <header><a class="brand" href="/"><img src="/logo.png" alt="" width="52" height="52"><span>Car with Driver India</span></a><a class="help" href="tel:+919702988465"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0 1 16 0v3M4 12H2v7h4v-7H4Zm16 0h2v7h-4v-7h2Zm0 7v1a2 2 0 0 1-2 2h-4"/></svg>Need help?</a></header>
   <main>
-    <section class="intro"><p class="eyebrow">YOUR CWD ACCOUNT</p><h1>A familiar welcome.<br>A smoother journey.</h1><p>Sign in securely with your mobile number and keep your customer profile up to date.</p><a href="/with-driver">Explore cars with a driver →</a></section>
+    <section class="intro"><p class="eyebrow">YOUR CWD ACCOUNT</p><h1>Your next journey<br>starts here.</h1><p>Sign in or create an account with your mobile number.</p></section>
     <section class="card" aria-label="Customer account">
       <p id="account-message" role="status" aria-live="polite">Checking account availability…</p>
       <form id="login-form" hidden>
-        <h2>Welcome to CWD</h2><p>Use your Indian mobile number to sign in or create your account.</p>
+        <h2>Welcome back</h2><p class="form-intro">Enter your number to continue.</p>
         <label for="account-phone">Mobile number</label>
         <div class="phone"><span>+91</span><input id="account-phone" type="tel" inputmode="numeric" autocomplete="tel-national" pattern="[6-9][0-9]{9}" minlength="10" maxlength="10" placeholder="10-digit mobile number" required></div>
-        <button type="submit">Continue with OTP</button>
-        <p class="small">We use an OTP to verify your number and share it with our booking team for assistance. Read our <a href="/privacy-policy">Privacy Policy</a> and <a href="/terms-and-conditions">Terms &amp; Conditions</a>.</p>
+        <button type="submit">Continue with OTP <span aria-hidden="true">→</span></button>
+        <p class="secure"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="12" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4m-4 5v3"/></svg>Secure verification via OTP</p>
+        <p class="small consent">By continuing, you agree to our <a href="/privacy-policy">Privacy Policy</a> and <a href="/terms-and-conditions">Terms</a>.</p>
       </form>
       <section id="profile-panel" hidden>
         <p><a href="/my-bookings">View My Bookings</a></p>
@@ -30,9 +31,9 @@
         <div class="actions"><a href="tel:+919702988465">Call support</a><a href="/cancellation-refund-policy">Cancellation policy</a></div>
         <button id="logout" class="secondary" type="button">Sign out</button>
       </section>
-      <a class="back" href="/">← Back to booking</a>
     </section>
+    <a class="back" href="/">← &nbsp;Back to booking</a>
   </main>
-  <footer>Car with Driver Mobility LLP · <a href="tel:+919702988465">+91 9702988465</a></footer>
+  <footer><span>Car with Driver Mobility LLP</span><a href="tel:+919702988465">+91 9702988465</a></footer>
 </body>
 </html>

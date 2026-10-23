@@ -53,14 +53,6 @@
 
     // Fare loader now lives in booking.js, directly in triggerFareSearch().
     // Only one overlay is constructed, and one click always launches the search.
-    const fromField=()=> {
-      if ($("with-driver-block")?.classList.contains("hidden")) return null;
-      if (!$("wd-outstation-fields")?.classList.contains("hidden")) return "wd-out-pickup";
-      if (!$("wd-local-fields")?.classList.contains("hidden")) return "wd-local-pickup";
-      if (!$("wd-airport-fields")?.classList.contains("hidden"))
-        return $("btn-airport-pickup")?.className.includes("bg-white") ? "wd-airport-terminal":"wd-airport-pickup";
-      return null;
-    };
     const focusNext=(id, picker=false)=>{
       const next=$(id);
       if (!next || next.disabled || next.closest(".hidden") || next.hidden) return false;
@@ -79,12 +71,8 @@
       switch(btn.id) {
         case "wd-out-one-way":
         case "wd-out-round-trip": queueFocus("wd-out-pickup"); break;
-        case "subtab-outstation":queueFocus("wd-out-pickup");break;
-        case "subtab-local":queueFocus("wd-local-pickup");break;
-        case "subtab-airport":
         case "btn-airport-drop":queueFocus("wd-airport-pickup");break;
-        case "btn-airport-pickup":queueFocus("wd-airport-terminal",true);break;
-        case "btn-mode-withdriver":queueFocus(fromField());break;
+        case "btn-airport-pickup":queueFocus("wd-airport-pickup");break;
       }
       if (/^pkg-card-(8hr|10hr|12hr|4hr)$/.test(btn.id)) queueFocus("explore-cabs-button");
     });

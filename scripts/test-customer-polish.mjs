@@ -37,6 +37,7 @@ try{
  assert.match(await page.locator('.payment-document-link').innerText(),/Pay outstanding balance/);
  assert.equal(await page.locator('.payment-document-link').getAttribute('href'),'http://127.0.0.1:4194/booking-confirmation?booking_id=123456&pay=1');
  await page.setViewportSize({width:1200,height:900});await page.screenshot({path:dir+'/confirmation-desktop.png',fullPage:true});
+ await page.setViewportSize({width:390,height:844});
  await page.emulateMedia({media:'print'});assert.equal(await page.locator('.payment-document-link').isVisible(),true);
  await page.pdf({path:dir+'/confirmation.pdf',format:'A4',printBackground:true,margin:{top:'12mm',bottom:'12mm',left:'12mm',right:'12mm'}});
  await page.emulateMedia({media:'screen'});

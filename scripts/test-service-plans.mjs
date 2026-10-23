@@ -19,6 +19,19 @@ try{
   if(expected!=='selfdrive')assert.equal(await page.locator('[data-road-plans]:visible').getAttribute('data-road-plans'),expected);
  }
  await page.goto('http://127.0.0.1:4195/',{waitUntil:'networkidle'});
+ for(const mode of ['local','airport']){
+  await page.locator('#subtab-'+mode).click();
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  assert.equal(await page.evaluate(()=>document.activeElement.matches('input,select,textarea')),false,'Service tab must not open keyboard/picker');
+ }
+ for(const direction of ['drop','pickup']){
+  await page.locator('#btn-airport-'+direction).click();
+  await page.waitForFunction(()=>document.activeElement.id==='wd-airport-pickup');
+ }
+ await page.locator('#subtab-local').click();await page.locator('#wd-local-pickup').click();
+ assert.equal(await page.evaluate(()=>document.activeElement.id),'wd-local-pickup');
+ await page.locator('#subtab-outstation').click();
+ for(const type of ['one-way','round-trip']){await page.locator('#wd-out-'+type).click();await page.waitForFunction(()=>document.activeElement.id==='wd-out-pickup');}
  await page.locator('.road-more-routes').click();assert.equal(await page.locator('.road-extra-route:visible').count(),6);
  assert.equal(await page.locator('[data-destination="Goa"]').isVisible(),true);
  await page.locator('#subtab-local').click();await page.locator('[data-road-plans="local"]').waitFor({state:'visible'});

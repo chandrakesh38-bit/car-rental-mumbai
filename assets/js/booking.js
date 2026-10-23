@@ -2857,14 +2857,19 @@ async function handleBookingSubmit(e) {
     if (!validateJourneyAndOpenBooking() || !form.reportValidity()) return;
     form.dataset.checkoutBusy = 'true';
     const errorBox = document.getElementById('cwd-checkout-error');
-    errorBox.textContent = '';
+    errorBox.textContent = 'Checking your booking…';
     form.querySelectorAll('[data-payment-choice]').forEach(button => button.disabled = true);
     try {
         if (document.getElementById('cwd-coupon-code')?.value.trim() && !activeLoginCoupon) throw new Error('Apply or remove the coupon before choosing a payment option.');
         const checkout = await import('/assets/js/customer-checkout.js');
         await checkout.checkoutReady(choice);
         await handleBookingSubmitDetails(e, choice, checkout);
-    } catch (error) { errorBox.textContent = error.message || 'Unable to complete checkout. Please retry.'; }
+    } catch (error) {
+        errorBox.textContent = ['TimeoutError','AbortError','TypeError'].includes(error.name)
+            ? 'The connection was interrupted. Check My Bookings before retrying; your booking may already be saved.'
+            : error.message || 'Unable to complete checkout. Please retry.';
+        errorBox.scrollIntoView({block:'center'});
+    }
     finally {
         form.dataset.checkoutBusy = 'false';
         form.querySelectorAll('[data-payment-choice]').forEach(button => button.disabled = false);
@@ -2883,7 +2888,11 @@ async function handleBookingSubmitDetails(e, paymentChoice, checkout, quoteOnly 
         if (!customer || customer.mobile.slice(-10) !== document.getElementById('cust-phone').value.replace(/\D/g,'').slice(-10)) {
         otpProof = await otp.requestFormOtp(e.target, 'cust-phone', 'booking');
         }
-    } catch (error) { if (!error.cancelled) showCustomAlert(error.message); return; }
+    } catch (error) {
+        document.getElementById('cwd-checkout-error').textContent = error.cancelled ? 'Mobile verification cancelled. Choose a payment option when you are ready.' : error.message;
+        if (!error.cancelled) showCustomAlert(error.message);
+        return;
+    }
 
     const name = document.getElementById('cust-name').value.trim();
     const phone = document.getElementById('cust-phone').value.trim();
@@ -3110,6 +3119,9 @@ ${flightNumber ? `🛫 Flight: ${flightNumber}\n` : ''}📅 ${formatBookingDateT
         } : null
     };
     if (quoteOnly) return bookingData;
+    const checkoutStatus = document.getElementById('cwd-checkout-error');
+    checkoutStatus.textContent = 'Mobile verified. Saving your booking—please keep this page open…';
+    checkoutStatus.scrollIntoView({block:'center'});
     await checkout.submitCheckout({name, phone, email, bookingData, otpProof, paymentChoice,
         ...(activeLoginCoupon ? {couponCode:activeLoginCoupon.code,expectedTotalPaise:activeLoginCoupon.totalPaise} : {})}, e.target);
 }

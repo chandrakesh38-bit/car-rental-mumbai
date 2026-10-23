@@ -1,3 +1,4 @@
+const bookingToken = id => { try { return sessionStorage.getItem('cwd-booking:'+id) || ''; } catch { return ''; } };
 async function api(body, suffix = '', token = '') {
   const r = await fetch('/api/customer-checkout' + suffix, { credentials:'same-origin', cache:'no-store', signal:AbortSignal.timeout(45000),
     headers: { 'Content-Type':'application/json', ...(token ? {Authorization:'Booking '+token} : {}) },
@@ -9,15 +10,17 @@ async function api(body, suffix = '', token = '') {
 export const checkoutReady = (paymentChoice=0) => api(null, '?config=1'+(paymentChoice?'&payment=1':''));
 export const getLoginCoupon = async () => (await api(null,'?coupon=1')).coupon;
 export const quoteLoginCoupon = async body => (await api({action:'quote',...body})).quote;
-export const cancelPendingBooking = id => api({action:'cancel-pending',booking_id:id},'',sessionStorage.getItem('cwd-booking:'+id)||'');
+export const cancelPendingBooking = id => api({action:'cancel-pending',booking_id:id},'',bookingToken(id));
 export async function submitCheckout(body, form) {
   form.dataset.submissionKey ||= crypto.randomUUID();
   const result = await api({action:'create', ...body, submissionKey:form.dataset.submissionKey});
-  sessionStorage.setItem('cwd-booking:'+result.booking_id, result.access_token);
+  // The server also establishes the customer session. Storage restrictions must
+  // never strand a customer after the booking has already been committed.
+  try { sessionStorage.setItem('cwd-booking:'+result.booking_id, result.access_token); } catch {}
   location.assign('/booking-confirmation?booking_id='+encodeURIComponent(result.booking_id)+(body.paymentChoice ? '&pay=1' : ''));
 }
 export async function startPayment(id, balance = false) {
-  const token = sessionStorage.getItem('cwd-booking:'+id) || '';
+  const token = bookingToken(id);
   const {order,key} = await api({action:'order',booking_id:id,balance},'',token);
   if (!window.Razorpay) await new Promise((resolve,reject) => {
     const script=document.createElement('script');script.src='https://checkout.razorpay.com/v1/checkout.js';
@@ -34,7 +37,7 @@ export async function startPayment(id, balance = false) {
   });
 }
 export async function getBooking(id) {
-  return (await api(null,'?booking_id='+encodeURIComponent(id),sessionStorage.getItem('cwd-booking:'+id)||'')).booking;
+  return (await api(null,'?booking_id='+encodeURIComponent(id),bookingToken(id))).booking;
 }
 
 export async function getCheckoutCustomer() {

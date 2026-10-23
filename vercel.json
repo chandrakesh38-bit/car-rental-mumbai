@@ -3,7 +3,7 @@
   "outputDirectory": ".",
   "cleanUrls": true,
   "trailingSlash": false,
-  "crons": [{ "path": "/api/booking-notifications", "schedule": "*/5 * * * *" }],
+  "crons": [{ "path": "/api/booking-notifications", "schedule": "0 3 * * *" }],
   "headers": [
     {
       "source": "/(.*)",

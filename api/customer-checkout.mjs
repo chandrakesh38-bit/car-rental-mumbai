@@ -1,6 +1,7 @@
 import { requireMobileOtp } from '../lib/mobile-otp.mjs';
 import { validateBookingData } from '../lib/booking-validation.mjs';
 import { validEmail } from '../lib/notifications.mjs';
+import {sendCheckoutEmail} from '../lib/checkout-email.mjs';
 import { guardMutation, hash, fail, customerDb, sessionCookie } from '../lib/customer-account.mjs';
 import { checkoutConfig, rpc, moneyPaise, paymentAmount, ownedBooking, bookingView,
   razorConfig, razor, verifyHmac, capturePayment } from '../lib/customer-checkout.mjs';
@@ -76,6 +77,7 @@ async function handler(request) {
         p_contact: { name: name.trim(), email: email.trim(), route: validated.route, car: validated.carName, trip: validated.tripType,
           ...(loginToken ? {sessionHash:await hash(loginToken)} : {}) },
         ...(identity ? {p_session_hash:identity.sessionHash,p_code:code} : {}) });
+      await sendCheckoutEmail(cfg,booking.booking_id);
       return json({ success: true, booking_id: booking.booking_id, access_token: token },200,loginHeaders);
     }
     const booking = await ownedBooking(cfg, request, body.booking_id);

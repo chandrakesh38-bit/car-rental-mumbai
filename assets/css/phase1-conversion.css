@@ -112,3 +112,38 @@
  .cwd-p1 .cwd-p1-custom-route {font-size:11px;padding:6px 8px;}
  .cwd-p1 #wd-out-trip-type-fieldset button {min-height:44px;}
 }
+/* Compact mobile journey dates: keep date, hour and AM/PM on one row. */
+@media(max-width:700px){
+ .cwd-p1.cwd-p1-conversion #booking-widget #wd-outstation-fields .booking-datetime{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,.8fr);gap:5px;}
+ .cwd-p1.cwd-p1-conversion #wd-outstation-fields .booking-datetime>div:first-child{grid-column:auto;min-width:0;}
+ .cwd-p1.cwd-p1-conversion #wd-outstation-fields .booking-datetime input,
+ .cwd-p1.cwd-p1-conversion #wd-outstation-fields .booking-datetime select{width:100%;min-width:0;font-size:14px;padding-left:6px;padding-right:4px;}
+ .cwd-p1.cwd-p1-conversion #wd-outstation-fields>.grid.pt-2{gap:6px;}
+ .cwd-p1.cwd-p1-conversion #booking-widget>div:first-child{padding:4px;}
+ .cwd-p1.cwd-p1-conversion #booking-widget>div:first-child button{padding:10px 5px;min-height:44px;}
+ .cwd-p1.cwd-p1-conversion #with-driver-block>.grid:first-child{margin-bottom:6px;}
+ .cwd-p1 nav>div{padding-top:10px;padding-bottom:10px;gap:8px;}
+ .cwd-p1 nav a[aria-label="Car with Driver India home"]{gap:8px;}
+ .cwd-p1 nav #dynamic-brand-logo{width:40px;height:40px;}
+ .cwd-p1 nav a[aria-label="Car with Driver India home"]>div:last-child>span:last-child{font-size:9px;letter-spacing:0;white-space:nowrap;}
+ .cwd-p1 nav a[aria-label="Car with Driver India home"] .text-xl{font-size:13px;}
+ .cwd-p1 nav>div>div:last-child{gap:5px;}
+ .cwd-p1 nav>div>div:last-child>*{margin-left:0;}
+}
+@media(max-width:359px){
+ .cwd-p1 nav>div{padding-left:8px;padding-right:8px;gap:5px;}
+ .cwd-p1 nav #dynamic-brand-logo{width:32px;height:32px;}
+ .cwd-p1 nav a[aria-label="Car with Driver India home"]{gap:5px;}
+ .cwd-p1 nav a[aria-label="Car with Driver India home"] .text-xl{font-size:11px;}
+ .cwd-p1 nav a[aria-label="Car with Driver India home"]>div:last-child>span:last-child{font-size:8px;}
+}
+@media(max-width:700px){
+ .cwd-p1.cwd-p1-conversion #wd-outstation-fields:not(.hidden){display:flex;flex-direction:column;gap:7px;}
+ .cwd-p1.cwd-p1-conversion #wd-outstation-fields>*{margin-top:0!important;margin-bottom:0!important;}
+ .cwd-p1.cwd-p1-conversion #booking-widget #wd-outstation-fields>.grid .bg-slate-50.p-3{padding:5px 7px;}
+}
+/* Short viewports keep the action in normal flow so it cannot cover return time. */
+@media(max-width:700px) and (max-height:670px){
+ .cwd-p1.cwd-p1-conversion #with-driver-block>.mt-6{position:static;box-shadow:none;padding:8px 0 0;}
+ .cwd-p1.cwd-p1-conversion #booking-widget{padding-bottom:0;}
+}

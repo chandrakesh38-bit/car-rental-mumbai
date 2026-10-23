@@ -96,6 +96,8 @@
         // The empty stop container remains available for compatibility with route validation.
         custom.appendChild(stops);
         stops.hidden = true;
+        // Keep both journey date/time rows ahead of optional custom-trip help.
+        custom.parentElement.appendChild(custom);
       }
     }
     // The main navigation still relies on the existing verified contact number.

@@ -25,7 +25,7 @@
     "description": "Book a car with driver in Mumbai, Thane and Navi Mumbai for local city and outstation trips. Compare vehicle options, packages and transparent trip pricing.",
     "h1": "Car Rental with Driver in Mumbai, Thane & Navi Mumbai",
     "mode": "withdriver",
-    "tab": "local",
+    "tab": "outstation",
     "sections": [
       "quick-routes",
       "fleet",
@@ -106,7 +106,7 @@
     "description": "Book a car with driver in Thane for local city and outstation trips. Pickup available across Thane, Dombivli and Kalyan with clear packages and trip pricing.",
     "h1": "Car Rental with Driver in Thane",
     "mode": "withdriver",
-    "tab": "local",
+    "tab": "outstation",
     "nav": false,
     "sections": [
       "fleet",
@@ -121,7 +121,7 @@
     "description": "Book a car with driver in Navi Mumbai for local and outstation travel. Pickup available in Vashi, Airoli, Nerul, Belapur, Kharghar and Panvel.",
     "h1": "Car Rental with Driver in Navi Mumbai",
     "mode": "withdriver",
-    "tab": "local",
+    "tab": "outstation",
     "nav": false,
     "sections": [
       "fleet",

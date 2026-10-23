@@ -6,6 +6,16 @@ import renderMumbaiPage from '../src/pages/mumbai-car-rental.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pages = JSON.parse(await readFile(path.join(root, 'src/pages.json'), 'utf8'));
 const component = name => readFile(path.join(root, `src/components/${name}.template`), 'utf8');
+async function bookingWidget(page) {
+  let html = await component('booking-widget');
+  if (page.tab === 'airport') {
+    html = html.replace(/(id="subtab-outstation"[^>]*class=")[^"]+/, '$1py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5')
+      .replace(/(id="subtab-airport"[^>]*class=")[^"]+/, '$1py-2.5 rounded-lg transition subtab-active flex items-center justify-center gap-1.5')
+      .replace('id="wd-outstation-fields" class="space-y-4"', 'id="wd-outstation-fields" class="space-y-4 hidden"')
+      .replace('id="wd-airport-fields" class="space-y-4 hidden"', 'id="wd-airport-fields" class="space-y-4"');
+  }
+  return html;
+}
 const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const render = (text, data) => text.replace(/\{\{(\w+)\}\}/g, (_,key) => {
   if (!(key in data)) throw new Error(`Missing template value: ${key}`);
@@ -111,7 +121,7 @@ for (const page of pages) {
       if (depth === 0) { end = tags.lastIndex; break; }
     }
     if (end < 0) throw new Error(`Unclosed booking widget: ${output}`);
-    const updated = existing.slice(0, start) + (await component('booking-widget')).trimEnd() + existing.slice(end);
+    const updated = existing.slice(0, start) + (await bookingWidget(page)).trimEnd() + existing.slice(end);
     if (process.argv.includes('--check')) {
       if (updated.replace(/\r\n/g,'\n') !== existing.replace(/\r\n/g,'\n')) throw new Error(`Booking HTML is stale: ${output}`);
     } else await writeFile(output, updated);
@@ -136,7 +146,7 @@ for (const page of pages) {
     render(await component('navigation'), {navigationLinks}),
     '<main>',
     ...(custom ? [custom.main] : [
-      render(hero, {...data, bookingWidget: page.mode ? await component('booking-widget') : ''}),
+      render(hero, {...data, bookingWidget: page.mode ? await bookingWidget(page) : ''}),
       ...(await Promise.all(page.sections.map(component)))
     ]),
     '</main>',

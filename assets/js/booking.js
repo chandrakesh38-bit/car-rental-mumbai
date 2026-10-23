@@ -1894,7 +1894,7 @@ function onPickupDateChange() {
                 currency: 'INR', value: Number(fare), page_path: location.pathname
             });
             if (!validateJourneyAndOpenBooking(carName, fare)) return;
-            openModal(carName, fare);
+            showCarBookingTransition(() => openModal(carName, fare));
         }
 
         async function showCabSearchTransition(updateResults, targetId) {
@@ -2252,7 +2252,44 @@ function onPickupDateChange() {
 
         function handleBookSelfDriveClick(car) {
             if (!validateSelfDriveJourney()) return;
-            openSDModal(car);
+            showCarBookingTransition(() => openSDModal(car));
+        }
+
+        let carBookingTransitionActive = false;
+        function showCarBookingTransition(openBooking) {
+            if (carBookingTransitionActive) return;
+            carBookingTransitionActive = true;
+            const previousFocus = document.activeElement;
+            const previousOverflow = document.body.style.overflow;
+            const overlay = document.createElement('div');
+            overlay.className = 'cwd-car-transition';
+            overlay.setAttribute('role', 'dialog');
+            overlay.setAttribute('aria-modal', 'true');
+            overlay.setAttribute('aria-labelledby', 'cwd-car-transition-title');
+            overlay.innerHTML = '<div class="cwd-car-transition-card"><div class="cwd-car-road" aria-hidden="true"><i class="fa-solid fa-car-side"></i></div><h2 id="cwd-car-transition-title">Getting your booking ready…</h2><p>Your next journey is just a moment away.</p><div class="cwd-car-progress" aria-hidden="true"></div><button type="button">Cancel</button></div>';
+            document.body.append(overlay);
+            document.body.style.overflow = 'hidden';
+            const cancel = overlay.querySelector('button');
+            cancel.focus();
+            const close = (continueBooking) => {
+                clearTimeout(timer);
+                document.removeEventListener('keydown', keydown, true);
+                window.removeEventListener('pagehide', abort);
+                overlay.remove();
+                document.body.style.overflow = previousOverflow;
+                carBookingTransitionActive = false;
+                previousFocus?.focus();
+                if (continueBooking) openBooking();
+            };
+            const keydown = event => {
+                if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); close(false); }
+                if (event.key === 'Tab') { event.preventDefault(); cancel.focus(); }
+            };
+            const abort = () => close(false);
+            const timer = setTimeout(() => close(true), 3000);
+            cancel.onclick = abort;
+            document.addEventListener('keydown', keydown, true);
+            window.addEventListener('pagehide', abort);
         }
 
         function syncModalState(modal, active) {
@@ -3759,7 +3796,7 @@ showSuccessModal(result.application_number, result);
         }
 
         window.onload = function() {
-            setWDSubTab('local');
+            setWDSubTab(document.body.dataset.bookingTab || currentWDSubTab);
             renderWDFleet();
             applyAllSDFilters();
         };
@@ -4035,6 +4072,7 @@ function setupLoginCoupon() {
     apply.addEventListener('click',async()=>{
         const form=host.closest('form');
         if (form.dataset.checkoutBusy==='true' || apply.disabled) return;
+        prepareCouponSound();
         clear(); const attempt=loginCouponRequest;
         const requestedCode=input.value.trim() || 'CWD5';
         apply.disabled=true;form.dataset.checkoutBusy='true';
@@ -4177,10 +4215,37 @@ async function prefillCheckoutCustomer() {
  } catch {}
 }
 
+let couponAudioContext;
+function prepareCouponSound() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        couponAudioContext ||= new AudioContext();
+        couponAudioContext.resume().catch(() => {});
+    } catch (_) { /* Coupon application must work when browser audio is unavailable. */ }
+}
+function playCouponSound() {
+    try {
+        if (couponAudioContext?.state !== 'running') return;
+        const start = couponAudioContext.currentTime;
+        [523.25,659.25,783.99,1046.5,1318.51].forEach((frequency,index) => {
+            const tone = couponAudioContext.createOscillator(), gain = couponAudioContext.createGain();
+            tone.type = 'sine'; tone.frequency.value = frequency;
+            const at = start + index * .18;
+            gain.gain.setValueAtTime(0,at);
+            gain.gain.linearRampToValueAtTime(.045,at+.025);
+            gain.gain.exponentialRampToValueAtTime(.0001,at+1.1);
+            tone.connect(gain);gain.connect(couponAudioContext.destination);
+            tone.start(at);tone.stop(at+1.15);
+            tone.onended=()=>{tone.disconnect();gain.disconnect();};
+        });
+    } catch (_) { /* Visual success remains available on muted or unsupported devices. */ }
+}
 function celebrateLoginCoupon() {
+    playCouponSound();
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     document.querySelector('.cwd-glitter')?.remove();
     const layer=document.createElement('div');layer.className='cwd-glitter';layer.setAttribute('aria-hidden','true');
-    for(let i=0;i<40;i++){const star=document.createElement('i');star.style.setProperty('--x',Math.random()*100+'%');star.style.setProperty('--delay',Math.random()*.25+'s');star.style.setProperty('--drift',(Math.random()-.5)*150+'px');layer.append(star);}
-    document.body.append(layer);setTimeout(()=>layer.remove(),2000);
+    for(let i=0;i<180;i++){const star=document.createElement('i');star.style.setProperty('--x',Math.random()*100+'%');star.style.setProperty('--delay',Math.random()*1.1+'s');star.style.setProperty('--drift',(Math.random()-.5)*240+'px');layer.append(star);}
+    document.body.append(layer);setTimeout(()=>layer.remove(),4400);
 }

@@ -50,7 +50,7 @@ const replacement="  return cwd_private.wa_booking_confirmation(to_jsonb(b),(sel
 const patched=baseline.slice(0,oldStart)+replacement+baseline.slice(oldEnd);
 await db.exec(patched);
 // On main, verify the real integration uses exactly that same checkout-only edit.
-try{const actual=await read('supabase/drafts/whatsapp_formats_feedback.sql');const a=actual.indexOf('create function cwd_private.wa_format('),z=actual.indexOf('\ncreate table public.cwd_trip_feedback',a);assert.equal(actual.slice(a,z),patched.slice(patched.indexOf('create function cwd_private.wa_format('),patched.indexOf('\n\ncreate or replace function cwd_private.wa_enqueue()')));}catch(e){if(e.code!=='ENOENT')throw e;}
+try{const actual=await read('supabase/drafts/whatsapp_formats_feedback.sql');const a=actual.indexOf('create function cwd_private.wa_format('),z=actual.indexOf('\ncreate table public.cwd_trip_feedback',a);assert.equal(actual.slice(a,z).trimEnd(),patched.slice(patched.indexOf('create function cwd_private.wa_format('),patched.indexOf('\n\ncreate or replace function cwd_private.wa_enqueue()')).trimEnd());}catch(e){if(e.code!=='ENOENT')throw e;}
 await db.exec(`create trigger fixture_checkout after insert on public.cwd_booking_events for each row execute function cwd_private.wa_enqueue();`);
 await db.query('insert into public.inquiries select * from jsonb_populate_record(null::public.inquiries,$1)',[base]);await db.query('insert into public.cwd_checkout_bookings values($1,$2)',[base.booking_id,trip]);
 const event=async(type)=>(await db.query('insert into public.cwd_booking_events(booking_id,event_type) values($1,$2) returning id',[base.booking_id,type])).rows[0].id;

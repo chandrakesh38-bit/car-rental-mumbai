@@ -3,8 +3,8 @@ import {customerDb} from '../lib/customer-account.mjs';
 import {sendEmail,validEmail} from '../lib/notifications.mjs';
 export const config={runtime:'edge'};
 export default async function handler(request){
- if(request.method!=='POST')return Response.json({success:false},{status:405});
- const secret=process.env.CWD_NOTIFICATION_WORKER_SECRET;
+ if(!['GET','POST'].includes(request.method))return Response.json({success:false},{status:405});
+ const secret=request.method==='GET'?process.env.CRON_SECRET:process.env.CWD_NOTIFICATION_WORKER_SECRET;
  if(!secret||request.headers.get('authorization')!=='Bearer '+secret)return Response.json({success:false},{status:401});
  try{
   const cfg=checkoutConfig(),jobs=await rpc(cfg,'cwd_notification_claim',{});let accepted=0,failed=0;

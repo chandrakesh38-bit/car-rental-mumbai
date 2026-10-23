@@ -24,6 +24,6 @@ Production payments require rzp_live_ keys; previews still require rzp_test_. No
 
 Validation: exact migration on local PostgreSQL (coupon concurrency, replay, payment/cancellation races, OTP session creation, unique references, permissions); account and checkout API fixtures; environment isolation; admin authorization; mobile service/PDF/coupon/badge browser checks; build and diff checks.
 No real charge or customer OTP was generated during automated verification.
-Notification worker scheduling is pending separate user approval.
+User separately approved automatic booking/payment confirmation emails. A secret-authenticated Vercel cron drains the durable notification queue every five minutes. Missing customer emails are skipped. SMS/WhatsApp remain unconfigured.
 
 Rollback: revert/redeploy the prior main code if necessary; leave additive customer tables and transaction history intact. Do not drop tables or copy testing database over production. Customer catalogue prices require an explicit reviewed rollback if desired.

@@ -7,7 +7,7 @@ import bookingConfig from '../api/booking-config.js';
 const defaultRoot = fileURLToPath(new URL('../', import.meta.url));
 export function startServer(root = defaultRoot, port = 4173) {
   root = path.resolve(root);
-  const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.jpeg':'image/jpeg','.json':'application/json'};
+  const types = {'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.jpeg':'image/jpeg','.json':'application/json'};
   const server = http.createServer(async (req,res) => {
     try {
       const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);

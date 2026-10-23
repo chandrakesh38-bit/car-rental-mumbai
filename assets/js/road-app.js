@@ -1,10 +1,17 @@
 /* Customer presentation / progressive enhancement only. No fare or auth state. */
-(() => {
+(async () => {
   'use strict';
   if (!document.body.classList.contains('cwd-road')) return;
+  const {BANNER_COPY}=await import('/assets/js/road-banner-copy.mjs');
   const updateBanner=(initial=false)=>{
    const mode=initial===true?(document.body.dataset.bookingMode==='selfdrive'?'selfdrive':document.body.dataset.bookingTab||'outstation'):document.getElementById('btn-mode-selfdrive')?.classList.contains('tab-active')?'selfdrive':['airport','local'].find(t=>document.getElementById('subtab-'+t)?.classList.contains('subtab-active'))||'outstation';
-   const banner=document.querySelector('.road-banner');if(banner)banner.dataset.scene=mode;
+   const banner=document.querySelector('.road-banner');if(banner){
+    banner.dataset.scene=mode;const copy=BANNER_COPY[mode];
+    banner.querySelector('small').textContent=copy.eyebrow;
+    const accent=document.createElement('em');accent.textContent=copy.accent;
+    banner.querySelector('h2').replaceChildren(document.createTextNode(copy.title),document.createElement('br'),accent);
+    banner.querySelector('p').textContent=copy.description;
+   }
    document.querySelectorAll('[data-road-plans]').forEach(section=>section.hidden=section.dataset.roadPlans!==mode);
    const plans=document.getElementById('quick-plan-routes');if(plans)plans.hidden=mode==='selfdrive';
   };

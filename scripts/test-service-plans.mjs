@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {BANNER_COPY} from '../assets/js/road-banner-copy.mjs';
 import {createRequire} from 'node:module';
 import {mkdir} from 'node:fs/promises';
 import {startServer} from './serve.mjs';
@@ -15,6 +16,7 @@ try{
   await page.goto('http://127.0.0.1:4195'+path,{waitUntil:'networkidle'});
   const expected=path==='/airport-transfer'?'airport':path==='/self-drive'?'selfdrive':'outstation';
   await page.waitForFunction(mode=>document.querySelector('.road-banner').dataset.scene===mode,expected);
+  assert.equal(await page.locator('.road-banner small').textContent(),BANNER_COPY[expected].eyebrow);
   assert.equal(await page.locator('[data-road-plans]:visible').count(),expected==='selfdrive'?0:1);
   if(expected!=='selfdrive')assert.equal(await page.locator('[data-road-plans]:visible').getAttribute('data-road-plans'),expected);
  }
@@ -53,6 +55,8 @@ try{
   for(const mode of ['local','airport','selfdrive']){
    if(mode==='selfdrive')await page.locator('#btn-mode-selfdrive').click();else{await page.locator('#btn-mode-withdriver').click();await page.locator('#subtab-'+mode).click();}
    await page.waitForFunction(mode=>document.querySelector('.road-banner').dataset.scene===mode,mode);
+   assert.equal(await page.locator('.road-banner h2 em').textContent(),BANNER_COPY[mode].accent);
+   assert.equal(await page.locator('.road-banner p').textContent(),BANNER_COPY[mode].description);
    assert.match(await page.locator('.road-banner').evaluate(e=>getComputedStyle(e).backgroundImage),new RegExp(mode+'\\.webp'));
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow');
    await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:'.test-output/service-plans/'+mode+'-'+width+'.png'});

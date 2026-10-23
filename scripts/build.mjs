@@ -2,6 +2,13 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import renderMumbaiPage from '../src/pages/mumbai-car-rental.mjs';
+import {BANNER_COPY} from '../assets/js/road-banner-copy.mjs';
+
+function roadBanner(page){
+ if(!page.mode)return '';
+ const mode=page.mode==='selfdrive'?'selfdrive':page.tab||'outstation',copy=BANNER_COPY[mode];
+ return `<section data-scene="${mode}" class="road-banner" aria-label="Travel with CWD"><div><small>${copy.eyebrow}</small><h2>${copy.title}<br><em>${copy.accent}</em></h2><p>${copy.description}</p></div></section>`;
+}
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pages = JSON.parse(await readFile(path.join(root, 'src/pages.json'), 'utf8'));
@@ -126,7 +133,7 @@ for (const page of pages) {
       if (depth === 0) { end = tags.lastIndex; break; }
     }
     if (end < 0) throw new Error(`Unclosed booking widget: ${output}`);
-    const updated = existing.slice(0, start) + (await bookingWidget(page)).trimEnd() + existing.slice(end);
+    const updated = (existing.slice(0, start) + (await bookingWidget(page)).trimEnd() + existing.slice(end)).replace(/<section\b[^>]*class="road-banner"[^>]*>[\s\S]*?<\/section>/,()=>roadBanner(page));
     if (process.argv.includes('--check')) {
       if (updated.replace(/\r\n/g,'\n') !== existing.replace(/\r\n/g,'\n')) throw new Error(`Booking HTML is stale: ${output}`);
     } else await writeFile(output, updated);
@@ -151,7 +158,7 @@ for (const page of pages) {
     render(await component('navigation'), {navigationLinks}),
     '<main>',
     ...(custom ? [custom.main] : [
-      render(hero, {...data, roadBanner: page.mode ? `<section data-scene="${page.mode === 'selfdrive' ? 'selfdrive' : page.tab || 'outstation'}" class="road-banner" aria-label="Travel with CWD"><div><small>RIDE · EXPLORE · MORE</small><h2>India Looks Better<br><em>by Road</em></h2><p>Comfortable rides. Memorable journeys.</p></div></section>` : '', bookingWidget: page.mode ? await bookingWidget(page) : ''}),
+      render(hero, {...data, roadBanner: roadBanner(page), bookingWidget: page.mode ? await bookingWidget(page) : ''}),
       ...(await Promise.all(page.sections.map(async name => name === 'quick-routes' ? servicePlans(await component(name),page) : component(name))))
     ]),
     '</main>',

@@ -15,7 +15,7 @@ async function handler(request) {
       if (url.searchParams.has('config')) {
         // Read-only provider preflight before creating a paid booking.
         if (url.searchParams.get('payment') === '1') await razor('orders?count=1');
-        return json({ success: true, enabled: true, paymentMode: 'test' });
+        return json({ success: true, enabled: true, paymentMode: process.env.VERCEL_ENV === 'production' ? 'live' : 'test' });
       }
       if (url.searchParams.has('coupon')) {
         const {customer} = await couponIdentity(cfg,request);

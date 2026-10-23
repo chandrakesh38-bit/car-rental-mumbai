@@ -1,4 +1,5 @@
 import {vendorOfferAreaSummary, vendorOfferSafePricing} from '../lib/vendor-offer-privacy.mjs';
+import {checkoutTripFallback} from '../lib/checkout-trip-fallback.mjs';
 const json=(d,s=200)=>new Response(JSON.stringify(d),{status:s,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
 const base=()=>String(process.env.SUPABASE_URL||'').replace(/\/$/,'');
 const key=()=>process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -12,7 +13,13 @@ function iso(v){if(!v)return null;const d=new Date(v);return Number.isFinite(d.g
 const BUCKET='cwd-vendor-trip-photos';
 async function byOffer(raw){const h=await hashToken(raw),r=await db('cwd_vendor_offers?offer_token_hash=eq.'+h+'&select=*&limit=1');return r?.[0]||null}
 async function byAlloc(raw){const h=await hashToken(raw),r=await db('cwd_vendor_allocations?allocation_token_hash=eq.'+h+'&select=*&limit=1');return r?.[0]||null}
-async function booking(id){return (await db('inquiries?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'))?.[0]||null}
+async function booking(id){
+ const b=(await db('inquiries?booking_id=eq.'+encodeURIComponent(id)+'&select=*&limit=1'))?.[0];
+ if(!b)return null;
+ const rows=await db('cwd_checkout_bookings?booking_id=eq.'+encodeURIComponent(id)+'&select=booking_data&limit=1');
+ const data=rows?.[0]?.booking_data||{},fallback=checkoutTripFallback(data),legacy=bookingSchedule(b);
+ return {...b,start_date:legacy.start?.toISOString()||fallback.start,end_date:legacy.end?.toISOString()||fallback.end,full_address:b.full_address||data.customerAddress||''};
+}
 
 function parseCwdDateText(value){
  const raw=String(value||'').trim().replace(/(\d{1,2})(st|nd|rd|th)/i,'$1');

@@ -1,4 +1,5 @@
 import { MIN_OUTSTATION_KM_DAY, CUSTOMER_NIGHT_CHARGE, VENDOR_NIGHT_CHARGE, bookingNightCount, vendorOutstationBreakdown, marginPreview } from '../lib/cwd-pricing.mjs';
+import { checkoutTripFallback } from '../lib/checkout-trip-fallback.mjs';
 const json=(d,s=200)=>new Response(JSON.stringify(d),{status:s,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
 const base=()=>String(process.env.SUPABASE_URL||'').replace(/\/$/,'');
 const key=()=>process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -223,14 +224,17 @@ function shortCustomerRoute(route){
 }
 async function snapshot(id){
  const raw=await booking(id),schedule=bookingScheduleFromDetails(raw);
+ const checkout=await db('cwd_checkout_bookings?booking_id=eq.'+encodeURIComponent(id)+'&select=booking_data&limit=1');
+ const fallback=checkoutTripFallback(checkout?.[0]?.booking_data||{});
  return {
   booking_id:raw.booking_id,trip_type:raw.trip_type||'',vehicle:raw.car_name||'',route:raw.route||'',
-  start_at:schedule.start||null,final_drop_at:schedule.end||null,
+  start_at:schedule.start||fallback.start,final_drop_at:schedule.end||fallback.end,
   customer_name:raw.customer_name||'',customer_phone:raw.customer_phone||'',customer_email:raw.customer_email||'',
   paid_amount:n(raw.paid_amount),total_fare:n(raw.total_fare||raw.fare_amount),
   original_fare:n(raw.original_fare||raw.fare_amount||raw.total_fare),
   fare_amount:n(raw.fare_amount||raw.original_fare||raw.total_fare),
-  included_km:bookingIncludedKm(raw),
+  included_km:bookingIncludedKm(raw)||fallback.includedKm,
+  booked_days:fallback.days,
   booking_details:raw.booking_details||''
  }
 }
@@ -611,7 +615,7 @@ async function handler(request){
     const local=tripKind.includes('local');
     // For outstation, never trust manually entered vendor KM/night counts.
     // Customer booked KM is the single source of truth.
-    const bookedDays=Number(String(b.booking_details||'').match(/(\d+)\s*Days?\s*\|/i)?.[1]||0);
+    const bookedDays=Number(String(b.booking_details||'').match(/(\d+)\s*Days?\s*\|/i)?.[1]||b.booked_days||0);
     const days=bookedDays>0?bookedDays:Math.max(1,Math.floor(n(body.duty_days,1)));
     if(outstation&&(!Number.isFinite(b.included_km)||b.included_km<=0))
       fail('Customer booked KM missing. Check booking details before making an offer.',409);

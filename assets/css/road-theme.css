@@ -81,6 +81,10 @@ body.cwd-road{--road-ink:#0b3038;--road-coral:#cb3c27;--road-paper:#fffaf3;--roa
 .cwd-road .cwd-p1-car-photo,.cwd-road .cwd-p1-car-photo.cwd-p1-labelled-photo{background:#fff;padding:8px!important}
 .cwd-road .cwd-p1-car-photo img{object-fit:contain;width:100%;height:100%;mix-blend-mode:multiply}
 .cwd-road .cwd-p1-labelled-photo img{padding-top:12px}
+.cwd-road .cwd-p1-vehicle-badge{white-space:nowrap;font-size:9px;padding:4px 6px;line-height:1.2}
+.cwd-road .cwd-coupon-checkout input::placeholder{text-transform:none}
+.cwd-road .cwd-coupon-checkout input{flex:1 1 200px;min-width:min(100%,200px);width:200px;max-width:100%;box-sizing:border-box}
+@media(max-width:480px){.cwd-road .cwd-coupon-checkout>div{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}.cwd-road .cwd-coupon-checkout input{width:100%;min-width:0;box-sizing:border-box}.cwd-road .cwd-coupon-checkout button{width:100%}}
 .cwd-road .road-more-routes{border:1px solid #b94730;border-radius:24px;color:#a83220;background:#fffaf3;padding:12px 24px;display:block;margin:20px auto;font-weight:700}
 .cwd-road .cwd-destination-card[hidden]{display:none!important}
 .cwd-road [data-road-plans][hidden],.cwd-road #quick-plan-routes[hidden]{display:none!important}

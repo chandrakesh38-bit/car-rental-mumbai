@@ -21,8 +21,11 @@
     'Maruti Suzuki Ertiga':'Family Choice',
     'Maruti Ertiga':'Family Choice',
     'Ertiga':'Family Choice',
-    'Toyota Innova Crysta':'Premium Comfort',
-    'Innova Crysta':'Premium Comfort',
+    'Maruti Suzuki XL6':'Comfort Plus',
+    'Maruti XL6':'Comfort Plus',
+    'XL6':'Comfort Plus',
+    'Toyota Innova Crysta':'Premium',
+    'Innova Crysta':'Premium',
     ...(window.CWD_VEHICLE_LABELS || {})
   };
   const normalizedVehicleLabels = new Map(Object.entries(vehicleLabels).map(([name,label])=>[name.trim().replace(/\s+/g,' ').toLowerCase(),label]));

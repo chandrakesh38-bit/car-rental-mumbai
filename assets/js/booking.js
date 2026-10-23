@@ -4063,7 +4063,7 @@ function setupLoginCoupon() {
     const host = document.createElement('section');
     host.className = 'cwd-coupon-checkout';
     host.innerHTML = `<label for="cwd-coupon-code">Available coupons</label><p>First-time offer: 10% OFF, up to ₹500. After that, use CWD5 for 5% OFF on every booking. One coupon per booking.</p>
-      <div><input id="cwd-coupon-code" placeholder="Enter coupon code" autocomplete="off" maxlength="30"><button type="button" id="cwd-coupon-apply">Apply available coupon</button><button type="button" id="cwd-coupon-remove" hidden>Remove</button></div>
+      <div><input id="cwd-coupon-code" placeholder="Enter coupon code" autocomplete="off" maxlength="30"><button type="button" id="cwd-coupon-apply">Apply Coupon</button><button type="button" id="cwd-coupon-remove" hidden>Remove</button></div>
       <p id="cwd-coupon-status" role="status" aria-live="polite"></p><small>Refundable deposits and toll/parking charges at actuals are excluded.</small>`;
     document.getElementById('cwd-checkout-fare-lines').parentElement.append(host);
     const input=host.querySelector('input'), apply=host.querySelector('#cwd-coupon-apply'), remove=host.querySelector('#cwd-coupon-remove'), status=host.querySelector('[role="status"]');

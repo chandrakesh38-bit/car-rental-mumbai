@@ -44,9 +44,7 @@ begin
  if kind='checkout' and b.booking_status in ('cancelled','completed') then return fallback; end if;
  c:=cwd_private.wa_trip_context(bid);
  if kind='checkout' then
-  return 'Hi '||b.customer_name||E',\n\nYour car is confirmed with booking ID: '||bid||E'. Your trip details include:\n\nItinerary: '||(c->>'route')||' ['||(c->>'type')||' ('||(c->>'journey')||')]'||
-   E'\n\nPickup Time & Date: '||(c->>'time')||E'\n\nCar Type: '||b.car_name||E'\n\nPick Up Location: '||(c->>'pickup')||E'\n\nDrop Location: '||(c->>'drop')||
-   E'\n\nYou will receive your driver details at least 2 hours before your pickup time. For bookings made less than 2 hours before pickup, our team will share the details as soon as the driver is assigned.\n\nThank you!\n— Team CWD';
+  return cwd_private.wa_booking_confirmation(to_jsonb(b),(select booking_data from public.cwd_checkout_bookings where booking_id=bid));
  end if;
  select * into a from public.cwd_vendor_allocations where booking_id=bid;
  select * into o from public.cwd_vendor_offers where id=a.offer_id;

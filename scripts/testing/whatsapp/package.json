@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "description": "In-memory PostgreSQL confirmation tests; no sender or remote database",
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.11"
+  }
+}

@@ -311,6 +311,12 @@ async function handler(request){
   const user=await requireAdmin(request);
   if(request.method==='GET'){
    const u=new URL(request.url),id=u.searchParams.get('booking_id');
+   if(u.searchParams.get('feedback')==='1'){
+    const page=Number(u.searchParams.get('page')||0);
+    if(!Number.isSafeInteger(page)||page<0||page>10000)fail('Invalid page.');
+    const rows=await db('cwd_trip_feedback?submitted_at=not.is.null&select=booking_id,customer_name,rating,comment,submitted_at&order=submitted_at.desc,booking_id.asc&limit=26&offset='+page*25);
+    return json({success:true,feedback:(rows||[]).slice(0,25),hasMore:(rows||[]).length>25});
+   }
    if(u.searchParams.get('rates')==='1'){
     const [vehicles,vendorRates]=await Promise.all([
       db('with_driver_rates?select=id,full_name,segment,outstation_rate_per_km,local_pkg_8hr_80km,local_extra_hour_rate,local_extra_km_rate,driver_allowance_per_day,is_active,display_order&order=display_order.asc,full_name.asc'),

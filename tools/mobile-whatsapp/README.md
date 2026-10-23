@@ -22,6 +22,25 @@ calculations in this worker. Balance is explicitly labelled at invoice issue.
 All notifications are for future events only. Test SQL fixtures are rolled back.
 Manual phone startup after reboot is the owner's chosen operating procedure.
 
+Format/feedback extension: `supabase/drafts/whatsapp_formats_feedback.sql` adds
+personalized confirmation, driver/odometer terms, allocated-vendor instructions,
+and final settlement messages. Pickup dates use IST. Driver details are still
+sent when saved, not by a timer: operations must assign in time to meet the
+at-least-two-hours-before-pickup promise. Short-notice bookings have explicit copy.
+Checkout booking_data supplies precise itinerary/address details when available.
+
+After an ended/approved trip has a matching final invoice and its full fare is
+recorded paid in inquiries, one feedback invitation is queued. This covers both
+online payment reconciliation and admin-recorded final payments, and prepaid
+trips when their final invoice is issued. Historical bookings are not backfilled.
+The 90-day capability token is hashed in the database; its raw value appears only
+in the outgoing private link's URL fragment. The public page sends it in a header
+to a server-side API; no service key is exposed. One submitted rating/comment per
+booking is accepted, and retry submissions return success without overwriting.
+Admin Trip Feedback lists submitted responses using existing admin authentication.
+The supplied Google review link is visible to everyone regardless of rating.
+No automatic Google posting, incentive, or positive-rating gate is implemented.
+
 Apply `supabase/drafts/mobile_whatsapp.sql` once. The system starts disabled.
 Install worker.mjs and install.sh into the already-paired private Termux directory
 `~/cwd-whatsapp`, then run `bash install.sh`. It prints a SHA-256 activation hash;

@@ -110,6 +110,7 @@
                         <i class="fa-solid fa-circle-question w-4 text-amber-300"></i> FAQs
                     </button>
                     <button onclick="switchTab('partners')" id="tab-btn-partners" class="w-full px-3.5 py-3 rounded-xl text-slate-300 text-left">Partner Applications</button>
+                    <button onclick="switchTab('feedback')" id="tab-btn-feedback" class="w-full px-3.5 py-3 rounded-xl text-slate-300 text-left">Trip Feedback</button>
                     <button onclick="switchTab('logins')" id="tab-btn-logins" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 text-left"><i class="fa-solid fa-users"></i> Login Users</button>
                     <button onclick="switchTab('inquiries')" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/5 transition text-left" id="tab-btn-inquiries">
                         <i class="fa-solid fa-calendar-check w-4 text-rose-400"></i> <span class="flex-1">Bookings</span><span id="booking-nav-badge" class="hidden min-w-5 h-5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-black items-center justify-center"></span>
@@ -492,6 +493,12 @@
             </div>
 
             <!-- SECTION 7: BOOKINGS -->
+            <section id="section-feedback" class="hidden space-y-4">
+              <div class="flex justify-between gap-3"><h2 class="text-xl font-black">Trip Feedback</h2><button onclick="loadTripFeedback(feedbackPage)" class="px-4 py-2 rounded-lg bg-indigo-700 text-white">Refresh</button></div>
+              <p class="text-sm text-slate-500">Private customer ratings and comments after final settlement.</p>
+              <p id="feedback-message" role="status"></p><div id="feedback-list" class="space-y-3"></div>
+              <div class="flex gap-4"><button id="feedback-prev" onclick="loadTripFeedback(feedbackPage-1)">Previous</button><button id="feedback-next" onclick="loadTripFeedback(feedbackPage+1)">Next</button></div>
+            </section>
             <section id="section-partners" class="hidden space-y-4">
               <h2 class="text-xl font-black">Partner Applications</h2>
               <p class="text-sm text-slate-500">Review submissions from Become a Partner. Approved applicants can then complete vendor onboarding.</p>
@@ -978,7 +985,7 @@
 
         // TABS SWITCHER
         function switchTab(tab) {
-            ['dashboard', 'vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries', 'vendors', 'logins', 'partners'].forEach(t => {
+            ['dashboard', 'vehicles', 'pricing', 'locations', 'cms', 'whatsapp', 'faqs', 'inquiries', 'vendors', 'logins', 'partners', 'feedback'].forEach(t => {
                 const sec = document.getElementById(`section-${t}`);
                 const btn = document.getElementById(`tab-btn-${t}`);
                 if (t === tab) {
@@ -992,6 +999,7 @@
 
             if (tab === 'logins') loadCustomerLogins(0);
             if (tab === 'partners') loadPartnerApplications(0);
+            if (tab === 'feedback') loadTripFeedback(0);
             if (tab === 'dashboard') loadDashboard();
             if (tab === 'vehicles') loadVehicles();
             if (tab === 'pricing') { loadPricingRules(); loadWithDriverRates(); loadVendorRateCards(); }
@@ -3594,5 +3602,6 @@ document.addEventListener('click',e=>{
 </script>
 <script defer src="/assets/js/admin-booking-modification.js"></script>
 <script defer src="/assets/js/admin-partner-applications.js"></script>
+<script defer src="/assets/js/admin-trip-feedback.js"></script>
 </body>
 </html>

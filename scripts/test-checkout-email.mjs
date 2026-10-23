@@ -7,6 +7,7 @@ globalThis.fetch=async(url,options={})=>{
  if(url==='https://api.resend.com/emails'){emails++;assert.equal(options.headers['Idempotency-Key'],'checkout/job');return providerFails?Response.json({},{status:503}):Response.json({id:'email-fixture'});}
  const u=new URL(url),body=options.body?JSON.parse(options.body):null;
  if(u.pathname.endsWith('cwd_booking_events'))return Response.json([{id:'event',event_type:'booking_confirmed'}]);
+ if(u.pathname.endsWith('cwd_checkout_bookings'))return Response.json([{booking_data:{}}]);
  if(u.pathname.endsWith('inquiries'))return Response.json([{booking_id:'123456',customer_email:email,booking_status:'confirmed',total_fare:5000,paid_amount:0}]);
  assert.ok(u.pathname.endsWith('cwd_notification_outbox'));
  if(options.method==='PATCH'){

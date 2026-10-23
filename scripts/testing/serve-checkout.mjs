@@ -3,7 +3,7 @@ import http from 'node:http';import path from 'node:path';import {readFile,readd
 import bookingConfig from '../../api/booking-config.js';
 import {POST as checkout} from '../../api/customer-checkout.mjs';import account from '../../api/customer-account.js';import bookings from '../../api/customer-bookings.js';import otp from '../../api/mobile-otp.js';import maps from '../../api/maps-route.js';import notifications from '../../api/booking-notifications.js';import {POST as webhook} from '../../api/razorpay-webhook.mjs';
 import {installFixtures,state,config,simulateCapture} from './checkout-fixtures.mjs';
-const root=path.resolve(fileURLToPath(new URL('../../',import.meta.url)));if(execFileSync('git',['branch','--show-current'],{cwd:root,encoding:'utf8'}).trim()!=='testing')throw Error('testing branch required');installFixtures();
+const root=path.resolve(fileURLToPath(new URL('../../',import.meta.url)));if(!['testing','codex/main-release-20261023'].includes(execFileSync('git',['branch','--show-current'],{cwd:root,encoding:'utf8'}).trim()))throw Error('testing or release branch required');installFixtures();
 // Public catalogue read on 2026-10-19; all transactional providers stay emulated.
 state.tables.with_driver_rates=JSON.parse(await readFile(new URL('./public-fleet-snapshot.json',import.meta.url),'utf8'));
 if(process.env.CWD_LOCAL_POSTGRES==='true'){

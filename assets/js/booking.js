@@ -2884,10 +2884,7 @@ async function handleBookingSubmitDetails(e, paymentChoice, checkout, quoteOnly 
     if (!quoteOnly) try {
         const otp = await mobileOtpReady;
         if (!otp) throw new Error('Mobile verification could not load. Please refresh and retry.');
-        const customer = await checkout.getCheckoutCustomer();
-        if (!customer || customer.mobile.slice(-10) !== document.getElementById('cust-phone').value.replace(/\D/g,'').slice(-10)) {
-        otpProof = await otp.requestFormOtp(e.target, 'cust-phone', 'booking');
-        }
+        await ensureCheckoutIdentity(e.target);
     } catch (error) {
         document.getElementById('cwd-checkout-error').textContent = error.cancelled ? 'Mobile verification cancelled. Choose a payment option when you are ready.' : error.message;
         if (!error.cancelled) showCustomAlert(error.message);
@@ -4070,6 +4067,38 @@ document.addEventListener('keydown', function(event) {
 
 // Presentation only: read the selected live quote; never calculate or submit a new fare.
 let activeLoginCoupon = null, loginCouponRequest = 0;
+let checkoutIdentityRequest = null;
+function ensureCheckoutIdentity(form, source = 'login') {
+    const phone = form.querySelector('#cust-phone');
+    const mobile = phone.value.replace(/\D/g,'').replace(/^91(?=\d{10}$)/,'');
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
+        phone.focus();
+        return Promise.reject(new Error('Enter a valid 10-digit mobile number.'));
+    }
+    if (checkoutIdentityRequest?.mobile === mobile) return checkoutIdentityRequest.promise;
+    const request = {mobile};
+    request.promise = (async () => {
+        const checkout = await import('/assets/js/customer-checkout.js');
+        const unchanged = () => phone.value.replace(/\D/g,'').slice(-10) === mobile;
+        const customer = await checkout.getCheckoutCustomer();
+        if (!unchanged()) throw Error('Mobile number changed. Verify the current number.');
+        if (customer?.mobile.slice(-10) === mobile) return customer;
+        const otp = await mobileOtpReady;
+        if (!otp) throw Error('Mobile verification could not load. Please refresh and retry.');
+        try {
+            const proof = await otp.requestFormOtp(form,'cust-phone','customer');
+            if (!unchanged()) throw Error('Mobile number changed. Verify the current number.');
+            const response = await fetch('/api/customer-account',{method:'POST',credentials:'same-origin',signal:AbortSignal.timeout(20000),headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',phone:mobile,proof,source})});
+            const result = await response.json();
+            if (!response.ok || !result.success) throw Error(result.message || 'Unable to sign in. Please retry.');
+            if (!unchanged()) throw Error('Mobile number changed. Verify the current number.');
+            window.dispatchEvent(new Event('cwd:account-changed'));
+            return result.customer;
+        } finally { otp.clearFormOtp(form); }
+    })().finally(() => { if (checkoutIdentityRequest === request) checkoutIdentityRequest = null; });
+    checkoutIdentityRequest = request;
+    return request.promise;
+}
 function setupLoginCoupon() {
     if (document.getElementById('cwd-coupon-code')) return;
     const host = document.createElement('section');
@@ -4096,18 +4125,8 @@ function setupLoginCoupon() {
             const bookingData=await handleBookingSubmitDetails({target:form,preventDefault(){}},0,null,true);
             if(!bookingData)throw Error('Complete your trip details first.');
             const checkout=await import('/assets/js/customer-checkout.js');
-            const customer=await checkout.getCheckoutCustomer();
-            if(!customer) {
-                const otp=await import('/assets/js/mobile-otp.js');
-                try {
-                    const proof=await otp.requestFormOtp(form,'cust-phone','customer');
-                    if(attempt!==loginCouponRequest)return;
-                    const response=await fetch('/api/customer-account',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',phone:document.getElementById('cust-phone').value,proof,source:'coupon'})});
-                    const result=await response.json();
-                    if(!response.ok||!result.success)throw Error(result.message||'Unable to sign in. Please retry.');
-                    window.dispatchEvent(new Event('cwd:account-changed'));
-                } finally {otp.clearFormOtp(form);}
-            }
+            await ensureCheckoutIdentity(form,'coupon');
+            if(attempt!==loginCouponRequest)return;
             const quote=await checkout.quoteLoginCoupon({couponCode:requestedCode,phone:document.getElementById('cust-phone').value,bookingData});
             if(attempt!==loginCouponRequest)return;
             activeLoginCoupon=quote;input.value=quote.code;remove.hidden=false;
@@ -4282,6 +4301,7 @@ mobileOtpReady.then(otp=>{
   const phone=document.getElementById(id);if(!phone)continue;
   otp.bindAutomaticOtp(phone,async()=>{
    try{
+    if(id==='cust-phone'){await ensureCheckoutIdentity(phone.form);return;}
     const checkout=await import('/assets/js/customer-checkout.js');
     const customer=await checkout.getCheckoutCustomer();
     if(customer?.mobile.slice(-10)===phone.value.replace(/\D/g,'').slice(-10))return;

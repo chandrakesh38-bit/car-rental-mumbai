@@ -136,7 +136,7 @@
                 <!-- MAIN MODE TABS -->
                 <div class="grid grid-cols-2 bg-slate-100 p-1.5 border-b border-slate-200 gap-1">
                     <button type="button" id="btn-mode-withdriver" onclick="setServiceMode('withdriver')" class="py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition tab-active shadow-sm">
-                        <i class="fa-solid fa-user-tie"></i> With Driver
+                        <i class="fa-solid fa-user-tie"></i> Car with Driver
                     </button>
                     <button type="button" id="btn-mode-selfdrive" onclick="setServiceMode('selfdrive')" class="py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 flex items-center justify-center gap-2 hover:text-indigo-950 transition">
                         <i class="fa-solid fa-key"></i> Self Drive
@@ -148,11 +148,11 @@
                     
                     <!-- Trip Subtabs -->
                     <div class="grid grid-cols-3 bg-slate-100 rounded-xl p-1 mb-6 border border-slate-200 text-xs sm:text-sm font-semibold">
-                        <button type="button" id="subtab-local" onclick="setWDSubTab('local')" class="py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-city"></i> <span>Local City</span>
-                        </button>
                         <button type="button" id="subtab-outstation" onclick="setWDSubTab('outstation')" class="py-2.5 rounded-lg transition subtab-active flex items-center justify-center gap-1.5">
                             <i class="fa-solid fa-route"></i> <span>Outstation</span>
+                        </button>
+                        <button type="button" id="subtab-local" onclick="setWDSubTab('local')" class="py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-city"></i> <span>Local</span>
                         </button>
                         <button type="button" id="subtab-airport" onclick="setWDSubTab('airport')" class="py-2.5 rounded-lg transition text-slate-600 flex items-center justify-center gap-1.5">
                             <i class="fa-solid fa-plane-departure"></i> <span>Airport</span>

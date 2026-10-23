@@ -40,4 +40,9 @@
 <link rel="stylesheet" href="/assets/css/phase1-conversion.css">
 <script defer src="/assets/js/phase1-redesign.js"></script>
 <script defer src="/assets/js/phase1-autoflow.js"></script>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0b3038">
+<link rel="apple-touch-icon" href="/assets/images/app/icon-192.png">
+<link rel="stylesheet" href="/assets/css/road-theme.css">
+<script defer src="/assets/js/road-app.js"></script>
 </head>

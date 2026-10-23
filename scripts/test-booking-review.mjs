@@ -7,13 +7,13 @@ import {mkdir} from 'node:fs/promises';
 const {chromium}=createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE||'playwright');
 const root=fileURLToPath(new URL('../',import.meta.url));
 const server=await startServer(root,4393),browser=await chromium.launch({headless:true,channel:'msedge'});
-const rates=[['Maruti Suzuki Dzire','Sedan',14],['Toyota Innova','SUV',20],['WagonR','Hatchback',12]].map(([full_name,segment,outstation_rate_per_km])=>({full_name,segment,outstation_rate_per_km,driver_allowance_per_day:500,is_active:true,seating_capacity:4,bag_capacity:2}));
+const rates=[['Maruti Suzuki Dzire','Sedan',14],['Toyota Innova Crysta','SUV',20],['WagonR','Hatchback',12]].map(([full_name,segment,outstation_rate_per_km])=>({full_name,segment,outstation_rate_per_km,driver_allowance_per_day:500,is_active:true,seating_capacity:4,bag_capacity:2}));
 try {
  const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{
    // Synthetic catalogue exclusively for mocked UI tests; never shipped as fleet evidence.
-   window.CWD_VERIFIED_CAR_FUEL={'Sedan (Dzire / Aura)':'CNG','Toyota Innova':'Diesel'};
+   window.CWD_VERIFIED_CAR_FUEL={'Sedan (Dzire / Aura)':'CNG','Toyota Innova Crysta':'Diesel'};
    window.CWD_VERIFIED_CAR_PHOTOS={'Sedan (Dzire / Aura)':['/logo.png','/logo.png','/logo.png','/logo.png']};
  });
  await page.route('**/*',async route=>{
@@ -135,4 +135,3 @@ try {
  assert.deepEqual(errors,[]);
  console.log('PASS review: all trip types, correct route/date display, terms Escape and preserved contact/fare, responsive 320–1366px; listing: verified-only fuel filters, category cards, price sorting, gallery navigation/scroll/state, no photo-to-booking click, Modify escape and stable summary, keyboard selection, browser Back with real search loader, coupon removed, four widths; no booking/OTP/payment calls.');
 }finally{await browser.close();await new Promise(r=>server.close(r));}
-

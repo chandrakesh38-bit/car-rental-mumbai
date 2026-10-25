@@ -62,6 +62,27 @@
         }
     });
 
+    // Homepage reference layout: show popular-route carousel inside the booking
+    // panel above Find My Ride, without cloning handlers or changing fare logic.
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.body.dataset.page !== 'home' || !window.matchMedia('(max-width:700px)').matches) return;
+        const routes = document.getElementById('quick-plan-routes');
+        const action = document.getElementById('explore-cabs-button')?.parentElement;
+        if (!routes || !action || !action.parentElement || document.getElementById('cwd-reference-routes-label')) return;
+        const label = document.createElement('h3');
+        label.id = 'cwd-reference-routes-label';
+        label.textContent = '✦ Popular routes from Mumbai';
+        label.style.cssText = 'font-weight:800;font-size:14px;color:#142346;text-align:left;margin:17px 0 5px;padding:0 10px';
+        action.parentElement.insertBefore(label, action);
+        action.parentElement.insertBefore(routes, action);
+        const cta = document.getElementById('explore-cabs-button');
+        if (cta) {
+            const words = cta.querySelector('span');
+            if (words && /Explore Cabs|Search Car|Find Cabs/i.test(words.textContent)) words.textContent = 'Find My Ride';
+            cta.setAttribute('aria-label','Find My Ride');
+        }
+    });
+
     let previousFocus;
     let closeTimer;
     window.openNavDrawer = function () {

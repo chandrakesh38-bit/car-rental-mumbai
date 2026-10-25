@@ -145,3 +145,52 @@ body.cwd-road{--road-ink:#0b3038;--road-coral:#cb3c27;--road-paper:#fffaf3;--roa
  .cwd-road .confirmation-right .outline-action{min-height:0;margin:4px 0!important;padding:4px!important}
  .cwd-road .driver-status>span{width:30px;height:30px;font-size:22px}
 }
+
+
+/* Reference-inspired premium mobile home - testing-only visual layer.
+   Existing booking field IDs, handlers, fare/OTP/payment logic remain intact. */
+@media(max-width:700px){
+body.cwd-road[data-page="home"]{--road-ink:#101f40;--road-coral:#fb7779;--road-paper:#f8f9fd;background:#f8f9fd}
+body.cwd-road[data-page="home"]>nav:not(.road-bottom-nav){background:#fff;position:relative}
+body.cwd-road[data-page="home"] main{background:#f8f9fd}
+body.cwd-road[data-page="home"] header.cwd-p1-hero{background:transparent!important;padding:0!important;overflow:visible}
+body.cwd-road[data-page="home"] header.cwd-p1-hero>div{max-width:none}
+body.cwd-road[data-page="home"] header.cwd-p1-hero>div>span,
+body.cwd-road[data-page="home"] header.cwd-p1-hero>div>h1,
+body.cwd-road[data-page="home"] header.cwd-p1-hero>div>p{display:none!important}
+body.cwd-road[data-page="home"] .road-banner[data-scene]{display:flex!important;min-height:365px;margin:0!important;padding:34px 21px 126px!important;border-radius:0!important;align-items:flex-start;justify-content:flex-start;background:linear-gradient(90deg,#f7f9fdfc 0%,#f7f9fdeb 34%,#f7f9fd16 67%),url('/assets/images/road/airport.webp') center/cover!important}
+body.cwd-road[data-page="home"] .road-banner>div{text-align:left;max-width:62%;text-shadow:0 1px 9px #fff8}
+body.cwd-road[data-page="home"] .road-banner small{display:none}
+body.cwd-road[data-page="home"] .road-banner h2{margin:7px 0!important;font-size:clamp(36px,9vw,51px)!important;font-weight:900;line-height:1.04;letter-spacing:-1.9px;color:#102143!important}
+body.cwd-road[data-page="home"] .road-banner h2 em{color:#f56c71!important}
+body.cwd-road[data-page="home"] .road-banner p{color:#17314f!important;font-weight:600;font-size:12px!important;line-height:1.5}
+body.cwd-road[data-page="home"] #booking-widget{position:relative;margin:-88px 12px 0!important;border-radius:34px 34px 26px 26px!important;background:#f8f9fd!important;border:1px solid #ffffff!important;box-shadow:0 14px 44px #0d234026!important;overflow:visible}
+body.cwd-road[data-page="home"] #booking-widget:before{content:"";position:absolute;top:10px;left:50%;transform:translateX(-50%);width:60px;height:5px;border-radius:99px;background:#b7c0d3}
+body.cwd-road[data-page="home"] #booking-widget>div:first-child{margin:22px 12px 6px;padding:5px!important;background:#fff!important;border-radius:20px;box-shadow:0 3px 13px #12214312}
+body.cwd-road[data-page="home"] #booking-widget>div:first-child button{min-height:52px!important;border-radius:16px!important;font-size:13px!important;background:#fff!important;color:#314361!important}
+body.cwd-road[data-page="home"] #booking-widget>div:first-child .tab-active{background:#111f41!important;color:#fff!important;box-shadow:0 5px 15px #15254928}
+body.cwd-road[data-page="home"] #with-driver-block,#booking-widget #self-drive-block{padding:10px 13px 18px!important}
+body.cwd-road[data-page="home"] #with-driver-block>.grid:first-child{padding:4px!important;margin-bottom:16px!important;background:#fff!important;border-radius:19px!important;gap:5px!important}
+body.cwd-road[data-page="home"] #with-driver-block>.grid:first-child button{background:#fff!important;color:#283c5e!important;border-radius:15px!important;min-height:46px!important;font-size:12px!important}
+body.cwd-road[data-page="home"] #booking-widget .subtab-active{background:linear-gradient(110deg,#f66c7a,#ffa29a)!important;color:#102143!important;box-shadow:0 4px 12px #f86b7240!important}
+body.cwd-road[data-page="home"] #wd-out-trip-type-fieldset{padding:0 2px!important;margin:0 0 12px!important}
+body.cwd-road[data-page="home"] #wd-out-trip-type-fieldset legend{font-size:11px!important;letter-spacing:0!important}
+body.cwd-road[data-page="home"] #wd-out-trip-type-fieldset>.grid{background:#eef0f7;border-radius:16px;padding:3px;gap:3px}
+body.cwd-road[data-page="home"] #wd-out-trip-type-fieldset button{min-height:37px;border:0!important;border-radius:13px!important;padding:7px!important}
+body.cwd-road[data-page="home"] #wd-out-trip-type-fieldset button[aria-pressed=true]{background:#13234a!important;color:white!important}
+body.cwd-road[data-page="home"] #wd-out-trip-type-fieldset button[aria-pressed=true] span{color:#fff!important}
+body.cwd-road[data-page="home"] #booking-widget input,body.cwd-road[data-page="home"] #booking-widget select{background:#fff!important;min-height:48px;border:1px solid #eaecf2!important;border-radius:13px!important;box-shadow:0 3px 12px #12214309;color:#172b49!important}
+body.cwd-road[data-page="home"] #booking-widget label{color:#465371!important;font-size:11px!important;letter-spacing:0!important}
+body.cwd-road[data-page="home"] #booking-widget .booking-datetime{grid-template-columns:1.3fr 1fr 1fr;gap:5px}
+body.cwd-road[data-page="home"] #booking-widget .location-current-action{border-radius:12px!important}
+body.cwd-road[data-page="home"] #explore-cabs-button{background:#12254b!important;color:#fff!important;border-radius:99px!important;min-height:62px!important;font-size:17px!important;box-shadow:0 8px 21px #15284827!important}
+body.cwd-road[data-page="home"] #explore-cabs-button:after{content:"➜";display:grid;place-items:center;color:#12254b;background:#dbff76;border-radius:50%;height:42px;width:42px;margin-left:auto;font-size:25px}
+body.cwd-road[data-page="home"] #quick-plan-routes{margin:14px 12px 22px;padding:16px 9px!important;background:#f8f9fd!important;border-radius:22px}
+body.cwd-road[data-page="home"] #quick-plan-routes [data-road-plans="outstation"] .cwd-destinations-heading{display:none}
+body.cwd-road[data-page="home"] #quick-plan-routes [data-road-plans="outstation"] .cwd-destinations-grid{display:flex!important;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;gap:11px!important;padding:2px 2px 15px}
+body.cwd-road[data-page="home"] #quick-plan-routes [data-road-plans="outstation"] .cwd-destination-card{flex:0 0 69%!important;max-width:240px!important;scroll-snap-align:start;padding:0!important;border:1px solid #e7ebf4!important;border-radius:18px!important;background:#fff!important;box-shadow:0 6px 15px #11254110!important}
+body.cwd-road[data-page="home"] #quick-plan-routes [data-road-plans="outstation"] .cwd-destination-image{border-radius:16px!important;min-height:138px}
+body.cwd-road[data-page="home"] .road-more-routes{border-radius:99px!important}
+body.cwd-road[data-page="home"] .road-bottom-nav{background:#fff!important}
+body.cwd-road[data-page="home"] .road-bottom-nav a[aria-current]{color:#102143!important}
+}

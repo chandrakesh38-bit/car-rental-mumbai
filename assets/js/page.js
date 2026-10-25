@@ -57,8 +57,47 @@
             const section = document.createElement('div');
             section.innerHTML = "<section id=\"cwd-social-showcase\" aria-labelledby=\"cwd-social-title\" style=\"max-width:1080px;margin:24px auto;padding:22px 16px 32px;text-align:center\"><p style=\"font-weight:750;letter-spacing:.13em;color:#a94732;font-size:11px;margin-bottom:7px\">STAY CONNECTED</p><h2 id=\"cwd-social-title\" style=\"font-size:clamp(23px,5vw,35px);font-weight:800;color:#0b3038;margin:0 0 10px\">Follow Our Journey</h2><p style=\"color:#627674;font-size:14px;max-width:480px;margin:0 auto 20px\">See our cars, travel stories and latest updates on Instagram and Facebook.</p><div style=\"display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:520px;margin:auto\"><a href=\"https://www.instagram.com/carwithdriver.india/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"padding:22px 10px;border:1px solid #e4ddd3;border-radius:22px;background:#fff;color:#0b3038;text-decoration:none;box-shadow:0 8px 20px #0b30380b\"><i class=\"fa-brands fa-instagram\" style=\"font-size:30px;color:#b33773\" aria-hidden=\"true\"></i><strong style=\"display:block;margin:8px 0\">Instagram</strong><span style=\"font-size:12px\">Explore our reels ↗</span></a><a href=\"https://www.facebook.com/search/top?q=Car%20with%20driver%20india\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"padding:22px 10px;border:1px solid #e4ddd3;border-radius:22px;background:#fff;color:#0b3038;text-decoration:none;box-shadow:0 8px 20px #0b30380b\"><i class=\"fa-brands fa-facebook\" style=\"font-size:30px;color:#1877f2\" aria-hidden=\"true\"></i><strong style=\"display:block;margin:8px 0\">Facebook</strong><span style=\"font-size:12px\">Find our page ↗</span></a></div><div id=\"cwd-top-reels\" hidden></div></section>";
             footer.insertAdjacentElement('beforebegin', section.firstElementChild);
-            // Add verified reel permalinks here only after checking actual public view counts.
-            // Do not embed unverified posts or fabricate engagement metrics.
+
+            const reelMount = document.getElementById('cwd-top-reels');
+            if (reelMount) {
+                const reels = ["DWj9JKmjheB","DXblBRpkoL9","DZAAwIWOuYY","DZCaoxNkYnf"];
+                const style = document.createElement('style');
+                style.textContent = '.cwd-reels-wrap{margin:30px 0 0;text-align:left}.cwd-reels-heading{font-size:21px;font-weight:800;color:#0b3038;margin:0 0 6px}.cwd-reels-caption{font-size:13px;color:#647775;margin:0 0 14px}.cwd-reels-track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 16px;scrollbar-width:thin}.cwd-reel-card{flex:0 0 min(72vw,250px);scroll-snap-align:start;background:white;border:1px solid #e9e0d7;border-radius:19px;overflow:hidden;box-shadow:0 8px 20px #163b3b0e;transition:transform .22s,box-shadow .22s}.cwd-reel-card:hover{transform:translateY(-3px);box-shadow:0 12px 26px #163b3b1b}.cwd-reel-frame{width:100%;aspect-ratio:9/15;border:0;background:#f5f1e9;display:block}.cwd-reel-open{display:block;padding:13px 12px;font-size:13px;font-weight:800;color:#0b3038;text-decoration:none}.cwd-reel-open:focus-visible{outline:3px solid #cb3c27;outline-offset:-4px}@media(min-width:780px){.cwd-reel-card{flex-basis:calc((100% - 42px)/4)}}@media(prefers-reduced-motion:reduce){.cwd-reel-card{transition:none}}';
+                document.head.append(style);
+                const wrap = document.createElement('div');
+                wrap.className = 'cwd-reels-wrap';
+                const heading = document.createElement('h3');
+                heading.className = 'cwd-reels-heading';
+                heading.textContent = 'Popular Reels';
+                const caption = document.createElement('p');
+                caption.className = 'cwd-reels-caption';
+                caption.textContent = 'Swipe to explore our most-viewed Instagram reels.';
+                const track = document.createElement('div');
+                track.className = 'cwd-reels-track';
+                track.setAttribute('aria-label', 'Instagram reel highlights');
+                reels.forEach((id, index) => {
+                    const card = document.createElement('article');
+                    card.className = 'cwd-reel-card';
+                    const frame = document.createElement('iframe');
+                    frame.className = 'cwd-reel-frame';
+                    frame.title = 'Car With Driver India Instagram reel ' + (index + 1);
+                    frame.loading = 'lazy';
+                    frame.referrerPolicy = 'strict-origin-when-cross-origin';
+                    frame.src = 'https://www.instagram.com/reel/' + id + '/embed/';
+                    const link = document.createElement('a');
+                    link.className = 'cwd-reel-open';
+                    link.href = 'https://www.instagram.com/reel/' + id + '/';
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.textContent = 'Watch Reel ' + (index + 1) + ' on Instagram ↗';
+                    card.append(frame, link);
+                    track.append(card);
+                });
+                wrap.append(heading, caption, track);
+                reelMount.hidden = false;
+                reelMount.append(wrap);
+            }
+
         }
     });
 

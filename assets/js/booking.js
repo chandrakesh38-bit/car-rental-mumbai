@@ -4143,7 +4143,7 @@ function renderBookingReviewDetails() {
     if (car) {
         const format = n => '₹' + Number(n).toLocaleString('en-IN', {maximumFractionDigits:2});
         const total = activeLoginCoupon ? activeLoginCoupon.totalPaise/100 : getCarCost(car);
-        document.getElementById('cwd-checkout-advance').textContent = format(Math.round(total * 100 * .2) / 100);
+        document.getElementById('cwd-checkout-advance').textContent = format(Math.round(total * .2));
         document.getElementById('cwd-checkout-full').textContent = format(total);
         const lines = [];
         if (mode === 'outstation') {

@@ -6,6 +6,7 @@
             <a href="/terms-and-conditions" class="hover:text-amber-400 transition">Terms &amp; Conditions</a>
             <a href="/cancellation-refund-policy" class="hover:text-amber-400 transition">Cancellation &amp; Refund Policy</a>
         </div>
+        <div class="mt-4 mb-4 flex justify-center gap-5 items-center" aria-label="Our social media"><a href="https://www.instagram.com/carwithdriver.india/" target="_blank" rel="noopener noreferrer" class="hover:text-amber-400 transition" aria-label="Car With Driver India on Instagram"><i class="fa-brands fa-instagram text-xl" aria-hidden="true"></i> <span>Instagram</span></a><a href="https://www.facebook.com/search/top?q=Car%20with%20driver%20india" target="_blank" rel="noopener noreferrer" class="hover:text-amber-400 transition" aria-label="Find Car With Driver India on Facebook"><i class="fa-brands fa-facebook text-xl" aria-hidden="true"></i> <span>Facebook</span></a></div>
         <p class="font-semibold text-slate-300">Car with Driver Mobility LLP</p>
         <p class="mt-1 text-slate-400">Lal Bahadur Shastri Marg, Godrej Hillside Colony, Vikhroli West, Mumbai 400079</p>
         <p class="mt-1 text-slate-300">GSTIN: <span class="font-medium tracking-wide">27AAWFC9651P1ZA</span></p>

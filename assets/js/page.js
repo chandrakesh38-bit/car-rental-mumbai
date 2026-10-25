@@ -62,7 +62,7 @@
             if (reelMount) {
                 const reels = ["DWj9JKmjheB","DXblBRpkoL9","DZAAwIWOuYY","DZCaoxNkYnf"];
                 const style = document.createElement('style');
-                style.textContent = '.cwd-reels-wrap{margin:24px 0 0;text-align:left}.cwd-reels-heading{font-size:21px;font-weight:800;color:#0b3038;margin:0 0 6px}.cwd-reels-caption{font-size:13px;color:#647775;margin:0 0 14px}.cwd-reels-track{display:flex;gap:14px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding:4px 2px 12px;scrollbar-width:thin;touch-action:pan-x pan-y}.cwd-reel-card{position:relative;flex:0 0 min(65vw,240px);aspect-ratio:9/16;scroll-snap-align:start;background:#0b3038;border-radius:18px;overflow:hidden;box-shadow:0 8px 22px #163b3b16}.cwd-reel-viewport{position:absolute;inset:0;overflow:hidden}.cwd-reel-frame{position:absolute;left:0;top:-82px;width:100%;height:calc(100% + 198px);border:0;pointer-events:none}.cwd-reel-tap{position:absolute;inset:0;z-index:2;border:0;margin:0;padding:0;background:linear-gradient(0deg,#06181d88,transparent 38%);color:white;display:flex;align-items:center;justify-content:center;cursor:pointer}.cwd-reel-tap .cwd-reel-label{position:absolute;bottom:17px;left:12px;right:12px;text-align:left;font:700 13px system-ui;letter-spacing:.1px}.cwd-reel-play{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:#ffffffdb;color:#0b3038;font:800 26px system-ui;box-shadow:0 3px 15px #0003}.cwd-reel-card[data-activated="true"] .cwd-reel-tap{background:transparent}.cwd-reel-card[data-activated="true"] .cwd-reel-play{opacity:0}.cwd-reel-card[data-activated="true"] .cwd-reel-label{background:#0b3038b8;padding:8px;border-radius:9px}.cwd-reel-tap:focus-visible{outline:3px solid #ffba88;outline-offset:-4px}@media(min-width:780px){.cwd-reel-card{flex-basis:calc((100% - 42px)/4)}}';
+                style.textContent = '.cwd-reels-wrap{margin:24px 0;text-align:left}.cwd-reels-heading{font-size:21px;font-weight:800;color:#0b3038;margin:0 0 6px}.cwd-reels-caption{font-size:13px;color:#647775;margin:0 0 14px}.cwd-reels-track{display:flex;gap:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;padding:4px 2px 14px;scrollbar-width:thin}.cwd-reel-card{flex:0 0 min(66vw,245px);aspect-ratio:9/16;scroll-snap-align:start;border-radius:20px;overflow:hidden;position:relative;background:linear-gradient(145deg,#244b53,#071e29 65%,#512d2d);box-shadow:0 8px 22px #163b3b20}.cwd-reel-card a{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;text-decoration:none;gap:18px}.cwd-reel-card .cwd-reel-logo{width:72px;height:72px;object-fit:contain;border-radius:16px}.cwd-reel-card .cwd-reel-play{width:64px;height:64px;display:grid;place-items:center;border-radius:50%;background:#ffffffed;color:#0b3038;font-size:27px;box-shadow:0 4px 22px #0005}.cwd-reel-card .cwd-reel-label{position:absolute;bottom:18px;left:12px;right:12px;text-align:center;font-size:14px;font-weight:800}.cwd-reel-card a:focus-visible{outline:3px solid #ffb98e;outline-offset:-3px}@media(min-width:780px){.cwd-reel-card{flex-basis:calc((100% - 42px)/4)}}';
                 document.head.append(style);
                 const wrap = document.createElement('div');
                 wrap.className = 'cwd-reels-wrap';
@@ -71,46 +71,35 @@
                 heading.textContent = 'Popular Reels';
                 const caption = document.createElement('p');
                 caption.className = 'cwd-reels-caption';
-                caption.textContent = 'Swipe horizontally. Tap once to load the reel, tap again to open Instagram.';
+                caption.textContent = 'Swipe horizontally to explore our Instagram videos.';
                 const track = document.createElement('div');
                 track.className = 'cwd-reels-track';
                 track.setAttribute('aria-label', 'Instagram reel highlights');
-                reels.forEach((id, index) => {
+                reels.forEach((id,index) => {
                     const card = document.createElement('article');
                     card.className = 'cwd-reel-card';
-                    const viewport = document.createElement('div');
-                    viewport.className = 'cwd-reel-viewport';
-                    const frame = document.createElement('iframe');
-                    frame.className = 'cwd-reel-frame';
-                    frame.title = 'Car With Driver India Instagram reel ' + (index + 1);
-                    frame.loading = 'lazy';
-                    frame.referrerPolicy = 'strict-origin-when-cross-origin';
-                    // Instagram controls its iframe. Cropping removes the profile and
-                    // footer chrome visually, but autoplay can still be restricted.
-                    frame.src = 'https://www.instagram.com/reel/' + id + '/embed/';
-                    viewport.append(frame);
-                    const tap = document.createElement('button');
-                    tap.type = 'button';
-                    tap.className = 'cwd-reel-tap';
-                    tap.setAttribute('aria-label', 'Load reel ' + (index + 1) + '; next tap opens Instagram');
-                    tap.innerHTML = '<span class="cwd-reel-play" aria-hidden="true">▶</span><span class="cwd-reel-label">Reel ' + (index + 1) + ' · Tap to play</span>';
-                    tap.addEventListener('click', () => {
-                        if (card.dataset.activated === 'true') {
-                            window.open('https://www.instagram.com/reel/' + id + '/', '_blank', 'noopener,noreferrer');
-                            return;
-                        }
-                        card.dataset.activated = 'true';
-                        tap.querySelector('.cwd-reel-label').textContent = 'Tap again to view on Instagram ↗';
-                        // A user gesture requests embedded playback; Instagram may
-                        // ignore autoplay for cross-origin embeds.
-                        frame.src = 'https://www.instagram.com/reel/' + id + '/embed/?autoplay=1';
-                    });
-                    card.append(viewport, tap);
+                    const link = document.createElement('a');
+                    link.href = 'https://www.instagram.com/reel/' + id + '/';
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.setAttribute('aria-label','Play reel '+(index+1)+' on Instagram');
+                    const logo = document.createElement('img');
+                    logo.src = '/logo.png';
+                    logo.alt = '';
+                    logo.className = 'cwd-reel-logo';
+                    const play = document.createElement('span');
+                    play.className = 'cwd-reel-play';
+                    play.textContent = '▶';
+                    const label = document.createElement('span');
+                    label.className = 'cwd-reel-label';
+                    label.textContent = 'Watch Reel ' + (index+1);
+                    link.append(logo,play,label);
+                    card.append(link);
                     track.append(card);
                 });
-                wrap.append(heading, caption, track);
+                wrap.append(heading,caption,track);
+                reelMount.replaceChildren(wrap);
                 reelMount.hidden = false;
-                reelMount.append(wrap);
             }
 
         }

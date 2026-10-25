@@ -44,6 +44,24 @@
         }
     });
 
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Published pages use generated HTML. Add social links without a full rebuild.
+        const footer = document.querySelector('footer');
+        if (footer && !footer.querySelector('[aria-label="Our social media"]')) {
+            const panel = document.createElement('div');
+            panel.innerHTML = "<div class=\"mt-4 mb-4 flex justify-center gap-5 items-center\" aria-label=\"Our social media\"><a href=\"https://www.instagram.com/carwithdriver.india/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"hover:text-amber-400 transition\" aria-label=\"Car With Driver India on Instagram\"><i class=\"fa-brands fa-instagram text-xl\" aria-hidden=\"true\"></i> <span>Instagram</span></a><a href=\"https://www.facebook.com/search/top?q=Car%20with%20driver%20india\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"hover:text-amber-400 transition\" aria-label=\"Find Car With Driver India on Facebook\"><i class=\"fa-brands fa-facebook text-xl\" aria-hidden=\"true\"></i> <span>Facebook</span></a></div>";
+            footer.insertBefore(panel.firstElementChild, footer.querySelector('p'));
+        }
+        if (document.body.dataset.page === 'home' && footer && !document.getElementById('cwd-social-showcase')) {
+            const section = document.createElement('div');
+            section.innerHTML = "<section id=\"cwd-social-showcase\" aria-labelledby=\"cwd-social-title\" style=\"max-width:1080px;margin:24px auto;padding:22px 16px 32px;text-align:center\"><p style=\"font-weight:750;letter-spacing:.13em;color:#a94732;font-size:11px;margin-bottom:7px\">STAY CONNECTED</p><h2 id=\"cwd-social-title\" style=\"font-size:clamp(23px,5vw,35px);font-weight:800;color:#0b3038;margin:0 0 10px\">Follow Our Journey</h2><p style=\"color:#627674;font-size:14px;max-width:480px;margin:0 auto 20px\">See our cars, travel stories and latest updates on Instagram and Facebook.</p><div style=\"display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:520px;margin:auto\"><a href=\"https://www.instagram.com/carwithdriver.india/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"padding:22px 10px;border:1px solid #e4ddd3;border-radius:22px;background:#fff;color:#0b3038;text-decoration:none;box-shadow:0 8px 20px #0b30380b\"><i class=\"fa-brands fa-instagram\" style=\"font-size:30px;color:#b33773\" aria-hidden=\"true\"></i><strong style=\"display:block;margin:8px 0\">Instagram</strong><span style=\"font-size:12px\">Explore our reels ↗</span></a><a href=\"https://www.facebook.com/search/top?q=Car%20with%20driver%20india\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"padding:22px 10px;border:1px solid #e4ddd3;border-radius:22px;background:#fff;color:#0b3038;text-decoration:none;box-shadow:0 8px 20px #0b30380b\"><i class=\"fa-brands fa-facebook\" style=\"font-size:30px;color:#1877f2\" aria-hidden=\"true\"></i><strong style=\"display:block;margin:8px 0\">Facebook</strong><span style=\"font-size:12px\">Visit our page ↗</span></a></div><div id=\"cwd-top-reels\" hidden></div></section>";
+            footer.insertAdjacentElement('beforebegin', section.firstElementChild);
+            // Add verified reel permalinks here only after checking actual public view counts.
+            // Do not embed unverified posts or fabricate engagement metrics.
+        }
+    });
+
     let previousFocus;
     let closeTimer;
     window.openNavDrawer = function () {

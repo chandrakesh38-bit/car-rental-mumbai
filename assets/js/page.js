@@ -19,6 +19,31 @@
         if (bookingMode === 'withdriver' && bookingTab) setWDSubTab(bookingTab);
     });
 
+
+    // Business registration details: keep the already published HTML pages
+    // aligned with the shared footer template until their next full rebuild.
+    document.addEventListener('DOMContentLoaded', () => {
+        const gstin = '27AAWFC9651P1ZA';
+        const footer = document.querySelector('footer');
+        if (footer && !footer.textContent.includes(gstin)) {
+            const legalName = [...footer.querySelectorAll('p')].find(p =>
+                p.textContent.includes('Car with Driver Mobility LLP'));
+            const gstLine = document.createElement('p');
+            gstLine.className = 'mt-1 text-slate-300';
+            gstLine.textContent = 'GSTIN: ' + gstin;
+            if (legalName) legalName.insertAdjacentElement('afterend', gstLine);
+            else footer.append(gstLine);
+        }
+        if (document.body.dataset.page === 'contact' && !document.getElementById('business-registration')) {
+            const section = document.createElement('section');
+            section.id = 'business-registration';
+            section.className = 'max-w-7xl mx-auto px-4 sm:px-6 pb-10';
+            section.innerHTML = '<div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm"><h2 class="font-bold text-lg text-slate-900 mb-3">Business Information</h2><p class="text-sm text-slate-600">Legal name: Car with Driver Mobility LLP</p><p class="text-sm text-slate-600 mt-1">GSTIN: ' + gstin + '</p></div>';
+            const reach = document.getElementById('reach-us');
+            if (reach) reach.insertAdjacentElement('afterend', section);
+        }
+    });
+
     let previousFocus;
     let closeTimer;
     window.openNavDrawer = function () {

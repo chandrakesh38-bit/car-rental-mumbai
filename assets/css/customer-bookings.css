@@ -6,3 +6,14 @@
 
 header [data-account-logout]{width:auto;margin:0 0 0 12px;padding:8px 15px;border:1px solid #d9b967;border-radius:9px;background:transparent;color:#ffe098;min-height:40px}header [data-account-logout][hidden]{display:none}
 header{flex-wrap:wrap}header .brand{margin-right:auto}header [data-account-link]{white-space:nowrap}@media screen and (max-width:480px){header{gap:10px}header [data-account-logout]{margin-left:0;padding:7px 10px;font-size:12px}}
+
+/* Mobile brand lockup: keep the city tagline on its own line. */
+header .brand{min-width:0;max-width:100%}
+header .brand img{flex:0 0 auto}
+header .brand>span{display:block;min-width:0;line-height:1.25;overflow-wrap:normal}
+header .brand small{display:block;margin-top:4px;font-size:.68em;font-weight:600;line-height:1.35;white-space:normal}
+@media screen and (max-width:760px){
+  header .brand{flex:1 1 220px;max-width:100%;align-items:center}
+  header .brand>span{font-size:clamp(15px,3.6vw,19px)}
+  header .brand small{font-size:12px}
+}

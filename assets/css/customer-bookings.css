@@ -17,3 +17,33 @@ header .brand small{display:block;margin-top:4px;font-size:.68em;font-weight:600
   header .brand>span{font-size:clamp(15px,3.6vw,19px)}
   header .brand small{font-size:12px}
 }
+
+/* My Bookings: compact mobile-first journey dashboard */
+body.cwd-road:has(.bookings-main){background:linear-gradient(180deg,#fffaf3 0%,#fffaf3 46%,#f1f5fa 100%);min-height:100vh}
+.cwd-road .bookings-main{max-width:970px;margin:28px auto 0;padding:0 24px 110px}
+.cwd-road .bookings-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.cwd-road .bookings-eyebrow{font-size:10px;letter-spacing:2.2px;color:#9b6a59;font-weight:800;margin:0 0 5px}
+.cwd-road .bookings-main .bookings-heading h1{font-size:clamp(30px,5vw,42px);line-height:1.1;letter-spacing:-1px;margin:0}
+.cwd-road .bookings-heading-icon{color:#cd604c;font-size:24px}
+.cwd-road .sr-booking-filter{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.cwd-road .booking-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 22px}
+.cwd-road .booking-tabs .booking-tab{display:block;width:100%;min-height:47px;padding:10px 8px;margin:0;border:1px solid #dedfdc;border-radius:999px;background:#fff;color:#374f54;font-size:14px;font-weight:700;box-shadow:0 2px 5px #163b3b06;transition:background .22s ease,color .22s ease,transform .22s ease,box-shadow .22s ease}
+.cwd-road .booking-tabs .booking-tab.is-active{background:#0b3038;color:#fff;border-color:#0b3038;box-shadow:0 6px 14px #0b303822}
+.cwd-road .booking-tabs .booking-tab:active{transform:scale(.96)}
+.cwd-road .cwd-booking-empty{position:relative;isolation:isolate;overflow:hidden;text-align:center;background:white;border:1px solid #efebe5;border-radius:25px;padding:26px 22px 32px;box-shadow:0 14px 35px #163b3b0d;animation:cwd-card-enter .48s ease-out both}
+.cwd-road .empty-art{height:180px;max-width:320px;margin:0 auto 8px;position:relative;display:grid;place-items:center}
+.cwd-road .empty-art-glow{position:absolute;z-index:-1;width:180px;height:150px;border-radius:50%;background:linear-gradient(150deg,#e8f0f9,#f9f4ed);animation:cwd-glow 4s ease-in-out infinite}
+.cwd-road .empty-art svg{width:100%;height:165px;overflow:visible;animation:cwd-car-float 4s ease-in-out infinite}
+.cwd-road .cwd-booking-empty h2{font-size:clamp(24px,4vw,30px);color:#0b3038;margin:0 0 8px;letter-spacing:-.7px}
+.cwd-road .cwd-booking-empty p{font-size:14px;line-height:1.55;color:#687679;max-width:360px;margin:0 auto 25px}
+.cwd-road .empty-primary{display:block;width:100%;max-width:420px;margin:0 auto;background:#0b3038;color:white!important;text-decoration:none;border-radius:999px;padding:16px 18px;font-size:15px;font-weight:800;box-shadow:0 5px 13px #0b303822;transition:transform .2s,background .2s}
+.cwd-road .empty-primary:active{transform:scale(.98)}
+.cwd-road .empty-secondary{display:inline-block;margin:20px auto 0;font-size:14px;color:#0b3038!important;font-weight:700;text-underline-offset:4px}
+.cwd-road .booking-card{animation:cwd-card-enter .4s ease-out both}
+.cwd-road #booking-message{font-size:14px;line-height:1.5}
+@keyframes cwd-card-enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cwd-car-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes cwd-glow{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@media(max-width:600px){.cwd-road .bookings-main{margin:20px auto 0;padding:0 16px 105px}.cwd-road .booking-tabs{gap:7px;margin-bottom:18px}.cwd-road .booking-tabs .booking-tab{font-size:13px;padding:9px 5px;min-height:44px}.cwd-road .cwd-booking-empty{padding:18px 20px 27px;border-radius:23px}.cwd-road .empty-art{height:170px}.cwd-road .empty-art svg{height:158px}.cwd-road .bookings-heading-icon{display:none}}
+@media(prefers-reduced-motion:reduce){.cwd-road .cwd-booking-empty,.cwd-road .empty-art svg,.cwd-road .empty-art-glow,.cwd-road .booking-card{animation:none!important}.cwd-road .booking-tab,.cwd-road .empty-primary{transition:none!important}}
+@media print{.cwd-road .booking-tabs,.cwd-road .cwd-booking-empty{display:none!important}.cwd-road .bookings-main{padding:0;margin:0}}

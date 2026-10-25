@@ -892,6 +892,22 @@ function onPickupDateChange() {
 }
 
         async function selectQuickRoute(destName) {
+            if (window.cwdQuickRouteBusy) return;
+            window.cwdQuickRouteBusy = true;
+            const routeLoadStarted = Date.now();
+            const loader = document.createElement('div');
+            loader.id = 'cwd-route-loader';
+            loader.setAttribute('role', 'status');
+            loader.setAttribute('aria-live', 'polite');
+            loader.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(9,34,39,.88);display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(5px)';
+            loader.innerHTML = '<div style="text-align:center;background:#fffaf3;color:#0b3038;border-radius:24px;padding:28px 26px;width:min(100%,330px);box-shadow:0 18px 60px #0004"><div aria-hidden="true" style="font-size:34px;margin-bottom:12px">🚗</div><strong style="font-size:22px;display:block">Finding your ride</strong><p style="font-size:14px;margin:10px 0 19px;color:#526560">Preparing your route and fare...</p><div style="height:7px;border-radius:99px;background:#e8e2d8;overflow:hidden"><div style="height:100%;background:#cb3c27;width:0%;animation:cwdRouteProgress 3s ease-out forwards"></div></div></div>';
+            if (!document.getElementById('cwd-route-loader-style')) {
+                const style = document.createElement('style');
+                style.id = 'cwd-route-loader-style';
+                style.textContent = '@keyframes cwdRouteProgress{from{width:0}to{width:100%}}@media(prefers-reduced-motion:reduce){#cwd-route-loader [style*="animation:cwdRouteProgress"]{animation:none;width:100%!important}}';
+                document.head.appendChild(style);
+            }
+            document.body.appendChild(loader);
             const card = [...document.querySelectorAll('#quick-plan-routes button')].find(button => button.dataset.destination === destName);
             if (currentMainMode !== 'withdriver') setServiceMode('withdriver');
             setWDSubTab('outstation');
@@ -920,7 +936,10 @@ function onPickupDateChange() {
             } catch (error) {
                 invalidateOutstationRoute(error.message || 'Please select the route from Google suggestions.');
             }
-            document.getElementById('booking-widget').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            await new Promise(resolve => setTimeout(resolve, Math.max(0, 3000 - (Date.now() - routeLoadStarted))));
+            loader.remove();
+            window.cwdQuickRouteBusy = false;
+            document.getElementById('booking-widget')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function showSuggestions(inputId, datasetType, dropdownId) {

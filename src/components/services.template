@@ -34,9 +34,7 @@
                     Verified & experienced chauffeurs
                 </p>
 
-                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
-                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
-                </span>
+                
             </button>
 
 
@@ -57,9 +55,7 @@
                     No hidden charges
                 </p>
 
-                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
-                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
-                </span>
+                
             </button>
 
 
@@ -80,9 +76,7 @@
                     Pickup & drop at your location
                 </p>
 
-                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
-                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
-                </span>
+                
             </button>
 
 
@@ -103,9 +97,7 @@
                     Clean & well-maintained cars
                 </p>
 
-                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
-                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
-                </span>
+                
             </button>
 
 
@@ -126,9 +118,7 @@
                     Safety & round-the-clock support
                 </p>
 
-                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 mt-2">
-                    View Details <i class="fa-solid fa-arrow-right text-[8px]"></i>
-                </span>
+                
             </button>
 
         </div>

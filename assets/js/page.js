@@ -62,7 +62,7 @@
             if (reelMount) {
                 const reels = ["DWj9JKmjheB","DXblBRpkoL9","DZAAwIWOuYY","DZCaoxNkYnf"];
                 const style = document.createElement('style');
-                style.textContent = '.cwd-reels-wrap{margin:24px 0;text-align:left}.cwd-reels-heading{font-size:21px;font-weight:800;color:#0b3038;margin:0 0 6px}.cwd-reels-caption{font-size:13px;color:#647775;margin:0 0 14px}.cwd-reels-track{display:flex;gap:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;padding:4px 2px 14px;scrollbar-width:thin}.cwd-reel-card{flex:0 0 min(66vw,245px);aspect-ratio:9/16;scroll-snap-align:start;border-radius:20px;overflow:hidden;position:relative;background:linear-gradient(145deg,#244b53,#071e29 65%,#512d2d);box-shadow:0 8px 22px #163b3b20}.cwd-reel-card a{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;text-decoration:none;gap:18px}.cwd-reel-card .cwd-reel-logo{width:72px;height:72px;object-fit:contain;border-radius:16px}.cwd-reel-card .cwd-reel-play{width:64px;height:64px;display:grid;place-items:center;border-radius:50%;background:#ffffffed;color:#0b3038;font-size:27px;box-shadow:0 4px 22px #0005}.cwd-reel-card .cwd-reel-label{position:absolute;bottom:18px;left:12px;right:12px;text-align:center;font-size:14px;font-weight:800}.cwd-reel-card a:focus-visible{outline:3px solid #ffb98e;outline-offset:-3px}@media(min-width:780px){.cwd-reel-card{flex-basis:calc((100% - 42px)/4)}}';
+                style.textContent = '.cwd-reels-wrap{margin:30px 0 0;text-align:left}.cwd-reels-heading{font-size:21px;font-weight:800;color:#0b3038;margin:0 0 6px}.cwd-reels-caption{font-size:13px;color:#647775;margin:0 0 14px}.cwd-reels-track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 16px;scrollbar-width:thin}.cwd-reel-card{flex:0 0 min(72vw,250px);scroll-snap-align:start;background:white;border:1px solid #e9e0d7;border-radius:19px;overflow:hidden;box-shadow:0 8px 20px #163b3b0e;transition:transform .22s,box-shadow .22s}.cwd-reel-card:hover{transform:translateY(-3px);box-shadow:0 12px 26px #163b3b1b}.cwd-reel-frame{width:100%;aspect-ratio:9/15;border:0;background:#f5f1e9;display:block}.cwd-reel-open{display:block;padding:13px 12px;font-size:13px;font-weight:800;color:#0b3038;text-decoration:none}.cwd-reel-open:focus-visible{outline:3px solid #cb3c27;outline-offset:-4px}@media(min-width:780px){.cwd-reel-card{flex-basis:calc((100% - 42px)/4)}}@media(prefers-reduced-motion:reduce){.cwd-reel-card{transition:none}}';
                 document.head.append(style);
                 const wrap = document.createElement('div');
                 wrap.className = 'cwd-reels-wrap';
@@ -71,35 +71,31 @@
                 heading.textContent = 'Popular Reels';
                 const caption = document.createElement('p');
                 caption.className = 'cwd-reels-caption';
-                caption.textContent = 'Swipe horizontally to explore our Instagram videos.';
+                caption.textContent = 'Swipe to explore our most-viewed Instagram reels.';
                 const track = document.createElement('div');
                 track.className = 'cwd-reels-track';
                 track.setAttribute('aria-label', 'Instagram reel highlights');
-                reels.forEach((id,index) => {
+                reels.forEach((id, index) => {
                     const card = document.createElement('article');
                     card.className = 'cwd-reel-card';
+                    const frame = document.createElement('iframe');
+                    frame.className = 'cwd-reel-frame';
+                    frame.title = 'Car With Driver India Instagram reel ' + (index + 1);
+                    frame.loading = 'lazy';
+                    frame.referrerPolicy = 'strict-origin-when-cross-origin';
+                    frame.src = 'https://www.instagram.com/reel/' + id + '/embed/';
                     const link = document.createElement('a');
+                    link.className = 'cwd-reel-open';
                     link.href = 'https://www.instagram.com/reel/' + id + '/';
                     link.target = '_blank';
                     link.rel = 'noopener noreferrer';
-                    link.setAttribute('aria-label','Play reel '+(index+1)+' on Instagram');
-                    const logo = document.createElement('img');
-                    logo.src = '/logo.png';
-                    logo.alt = '';
-                    logo.className = 'cwd-reel-logo';
-                    const play = document.createElement('span');
-                    play.className = 'cwd-reel-play';
-                    play.textContent = '▶';
-                    const label = document.createElement('span');
-                    label.className = 'cwd-reel-label';
-                    label.textContent = 'Watch Reel ' + (index+1);
-                    link.append(logo,play,label);
-                    card.append(link);
+                    link.textContent = 'Watch Reel ' + (index + 1) + ' on Instagram ↗';
+                    card.append(frame, link);
                     track.append(card);
                 });
-                wrap.append(heading,caption,track);
-                reelMount.replaceChildren(wrap);
+                wrap.append(heading, caption, track);
                 reelMount.hidden = false;
+                reelMount.append(wrap);
             }
 
         }

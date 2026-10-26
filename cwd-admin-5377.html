@@ -1962,6 +1962,10 @@
             if (!raw) {
                 const found=String(booking?.booking_details||'').split('\n').find(line=>line.startsWith('Acquisition Source: '));
                 if(found)try{raw=JSON.parse(found.slice('Acquisition Source: '.length));}catch{}
+                if(!raw) {
+                    const match=String(booking?.booking_details||'').match(/"acquisition"\s*:\s*(\{[^{}]*\})/);
+                    if(match)try{raw=JSON.parse(match[1]);}catch{}
+                }
             }
             const src=String(raw?.source||'').toLowerCase(), medium=String(raw?.medium||'').toLowerCase();
             const campaign=String(raw?.campaign||'').toLowerCase();

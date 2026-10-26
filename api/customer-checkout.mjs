@@ -7,6 +7,7 @@ import { checkoutConfig, rpc, moneyPaise, paymentAmount, ownedBooking, bookingVi
   razorConfig, razor, verifyHmac, capturePayment } from '../lib/customer-checkout.mjs';
 import {couponCode, couponBreakdown, couponIdentity, couponAvailability, eligibleCoupon} from '../lib/login-coupon.mjs';
 // Use Node.js for the payment provider connection, matching the admin payment API.
+import { sanitizeAcquisition } from '../lib/acquisition.mjs';
 const json = (data, status = 200, headers = {}) => Response.json(data, { status, headers: { 'Cache-Control': 'private, no-store', ...headers } });
 async function handler(request) {
   try {
@@ -73,7 +74,7 @@ async function handler(request) {
       delete validated.normalized.couponCode;
       const booking = await rpc(cfg, identity ? 'cwd_checkout_create_coupon' : 'cwd_checkout_create', { p_nonce: proof.nonce, p_mobile: proof.mobile,
         p_proof_expires: new Date(proof.expiresAt).toISOString(), p_submission: submissionKey, p_access_hash: await hash(token),
-        p_choice: paymentChoice, p_total: total, p_data: validated.normalized,
+        p_choice: paymentChoice, p_total: total, p_data: {...validated.normalized, acquisition: sanitizeAcquisition(body.acquisition)},
         p_contact: { name: name.trim(), email: email.trim(), route: validated.route, car: validated.carName, trip: validated.tripType,
           ...(loginToken ? {sessionHash:await hash(loginToken)} : {}) },
         ...(identity ? {p_session_hash:identity.sessionHash,p_code:code} : {}) });

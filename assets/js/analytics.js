@@ -1,4 +1,28 @@
 (function () {
+
+// Preserve first-touch attribution across booking pages without cookies or PII.
+(function () {
+  const key = 'cwd_acquisition_v1';
+  const clean = value => String(value || '').slice(0, 120).replace(/[^a-zA-Z0-9 _./-]/g, '');
+  let existing = null;
+  try { existing = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch (_) {}
+  if (!existing || typeof existing !== 'object' || !existing.source) {
+    const query = new URLSearchParams(location.search);
+    const ref = document.referrer;
+    let host = '';
+    try { host = new URL(ref).hostname.toLowerCase(); } catch (_) {}
+    const paid = ['gclid', 'gbraid', 'wbraid'].some(k => query.has(k));
+    const source = clean(query.get('utm_source')) || (paid ? 'google' : host.includes('google.') ? 'google' : host.includes('bing.') ? 'bing' : host.includes('facebook.') ? 'facebook' : host.includes('instagram.') ? 'instagram' : host ? 'referral' : 'direct');
+    const medium = clean(query.get('utm_medium')) || (paid ? 'cpc' : source === 'direct' ? 'none' : ['google','bing'].includes(source) ? 'organic' : 'referral');
+    existing = {
+      source, medium, campaign: clean(query.get('utm_campaign')),
+      referrerHost: clean(host), landingPage: location.pathname.slice(0, 200),
+      clickIdPresent: paid, capturedAt: new Date().toISOString()
+    };
+    try { sessionStorage.setItem(key, JSON.stringify(existing)); } catch (_) {}
+  }
+  window.cwdGetAcquisition = () => ({ ...existing });
+})();
   window.dataLayer = window.dataLayer || [];
   window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
   window.gtag('js', new Date());

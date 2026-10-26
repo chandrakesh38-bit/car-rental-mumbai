@@ -4,6 +4,7 @@ import { applyFirstTripOffer } from '../lib/first-trip-offer.mjs';
 import { createVerification } from '../lib/self-drive-documents.mjs';
 import { sendNotifications, validEmail } from '../lib/notifications.mjs';
 import { reserveBookingReference } from '../lib/booking-reference.mjs';
+import { sanitizeAcquisition } from '../lib/acquisition.mjs';
 
 export const config = { runtime: 'edge' };
 
@@ -90,7 +91,7 @@ export default async function handler(request) {
   try {
     const raw = await request.text();
     if (raw.length > 20000) return json({ success: false, message: 'Enquiry is too large.' }, 413);
-    let { bookingId, name, phone, email = '', details, serviceMode, submissionKey, otpProof, bookingData } = JSON.parse(raw);
+    let { bookingId, name, phone, email = '', details, serviceMode, submissionKey, otpProof, bookingData, acquisition } = JSON.parse(raw);
     if (!/^(?:[1-9]\d{5}|CWD-WD-\d{6}-\d{4})$/.test(bookingId || '') ||
         typeof name !== 'string' || !name.trim() || name.length > 200 ||
         typeof phone !== 'string' || !/^[+\d\s()-]{7,30}$/.test(phone) ||
@@ -104,7 +105,7 @@ export default async function handler(request) {
     const provisionalId = bookingId;
     bookingId = await reserveBookingReference('enquiry:'+phone.replace(/\D/g,'')+':'+submissionKey);
     details = details.replaceAll(provisionalId, bookingId);
-    const finalDetails = verifiedBookingDetails(details, validated);
+    const finalDetails = verifiedBookingDetails(details, validated) + '\nAcquisition Source: ' + JSON.stringify(sanitizeAcquisition(acquisition));
     await consumeMobileOtp(otpProof, phone, 'booking', new URL(request.url).origin);
     const uploadUrl = serviceMode === 'selfdrive'
       ? await createVerification({ bookingId, submissionKey, name, phone, email, details: finalDetails }, new URL(request.url).origin)

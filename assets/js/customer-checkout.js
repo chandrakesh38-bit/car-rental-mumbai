@@ -13,7 +13,7 @@ export const quoteLoginCoupon = async body => (await api({action:'quote',...body
 export const cancelPendingBooking = id => api({action:'cancel-pending',booking_id:id},'',bookingToken(id));
 export async function submitCheckout(body, form) {
   form.dataset.submissionKey ||= crypto.randomUUID();
-  const result = await api({action:'create', ...body, submissionKey:form.dataset.submissionKey});
+  const result = await api({action:'create', ...body, acquisition:window.cwdGetAcquisition?.() || null, submissionKey:form.dataset.submissionKey});
   // The server also establishes the customer session. Storage restrictions must
   // never strand a customer after the booking has already been committed.
   try { sessionStorage.setItem('cwd-booking:'+result.booking_id, result.access_token); } catch {}

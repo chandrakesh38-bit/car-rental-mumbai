@@ -3795,7 +3795,7 @@ showSuccessModal(result.application_number, result);
                 const response = await fetch('/api/booking-enquiry', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bookingId, name, phone, email, details, serviceMode, otpProof, bookingData,
+                    body: JSON.stringify({ bookingId, name, phone, email, details, serviceMode, otpProof, bookingData, acquisition:window.cwdGetAcquisition?.() || null,
                         submissionKey: form.dataset.submissionKey || (form.dataset.submissionKey = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('')),
                     }),
                 });

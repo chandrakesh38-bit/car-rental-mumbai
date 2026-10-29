@@ -100,6 +100,8 @@ body.cwd-road{--road-ink:#0b3038;--road-coral:#cb3c27;--road-paper:#fffaf3;--roa
 @media(max-width:700px){.cwd-road .road-local-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cwd-road .road-airport-feature{grid-template-columns:1fr;gap:0}.cwd-road .road-airport-feature>img{height:220px;min-height:0}.cwd-road .road-airport-feature>div{padding:24px}.cwd-road .road-airport-feature h3{font-size:25px}}
 .cwd-road .trip-charge-list{padding-left:20px;line-height:1.75;font-size:14px}
 .cwd-road .payment-document-link{display:block;padding:14px;border:2px solid #a93625;border-radius:12px;color:#8d2d20;background:#fff5ed;text-align:center;font-weight:700;text-decoration:underline;margin-top:16px}
+/* Payment URLs and sign-in guidance belong to the printable confirmation only. */
+@media screen{.cwd-road .payment-document-link,.cwd-road .payment-document-link+small{display:none}}
 @media print{.payment-document-link{display:block!important;color:#000!important;background:#fff!important;border:1px solid #333!important} .confirmation-grid{display:block}.confirmation-panel{break-inside:avoid}.confirmation-footer{break-inside:avoid}}
 
 .cwd-road .road-banner[data-scene="local"]{background-image:linear-gradient(90deg,#0b3038 8%,#0b3038c9 43%,#0b303800 77%),url("/assets/images/road/local.webp")}

@@ -47,3 +47,10 @@ body.cwd-road:has(.bookings-main){background:linear-gradient(180deg,#fffaf3 0%,#
 @media(max-width:600px){.cwd-road .bookings-main{margin:20px auto 0;padding:0 16px 105px}.cwd-road .booking-tabs{gap:7px;margin-bottom:18px}.cwd-road .booking-tabs .booking-tab{font-size:13px;padding:9px 5px;min-height:44px}.cwd-road .cwd-booking-empty{padding:18px 20px 27px;border-radius:23px}.cwd-road .empty-art{height:170px}.cwd-road .empty-art svg{height:158px}.cwd-road .bookings-heading-icon{display:none}}
 @media(prefers-reduced-motion:reduce){.cwd-road .cwd-booking-empty,.cwd-road .empty-art svg,.cwd-road .empty-art-glow,.cwd-road .booking-card{animation:none!important}.cwd-road .booking-tab,.cwd-road .empty-primary{transition:none!important}}
 @media print{.cwd-road .booking-tabs,.cwd-road .cwd-booking-empty{display:none!important}.cwd-road .bookings-main{padding:0;margin:0}}
+
+/* Immediate feedback while the secure payment window is prepared. */
+.payment-spinner{display:inline-block;width:1em;height:1em;margin-right:.4em;vertical-align:-.15em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:payment-spin .8s linear infinite}
+[data-pay][aria-busy="true"]{cursor:wait}
+[data-payment-error]{color:#a12d22;font-size:14px;line-height:1.5}
+@keyframes payment-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.payment-spinner{animation:none}}

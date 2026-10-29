@@ -17,7 +17,7 @@ function chargeDetails(d) {
  return '<ul class="trip-charge-list">'+lines.map(x=>'<li>'+escape(x)+'</li>').join('')+'</ul>';
 }
 const carImage=name=>/wagonr/i.test(name)?'/assets/images/models/wagonr.webp':/xl6/i.test(name)?'/assets/images/models/xl6.png':/crysta/i.test(name)?'/assets/images/models/crysta.webp':/ertiga/i.test(name)?'/assets/images/models/ertiga.webp':/dzire|sedan/i.test(name)?'/assets/images/models/dzire.webp':null;
-let bookings=[];
+let bookings=[],paymentPending=null;
 const emptyState=(signedOut=false)=>`<section class="cwd-booking-empty" aria-label="Booking information"><div class="empty-art" aria-hidden="true"><div class="empty-art-glow"></div><svg viewBox="0 0 320 174" role="presentation" focusable="false"><rect x="174" y="17" width="108" height="110" rx="11" fill="#fff" stroke="#9bb1c6" stroke-width="3"/><rect x="174" y="17" width="108" height="24" rx="10" fill="#d7e5f0"/><path d="M174 33H282" stroke="#9bb1c6" stroke-width="3"/><path d="M196 12v19M259 12v19" stroke="#294f6b" stroke-width="7" stroke-linecap="round"/><path d="M195 62h15m13 0h15m14 0h15M195 85h15m13 0h15m14 0h15" stroke="#c3d2df" stroke-width="11"/><path d="M53 114l17-37c5-11 13-16 27-16h75c17 0 29 7 39 22l20 30 16 4c12 3 18 11 18 23v15H41v-18c0-9 4-14 12-19z" fill="#f5f8fc" stroke="#234662" stroke-width="4"/><path d="M84 73h85c14 0 22 5 29 17l8 13H70z" fill="#bbd2e4" stroke="#234662" stroke-width="3"/><path d="M140 72v31M64 112h157" stroke="#234662" stroke-width="3"/><path d="M45 136h16m184 0h17" stroke="#f3b55f" stroke-width="8" stroke-linecap="round"/><circle cx="91" cy="146" r="19" fill="#1a3a56"/><circle cx="91" cy="146" r="9" fill="#dce8f1"/><circle cx="210" cy="146" r="19" fill="#1a3a56"/><circle cx="210" cy="146" r="9" fill="#dce8f1"/><path d="M31 165h245" stroke="#9bb1c6" stroke-width="3" stroke-linecap="round"/></svg></div><h2>${signedOut?'Your journeys start here':'No Bookings Yet'}</h2><p>${signedOut?'Sign in with your mobile number to view your trips and booking details.':'No '+escape(document.getElementById('booking-filter')?.value||'upcoming')+' bookings in this view.'}</p>${signedOut?'<a class="empty-primary" href="/customer-account?return_to=%2Fmy-bookings">Sign in with mobile OTP</a>':'<a class="empty-primary" href="/">Explore cabs</a>'}<a class="empty-secondary" href="/">Book another trip <span aria-hidden="true">→</span></a></section>`;
 
 function render(){
@@ -42,9 +42,39 @@ function render(){
    <footer class="confirmation-footer"><p>This confirmation is not a tax invoice. Final trip extras and any invoice are reconciled separately.</p><button class="outline-action" data-print>Download Confirmation</button><a class="outline-action" href="mailto:?subject=${encodeURIComponent('CWD booking '+b.booking_id)}&body=${encodeURIComponent('Booking '+b.booking_id+' with Car With Driver India. View your booking by signing in at '+location.origin+'/my-bookings')}" >Share on Email</a></footer>
   </article>`;
  }).join('')||emptyState(false);
+ syncPaymentProgress();
 }
 async function load(){try{if(id)bookings=[await getBooking(id)];else{const r=await fetch('/api/customer-bookings',{cache:'no-store'});const data=await r.json();if(!r.ok)throw Error(data.message);bookings=data.bookings;}message.textContent='';render();}catch(e){message.dataset.error='true';if(/sign in|unauthori|authenticat|login|401/i.test(e.message||'')){message.textContent='';container.innerHTML=emptyState(true);}else{message.textContent='Unable to load bookings. Please try signing in again.';container.innerHTML=emptyState(true);}}}
-async function pay(booking){message.dataset.error='false';message.textContent='Opening secure payment…';container.querySelectorAll('button').forEach(b=>b.disabled=true);try{await startPayment(booking.booking_id,booking.booking_status!=='received');await load();}catch(e){message.dataset.error='true';message.textContent=e.message;}finally{container.querySelectorAll('button').forEach(b=>b.disabled=false);}}
+function syncPaymentProgress(){
+ container.querySelectorAll('button').forEach(button=>{
+  button.disabled=paymentPending!==null;
+  if(!button.matches('[data-pay]'))return;
+  const busy=button.closest('[data-id]').dataset.id===paymentPending;
+  if(busy){
+   button.dataset.idleLabel ||= button.innerHTML;
+   button.setAttribute('aria-busy','true');
+   button.innerHTML='<span class="payment-spinner" aria-hidden="true"></span> Preparing secure payment…';
+  }else if(button.dataset.idleLabel){
+   button.innerHTML=button.dataset.idleLabel;
+   delete button.dataset.idleLabel;
+   button.removeAttribute('aria-busy');
+  }
+ });
+}
+async function pay(booking){
+ if(paymentPending!==null)return;
+ paymentPending=booking.booking_id;
+ container.querySelectorAll('[data-payment-error]').forEach(node=>node.remove());
+ message.dataset.error='false';message.textContent='Preparing secure payment…';
+ syncPaymentProgress();
+ try{await startPayment(booking.booking_id,booking.booking_status!=='received');await load();}
+ catch(e){
+  const error=e.message||'Unable to prepare secure payment. Please try again.';
+  message.dataset.error='true';message.textContent=error;
+  const button=[...container.querySelectorAll('[data-pay]')].find(node=>node.closest('[data-id]').dataset.id===booking.booking_id);
+  if(button){const notice=document.createElement('p');notice.dataset.paymentError='';notice.setAttribute('role','alert');notice.textContent=error+' Select the payment button to try again.';button.after(notice);}
+ }finally{paymentPending=null;syncPaymentProgress();}
+}
 container.addEventListener('click',async event=>{
  const card=event.target.closest('[data-id]');if(!card)return;const b=bookings.find(b=>b.booking_id===card.dataset.id);
  if(event.target.closest('[data-pay]'))await pay(b);

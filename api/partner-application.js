@@ -31,7 +31,6 @@ const ALLOWED_DOCUMENT_TYPES = [
 const ALLOWED_PHOTO_TYPES = [
   "image/jpeg",
   "image/png",
-  "image/webp",
 ];
 
 function jsonResponse(data, status = 200) {
@@ -39,9 +38,7 @@ function jsonResponse(data, status = 200) {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Cache-Control": "no-store",
     },
   });
 }
@@ -53,6 +50,12 @@ function validSignature(type, bytes) {
   if(type==='image/png') return b.length>=8 && [137,80,78,71,13,10,26,10].every((v,i)=>b[i]===v);
   if(type==='image/webp') return b.length>=12 && String.fromCharCode(...b.slice(0,4))==='RIFF' && String.fromCharCode(...b.slice(8,12))==='WEBP';
   return false;
+}
+function validFileName(file) {
+  const name = String(file?.name || "");
+  const extensions = { "image/jpeg": ["jpg", "jpeg"], "image/png": ["png"], "application/pdf": ["pdf"] };
+  const ext = name.split(".").pop().toLowerCase();
+  return Boolean(name && extensions[file?.type]?.includes(ext) && !/[\\/\x00-\x1f]/.test(name));
 }
 function cleanFileName(name) {
   return String(name || "document")
@@ -215,6 +218,12 @@ export default async function handler(request) {
 
   try {
 
+    const origin = request.headers.get("origin");
+    if (origin && origin !== new URL(request.url).origin) {
+      return jsonResponse({ success:false, message:"Invalid request origin." },403);
+    }
+    const contentLength = Number(request.headers.get("content-length") || 0);
+    if (contentLength > MAX_TOTAL_SIZE) return jsonResponse({success:false,message:"Upload request is too large."},413);
     const formData =
       await request.formData();
 
@@ -320,7 +329,7 @@ export default async function handler(request) {
       if (
         !ALLOWED_DOCUMENT_TYPES.includes(
           file.type
-        )
+        ) || !validFileName(file)
       ) {
         throw new Error(
           `${file.name || fieldName}: Only JPG, PNG or PDF files are allowed.`
@@ -420,10 +429,10 @@ export default async function handler(request) {
       if (
         !ALLOWED_PHOTO_TYPES.includes(
           file.type
-        )
+        ) || !validFileName(file)
       ) {
         throw new Error(
-          `${file.name || "Vehicle photo"}: Only JPG, PNG or WEBP images are allowed.`
+          `${file.name || "Vehicle photo"}: Only JPG or PNG images are allowed.`
         );
       }
 

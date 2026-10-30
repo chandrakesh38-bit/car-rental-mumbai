@@ -35,7 +35,7 @@ export default async function renderMumbaiPage({ root, component, escape, page }
       <ul class="flex flex-wrap gap-2 text-sm text-slate-600">${areas.map(a=>`<li class="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">${escape(a)}</li>`).join('')}</ul>
     </div>`;
   }).join('\n');
-  const outstationLinks = [['Pune','/outstation'],['Lonavala','/mumbai-to-lonavala-car-rental'],['Shirdi','/mumbai-to-shirdi-car-rental'],['Nashik','/outstation']].map(([city,href]) => {
+  const outstationLinks = [['Pune','/mumbai-to-pune-car-rental'],['Lonavala','/mumbai-to-lonavala-car-rental'],['Shirdi','/mumbai-to-shirdi-car-rental'],['Nashik','/mumbai-to-nashik-car-rental'],['Mahabaleshwar','/mumbai-to-mahabaleshwar-car-rental'],['Alibaug','/mumbai-to-alibaug-car-rental'],['Trimbakeshwar','/mumbai-to-trimbakeshwar-car-rental'],['Bhimashankar','/mumbai-to-bhimashankar-car-rental']].map(([city,href]) => {
     if(!destinations.some(d => d.name === city)) throw new Error(`Unsupported destination: ${city}`);
     return `<a href="${href}" class="rounded-xl bg-white border border-slate-200 px-4 py-3 text-sm font-bold text-indigo-950 hover:border-indigo-400 transition">Mumbai to ${escape(city)} <i class="fa-solid fa-arrow-right text-xs ml-2 text-indigo-600" aria-hidden="true"></i></a>`;
   }).join('\n');

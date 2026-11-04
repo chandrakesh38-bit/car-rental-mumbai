@@ -102,7 +102,7 @@ export default async function handler(request) {
 
     const vehicles = await db(
       'vehicles?id=eq.' + encodeURIComponent(vehicleId) +
-      '&is_active=eq.true&service_type=in.(Self-Drive,Both)&select=id,brand,model,full_name,service_type&limit=1'
+      '&is_active=eq.true&service_type=in.(Self-Drive,Both)&select=id,brand,model,full_name,service_type,fuel_type&limit=1'
     );
     const vehicle = vehicles?.[0];
     if (!vehicle) throw Object.assign(new Error('Selected Self Drive vehicle is not available.'), { status: 409 });
@@ -125,7 +125,8 @@ export default async function handler(request) {
     const details = [
       'SELF DRIVE | MANUAL ADMIN BOOKING',
       'Car: ' + carName,
-      'Pickup: ' + pickupAt.toISOString(),
+      ...(String(vehicle.fuel_type || '').trim() ? ['Fuel Type: ' + cleanText(vehicle.fuel_type, 80, 'fuel type')] : []),
+      'Pickup:  + pickupAt.toISOString(),
       'Return: ' + returnAt.toISOString(),
       'Duration: ' + hoursText + ' hours',
       'Delivery Mode: ' + (deliveryMode === 'home' ? 'Home Delivery' : 'Self Pick-up'),

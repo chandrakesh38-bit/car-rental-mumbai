@@ -2080,7 +2080,7 @@
                 return raw;
             };
 
-            let pickup='', destination='', pickupDate='', finalDropDate='', journeyType='', packageText='', includedKm='', tripDuration='', pickupType='';
+            let pickup='', destination='', pickupDate='', finalDropDate='', journeyType='', packageText='', includedKm='', tripDuration='', pickupType='', fuelType='';
 
             if(trip==='outstation'){
                 journeyType=afterColon(findLine('🔁 Trip Type:'));
@@ -2117,6 +2117,7 @@
                 }
                 if(!pickup)pickup=String(b?.route||'').trim();
             } else {
+                fuelType=afterColon(findExactLine('Fuel Type'));
                 pickupType=afterColon(findExactLine('Delivery Mode'))||'Self Pick-up';
                 pickupDate=formatSelfDriveDateTime(afterColon(findExactLine('Pickup')));
                 finalDropDate=formatSelfDriveDateTime(afterColon(findExactLine('Return')));
@@ -2143,6 +2144,7 @@
             ];
 
             if(trip==='self drive'||trip==='selfdrive'){
+                if(fuelType)text.push('⛽ *Fuel Type:* '+fuelType);
                 text.push('📦 *Pickup Type:* '+pickupType);
             } else {
                 text.push('🧭 *Trip Type:* '+String(b?.trip_type||''));

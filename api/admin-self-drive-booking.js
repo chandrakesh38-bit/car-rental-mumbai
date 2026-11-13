@@ -126,7 +126,7 @@ export default async function handler(request) {
       'SELF DRIVE | MANUAL ADMIN BOOKING',
       'Car: ' + carName,
       ...(String(vehicle.fuel_type || '').trim() ? ['Fuel Type: ' + cleanText(vehicle.fuel_type, 80, 'fuel type')] : []),
-      'Pickup:  + pickupAt.toISOString(),
+      'Pickup: ' + pickupAt.toISOString(),
       'Return: ' + returnAt.toISOString(),
       'Duration: ' + hoursText + ' hours',
       'Delivery Mode: ' + (deliveryMode === 'home' ? 'Home Delivery' : 'Self Pick-up'),
